@@ -1,8 +1,9 @@
 # Dependencies
 node_modules/
 
-# WhatsApp session — NEVER commit these (contains auth keys)
-sessions/
+# WhatsApp session — NEVER commit auth keys
+sessions/auth/
+sessions/*.log
 
 # Runtime data
 backups/
