@@ -1,19 +1,31 @@
 {
-  "name": "workspace",
-  "version": "0.0.0",
+  "name": "kelin-md",
+  "version": "1.0.0",
+  "description": "KELIN MD — Premium WhatsApp Multi-Device Bot",
   "license": "MIT",
+  "type": "module",
+  "main": "index.mjs",
   "scripts": {
-    "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
+    "start": "node index.mjs",
+    "dev:dashboard": "pnpm --filter @workspace/kelin-md run dev",
+    "dev:api": "pnpm --filter @workspace/api-server run dev",
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
     "typecheck:libs": "tsc --build",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
   },
   "private": true,
   "dependencies": {
-    "@replit/connectors-sdk": "^0.4.1"
+    "@hapi/boom": "^9.1.4",
+    "@replit/connectors-sdk": "^0.4.1",
+    "@whiskeysockets/baileys": "^6.7.18",
+    "dotenv": "^16.5.0",
+    "pino": "^9.7.0"
   },
   "devDependencies": {
     "prettier": "^3.9.5",
     "typescript": "~5.9.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
