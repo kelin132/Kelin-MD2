@@ -3,13 +3,28 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: KELIN MD WhatsApp Bot API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: bot
+    description: Bot control and status
+  - name: plugins
+    description: Plugin management
+  - name: commands
+    description: Command management
+  - name: logs
+    description: Console logs
+  - name: files
+    description: File manager
+  - name: settings
+    description: Bot settings
+  - name: backup
+    description: Backup and restore
+
 paths:
   /healthz:
     get:
@@ -24,6 +39,390 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /bot/status:
+    get:
+      operationId: getBotStatus
+      tags: [bot]
+      summary: Get bot status and stats
+      description: Returns connection status, uptime, resource usage, and statistics
+      responses:
+        "200":
+          description: Bot status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotStatus"
+
+  /bot/pair:
+    post:
+      operationId: requestPairing
+      tags: [bot]
+      summary: Request a pairing code
+      description: Generates a WhatsApp pairing code for the given phone number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PairingRequest"
+      responses:
+        "200":
+          description: Pairing code generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PairingResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Already connected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /bot/session:
+    get:
+      operationId: getSession
+      tags: [bot]
+      summary: Get session info
+      description: Returns current WhatsApp session information
+      responses:
+        "200":
+          description: Session info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionInfo"
+    delete:
+      operationId: logout
+      tags: [bot]
+      summary: Logout from WhatsApp
+      description: Disconnects and clears the WhatsApp session
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /bot/restart:
+    post:
+      operationId: restartBot
+      tags: [bot]
+      summary: Restart the bot
+      description: Reconnects the WhatsApp bot
+      responses:
+        "200":
+          description: Restart initiated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /bot/shutdown:
+    post:
+      operationId: shutdownBot
+      tags: [bot]
+      summary: Shutdown the bot
+      description: Gracefully shuts down the bot process
+      responses:
+        "200":
+          description: Shutdown initiated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /bot/update:
+    post:
+      operationId: updateBot
+      tags: [bot]
+      summary: Update the bot
+      description: Pulls latest updates and restarts
+      responses:
+        "200":
+          description: Update initiated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /plugins:
+    get:
+      operationId: listPlugins
+      tags: [plugins]
+      summary: List all plugins
+      description: Returns all loaded plugins with their status
+      responses:
+        "200":
+          description: Plugin list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Plugin"
+
+  /plugins/reload:
+    post:
+      operationId: reloadPlugins
+      tags: [plugins]
+      summary: Reload all plugins
+      description: Hot-reloads all plugin files without restarting the bot
+      responses:
+        "200":
+          description: Plugins reloaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /plugins/{pluginId}/toggle:
+    patch:
+      operationId: togglePlugin
+      tags: [plugins]
+      summary: Enable or disable a plugin
+      parameters:
+        - name: pluginId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PluginToggle"
+      responses:
+        "200":
+          description: Plugin toggled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plugin"
+        "404":
+          description: Plugin not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /commands:
+    get:
+      operationId: listCommands
+      tags: [commands]
+      summary: List all commands
+      description: Returns all registered commands grouped by category
+      responses:
+        "200":
+          description: Command list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Command"
+
+  /logs:
+    get:
+      operationId: getLogs
+      tags: [logs]
+      summary: Get console logs
+      description: Returns recent log entries
+      parameters:
+        - name: level
+          in: query
+          schema:
+            type: string
+            enum: [all, info, warn, error, debug]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        "200":
+          description: Log entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LogEntry"
+
+  /logs/clear:
+    post:
+      operationId: clearLogs
+      tags: [logs]
+      summary: Clear console logs
+      responses:
+        "200":
+          description: Logs cleared
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /files:
+    get:
+      operationId: listFiles
+      tags: [files]
+      summary: List files in a directory
+      parameters:
+        - name: path
+          in: query
+          schema:
+            type: string
+            default: "."
+      responses:
+        "200":
+          description: File list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FileEntry"
+
+  /files/content:
+    get:
+      operationId: getFileContent
+      tags: [files]
+      summary: Get file content
+      parameters:
+        - name: path
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: File content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileContent"
+        "403":
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: File not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get bot settings
+      responses:
+        "200":
+          description: Current settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotSettings"
+    put:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update bot settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BotSettingsInput"
+      responses:
+        "200":
+          description: Settings updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotSettings"
+
+  /backup:
+    post:
+      operationId: createBackup
+      tags: [backup]
+      summary: Create a backup
+      description: Creates a backup of sessions and settings
+      responses:
+        "200":
+          description: Backup created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackupInfo"
+
+  /backups:
+    get:
+      operationId: listBackups
+      tags: [backup]
+      summary: List all backups
+      responses:
+        "200":
+          description: Backup list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BackupInfo"
+
+  /restore:
+    post:
+      operationId: restoreBackup
+      tags: [backup]
+      summary: Restore from backup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RestoreRequest"
+      responses:
+        "200":
+          description: Restore initiated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "404":
+          description: Backup not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api-status:
+    get:
+      operationId: getApiStatus
+      tags: [bot]
+      summary: Get API key statuses
+      description: Returns status of integrated APIs (AI, downloaders, etc.)
+      responses:
+        "200":
+          description: API statuses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ApiKeyStatus"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +433,300 @@ components:
       required:
         - status
 
+    BotStatus:
+      type: object
+      required: [connected, status, uptime, ramUsageMb, ramTotalMb, cpuUsage, totalUsers, totalGroups, totalCommands, pluginCount, connectedNumber, botName, version]
+      properties:
+        connected:
+          type: boolean
+        status:
+          type: string
+          enum: [connected, disconnected, connecting, pairing]
+        uptime:
+          type: integer
+          description: Uptime in seconds
+        ramUsageMb:
+          type: number
+        ramTotalMb:
+          type: number
+        cpuUsage:
+          type: number
+        totalUsers:
+          type: integer
+        totalGroups:
+          type: integer
+        totalCommands:
+          type: integer
+        pluginCount:
+          type: integer
+        connectedNumber:
+          type: ["string", "null"]
+        botName:
+          type: string
+        version:
+          type: string
+        pairingCode:
+          type: ["string", "null"]
+
+    PairingRequest:
+      type: object
+      required: [phoneNumber]
+      properties:
+        phoneNumber:
+          type: string
+          description: Phone number with country code (e.g. +1234567890)
+
+    PairingResponse:
+      type: object
+      required: [pairingCode, phoneNumber]
+      properties:
+        pairingCode:
+          type: string
+        phoneNumber:
+          type: string
+
+    SessionInfo:
+      type: object
+      required: [connected, hasSession]
+      properties:
+        connected:
+          type: boolean
+        hasSession:
+          type: boolean
+        phoneNumber:
+          type: ["string", "null"]
+        name:
+          type: ["string", "null"]
+        sessionPath:
+          type: string
+        connectedAt:
+          type: ["string", "null"]
+
+    Plugin:
+      type: object
+      required: [id, name, category, enabled, commandCount, description]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+          enum: [main, group, admin, owner, download, ai, anime, fun, games, media, search, utilities]
+        enabled:
+          type: boolean
+        commandCount:
+          type: integer
+        description:
+          type: string
+        version:
+          type: string
+
+    PluginToggle:
+      type: object
+      required: [enabled]
+      properties:
+        enabled:
+          type: boolean
+
+    Command:
+      type: object
+      required: [name, description, category, usage, cooldown, isOwner, isAdmin, isPremium]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        usage:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+        cooldown:
+          type: integer
+        isOwner:
+          type: boolean
+        isAdmin:
+          type: boolean
+        isPremium:
+          type: boolean
+
+    LogEntry:
+      type: object
+      required: [id, timestamp, level, message]
+      properties:
+        id:
+          type: string
+        timestamp:
+          type: string
+        level:
+          type: string
+          enum: [info, warn, error, debug]
+        message:
+          type: string
+        details:
+          type: ["string", "null"]
+
+    FileEntry:
+      type: object
+      required: [name, path, type, size, modified]
+      properties:
+        name:
+          type: string
+        path:
+          type: string
+        type:
+          type: string
+          enum: [file, directory]
+        size:
+          type: integer
+        modified:
+          type: string
+
+    FileContent:
+      type: object
+      required: [path, content, size]
+      properties:
+        path:
+          type: string
+        content:
+          type: string
+        size:
+          type: integer
+
+    BotSettings:
+      type: object
+      required: [ownerName, ownerNumber, botName, prefix, themeEmoji, footer, mongoUri, sessionFolder, premiumUsers, adminNumbers]
+      properties:
+        ownerName:
+          type: string
+        ownerNumber:
+          type: string
+        botName:
+          type: string
+        prefix:
+          type: string
+        themeEmoji:
+          type: string
+        footer:
+          type: string
+        mongoUri:
+          type: string
+        sessionFolder:
+          type: string
+        premiumUsers:
+          type: array
+          items:
+            type: string
+        adminNumbers:
+          type: array
+          items:
+            type: string
+        autoRead:
+          type: boolean
+        autoReact:
+          type: boolean
+        antiLink:
+          type: boolean
+        antiSpam:
+          type: boolean
+        antiDelete:
+          type: boolean
+        welcomeMessage:
+          type: boolean
+        xpSystem:
+          type: boolean
+
+    BotSettingsInput:
+      type: object
+      properties:
+        ownerName:
+          type: string
+        ownerNumber:
+          type: string
+        botName:
+          type: string
+        prefix:
+          type: string
+        themeEmoji:
+          type: string
+        footer:
+          type: string
+        mongoUri:
+          type: string
+        sessionFolder:
+          type: string
+        premiumUsers:
+          type: array
+          items:
+            type: string
+        adminNumbers:
+          type: array
+          items:
+            type: string
+        autoRead:
+          type: boolean
+        autoReact:
+          type: boolean
+        antiLink:
+          type: boolean
+        antiSpam:
+          type: boolean
+        antiDelete:
+          type: boolean
+        welcomeMessage:
+          type: boolean
+        xpSystem:
+          type: boolean
+
+    BackupInfo:
+      type: object
+      required: [id, filename, createdAt, sizeMb]
+      properties:
+        id:
+          type: string
+        filename:
+          type: string
+        createdAt:
+          type: string
+        sizeMb:
+          type: number
+
+    RestoreRequest:
+      type: object
+      required: [backupId]
+      properties:
+        backupId:
+          type: string
+
+    ApiKeyStatus:
+      type: object
+      required: [name, configured, working]
+      properties:
+        name:
+          type: string
+        configured:
+          type: boolean
+        working:
+          type: ["boolean", "null"]
+        description:
+          type: string
+
+    SuccessResponse:
+      type: object
+      required: [success, message]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string

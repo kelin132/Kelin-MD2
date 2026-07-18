@@ -1,0 +1,25 @@
+{
+  "ownerName": "Kelin",
+  "ownerNumber": "",
+  "botName": "KELIN MD",
+  "prefix": ".",
+  "themeEmoji": "⚡",
+  "footer": "© KELIN MD",
+  "mongoUri": "",
+  "sessionFolder": "sessions",
+  "premiumUsers": [],
+  "adminNumbers": [],
+  "autoRead": false,
+  "autoReact": false,
+  "antiLink": false,
+  "antiSpam": true,
+  "antiDelete": false,
+  "welcomeMessage": true,
+  "xpSystem": true,
+  "apiKeys": {
+    "openai": "",
+    "gemini": "",
+    "deepseek": "",
+    "claude": ""
+  }
+}

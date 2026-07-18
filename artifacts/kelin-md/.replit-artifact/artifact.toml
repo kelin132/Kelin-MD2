@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "KELIN MD Dashboard"
+version = "1.0.0"
+id = "artifacts/kelin-md"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25011
+
+[services.development]
+run = "pnpm --filter @workspace/kelin-md run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/kelin-md", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/kelin-md/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25011"
+BASE_PATH = "/"
