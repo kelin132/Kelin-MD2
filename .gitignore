@@ -1,49 +1,43 @@
-# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+# Dependencies
+node_modules/
 
-# compiled output
-dist
-tmp
-out-tsc
-*.tsbuildinfo
-.expo
-.expo-shared
+# WhatsApp session — NEVER commit these (contains auth keys)
+sessions/
 
-# dependencies
-node_modules
+# Runtime data
+backups/
+*.log
+*.log.*
 
-# IDEs and editors
-/.idea
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
+# Environment secrets
+.env
 
-# IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
-# misc
-/.sass-cache
-/connect.lock
-/coverage
-/libpeerconnection.log
-npm-debug.log
-yarn-error.log
-testem.log
-/typings
-
-# System Files
+# OS / editor
 .DS_Store
 Thumbs.db
+.vscode/
+.idea/
 
-.cursor/rules/nx-rules.mdc
-.github/instructions/nx.instructions.md
-
-# Replit
-.cache/
+# ── Replit workspace files (not needed for bot deployment) ──
+.replit
+.replitignore
+.npmrc
+replit.md
+pnpm-workspace.yaml
+pnpm-lock.yaml
+tsconfig.json
+tsconfig.base.json
+.agents/
 .local/
+
+# Dashboard & API server (Replit-only, not needed on hosting panels)
+artifacts/
+
+# Shared TypeScript libs (Replit-only)
+lib/api-client-react/
+lib/api-spec/
+lib/api-zod/
+lib/db/
+
+# Build scripts (Replit-only)
+scripts/
