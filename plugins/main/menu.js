@@ -21,7 +21,7 @@ export default {
       { name: "Admin", emoji: "🛡️", cmds: ["kick", "promote", "demote"] },
       { name: "Owner", emoji: "👑", cmds: ["broadcast", "eval", "restart"] },
     ];
-    const lines = ["*KELIN MD — Command Menu* ⚡", ""];
+    const lines = ["*KELIN MD", ""];
     for (const cat of categories) {
       lines.push(`${cat.emoji} *${cat.name}*`);
       lines.push(cat.cmds.map((c) => `  ${prefix}${c}`).join("  "));
