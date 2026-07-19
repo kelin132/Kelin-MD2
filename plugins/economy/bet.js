@@ -30,7 +30,7 @@ export default {
   category: "economy",
   usage: ".bet <amount | all | half>",
   aliases: ["gamble", "wager"],
-  cooldown: 3,
+  cooldown: 2,
   checkJail: true,
 
   async run({ sock, msg, sender, args }) {
