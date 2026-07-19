@@ -23,7 +23,7 @@ const categoryEmojis = {
 // Categories shown to everyone — staff/owner see all
 const PUBLIC_CATS = new Set([
   "main", "economy", "guild", "games", "fun", "ai",
-  "search", "media", "utilities", "download", "group", "anime",
+  "search", "media", "utilities", "download", "group", "anime","staff", 
 ]);
 
 export default {
