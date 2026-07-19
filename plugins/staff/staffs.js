@@ -11,7 +11,7 @@ export default {
   description: "List all staff members",
   category: "staff",
   usage: ".staffs",
-  aliases: ["stafflist", "mods", "modlist"],
+  aliases: ["stafflist", "staffmembers"],
 
   async run({ sock, msg }) {
     const jid    = msg.key.remoteJid;
