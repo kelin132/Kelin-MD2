@@ -12,9 +12,7 @@ export default {
 
   async run({ sock, msg }) {
     try {
-      const res = await fetch("https://api.waifu.im/search");
-      const data = await res.json();
-
+      const res = await axios.get(`https://nekobot.xyz/api/image?type=${type}`, {
       const image = data.images[0].url;
 
       await sock.sendMessage(msg.key.remoteJid, {
