@@ -24,7 +24,7 @@ import { getDb } from "./lib/mongo.mjs";
 
 // settings.js is CommonJS — import via createRequire
 const _require  = createRequire(import.meta.url);
-const _settings = _require("./settings.js");
+const _settings = _require("./settings.cjs");
 
 const BOT_NAME     = process.env.BOT_NAME    || _settings.botName    || "KELIN MD";
 const BOT_NUMBER   = process.env.BOT_NUMBER  || "";
