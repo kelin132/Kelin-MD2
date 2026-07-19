@@ -20,7 +20,7 @@ import { connectBot } from "./lib/bot.mjs";
 import { loadPlugins } from "./lib/pluginManager.mjs";
 import { log } from "./lib/logger.mjs";
 import { autoUpdate } from "./lib/updater.js";
-import { getDb } from "./lib/mongo.mjs";
+import { connectDb } from "./lib/mongo.mjs";
 import { startCardSpawner } from "./lib/cardSpawner.mjs";
 
 // settings.js is CommonJS — import via createRequire
@@ -64,7 +64,7 @@ if (!isRegistered()) {
 
 // ── Connect to MongoDB ────────────────────────────────────────────────────────
 try {
-  await getDb();
+  await connectDb();
 } catch (err) {
   log("warn", "MongoDB connection failed: " + String(err));
   log("warn", "Economy/guild/staff features require MongoDB. Add MONGO_URI to your .env");
