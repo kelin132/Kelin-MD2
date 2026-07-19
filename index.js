@@ -21,6 +21,7 @@ import { loadPlugins } from "./lib/pluginManager.mjs";
 import { log } from "./lib/logger.mjs";
 import { autoUpdate } from "./lib/updater.js";
 import { getDb } from "./lib/mongo.mjs";
+import { startCardSpawner } from "./lib/cardSpawner.mjs";
 
 // settings.js is CommonJS — import via createRequire
 const _require  = createRequire(import.meta.url);
@@ -75,6 +76,9 @@ log("info", `Plugins loaded: ${totalPlugins} plugins, ${totalCommands} commands`
 
 // ── Connect bot ───────────────────────────────────────────────────────────────
 await connectBot(BOT_NUMBER || null, PREFIX);
+
+// ── Card auto-spawner (drops a card in enabled groups every 15 min) ───────────
+startCardSpawner();
 
 // ── Auto-update check ─────────────────────────────────────────────────────────
 autoUpdate();
