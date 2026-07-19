@@ -1,5 +1,8 @@
 import { getPlugins } from "../../lib/pluginManager.mjs";
 
+// Zero-width spaces — forces WhatsApp to collapse the message with a "read more" button
+const READMORE = "\u200B".repeat(4000);
+
 const categoryEmojis = {
   main:       "🏡",
   economy:    "💰",
@@ -21,7 +24,7 @@ const categoryEmojis = {
 // Categories shown to everyone — staff/owner see all
 const PUBLIC_CATS = new Set([
   "main", "economy", "guild", "games", "fun", "ai",
-  "search", "media", "utilities", "download", "group", "anime","staff", 
+  "search", "media", "utilities", "download", "group", "anime", "staff",
 ]);
 
 export default {
@@ -32,8 +35,13 @@ export default {
   aliases: ["help", "cmds", "commands", "start"],
   cooldown: 10,
 
-  async run({ sock, msg, prefix, isOwner, isStaff, isMod }) {
+  async run({ sock, msg, prefix, isOwner, isStaff, isMod, sender }) {
+    const jid      = msg.key.remoteJid;
     const allPlugins = getPlugins();
+
+    // Sender phone number for mention (strip @s.whatsapp.net / device suffix)
+    const senderNum = sender.split("@")[0].split(":")[0];
+    const mention   = `@${senderNum}`;
 
     // Group by category
     const map = new Map();
@@ -66,11 +74,11 @@ export default {
       hour: "2-digit", minute: "2-digit"
     });
 
-    const totalPublic = [...map.entries()]
-      .filter(([c]) => PUBLIC_CATS.has(c) || showStaff || showOwner)
-      .reduce((sum, [, cmds]) => sum + cmds.length, 0);
+    // ── Greeting shown before the "read more" collapse ──────────────────────
+    let text = `*Hello* ${mention} 👋\n${READMORE}\n`;
 
-    let text =
+    // ── Header ───────────────────────────────────────────────────────────────
+    text +=
 `╭━━━〔 🌙 *KELIN MD* 🌙 〕━━━╮
   🔑 Prefix   : ${prefix}
   📦 Plugins  : ${allPlugins.length}
@@ -78,6 +86,7 @@ export default {
 ╰━━━━━━━━━━━━━━━━━━━━━━╯
 `;
 
+    // ── Command list ─────────────────────────────────────────────────────────
     for (const cat of sortedCats) {
       const cmds  = map.get(cat).sort();
       const emoji = categoryEmojis[cat] || "📌";
@@ -104,10 +113,11 @@ export default {
 > © KELIN MD — Stay Premium ⚡`;
 
     await sock.sendMessage(
-      msg.key.remoteJid,
+      jid,
       {
-        image: { url: "https://cdn.phototourl.com/free/2026-07-19-d1c912db-8aa1-468e-8419-0051ce547478.jpg" },
-        caption: text,
+        image:    { url: "https://cdn.phototourl.com/free/2026-07-19-d1c912db-8aa1-468e-8419-0051ce547478.jpg" },
+        caption:  text,
+        mentions: [sender],
       },
       { quoted: msg }
     );
