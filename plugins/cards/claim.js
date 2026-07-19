@@ -1,4 +1,5 @@
 import { findOrCreateUser } from "./db.js";
+import { resolveMediaUrl } from "../../lib/cardApi.mjs";
 
 // Shared global so spawner can write and this command can read
 const activeSpawns = global.activeSpawns || (global.activeSpawns = {});
@@ -50,8 +51,9 @@ export default {
       delete activeSpawns[jid];
 
       if (card.media) {
+        const imgUrl = await resolveMediaUrl(card.media);
         return sock.sendMessage(jid, {
-          image:   { url: card.media },
+          image:   { url: imgUrl },
           caption:
 `🎴 *CARD CLAIMED!*
 

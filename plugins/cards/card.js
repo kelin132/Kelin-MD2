@@ -1,4 +1,5 @@
 import { findOrCreateUser } from "./db.js";
+import { resolveMediaUrl } from "../../lib/cardApi.mjs";
 
 export default {
   name: "card",
@@ -44,15 +45,9 @@ ${card.description || "No description"}
 
       if (card.media) {
         try {
-          if (card.mediaType === "video") {
-            return await sock.sendMessage(jid, {
-              video: { url: card.media },
-              gifPlayback: true,
-              caption,
-            }, { quoted: msg });
-          }
+          const imgUrl = await resolveMediaUrl(card.media);
           return await sock.sendMessage(jid, {
-            image: { url: card.media },
+            image: { url: imgUrl },
             caption,
           }, { quoted: msg });
         } catch {

@@ -1,4 +1,4 @@
-import { getCard, searchCards, TIER_EMOJI } from "../../lib/cardApi.mjs";
+import { getCard, searchCards, TIER_EMOJI, resolveMediaUrl } from "../../lib/cardApi.mjs";
 
 export default {
   name: "search",
@@ -45,8 +45,9 @@ export default {
       ∘──────∘`;
 
       if (card.media) {
+        const imgUrl = await resolveMediaUrl(card.media);
         return sock.sendMessage(jid, {
-          image:   { url: card.media },
+          image:   { url: imgUrl },
           caption: text,
         }, { quoted: msg });
       }
