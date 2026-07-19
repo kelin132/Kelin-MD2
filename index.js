@@ -15,28 +15,33 @@
 import "dotenv/config";
 import { readFileSync, existsSync } from "fs";
 import path from "path";
+import { createRequire } from "module";
 import { connectBot } from "./lib/bot.mjs";
 import { loadPlugins } from "./lib/pluginManager.mjs";
 import { log } from "./lib/logger.mjs";
 import { autoUpdate } from "./lib/updater.js";
 import { getDb } from "./lib/mongo.mjs";
 
-const BOT_NAME    = process.env.BOT_NAME    || "KELIN MD";
-const BOT_NUMBER  = process.env.BOT_NUMBER  || "";
-const OWNER_NUMBER = process.env.OWNER_NUMBER || process.env.BOT_NUMBER || "";
-const PREFIX      = process.env.PREFIX      || ".";
+// settings.js is CommonJS — import via createRequire
+const _require  = createRequire(import.meta.url);
+const _settings = _require("./settings.js");
+
+const BOT_NAME     = process.env.BOT_NAME    || _settings.botName    || "KELIN MD";
+const BOT_NUMBER   = process.env.BOT_NUMBER  || "";
+// OWNER_NUMBER: env var wins, then settings.js — NEVER falls back to BOT_NUMBER
+const OWNER_NUMBER = (process.env.OWNER_NUMBER || _settings.ownerNumber || "").replace(/\D/g, "");
+const PREFIX       = process.env.PREFIX      || ".";
 const BOT_VERSION = "1.0.0";
 
-// ── Banner ─────────────────────────────────────────────────────────────
+// ── Banner ────────────────────────────────────────────────────────────────────
 console.log("\n" + "═".repeat(50));
 console.log(`  ${BOT_NAME} v${BOT_VERSION} — Starting`);
 console.log("═".repeat(50));
 console.log(`  Prefix  : ${PREFIX}`);
-console.log(`  Owner   : ${OWNER_NUMBER || "⚠  Not set — add OWNER_NUMBER to .env"}`);
 console.log(`  Number  : ${BOT_NUMBER || "⚠  Not set — add BOT_NUMBER to .env"}`);
 console.log("═".repeat(50) + "\n");
 
-// ── Session check ─────────────────────────────────────────────────────────
+// ── Session check ─────────────────────────────────────────────────────────────
 const CREDS = path.resolve("sessions", "auth", "creds.json");
 function isRegistered() {
   if (!existsSync(CREDS)) return false;
@@ -56,7 +61,7 @@ if (!isRegistered()) {
   log("info", "Existing session found — skipping pairing.");
 }
 
-// ── Connect to MongoDB ───────────────────────────────────────────────────────
+// ── Connect to MongoDB ────────────────────────────────────────────────────────
 try {
   await getDb();
 } catch (err) {
@@ -64,12 +69,12 @@ try {
   log("warn", "Economy/guild/staff features require MongoDB. Add MONGO_URI to your .env");
 }
 
-// ── Load plugins ─────────────────────────────────────────────────────────
+// ── Load plugins ──────────────────────────────────────────────────────────────
 const { totalPlugins, totalCommands } = await loadPlugins(PREFIX);
 log("info", `Plugins loaded: ${totalPlugins} plugins, ${totalCommands} commands`);
 
-// ── Connect bot ──────────────────────────────────────────────────────────
-await connectBot(BOT_NUMBER || null, PREFIX, OWNER_NUMBER);
+// ── Connect bot ───────────────────────────────────────────────────────────────
+await connectBot(BOT_NUMBER || null, PREFIX);
 
-// ── Auto-update check ────────────────────────────────────────────────────────
+// ── Auto-update check ─────────────────────────────────────────────────────────
 autoUpdate();
