@@ -1,4 +1,4 @@
-import { sendReaction } from "./_helper.js";
+import axios from "axios";
 
 export default {
   name: "waifu",
@@ -7,13 +7,34 @@ export default {
   category: "anime",
   usage: ".waifu",
 
-  async run({ sock, msg, sender }) {
-    await sendReaction({
-      sock, msg, sender,
-      type: "waifu",
-      soloCaption: `🌸 *Random Waifu Alert!*\n_Treat her well or face my wrath, senpai 💢_`,
-      duoCaption: (from, to) => `🌸 *${from} sent a waifu to ${to}~*`,
-      errorText: "❌ The waifu ran away. Try again!",
-    });
+  async run({ sock, msg }) {
+    const jid = msg.key.remoteJid;
+
+    try {
+      const { data } = await axios.get("https://api.waifu.pics/sfw/waifu");
+
+      await sock.sendMessage(
+        jid,
+        {
+          image: { url: data.url },
+          caption: `🌸 *Random Waifu Alert!*
+
+_Treat her well or face my wrath, senpai 💢_
+
+> Powered by waifu.pics`,
+        },
+        { quoted: msg }
+      );
+    } catch (err) {
+      console.error(err);
+
+      await sock.sendMessage(
+        jid,
+        {
+          text: "❌ The waifu ran away. Try again!",
+        },
+        { quoted: msg }
+      );
+    }
   },
 };
