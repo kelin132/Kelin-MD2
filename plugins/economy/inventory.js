@@ -4,7 +4,7 @@ export default {
   name: "inventory",
   description: "Check your inventory",
   category: "economy",
-  usage: ".inventory",
+  usage: ".inventory,inv",
   aliases: ["inv", "bag", "items"],
 
   async run({ sock, msg, sender }) {
