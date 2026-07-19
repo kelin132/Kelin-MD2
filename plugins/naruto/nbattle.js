@@ -1,181 +1,160 @@
-// plugins/naruto/nstart.js
+// plugins/naruto/nbattle.js
 
 import players from "../../lib/naruto/players.js";
-import villages from "../../lib/naruto/villages.js";
-import clans from "../../lib/naruto/clans.js";
-import { random } from "../../lib/naruto/utils.js";
+import battle from "../../lib/naruto/battle.js";
 
 export default {
-  name: "nstart",
-  description: "Create your Naruto ninja profile",
+  name: "nbattle",
+  description: "Battle another ninja",
   category: "naruto",
-  usage: ".nstart",
+  usage: ".nbattle @user",
 
   async run({ sock, msg, sender }) {
 
     try {
 
-      const existing = await players.get(sender);
+      const mentioned =
+        msg.message?.extendedTextMessage
+          ?.contextInfo
+          ?.mentionedJid;
 
-      if (existing) {
+
+      if (!mentioned || !mentioned[0]) {
         return sock.sendMessage(
           sender,
           {
             text:
-`🥷 You already have a ninja profile!
+`⚔️ Mention a ninja to battle.
 
-Use .nprofile to view your stats.`
+Example:
+.nbattle @user`
           },
           { quoted: msg }
         );
       }
 
 
-      const village = random(villages);
-      const clan = random(clans);
+      const opponent =
+        mentioned[0];
 
 
-      const player = await players.create({
-
-        jid: sender,
-
-        username:
-          msg.pushName || "Unknown Ninja",
-
-        village: {
-          id: village.id,
-          name: village.name,
-          emoji: village.emoji
-        },
-
-        clan: {
-          name: clan.name,
-          ability: clan.ability
-        },
+      const player =
+        await players.get(sender);
 
 
-        rank: "Academy Student",
-        title: "Rookie Ninja",
+      const enemy =
+        await players.get(opponent);
 
 
-        level: 1,
-        xp: 0,
-        xpNeeded: 100,
-
-
-        hp: 100,
-        maxHp: 100,
-
-
-        chakra: 100,
-        maxChakra: 100,
-
-
-        attack: 10,
-        defense: 10,
-        speed: 10,
-
-
-        ryo: 500,
-
-
-        wins: 0,
-        losses: 0,
-
-
-        jutsu: [
+      if (!player || !enemy) {
+        return sock.sendMessage(
+          sender,
           {
-            id: "basic_taijutsu",
-            name: "Basic Taijutsu"
-          }
-        ],
-
-
-        inventory: [],
-
-
-        createdAt: new Date()
-
-      });
-
-
-      // Apply clan bonus
-
-      if (clan.bonus.attack)
-        player.attack += clan.bonus.attack;
-
-      if (clan.bonus.hp) {
-        player.maxHp += clan.bonus.hp;
-        player.hp = player.maxHp;
-      }
-
-      if (clan.bonus.chakra) {
-        player.maxChakra += clan.bonus.chakra;
-        player.chakra = player.maxChakra;
-      }
-
-
-      await player.save();
-
-
-      await sock.sendMessage(
-        sender,
-        {
-          text:
-`🍃 NINJA REGISTRATION COMPLETE 🍃
-
-🥷 Name: ${player.username}
-
-🏯 Village:
-${village.emoji} ${village.name}
-
-👁️ Clan:
-${clan.name}
-
-⭐ Rank:
-Academy Student
-
-❤️ HP:
-${player.hp}/${player.maxHp}
-
-💙 Chakra:
-${player.chakra}/${player.maxChakra}
-
-⚔ Attack:
-${player.attack}
-
-🛡 Defense:
-${player.defense}
-
-💨 Speed:
-${player.speed}
-
-💰 Ryo:
-${player.ryo}
-
-Your ninja journey begins!
+            text:
+`❌ Both players need a ninja profile.
 
 Use:
-.nprofile
-.nmission`
-        },
-        { quoted: msg }
-      );
+.nstart`
+          },
+          { quoted: msg }
+        );
+      }
 
 
-    } catch (err) {
+      if (sender === opponent) {
+        return sock.sendMessage(
+          sender,
+          {
+            text:
+`❌ You cannot fight yourself.`
+          },
+          { quoted: msg }
+        );
+      }
 
-      console.log(err);
 
-      await sock.sendMessage(
-        sender,
-        {
-          text:
-          "❌ Failed to create ninja profile."
-        },
-        { quoted: msg }
-      );
+      let fight =
+        battle.create(
+          player,
+          enemy
+        );
 
-    }
-  }
-};
+
+      let log = [];
+
+
+      // Decide who starts
+
+      let first =
+        fight.player.speed >= fight.enemy.speed
+          ? "player"
+          : "enemy";
+
+
+      if (first === "player") {
+
+        const hit =
+          battle.attack(
+            fight.player,
+            fight.enemy
+          );
+
+        log.push(hit.message);
+
+
+      } else {
+
+        const hit =
+          battle.attack(
+            fight.enemy,
+            fight.player
+          );
+
+        log.push(hit.message);
+
+      }
+
+
+      // Second turn
+
+      if (
+        fight.player.hp > 0 &&
+        fight.enemy.hp > 0
+      ) {
+
+        const hit =
+          battle.attack(
+            first === "player"
+              ? fight.enemy
+              : fight.player,
+
+            first === "player"
+              ? fight.player
+              : fight.enemy
+          );
+
+        log.push(hit.message);
+      }
+
+
+      let winner;
+
+
+      if (fight.enemy.hp <= 0) {
+
+        winner = player;
+
+        player.wins++;
+        player.xp += 100;
+        player.ryo += 300;
+
+      }
+
+
+      if (fight.player.hp <= 0) {
+
+        winner = enemy;
+
+        enemy.wins++;
+        enemy.xp += 100;
+        enemy
