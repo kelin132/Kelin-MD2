@@ -1,38 +1,19 @@
-import axios from "axios";
+import { sendReaction } from "./_helper.js";
 
 export default {
   name: "hug",
-  description: "Send a random anime hug image",
-  category: "anime",
-  usage: ".hug",
   aliases: ["animehug"],
-  cooldown: 5,
+  description: "Send a warm anime hug — mention someone to hug them",
+  category: "anime",
+  usage: ".hug [@user]",
 
-  async run({ sock, msg }) {
-    try {
-      const { data } = await axios.get(
-        "https://api.waifu.pics/sfw/hug"
-      );
-
-      await sock.sendMessage(
-        msg.key.remoteJid,
-        {
-          image: { url: data.url },
-          caption: "🤗 Anime Hug — KELIN MD"
-        },
-        { quoted: msg }
-      );
-
-    } catch (err) {
-      console.error("Hug Error:", err);
-
-      await sock.sendMessage(
-        msg.key.remoteJid,
-        {
-          text: "❌ Failed to fetch hug image."
-        },
-        { quoted: msg }
-      );
-    }
-  }
+  async run({ sock, msg, sender }) {
+    await sendReaction({
+      sock, msg, sender,
+      type: "hug",
+      soloCaption: `🤗 *Akira sends you a warm hug~*\n_You look like you needed that, senpai!_`,
+      duoCaption: (from, to) => `🤗 *${from} just hugged ${to}!*\n_Awww that's so wholesome~ 🌸_`,
+      errorText: "❌ Couldn't fetch a hug image. Try again!",
+    });
+  },
 };

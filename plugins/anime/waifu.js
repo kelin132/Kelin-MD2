@@ -1,44 +1,19 @@
-import axios from "axios";
+import { sendReaction } from "./_helper.js";
 
 export default {
   name: "waifu",
+  aliases: ["anime"],
   description: "Get a random anime waifu image",
   category: "anime",
   usage: ".waifu",
-  aliases: ["anime"],
-  cooldown: 5,
-  isOwner: false,
-  isAdmin: false,
-  isPremium: false,
-  version: "1.0.0",
 
-  async run({ sock, msg }) {
-    try {
-      const res = await axios.get("https://api.waifu.pics/sfw/waifu");
-
-      if (!res.data?.url) {
-        throw new Error("No image URL found");
-      }
-
-      await sock.sendMessage(
-        msg.key.remoteJid,
-        {
-          image: { url: res.data.url },
-          caption: "🌸 Random Waifu — AKIRA ",
-        },
-        { quoted: msg }
-      );
-
-    } catch (err) {
-      console.error("Waifu Error:", err);
-
-      await sock.sendMessage(
-        msg.key.remoteJid,
-        {
-          text: "❌ Failed to fetch waifu image.",
-        },
-        { quoted: msg }
-      );
-    }
+  async run({ sock, msg, sender }) {
+    await sendReaction({
+      sock, msg, sender,
+      type: "waifu",
+      soloCaption: `🌸 *Random Waifu Alert!*\n_Treat her well or face my wrath, senpai 💢_`,
+      duoCaption: (from, to) => `🌸 *${from} sent a waifu to ${to}~*`,
+      errorText: "❌ The waifu ran away. Try again!",
+    });
   },
 };

@@ -1,40 +1,19 @@
-import axios from "axios";
+import { sendReaction } from "./_helper.js";
 
 export default {
   name: "neko",
-  description: "Get a random anime neko image",
+  aliases: ["catgirl"],
+  description: "Get a random anime neko (cat girl) image",
   category: "anime",
   usage: ".neko",
-  aliases: ["catgirl"],
-  cooldown: 5,
-  isOwner: false,
-  isAdmin: false,
-  isPremium: false,
-  version: "1.0.0",
 
-  async run({ sock, msg }) {
-    try {
-      const { data } = await axios.get(
-        "https://api.waifu.pics/sfw/neko"
-      );
-
-      await sock.sendMessage(
-        msg.key.remoteJid,
-        {
-          image: { url: data.url },
-          caption: "🐱 Random Neko — KELIN MD",
-        },
-        { quoted: msg }
-      );
-
-    } catch (err) {
-      console.error(err);
-
-      await sock.sendMessage(
-        msg.key.remoteJid,
-        { text: "❌ Failed to fetch neko image." },
-        { quoted: msg }
-      );
-    }
+  async run({ sock, msg, sender }) {
+    await sendReaction({
+      sock, msg, sender,
+      type: "neko",
+      soloCaption: `🐱 *Nyan~* Here's your neko fix for the day!\n_Don't stare too long, baka 👀_`,
+      duoCaption: (from, to) => `🐱 *${from} sent a neko to ${to}~*\n_Nyaa ehe~_`,
+      errorText: "❌ The neko escaped. Try again!",
+    });
   },
 };
