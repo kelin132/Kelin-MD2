@@ -24,7 +24,7 @@ export default {
         msg.key.remoteJid,
         {
           image: { url: res.data.url },
-          caption: "🌸 Random Waifu — KELIN MD",
+          caption: "🌸 Random Waifu — AKIRA ",
         },
         { quoted: msg }
       );
