@@ -45,7 +45,7 @@ export default {
 
     // Decide which cats to show
     const showStaff = isOwner || isStaff || isMod;
-    const showOwner = isOwner;
+    const showOwner = isOwner || isStaff || isMod;
 
     // Ordered list
     const order = [
