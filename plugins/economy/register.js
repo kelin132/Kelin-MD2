@@ -28,7 +28,7 @@ export default {
     await registerUser(sender, name);
 
     await sock.sendMessage(msg.key.remoteJid, {
-      text: `🎉 *Welcome to KELIN MD Economy, ${name}!*\n\n✅ Account created successfully!\n\n` +
+      text: `🎉 *Welcome to 'AKIRA* Economy, ${name}!*\n\n✅ Account created successfully!\n\n` +
             `💰 Starting Balance : $1,000\n🏦 Bank Balance     : $0\n⭐ Level            : 1\n\n` +
             `📋 *Get started:*\n• *.daily* — Claim daily reward\n• *.work* — Earn money working\n• *.balance* — Check your wallet\n• *.shop* — Buy items\n• *.guildhelp* — Join a guild\n\nGood luck! 🍀`
     }, { quoted: msg });
