@@ -18,13 +18,14 @@ const categoryEmojis = {
   group:      "🌸",
   admin:      "⚜️",
   anime:      "🍡",
+  cards:      "🃏",
   owner:      "👑",
 };
 
 // Categories shown to everyone — staff/owner see all
 const PUBLIC_CATS = new Set([
   "main", "economy", "guild", "games", "fun", "ai",
-  "search", "media", "utilities", "download", "group", "anime", "staff",
+  "search", "media", "utilities", "download", "group", "anime", "cards", "staff",
 ]);
 
 export default {
@@ -58,7 +59,7 @@ export default {
     // Ordered list
     const order = [
       "main", "economy", "guild", "games", "fun", "ai",
-      "search", "media", "utilities", "download", "group", "admin", "anime",
+      "search", "media", "utilities", "download", "group", "admin", "anime", "cards",
       ...(showStaff ? ["staff"] : []),
       ...(showOwner ? ["owner"] : []),
     ];
