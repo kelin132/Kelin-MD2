@@ -2,15 +2,11 @@ import axios from "axios";
 
 export default {
   name: "hug",
-  description: "Send an anime hug image",
+  description: "Send a random anime hug image",
   category: "anime",
   usage: ".hug",
   aliases: ["animehug"],
   cooldown: 5,
-  isOwner: false,
-  isAdmin: false,
-  isPremium: false,
-  version: "1.0.0",
 
   async run({ sock, msg }) {
     try {
@@ -22,7 +18,7 @@ export default {
         msg.key.remoteJid,
         {
           image: { url: data.url },
-          caption: "🤗 Anime Hug — KELIN MD",
+          caption: "🤗 Anime Hug — KELIN MD"
         },
         { quoted: msg }
       );
@@ -33,10 +29,10 @@ export default {
       await sock.sendMessage(
         msg.key.remoteJid,
         {
-          text: "❌ Failed to fetch hug image.",
+          text: "❌ Failed to fetch hug image."
         },
         { quoted: msg }
       );
     }
-  },
+  }
 };
