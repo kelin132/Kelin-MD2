@@ -1,91 +1,94 @@
+/**
+ * KELIN MD — .play command
+ * Searches YouTube and downloads audio via the GiftedTech API.
+ * Adapted from dara-studio-bot reference (uses gifted API instead of direct ytdl stream).
+ */
 import yts from "yt-search";
-import ytdl from "@distube/ytdl-core";
+import { get } from "../../lib/gifted.js";
+
+// ── Search YouTube ────────────────────────────────────────────────────────────
+
+async function ytSearch(input) {
+  if (/youtube\.com|youtu\.be/i.test(input)) {
+    return { url: input, title: input, thumbnail: null, duration: "", author: "", views: "" };
+  }
+  const { videos } = await yts(input);
+  if (!videos?.length) throw new Error("No results found for: " + input);
+  const v = videos[0];
+  return {
+    url:       v.url,
+    title:     v.title,
+    thumbnail: v.thumbnail || v.image || null,
+    duration:  v.timestamp || "",
+    author:    v.author?.name || "",
+    views:     v.views ? Number(v.views).toLocaleString() : "",
+  };
+}
+
+function pickDl(result) {
+  if (!result) return null;
+  return result.download_url || result.audio_url || result.url || result.link || null;
+}
+
+async function sendBanner(sock, jid, msg, meta, action) {
+  const caption = [
+    `🎵 *${meta.title}*`,
+    meta.author   ? `👤 ${meta.author}`       : "",
+    meta.duration ? `⏱️ ${meta.duration}`     : "",
+    meta.views    ? `👁️ ${meta.views} views`  : "",
+    "",
+    `⬇️ _${action}_`,
+  ].filter(Boolean).join("\n");
+
+  if (meta.thumbnail) {
+    try {
+      return await sock.sendMessage(jid, { image: { url: meta.thumbnail }, caption }, { quoted: msg });
+    } catch { /* fallthrough to text */ }
+  }
+  return sock.sendMessage(jid, { text: caption }, { quoted: msg });
+}
+
+// ── .play — YouTube audio (128kbps) ─────────────────────────────────────────
 
 export default {
   name: "play",
-  description: "Search and play music from YouTube",
+  description: "Search and download audio from YouTube (128 kbps)",
   category: "download",
-  usage: ".play <song name>",
-  aliases: ["song", "music"],
-  cooldown: 10,
+  usage: ".play <song name or YouTube URL>",
+  aliases: ["song", "music", "mp3", "ytmp3"],
+  cooldown: 15,
 
   async run({ sock, msg, text }) {
     const jid = msg.key.remoteJid;
 
     if (!text) {
-      return sock.sendMessage(
-        jid,
-        {
-          text: "❌ Example:\n.play Shape of You",
-        },
-        { quoted: msg }
-      );
+      return sock.sendMessage(jid, {
+        text: "🎵 Usage: *.play <song name or YouTube URL>*\n\nExample: .play Shape of You"
+      }, { quoted: msg });
     }
 
     try {
-      await sock.sendMessage(
-        jid,
-        {
-          text: "🔎 Searching YouTube...",
-        },
-        { quoted: msg }
-      );
+      const meta = await ytSearch(text);
+      await sendBanner(sock, jid, msg, meta, "Downloading audio…");
 
-      const search = await yts(text);
+      const data = await get("/download/ytaudio", { url: meta.url });
+      const dl   = pickDl(data?.result);
+      if (!dl) throw new Error("No download URL returned from API");
 
-      if (!search.videos.length) {
-        return sock.sendMessage(
-          jid,
-          { text: "❌ No results found." },
-          { quoted: msg }
-        );
-      }
+      const title = data?.result?.title || meta.title;
 
-      const video = search.videos[0];
-
-      if (video.seconds > 600) {
-        return sock.sendMessage(
-          jid,
-          {
-            text: "❌ Songs longer than 10 minutes are not allowed.",
-          },
-          { quoted: msg }
-        );
-      }
-
-      await sock.sendMessage(
-        jid,
-        {
-          image: { url: video.thumbnail },
-          caption:
-`🎵 *${video.title}*
-
-👤 Author: ${video.author.name}
-⏱ Duration: ${video.timestamp}
-👀 Views: ${video.views.toLocaleString()}
-
-⬇️ Downloading audio...`,
-        },
-        { quoted: msg }
-      );
-
-      const stream = ytdl(video.url, {
-        quality: "highestaudio",
-        filter: "audioonly",
-      });
-
-      await sock.sendMessage(
-        jid,
-        {
-          audio: stream,
-          mimetype: "audio/mpeg",
-          fileName: `${video.title}.mp3`,
-          ptt: false,
-        },
-        { quoted: msg }
-      );
+      await sock.sendMessage(jid, {
+        audio:    { url: dl },
+        mimetype: "audio/mpeg",
+        fileName: `${title}.mp3`,
+        ptt:      false,
+      }, { quoted: msg });
 
     } catch (err) {
-      console.error(err);
-
-      sock
+      console.error("[play]", err.message);
+      await sock.sendMessage(jid, {
+        text: "❌ Audio download failed. Try again or use a direct YouTube URL."
+      }, { quoted: msg });
+    }
+  },
+};
