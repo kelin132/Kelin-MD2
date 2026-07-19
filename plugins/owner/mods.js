@@ -33,19 +33,22 @@ Usage:
         }, { quoted: msg });
       }
 
+      const jids  = list.map(num => `${num}@s.whatsapp.net`);
       const lines = [`👮 *Bot Moderators* (${list.length})`, ""];
-      list.forEach((num, i) => lines.push(`${i + 1}. +${num}`));
+      list.forEach((num, i) => lines.push(`${i + 1}. @${num}`));
       lines.push("", "_Use .removemod @user to remove._");
-      return sock.sendMessage(jid, { text: lines.join("\n") }, { quoted: msg });
+
+      return sock.sendMessage(jid, {
+        text: lines.join("\n"),
+        mentions: jids,
+      }, { quoted: msg });
     }
 
     // ── Resolve target JID ────────────────────────────────────────────────
-    // Accept: @mention, reply-to-message participant, or bare number in text
     const ctx         = msg.message?.extendedTextMessage?.contextInfo;
     const mentionJid  = ctx?.mentionedJid?.[0];
     const quotedPart  = ctx?.participant;
 
-    // Also accept raw number typed after command: .addmod 27628114340
     const rawText = msg.message?.conversation || msg.message?.extendedTextMessage?.text || "";
     const numArg  = rawText.trim().split(/\s+/).slice(1)[0];
     const numMatch = numArg?.replace(/\D/g, "");
@@ -67,21 +70,20 @@ Ways to target someone:
       }, { quoted: msg });
     }
 
-    // Strip to digits for storage — consistent with permission check
     const num = targetJid.split("@")[0].split(":")[0].replace(/\D/g, "");
 
     // ── .addmod ───────────────────────────────────────────────────────────
     if (cmd === "addmod") {
       if (list.includes(num)) {
         return sock.sendMessage(jid, {
-          text: `❌ +${num} is already a mod.`,
+          text: `❌ @${num} is already a mod.`,
           mentions: [targetJid],
         }, { quoted: msg });
       }
       list.push(num);
       saveMods(list);
       return sock.sendMessage(jid, {
-        text: `✅ *+${num} is now a bot mod!*\n\nThey can use mod-only commands.`,
+        text: `✅ *@${num} is now a bot mod!*\n\nThey can use mod-only commands.`,
         mentions: [targetJid],
       }, { quoted: msg });
     }
@@ -91,14 +93,14 @@ Ways to target someone:
       const idx = list.indexOf(num);
       if (idx === -1) {
         return sock.sendMessage(jid, {
-          text: `❌ +${num} is not in the mods list.`,
+          text: `❌ @${num} is not in the mods list.`,
           mentions: [targetJid],
         }, { quoted: msg });
       }
       list.splice(idx, 1);
       saveMods(list);
       return sock.sendMessage(jid, {
-        text: `✅ +${num} removed from mods.`,
+        text: `✅ @${num} removed from mods.`,
         mentions: [targetJid],
       }, { quoted: msg });
     }
