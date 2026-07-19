@@ -1,40 +1,44 @@
-import { readData, writeData } from "../../lib/store.mjs";
-
-const DAILY_AMOUNT = 500;
-const COOLDOWN_MS  = 24 * 60 * 60 * 1000; // 24 hours
+import { getUser, saveUser, requireRegistration } from "./database.js";
 
 export default {
   name: "daily",
-  description: "Claim your daily coin reward",
+  description: "Claim your daily reward (24-hour cooldown)",
   category: "economy",
   usage: ".daily",
-  aliases: ["claim"],
-  cooldown: 3,
-  isOwner: false,
-  isAdmin: false,
-  isPremium: false,
-  version: "1.0.0",
-  async run({ sock, msg, senderNum }) {
-    const jid = msg.key.remoteJid;
-    const eco = readData("economy", {});
-    const data = eco[senderNum] ?? { coins: 0, bank: 0, lastDaily: 0 };
+  aliases: ["dailyclaim"],
 
-    const now  = Date.now();
-    const diff = now - (data.lastDaily ?? 0);
-    if (diff < COOLDOWN_MS) {
-      const rem = Math.ceil((COOLDOWN_MS - diff) / 3_600_000);
-      return sock.sendMessage(jid, {
-        text: `⏳ You already claimed your daily!\nCome back in *${rem} hour(s)*.`,
+  async run({ sock, msg, sender }) {
+    if (!await requireRegistration(sock, msg, sender)) return;
+
+    const user     = await getUser(sender);
+    const now      = Date.now();
+    const cooldown = 24 * 60 * 60 * 1000;
+
+    if (now - (user.lastDaily || 0) < cooldown) {
+      const remaining = cooldown - (now - user.lastDaily);
+      const hours     = Math.floor(remaining / (60 * 60 * 1000));
+      const minutes   = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+
+      return sock.sendMessage(msg.key.remoteJid, {
+        text: `⏰ *Cooldown Active*\n\nClaim your daily reward in:\n⏳ *${hours}h ${minutes}m*`
       }, { quoted: msg });
     }
 
-    data.coins    = (data.coins ?? 0) + DAILY_AMOUNT;
-    data.lastDaily = now;
-    eco[senderNum] = data;
-    writeData("economy", eco);
+    const reward      = 500 + Math.floor(Math.random() * 500); // $500–$1000
+    user.money        += reward;
+    user.lastDaily    = now;
+    user.xp           = (user.xp || 0) + 50;
 
-    await sock.sendMessage(jid, {
-      text: `✅ Daily claimed!\n+${DAILY_AMOUNT} coins 💰\nNew balance: *${data.coins} coins*`,
-    }, { quoted: msg });
-  },
+    // Level up every 1000 XP
+    const newLevel = Math.floor(user.xp / 1000) + 1;
+    const leveled  = newLevel > user.level;
+    user.level     = newLevel;
+
+    await saveUser(sender, user);
+
+    let text = `✅ *Daily Reward Claimed!*\n\n💰 Received  : $${reward.toLocaleString()}\n🔮 XP Gained : +50\n💵 Balance   : $${user.money.toLocaleString()}`;
+    if (leveled) text += `\n\n🎉 *LEVEL UP!* You are now Level ${user.level}!`;
+
+    await sock.sendMessage(msg.key.remoteJid, { text }, { quoted: msg });
+  }
 };

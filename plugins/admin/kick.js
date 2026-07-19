@@ -8,18 +8,38 @@ export default {
   isOwner: false,
   isAdmin: true,
   isPremium: false,
-  version: "1.0.0",
+  version: "1.1.0",
+
   async run({ sock, msg }) {
-    const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid ?? [];
-    if (!mentioned.length) {
-      await sock.sendMessage(msg.key.remoteJid, { text: "Please mention a user to kick." });
-      return;
+    const jid = msg.key.remoteJid;
+
+    if (!jid.endsWith("@g.us")) {
+      return await sock.sendMessage(jid, {
+        text: "❌ This command can only be used in groups.",
+      });
     }
+
+    const mentioned =
+      msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+
+    if (!mentioned.length) {
+      return await sock.sendMessage(jid, {
+        text: "Please mention a user to kick.",
+      });
+    }
+
     try {
-      await sock.groupParticipantsUpdate(msg.key.remoteJid, mentioned, "remove");
-      await sock.sendMessage(msg.key.remoteJid, { text: "User kicked successfully." });
-    } catch {
-      await sock.sendMessage(msg.key.remoteJid, { text: "Failed to kick. Make sure I am an admin." });
+      await sock.groupParticipantsUpdate(jid, mentioned, "remove");
+
+      await sock.sendMessage(jid, {
+        text: "✅ User kicked successfully.",
+      });
+    } catch (err) {
+      console.error(err);
+
+      await sock.sendMessage(jid, {
+        text: "❌ Failed to kick the user. Make sure I'm an admin and the target isn't an admin.",
+      });
     }
   },
 };

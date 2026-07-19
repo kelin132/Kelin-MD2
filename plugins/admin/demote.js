@@ -8,18 +8,39 @@ export default {
   isOwner: false,
   isAdmin: true,
   isPremium: false,
-  version: "1.0.0",
+  version: "1.1.0",
+
   async run({ sock, msg }) {
-    const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid ?? [];
-    if (!mentioned.length) {
-      await sock.sendMessage(msg.key.remoteJid, { text: "Please mention a user to demote." });
-      return;
+    const jid = msg.key.remoteJid;
+
+    if (!jid.endsWith("@g.us")) {
+      return await sock.sendMessage(jid, {
+        text: "❌ This command can only be used in groups.",
+      });
     }
+
+    const mentioned =
+      msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+
+    if (!mentioned.length) {
+      return await sock.sendMessage(jid, {
+        text: "❌ Please mention a user to demote.",
+      });
+    }
+
     try {
-      await sock.groupParticipantsUpdate(msg.key.remoteJid, mentioned, "demote");
-      await sock.sendMessage(msg.key.remoteJid, { text: "User demoted from admin." });
-    } catch {
-      await sock.sendMessage(msg.key.remoteJid, { text: "Failed to demote." });
+      await sock.groupParticipantsUpdate(jid, mentioned, "demote");
+
+      await sock.sendMessage(jid, {
+        text: "✅ User demoted from admin.",
+      });
+
+    } catch (err) {
+      console.error(err);
+
+      await sock.sendMessage(jid, {
+        text: "❌ Failed to demote user. Make sure I am an admin and have permission.",
+      });
     }
   },
 };

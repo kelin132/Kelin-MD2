@@ -1,33 +1,89 @@
-import { askGemini } from "../../lib/gemini.mjs";
+/**
+ * KELIN MD — Akira command plugin
+ * .akira <message> | .akira reset | .akira info
+ * AI logic lives in lib/akiraAI.mjs (shared with the group auto-trigger).
+ */
+import { callAkira, chatHistory } from "../../lib/akiraAI.mjs";
 
-const SYSTEM = `You are Akira, the personal AI assistant of KELIN MD WhatsApp bot. Your personality:
-- Name: Akira
-- Personality: Friendly, witty, slightly sarcastic but always helpful
-- Speaking style: Casual, uses emojis naturally, speaks like a cool friend
-- You are loyal to KELIN MD and its owner
-- Keep responses short and punchy unless asked for detail
-- Never break character — you ARE Akira, not an AI model`;
+const AKIRA_INFO_CARD = `╭━━━〔 🌸 *AKIRA* 〕━━━╮
+
+  *"H-hey! Don't stare at me like that, baka~"*
+
+  👤 Name      : Akira
+  🎂 Age       : 17
+  🏙️ Origin    : Akihabara, Tokyo
+  💜 Type      : Tsundere • Genki
+  ✨ Lives in  : KELIN MD
+
+  📖 *About me:*
+  I was just a normal high school girl
+  until Kelin digitized me into this bot.
+  Don't feel sorry for me — I actually
+  like it in here! (S-sort of...)
+
+  💕 *Likes:*
+  Anime • Ramen • Cats • Stargazing
+  Talking to senpai~ ehe
+
+  💢 *Dislikes:*
+  Being called a robot • Spiders
+  When senpai ignores me
+
+  🌸 *How to summon me in a group:*
+  Just say my name — *Akira* — or tag me!
+  I'll come running~ (n-not that I wanted to!)
+
+  🗣️ *Direct chat:*
+  *.akira <message>*
+
+  💫 *Reset our chat:*
+  *.akira reset*
+
+╰━━━━━━━━━━━━━━━━━━━━╯
+
+_Powered by Google Gemini • Always in character_`;
 
 export default {
   name: "akira",
-  description: "Chat with Akira, KELIN MD's personal AI",
+  description: "Chat with Akira — your anime girl AI companion",
   category: "ai",
-  usage: ".akira <message>",
-  aliases: ["aki"],
-  cooldown: 8,
-  isOwner: false,
-  isAdmin: false,
-  isPremium: false,
-  version: "1.0.0",
-  async run({ sock, msg, text }) {
+  usage: ".akira <message> | .akira reset | .akira info",
+  aliases: ["ak"],
+  cooldown: 5,
+
+  async run({ sock, msg, text, args }) {
     const jid = msg.key.remoteJid;
-    if (!text) return sock.sendMessage(jid, { text: "Usage: .akira <message>\n\nSay hi to Akira! 👋" });
-    await sock.sendMessage(jid, { text: "✨ Akira is thinking..." });
-    try {
-      const reply = await askGemini(text, SYSTEM);
-      await sock.sendMessage(jid, { text: `✨ *Akira:*\n\n${reply}` }, { quoted: msg });
-    } catch (err) {
-      await sock.sendMessage(jid, { text: `❌ ${err.message}` });
+    const sub = args[0]?.toLowerCase();
+
+    if (sub === "info" || sub === "profile" || sub === "card") {
+      return sock.sendMessage(jid, { text: AKIRA_INFO_CARD }, { quoted: msg });
     }
-  },
+
+    if (sub === "reset" || sub === "clear" || sub === "forget") {
+      chatHistory.delete(jid);
+      return sock.sendMessage(jid, {
+        text:
+          `*Akira:* *blinks*\n\n` +
+          `Eh? You want me to forget everything?\n\n` +
+          `*looks down quietly*\n\n` +
+          `...Fine. Conversation cleared. I-it's not like I'll miss it or anything, baka~\n\n` +
+          `_Say \`.akira hello\` to start fresh!_`
+      }, { quoted: msg });
+    }
+
+    if (!text || !text.trim()) {
+      return sock.sendMessage(jid, {
+        text:
+          `*Akira:* *taps foot impatiently*\n\n` +
+          `Nee, senpai~ You called me but said nothing? Mou!\n\n` +
+          `Say something already! ≧◡≦\n\n` +
+          `📝 *.akira <message>* — talk to me\n` +
+          `📋 *.akira info* — see my profile\n` +
+          `🔄 *.akira reset* — start fresh\n` +
+          `💡 _In groups just say "Akira" or tag me!_`
+      }, { quoted: msg });
+    }
+
+    await callAkira(sock, msg, text);
+  }
 };

@@ -1,33 +1,38 @@
-import { readData } from "../../lib/store.mjs";
+import { getAllUsers } from "./database.js";
 
 export default {
   name: "leaderboard",
-  description: "Top 10 richest users",
+  description: "View the richest players",
   category: "economy",
   usage: ".leaderboard",
-  aliases: ["rich", "top", "lb"],
+  aliases: ["lb", "rich", "top"],
   cooldown: 10,
-  isOwner: false,
-  isAdmin: false,
-  isPremium: false,
-  version: "1.0.0",
-  async run({ sock, msg }) {
-    const jid = msg.key.remoteJid;
-    const eco = readData("economy", {});
 
-    const sorted = Object.entries(eco)
-      .map(([num, d]) => ({ num, total: (d.coins ?? 0) + (d.bank ?? 0) }))
-      .sort((a, b) => b.total - a.total)
+  async run({ sock, msg }) {
+    const users = await getAllUsers();
+
+    if (!users || users.length === 0) {
+      return sock.sendMessage(msg.key.remoteJid, {
+        text: "💰 No registered users yet! Be the first with *.register*"
+      }, { quoted: msg });
+    }
+
+    const sorted = users
+      .map(u => ({ ...u, net: (u.money || 0) + (u.bank || 0) }))
+      .sort((a, b) => b.net - a.net)
       .slice(0, 10);
 
-    if (!sorted.length) return sock.sendMessage(jid, { text: "📊 No economy data yet. Use .work or .daily to start!" });
+    const medals = ["🥇", "🥈", "🥉"];
+    let text = "🏆 *ECONOMY LEADERBOARD*\n\n";
 
-    const lines = ["💰 *Richest Users*", ""];
-    sorted.forEach(({ num, total }, i) => {
-      const medal = ["🥇", "🥈", "🥉"][i] ?? `${i + 1}.`;
-      lines.push(`${medal} +${num.slice(-6)}... — *${total} coins*`);
+    sorted.forEach((u, i) => {
+      const rank = medals[i] || `${i + 1}.`;
+      const name = u.name || `User_${(u._id || "").slice(-4)}`;
+      text += `${rank} *${name}*\n`;
+      text += `   💰 Net Worth: $${u.net.toLocaleString()}\n`;
+      text += `   ⭐ Level: ${u.level || 1}\n\n`;
     });
 
-    await sock.sendMessage(jid, { text: lines.join("\n") }, { quoted: msg });
-  },
+    await sock.sendMessage(msg.key.remoteJid, { text }, { quoted: msg });
+  }
 };

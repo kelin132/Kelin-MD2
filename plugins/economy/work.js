@@ -1,49 +1,74 @@
-import { readData, writeData } from "../../lib/store.mjs";
+import { getUser, saveUser, requireRegistration, addHistory } from "./database.js";
 
-const WORK_COOLDOWN = 60 * 60 * 1000; // 1 hour
-const JOBS = [
-  { job: "developer", earn: [200, 400] },
-  { job: "delivery rider", earn: [100, 250] },
-  { job: "street vendor", earn: [80, 180] },
-  { job: "musician", earn: [150, 350] },
-  { job: "hacker 🕶️", earn: [300, 600] },
-  { job: "chef", earn: [120, 280] },
-  { job: "teacher", earn: [90, 200] },
-  { job: "mechanic", earn: [130, 300] },
-];
+const jobs = {
+  programmer: { pay: 1500, emoji: "👨‍💻", xp: 80 },
+  hacker:     { pay: 2500, emoji: "🎭", xp: 120 },
+  farmer:     { pay: 800,  emoji: "👨‍🌾", xp: 40 },
+  doctor:     { pay: 2000, emoji: "⚕️",  xp: 100 },
+  teacher:    { pay: 1200, emoji: "👨‍🏫", xp: 60 },
+  police:     { pay: 1800, emoji: "👮",  xp: 90 },
+  artist:     { pay: 1400, emoji: "🎨",  xp: 70 },
+  chef:       { pay: 1600, emoji: "👨‍🍳", xp: 80 },
+  trader:     { pay: 3000, emoji: "📈",  xp: 150 },
+  mechanic:   { pay: 1700, emoji: "🔧",  xp: 85 },
+};
 
 export default {
   name: "work",
-  description: "Work to earn coins (1 hr cooldown)",
+  description: "Work to earn money (30-minute cooldown)",
   category: "economy",
-  usage: ".work",
-  aliases: ["job"],
-  cooldown: 3,
-  isOwner: false,
-  isAdmin: false,
-  isPremium: false,
-  version: "1.0.0",
-  async run({ sock, msg, senderNum }) {
-    const jid  = msg.key.remoteJid;
-    const eco  = readData("economy", {});
-    const data = eco[senderNum] ?? { coins: 0, bank: 0, lastWork: 0 };
+  usage: ".work [job_name]",
+  checkJail: true,
 
-    const now  = Date.now();
-    const diff = now - (data.lastWork ?? 0);
-    if (diff < WORK_COOLDOWN) {
-      const rem = Math.ceil((WORK_COOLDOWN - diff) / 60_000);
-      return sock.sendMessage(jid, { text: `⏳ You're tired! Rest for *${rem} minute(s)*.` }, { quoted: msg });
+  async run({ sock, msg, sender, args }) {
+    if (!await requireRegistration(sock, msg, sender)) return;
+
+    if (!args[0]) {
+      const list = Object.entries(jobs)
+        .map(([name, j]) => `${j.emoji} *${name}* — $${j.pay.toLocaleString()} (+${j.xp}xp)`)
+        .join("\n");
+      return sock.sendMessage(msg.key.remoteJid, {
+        text: `💼 *Available Jobs*\n\n${list}\n\n📝 Usage: *.work <job_name>*`
+      }, { quoted: msg });
     }
 
-    const { job, earn } = JOBS[Math.floor(Math.random() * JOBS.length)];
-    const amount = Math.floor(Math.random() * (earn[1] - earn[0] + 1)) + earn[0];
-    data.coins    = (data.coins ?? 0) + amount;
-    data.lastWork  = now;
-    eco[senderNum] = data;
-    writeData("economy", eco);
+    const jobName = args[0].toLowerCase();
+    const job     = jobs[jobName];
 
-    await sock.sendMessage(jid, {
-      text: `💼 You worked as a *${job}* and earned *${amount} coins*!\n💰 Balance: *${data.coins}*`,
-    }, { quoted: msg });
-  },
+    if (!job) {
+      return sock.sendMessage(msg.key.remoteJid, {
+        text: `❌ Job not found!\n\nUse *.work* to see all available jobs.`
+      }, { quoted: msg });
+    }
+
+    const user     = await getUser(sender);
+    const now      = Date.now();
+    const cooldown = 30 * 60 * 1000;
+
+    if (now - (user.lastWork || 0) < cooldown) {
+      const remaining = cooldown - (now - user.lastWork);
+      const minutes   = Math.floor(remaining / (60 * 1000));
+      return sock.sendMessage(msg.key.remoteJid, {
+        text: `⏰ *You're tired!*\n\nRest for *${minutes}m* before working again.`
+      }, { quoted: msg });
+    }
+
+    const bonus    = Math.floor(Math.random() * 200);
+    const total    = job.pay + bonus;
+    user.money    += total;
+    user.lastWork  = now;
+    user.xp        = (user.xp || 0) + job.xp;
+
+    const newLevel = Math.floor(user.xp / 1000) + 1;
+    const leveled  = newLevel > user.level;
+    user.level     = newLevel;
+
+    await saveUser(sender, user);
+    await addHistory(sender, "work", total, `Worked as ${jobName}`);
+
+    let text = `${job.emoji} *Work Complete!*\n\nJob     : ${jobName}\n💰 Earned : $${total.toLocaleString()}${bonus > 0 ? ` (+$${bonus} bonus!)` : ""}\n🔮 XP     : +${job.xp}\n💵 Balance: $${user.money.toLocaleString()}`;
+    if (leveled) text += `\n\n🎉 *LEVEL UP!* You are now Level ${user.level}!`;
+
+    await sock.sendMessage(msg.key.remoteJid, { text }, { quoted: msg });
+  }
 };

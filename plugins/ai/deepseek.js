@@ -9,19 +9,15 @@ export default {
   usage: ".deepseek <question>",
   aliases: ["deep", "ds"],
   cooldown: 10,
-  isOwner: false,
-  isAdmin: false,
-  isPremium: false,
-  version: "2.0.0",
   async run({ sock, msg, text }) {
     const jid = msg.key.remoteJid;
-    if (!text) return sock.sendMessage(jid, { text: "Usage: .deepseek <your question>" });
-    await sock.sendMessage(jid, { text: "🔬 Analyzing..." });
+    if (!text) return sock.sendMessage(jid, { text: "Usage: .deepseek <your question>" }, { quoted: msg });
+    await sock.sendPresenceUpdate("composing", jid);
     try {
       const reply = await askGemini(text, SYSTEM);
       await sock.sendMessage(jid, { text: `🔬 *DeepSeek:*\n\n${reply}` }, { quoted: msg });
     } catch (err) {
-      await sock.sendMessage(jid, { text: `❌ ${err.message}` });
+      await sock.sendMessage(jid, { text: `❌ ${err.message}` }, { quoted: msg });
     }
   },
 };
