@@ -11,7 +11,7 @@ export default {
   version: "1.0.0",
   async run({ sock, msg }) {
     try {
-      const res = await fetch("https://api.waifu.pics/sfw/waifu");
+      const res = await fetch("https://publicapi.dev/waifu-pics-api");
       const data = await res.json();
       await sock.sendMessage(msg.key.remoteJid, {
         image: { url: data.url },
