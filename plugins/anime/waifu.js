@@ -9,16 +9,24 @@ export default {
   isAdmin: false,
   isPremium: false,
   version: "1.0.0",
+
   async run({ sock, msg }) {
     try {
-      const res = await fetch("https://publicapi.dev/waifu-pics-api");
+      const res = await fetch("https://api.waifu.im/search");
       const data = await res.json();
+
+      const image = data.images[0].url;
+
       await sock.sendMessage(msg.key.remoteJid, {
-        image: { url: data.url },
+        image: { url: image },
         caption: "🌸 Random Waifu — KELIN MD",
       });
-    } catch {
-      await sock.sendMessage(msg.key.remoteJid, { text: "Failed to fetch waifu image." });
+    } catch (err) {
+      console.error(err);
+
+      await sock.sendMessage(msg.key.remoteJid, {
+        text: "❌ Failed to fetch waifu image.",
+      });
     }
   },
 };
