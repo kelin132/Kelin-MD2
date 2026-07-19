@@ -2,7 +2,7 @@ const settings = {
   packname: 'Kelin-MD',
   botName: "KELIN-MD",
   botOwner: 'KELIN-MD', // Your name
-  ownerNumber: '27628114340', // Set your number here without + symbol
+  ownerNumber: '', // Leave blank — set OWNER_NUMBER in your .env or panel env vars instead
   ownerContact: '2348152077346', // Number shown when someone uses .owner command
   giphyApiKey: 'NrSjG6var2uiuSYDm0xTqCX0xcFgGj4s',
   commandMode: "private",
