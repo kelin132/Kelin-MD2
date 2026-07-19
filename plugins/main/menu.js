@@ -78,7 +78,7 @@ export default {
     // ── Greeting shown before the "read more" collapse ──────────────────────
     let text = `*Hello* senpai ${mention},I am Akira👋
 ╭━━━━━━━━━━━━━━━━━━━━╮
-│*Type* ${prefix}reg to use economy cmds
+│ *Type* ${prefix}reg to use economy cmds
 ╰━━━━━━━━━━━━━━━━━━━━╯
 \n${READMORE}\n`;
 
