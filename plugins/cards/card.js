@@ -1,51 +1,70 @@
-import { fetchRandomCard, fetchCardImage, addCardToUser } from "./database.js";
+import { findOrCreateUser } from "./database.js";
 
 export default {
   name: "card",
-  aliases: ["drawcard", "gacha"],
-  description: "Draw a random anime card and add it to your collection",
+  aliases: ["viewcard"],
   category: "cards",
-  usage: ".card",
+  description: "View a card from your collection by index",
+  usage: ".card <index>",
 
-  async run({ sock, msg, sender }) {
-    const chatId = msg.key.remoteJid;
-    await sock.sendMessage(chatId, { text: "🎴 *Drawing a card…*" }, { quoted: msg });
-
-    const card  = await fetchRandomCard();
-    const entry = await addCardToUser(sender, card);
-
-    const tierStars = {
-      "Tier S": "⭐⭐⭐⭐⭐ *S*",
-      "Tier 1": "⭐⭐⭐⭐",
-      "Tier 2": "⭐⭐⭐",
-      "Tier 3": "⭐⭐",
-      "Tier 4": "⭐",
-      "Tier 5": "✦",
-      "Tier 6": "✧",
-    };
-
-    const caption =
-`🎴 *YOU DREW A CARD!*
-
-📛 *Name*   : ${card.name}
-📚 *Series* : ${card.series}
-🏆 *Tier*   : ${tierStars[card.tier] ?? card.tier}
-🆔 *Card ID*: \`${entry._id}\`
-
-_Use .collection to see all your cards_`;
+  async run({ sock, msg, args, sender }) {
+    const jid = msg.key.remoteJid;
+    const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
 
     try {
-      const imgBuf = await fetchCardImage(card.cdn);
-      if (card.type === "gif") {
-        await sock.sendMessage(chatId, {
-          video: imgBuf, gifPlayback: true, caption,
-        }, { quoted: msg });
-      } else {
-        await sock.sendMessage(chatId, { image: imgBuf, caption }, { quoted: msg });
+      const user = await findOrCreateUser(sender);
+
+      if (!Array.isArray(user.cards) || user.cards.length === 0) {
+        return reply("❌ You have no cards. Claim one when a card spawns!");
       }
-    } catch {
-      // Fallback: text only if image fetch fails
-      await sock.sendMessage(chatId, { text: caption }, { quoted: msg });
+
+      if (!args[0]) return reply("❌ Usage: .card <index>\nUse .col to see your card indexes.");
+
+      const index = parseInt(args[0]);
+      if (isNaN(index) || index < 1 || index > user.cards.length) {
+        return reply(`❌ Invalid card number. You have ${user.cards.length} cards.`);
+      }
+
+      const card = user.cards[index - 1];
+
+      const caption =
+`∘₊✧──────✧₊∘
+🎴 *CARD VIEW*
+∘₊✧──────✧₊∘
+
+*Name:* ${card.name || "Unknown"}
+*ID:* ${card.cardId || "Unknown"}
+*Tier:* ${card.tier || "Unranked"}
+*Value:* $${(card.price || 0).toLocaleString()}
+
+*Description:*
+${card.description || "No description"}
+
+∘₊✧──────✧₊∘`;
+
+      if (card.media) {
+        try {
+          if (card.mediaType === "video") {
+            return await sock.sendMessage(jid, {
+              video: { url: card.media },
+              gifPlayback: true,
+              caption,
+            }, { quoted: msg });
+          }
+          return await sock.sendMessage(jid, {
+            image: { url: card.media },
+            caption,
+          }, { quoted: msg });
+        } catch {
+          // fall through to text only
+        }
+      }
+
+      return reply(caption);
+
+    } catch (err) {
+      console.error("CARD ERROR:", err);
+      return reply("❌ Failed to show card.");
     }
   },
 };
