@@ -23,6 +23,7 @@ import { getDb } from "./lib/mongo.mjs";
 
 const BOT_NAME    = process.env.BOT_NAME    || "KELIN MD";
 const BOT_NUMBER  = process.env.BOT_NUMBER  || "";
+const OWNER_NUMBEE = process.env.BOT_NUMBER || "";
 const PREFIX      = process.env.PREFIX      || ".";
 const BOT_VERSION = "1.0.0";
 
