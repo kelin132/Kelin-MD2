@@ -4,10 +4,10 @@
  * .revoke    — Reset the group invite link
  */
 export default {
-  name: "linkgroup",
+  name: "link",
   description: "Get or reset the group invite link",
   category: "group",
-  usage: ".linkgroup | .revoke",
+  usage: ".link | .revoke",
   aliases: ["revoke", "grouplink", "invitelink"],
   cooldown: 10,
   isAdmin: true,
