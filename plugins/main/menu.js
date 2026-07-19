@@ -72,15 +72,9 @@ export default {
 
     let text =
 `╭━━━〔 🌙 *KELIN MD* 🌙 〕━━━╮
-
-  ✨ *Premium WhatsApp Bot*
-  ⚡ Fast • Smart • Powerful
-
   🔑 Prefix   : ${prefix}
-  📦 Commands : ${allPlugins.length}
+  📦 Plugins  : ${allPlugins.length}
   🕐 Time     : ${date}
-  ${isOwner ? "👑 Mode    : Owner" : isStaff ? "🛡️ Mode    : Staff" : isMod ? "🔧 Mode    : Mod" : ""}
-
 ╰━━━━━━━━━━━━━━━━━━━━━━╯
 `;
 
