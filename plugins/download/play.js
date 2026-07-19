@@ -1,63 +1,91 @@
+import yts from "yt-search";
+import ytdl from "@distube/ytdl-core";
+
 export default {
   name: "play",
-  description: "Play a song from YouTube",
+  description: "Search and play music from YouTube",
   category: "download",
-  usage: ".play <song name or URL>",
-  aliases: ["music", "song"],
-  cooldown: 15,
+  usage: ".play <song name>",
+  aliases: ["song", "music"],
+  cooldown: 10,
+
   async run({ sock, msg, text }) {
     const jid = msg.key.remoteJid;
-    if (!text) return sock.sendMessage(jid, { text: "Usage: .play <song name>\nExample: .play Blinding Lights" }, { quoted: msg });
 
-    await sock.sendMessage(jid, { text: `🎵 Searching for: *${text}*...` }, { quoted: msg });
+    if (!text) {
+      return sock.sendMessage(
+        jid,
+        {
+          text: "❌ Example:\n.play Shape of You",
+        },
+        { quoted: msg }
+      );
+    }
 
     try {
-      let ytdl;
-      try {
-        ytdl = (await import("@distube/ytdl-core")).default;
-      } catch {
-        return sock.sendMessage(jid, { text: "❌ ytdl not installed.\nRun: npm install @distube/ytdl-core" }, { quoted: msg });
+      await sock.sendMessage(
+        jid,
+        {
+          text: "🔎 Searching YouTube...",
+        },
+        { quoted: msg }
+      );
+
+      const search = await yts(text);
+
+      if (!search.videos.length) {
+        return sock.sendMessage(
+          jid,
+          { text: "❌ No results found." },
+          { quoted: msg }
+        );
       }
 
-      let videoId;
-      if (/youtu\.?be/.test(text)) {
-        const match = text.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-        videoId = match?.[1];
-      } else {
-        const html = await fetch(
-          `https://www.youtube.com/results?search_query=${encodeURIComponent(text)}&hl=en`,
-          { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" } }
-        ).then((r) => r.text());
-        const match = html.match(/"videoId":"([a-zA-Z0-9_-]{11})"/);
-        if (!match) return sock.sendMessage(jid, { text: "❌ No results found." }, { quoted: msg });
-        videoId = match[1];
+      const video = search.videos[0];
+
+      if (video.seconds > 600) {
+        return sock.sendMessage(
+          jid,
+          {
+            text: "❌ Songs longer than 10 minutes are not allowed.",
+          },
+          { quoted: msg }
+        );
       }
 
-      if (!videoId) return sock.sendMessage(jid, { text: "❌ Could not find a valid YouTube video." }, { quoted: msg });
+      await sock.sendMessage(
+        jid,
+        {
+          image: { url: video.thumbnail },
+          caption:
+`🎵 *${video.title}*
 
-      const info     = await ytdl.getInfo(`https://www.youtube.com/watch?v=${videoId}`);
-      const title    = info.videoDetails.title;
-      const duration = parseInt(info.videoDetails.lengthSeconds);
+👤 Author: ${video.author.name}
+⏱ Duration: ${video.timestamp}
+👀 Views: ${video.views.toLocaleString()}
 
-      if (duration > 600) {
-        return sock.sendMessage(jid, {
-          text: `❌ Song too long (*${Math.ceil(duration / 60)} min*). Max 10 minutes.`,
-        }, { quoted: msg });
-      }
+⬇️ Downloading audio...`,
+        },
+        { quoted: msg }
+      );
 
-      await sock.sendMessage(jid, {
-        text: `🎵 *${title}*\n⏱ ${Math.floor(duration / 60)}:${String(duration % 60).padStart(2, "0")}\n\n⬇️ Downloading...`,
-      }, { quoted: msg });
-
-      const stream = ytdl(`https://www.youtube.com/watch?v=${videoId}`, {
+      const stream = ytdl(video.url, {
+        quality: "highestaudio",
         filter: "audioonly",
-        quality: "lowestaudio",
       });
 
-      await sock.sendMessage(jid, { audio: stream, mimetype: "audio/mpeg", ptt: false }, { quoted: msg });
+      await sock.sendMessage(
+        jid,
+        {
+          audio: stream,
+          mimetype: "audio/mpeg",
+          fileName: `${video.title}.mp3`,
+          ptt: false,
+        },
+        { quoted: msg }
+      );
 
     } catch (err) {
-      await sock.sendMessage(jid, { text: `❌ Failed to play: ${err.message}` }, { quoted: msg });
-    }
-  },
-};
+      console.error(err);
+
+      sock
