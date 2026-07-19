@@ -1,4 +1,4 @@
-import { Col, findOrCreateUser } from "./db.js";
+import { findOrCreateUser } from "./db.js";
 
 // Shared global so spawner can write and this command can read
 const activeSpawns = global.activeSpawns || (global.activeSpawns = {});
@@ -11,7 +11,7 @@ export default {
   usage: ".claim <card_id>",
 
   async run({ sock, msg, args, sender }) {
-    const jid = msg.key.remoteJid;
+    const jid   = msg.key.remoteJid;
     const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
 
     try {
@@ -20,10 +20,10 @@ export default {
 
       const spawn = activeSpawns[jid];
       if (!spawn) return reply("❌ No active card spawn in this chat.");
-
       if (spawn.cardId !== cardIdInput) return reply("❌ Wrong Card ID! Try again.");
 
-      const card = await Col.cards().findOne({ cardId: spawn.cardId });
+      // Card data is stored in activeSpawns by the spawner — no DB lookup needed
+      const card = spawn.card;
       if (!card) {
         delete activeSpawns[jid];
         return reply("❌ That card no longer exists.");
@@ -33,34 +33,44 @@ export default {
       user.cards = user.cards || [];
 
       user.cards.push({
-        cardId:      card.cardId,
-        name:        card.name,
-        tier:        card.tier,
-        price:       card.price || 0,
-        description: card.description || "",
-        series:      card.series || "",
-        media:       card.media || null,
-        mediaType:   card.mediaType || "image",
-        obtainedAt:  new Date(),
+        cardId:     card.cardId,
+        name:       card.name,
+        tier:       card.tier,
+        tierNum:    card.tierNum,
+        price:      card.price  || 0,
+        series:     card.series || "Unknown",
+        media:      card.media  || null,
+        mediaType:  "image",
+        obtainedAt: new Date(),
       });
 
       user.totalCards = (user.totalCards || 0) + 1;
       await user.save();
 
-      // Update claim count on the card
-      await Col.cards().updateOne(
-        { cardId: card.cardId },
-        { $inc: { timesClaimed: 1 } }
-      );
-
       delete activeSpawns[jid];
 
-      return await sock.sendMessage(jid, {
+      if (card.media) {
+        return sock.sendMessage(jid, {
+          image:   { url: card.media },
+          caption:
+`🎴 *CARD CLAIMED!*
+
+@${sender.split("@")[0]} claimed *${card.name}*!
+⭐ Tier: *${card.tier}*
+📺 Series: *${card.series}*
+
+Well done — card added to your collection!`,
+          mentions: [sender],
+        }, { quoted: msg });
+      }
+
+      return sock.sendMessage(jid, {
         text:
 `🎴 *CARD CLAIMED!*
 
 @${sender.split("@")[0]} claimed *${card.name}*!
 ⭐ Tier: *${card.tier}*
+📺 Series: *${card.series}*
 
 Well done — card added to your collection!`,
         mentions: [sender],

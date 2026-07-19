@@ -1,11 +1,7 @@
-import { Col } from "./db.js";
+import { getCard, TIER_EMOJI } from "../../lib/cardApi.mjs";
 
 const TIER_POWER = {
-  Common: 1, Uncommon: 2, Rare: 3, Epic: 4, Legendary: 5, Mythic: 6,
-};
-
-const TIER_EMOJI = {
-  Common: "⚪", Uncommon: "🟢", Rare: "🔵", Epic: "🟣", Legendary: "🟡", Mythic: "🔴",
+  Common: 1, Uncommon: 2, Rare: 3, Epic: 4, Legendary: 5,
 };
 
 export default {
@@ -23,33 +19,28 @@ export default {
       const query = args.join(" ").trim();
       if (!query) return reply("❌ Usage: .crarity <card name or ID>");
 
-      let card = await Col.cards().findOne({ cardId: query.toUpperCase() });
-      if (!card) {
-        card = await Col.cards().findOne({ name: { $regex: new RegExp(query, "i") } });
-      }
+      const card = await getCard(query);
+      if (!card) return reply(`❌ Card not found for "${query}".`);
 
-      if (!card) return reply("❌ Card not found.");
-
-      const tier    = card.tier || "Common";
-      const power   = TIER_POWER[tier] || 0;
-      const emoji   = TIER_EMOJI[tier] || "⚪";
-      const bar     = "█".repeat(power) + "░".repeat(6 - power);
+      const power = TIER_POWER[card.tier] || 1;
+      const emoji = TIER_EMOJI[card.tier]  || "⭐";
+      const bar   = "█".repeat(power) + "░".repeat(5 - power);
 
       const text =
 `🃏 *RARITY CHECK*
 
 ${emoji} *${card.name}*
 🆔 ID: ${card.cardId}
+📺 Series: ${card.series}
 
-⭐ Tier: *${tier}*
-💥 Power: *${power}/6*
+⭐ Tier: *${card.tier}*
+💥 Power: *${power}/5*
 📊 [${bar}]
 
-> ${tier === "Mythic" ? "Extremely rare! 🔥" :
-    tier === "Legendary" ? "Very hard to find! ✨" :
-    tier === "Epic" ? "A strong card! 💪" :
-    tier === "Rare" ? "Not bad at all!" :
-    tier === "Uncommon" ? "Decent pick." :
+> ${card.tier === "Legendary" ? "Extremely rare! 🔥" :
+    card.tier === "Epic"      ? "Very hard to find! ✨" :
+    card.tier === "Rare"      ? "A solid card! 💪" :
+    card.tier === "Uncommon"  ? "Decent pick." :
     "Common — still worth collecting."}`;
 
       return reply(text);

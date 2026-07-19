@@ -1,10 +1,10 @@
-import { Col } from "./db.js";
+import { getTierCounts, TIER_EMOJI } from "../../lib/cardApi.mjs";
 
 export default {
   name: "unsps",
   aliases: ["unspawned", "cardstats"],
   category: "cards",
-  description: "Shows unspawned card counts per tier",
+  description: "Shows card counts per tier (from the card API)",
   usage: ".unsps",
 
   async run({ sock, msg }) {
@@ -13,33 +13,28 @@ export default {
 
     try {
       const activeSpawns = global.activeSpawns || {};
-      const activeIds    = Object.values(activeSpawns).map(s => s.cardId);
+      const activeIds    = Object.values(activeSpawns).map(s => s.cardId).filter(Boolean);
 
-      const results = await Col.cards().aggregate([
-        { $match: { cardId: { $nin: activeIds } } },
-        { $group: { _id: "$tier", count: { $sum: 1 } } },
-      ]).toArray();
+      const counts = await getTierCounts();
+      const tiers  = ["Common", "Uncommon", "Rare", "Epic", "Legendary"];
+      const total  = Object.values(counts).reduce((a, b) => a + b, 0);
 
-      const map = {};
-      results.forEach(r => { map[r._id] = r.count; });
-
-      const tiers = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic"];
-      const EMOJI = { Common: "⚪", Uncommon: "🟢", Rare: "🔵", Epic: "🟣", Legendary: "🟡", Mythic: "🔴" };
-
-      const total = Object.values(map).reduce((a, b) => a + b, 0);
-
-      let text = `🎴 *UNSPAWNED CARDS*\n\n`;
+      let text = `🎴 *CARD POOL STATS*\n\n`;
       for (const tier of tiers) {
-        const count = map[tier] || 0;
-        text += `${EMOJI[tier]} *${tier}:* ${count.toLocaleString()}\n`;
+        const emoji = TIER_EMOJI[tier] || "⭐";
+        text += `${emoji} *${tier}:* ${(counts[tier] || 0).toLocaleString()}\n`;
       }
-      text += `\n📦 *Total unspawned:* ${total.toLocaleString()}`;
+      text += `\n📦 *Total cards in pool:* ${total.toLocaleString()}`;
+
+      if (activeIds.length) {
+        text += `\n🔴 *Currently spawned:* ${activeIds.length}`;
+      }
 
       return reply(text);
 
     } catch (err) {
       console.error("UNSPS ERROR:", err);
-      return reply("❌ Failed to load unspawned card stats.");
+      return reply("❌ Failed to load card stats.");
     }
   },
 };

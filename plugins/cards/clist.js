@@ -1,10 +1,12 @@
-import { Col } from "./db.js";
+import { getCardsByTier, TIER_EMOJI } from "../../lib/cardApi.mjs";
 
 const RARITY_MAP = {
-  "1": "Common", "2": "Uncommon", "3": "Rare",
-  "4": "Epic",   "5": "Legendary", "6": "Mythic", "s": "Mythic",
-  "common": "Common", "uncommon": "Uncommon", "rare": "Rare",
-  "epic": "Epic", "legendary": "Legendary", "mythic": "Mythic",
+  "1": "1", "2": "2", "3": "3", "4": "4", "5": "5",
+  "common":    "1",
+  "uncommon":  "2",
+  "rare":      "3",
+  "epic":      "4",
+  "legendary": "5",
 };
 
 export default {
@@ -28,42 +30,41 @@ export default {
 3 = Rare
 4 = Epic
 5 = Legendary
-6 = Mythic
 
-Example: .clist 3  or  .clist mythic 2`
+Example: .clist 3  or  .clist rare 2`
         );
       }
 
-      const input = args[0].toLowerCase();
-      const tier  = RARITY_MAP[input];
-      if (!tier) return reply("❌ Invalid tier.");
+      const input  = args[0].toLowerCase();
+      const tierNum = RARITY_MAP[input];
+      if (!tierNum) return reply("❌ Invalid tier. Use 1–5 or the tier name.");
 
       let page = parseInt(args[1]) || 1;
       if (page < 1) page = 1;
 
-      const limit = 2500;
-      const skip  = (page - 1) * limit;
-      const total = await Col.cards().countDocuments({ tier });
+      const cards = await getCardsByTier(tierNum);
+      if (!cards.length) return reply("❌ No cards found for that tier.");
 
-      if (!total) return reply(`❌ No ${tier} cards found.`);
-
-      const totalPages = Math.ceil(total / limit);
+      const limit      = 50;
+      const totalPages = Math.ceil(cards.length / limit);
       if (page > totalPages) page = totalPages;
 
-      const cards = await Col.cards().find({ tier }).sort({ name: 1 }).skip(skip).limit(limit).toArray();
+      const start = (page - 1) * limit;
+      const slice = cards.slice(start, start + limit);
+      const emoji = TIER_EMOJI[slice[0]?.tier] || "⭐";
 
       let text =
-`*${tier.toUpperCase()} CARDS LIST*
+`${emoji} *${slice[0]?.tier?.toUpperCase() || "CARDS"} LIST*
 
-📦 Total Cards: ${total}
+📦 Total: ${cards.length}
 📄 Page: ${page}/${totalPages}
 
 `;
-      cards.forEach((card, i) => {
-        text += `${skip + i + 1}. *${card.name} - ${card.cardId}*\n`;
+      slice.forEach((card, i) => {
+        text += `${start + i + 1}. *${card.name}* — \`${card.cardId}\`\n`;
       });
 
-      text += `\nUse: .clist <tier> <page>`;
+      text += `\n_Use .clist <tier> <page> to see more_`;
 
       return reply(text);
 

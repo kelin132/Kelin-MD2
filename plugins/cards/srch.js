@@ -1,8 +1,4 @@
-import { Col } from "./db.js";
-
-function escapeRegex(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+import { getCard, searchCards, TIER_EMOJI } from "../../lib/cardApi.mjs";
 
 export default {
   name: "search",
@@ -16,38 +12,32 @@ export default {
     const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
 
     try {
-      const query = rawText.trim();
+      const query = (rawText || args.join(" ")).trim();
       if (!query) return reply("❌ Give a card name or ID.\nExample: .search rimuru");
 
-      let card = await Col.cards().findOne({ cardId: query.toUpperCase() });
+      const card = await getCard(query);
 
       if (!card) {
-        card = await Col.cards().findOne({ name: { $regex: new RegExp(escapeRegex(query), "i") } });
-      }
-
-      if (!card) {
-        const similar = await Col.cards().find({
-          name: { $regex: new RegExp(escapeRegex(query), "i") },
-        }).limit(5).toArray();
-
+        const similar = await searchCards(query, 5);
         if (similar.length) {
-          let suggest = "❌ Card not found.\n\nDid you mean:\n\n";
+          let suggest = `❌ Card not found for "${query}".\n\nDid you mean:\n\n`;
           similar.forEach((c, i) => { suggest += `${i + 1}. ${c.name} (${c.cardId})\n`; });
           return reply(suggest);
         }
-        return reply("❌ Card not found.");
+        return reply(`❌ No card found matching "${query}".`);
       }
 
+      const emoji = TIER_EMOJI[card.tier] || "⭐";
       const text =
 `ㅤㅤ∘]───❀───[∘
 *∘₊✧ CARD INFO* ❀
      ∘]───❀───[∘
 
 𝗡𝗮𝗺𝗲: ${card.name}
-𝗧𝗶𝗲𝗿: ${card.tier}
-𝗣𝗿𝗶𝗰𝗲: $${Number(card.price || 0).toLocaleString()}
+𝗧𝗶𝗲𝗿: ${emoji} ${card.tier}
+𝗣𝗿𝗶𝗰𝗲: $${card.price.toLocaleString()}
 𝗜𝗗: ${card.cardId}
-𝗦𝗲𝗿𝗶𝗲𝘀: ${card.series || "Unknown"}
+𝗦𝗲𝗿𝗶𝗲𝘀: ${card.series}
 
   *❀────⋆⋅∘⋅⋆────❀*
  *CARD PREVIEW*
@@ -55,14 +45,10 @@ export default {
       ∘──────∘`;
 
       if (card.media) {
-        try {
-          if (card.mediaType === "video") {
-            return await sock.sendMessage(jid, {
-              video: { url: card.media }, gifPlayback: true, caption: text,
-            }, { quoted: msg });
-          }
-          return await sock.sendMessage(jid, { image: { url: card.media }, caption: text }, { quoted: msg });
-        } catch { /* fall through */ }
+        return sock.sendMessage(jid, {
+          image:   { url: card.media },
+          caption: text,
+        }, { quoted: msg });
       }
 
       return reply(text);
