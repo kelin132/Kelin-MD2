@@ -82,15 +82,6 @@ export default {
 ╰━━━━━━━━━━━━━━━━━━━━╯
 \n${READMORE}\n`;
 
-    // ── Header ───────────────────────────────────────────────────────────────
-    text +=
-`╭━━━〔 🌙 *AKIRA* 🌙 〕━━━╮
-  🔑 Prefix   : ${prefix}
-  📦 Plugins  : ${allPlugins.length}
-  🕐 Time     : ${date}
-╰━━━━━━━━━━━━━━━━━━━━━━╯
-`;
-
 // ── Command list ─────────────────────────────────────────────────────────
 for (const cat of sortedCats) {
   const cmds = map.get(cat).sort();
