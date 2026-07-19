@@ -41,7 +41,7 @@ const AKIRA_INFO_CARD = `╭━━━〔 🌸 *AKIRA* 〕━━━╮
 
 ╰━━━━━━━━━━━━━━━━━━━━╯
 
-_Powered by Google Gemini • Always in character_`;
+`;
 
 export default {
   name: "akira",
