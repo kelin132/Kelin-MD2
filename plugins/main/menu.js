@@ -88,14 +88,18 @@ export default {
 
     // ── Command list ─────────────────────────────────────────────────────────
     for (const cat of sortedCats) {
-      const cmds = map.get(cat).sort();
+      const cmds  = map.get(cat).sort();
       const emoji = categoryEmojis[cat] || "📌";
       const title = cat.charAt(0).toUpperCase() + cat.slice(1);
 
-      text += `\n╭─${emoji} *${title}*\n`;
-      text += `│ ${cmds.map(cmd => `${prefix}${cmd}`).join(" • ")}\n`;
+      text += `\n╭─${emoji} *${title}* (${cmds.length})\n`;
+      for (const cmd of cmds) {
+        text += `│ ◦ ${prefix}${cmd}\n`;
+      }
       text += "╰────────────────";
     }
+
+    text += `
 
 ╭━━━━━━━━━━━━━━━━━━━━╮
 │  💡 *Tips:*
