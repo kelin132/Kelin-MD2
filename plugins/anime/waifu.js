@@ -1,3 +1,5 @@
+import axios from "axios";
+
 export default {
   name: "waifu",
   description: "Get a random anime waifu image",
@@ -12,19 +14,30 @@ export default {
 
   async run({ sock, msg }) {
     try {
-      const res = await axios.get(`https://nekobot.xyz/api/image?type=${type}`, {
-      const image = data.images[0].url;
+      const type = "waifu";
 
-      await sock.sendMessage(msg.key.remoteJid, {
-        image: { url: image },
-        caption: "🌸 Random Waifu — KELIN MD",
-      });
+      const { data } = await axios.get(
+        `https://nekobot.xyz/api/image?type=${type}`
+      );
+
+      await sock.sendMessage(
+        msg.key.remoteJid,
+        {
+          image: { url: data.message },
+          caption: "🌸 Random Waifu — KELIN MD",
+        },
+        { quoted: msg }
+      );
     } catch (err) {
       console.error(err);
 
-      await sock.sendMessage(msg.key.remoteJid, {
-        text: "❌ Failed to fetch waifu image.",
-      });
+      await sock.sendMessage(
+        msg.key.remoteJid,
+        {
+          text: "❌ Failed to fetch waifu image.",
+        },
+        { quoted: msg }
+      );
     }
   },
 };
