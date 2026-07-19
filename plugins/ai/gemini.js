@@ -1,4 +1,4 @@
-import { askGemini } from "../../lib/gemini.mjs";
+import { askGeminiDC } from "../../lib/davidcyrilAPI.mjs";
 
 export default {
   name: "gemini",
@@ -7,15 +7,18 @@ export default {
   usage: ".gemini <question>",
   aliases: ["gem"],
   cooldown: 10,
-  async run({ sock, msg, text }) {
+  async run({ sock, msg, text, sender }) {
     const jid = msg.key.remoteJid;
     if (!text) return sock.sendMessage(jid, { text: "Usage: .gemini <your question>" }, { quoted: msg });
     await sock.sendPresenceUpdate("composing", jid);
     try {
-      const reply = await askGemini(text);
+      const uid = sender?.split("@")[0] || jid;
+      const reply = await askGeminiDC(text, uid);
       await sock.sendMessage(jid, { text: `🤖 *Gemini:*\n\n${reply}` }, { quoted: msg });
     } catch (err) {
       await sock.sendMessage(jid, { text: `❌ ${err.message}` }, { quoted: msg });
+    } finally {
+      await sock.sendPresenceUpdate("paused", jid);
     }
   },
 };
