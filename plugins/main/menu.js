@@ -100,15 +100,6 @@ for (const cat of sortedCats) {
 
     text += `
 
-╭━━━━━━━━━━━━━━━━━━━━╮
-│  💡 *Tips:*
-│  • Register : ${prefix}register <name>
-│  • Balance  : ${prefix}balance
-│  • Vault    : ${prefix}vault
-│  • History  : ${prefix}history
-│  • Play     : ${prefix}wordle
-╰━━━━━━━━━━━━━━━━━━━━╯
-
 > © AKIRA`;
 
     await sock.sendMessage(
