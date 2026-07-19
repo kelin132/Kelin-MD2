@@ -1,52 +1,39 @@
-// plugins/naruto/nprofile.js
-
 import players from "../../lib/naruto/players.js";
-import { healthBar, chakraBar } from "../../lib/naruto/utils.js";
 
 export default {
   name: "nprofile",
   description: "View your Naruto ninja profile",
   category: "naruto",
   usage: ".nprofile",
+  aliases: ["ninja", "ncard"],
+  cooldown: 5,
+  isAdmin: false,
 
   async run({ sock, msg, sender }) {
 
-    try {
+    const jid = msg.key.remoteJid;
 
-      const player = await players.get(sender);
+    const player = await players.get(sender);
 
-
-      if (!player) {
-        return sock.sendMessage(
-          sender,
-          {
-            text:
-`🥷 You don't have a ninja profile yet.
-
-Use .nstart to begin your ninja journey.`
-          },
-          { quoted: msg }
-        );
-      }
-
-
-      const jutsu =
-        player.jutsu
-          .map(j => `• ${j.name}`)
-          .join("\n") || "None";
-
-
-      const inventory =
-        player.inventory.length
-          ? player.inventory.join("\n")
-          : "Empty";
-
-
-      await sock.sendMessage(
-        sender,
+    if (!player) {
+      return sock.sendMessage(
+        jid,
         {
           text:
-`🍃 NINJA PROFILE 🍃
+`🥷 You don't have a ninja profile.
+
+Use .nstart to create your ninja.`
+        },
+        { quoted: msg }
+      );
+    }
+
+
+    return sock.sendMessage(
+      jid,
+      {
+        text:
+`🍃 *NINJA PROFILE*
 
 🥷 Name:
 ${player.username}
@@ -57,15 +44,8 @@ ${player.village.emoji} ${player.village.name}
 👁️ Clan:
 ${player.clan.name}
 
-✨ Ability:
-${player.clan.ability}
-
 🎖 Rank:
 ${player.rank}
-
-🏷 Title:
-${player.title}
-
 
 ⭐ Level:
 ${player.level}
@@ -73,15 +53,11 @@ ${player.level}
 ✨ XP:
 ${player.xp}/${player.xpNeeded}
 
-
 ❤️ HP:
-${healthBar(player.hp, player.maxHp)}
 ${player.hp}/${player.maxHp}
 
 💙 Chakra:
-${chakraBar(player.chakra, player.maxChakra)}
 ${player.chakra}/${player.maxChakra}
-
 
 ⚔ Attack:
 ${player.attack}
@@ -92,40 +68,10 @@ ${player.defense}
 💨 Speed:
 ${player.speed}
 
-
 💰 Ryo:
-${player.ryo}
-
-
-🏆 Battles:
-Wins: ${player.wins}
-Losses: ${player.losses}
-
-
-📜 Jutsu:
-${jutsu}
-
-
-🎒 Inventory:
-${inventory}`
-        },
-        { quoted: msg }
-      );
-
-
-    } catch (err) {
-
-      console.log(err);
-
-      await sock.sendMessage(
-        sender,
-        {
-          text:
-          "❌ Failed to load ninja profile."
-        },
-        { quoted: msg }
-      );
-
-    }
-  }
+${player.ryo}`
+      },
+      { quoted: msg }
+    );
+  },
 };
