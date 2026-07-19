@@ -6,7 +6,7 @@ export default {
   aliases: ["bc"],
   cooldown: 30,
   isOwner: true,
-  isAdmin: true,
+  isAdmin: false,
   isPremium: false,
   version: "1.0.0",
   async run({ sock, msg, text }) {
