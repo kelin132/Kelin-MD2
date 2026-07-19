@@ -14,20 +14,23 @@ export default {
 
   async run({ sock, msg }) {
     try {
-      const { data } = await axios.get(
-        "https://api.waifu.pics/sfw/waifu"
-      );
+      const res = await axios.get("https://api.waifu.pics/sfw/waifu");
+
+      if (!res.data?.url) {
+        throw new Error("No image URL found");
+      }
 
       await sock.sendMessage(
         msg.key.remoteJid,
         {
-          image: { url: data.url },
+          image: { url: res.data.url },
           caption: "🌸 Random Waifu — KELIN MD",
         },
         { quoted: msg }
       );
+
     } catch (err) {
-      console.error(err);
+      console.error("Waifu Error:", err);
 
       await sock.sendMessage(
         msg.key.remoteJid,
