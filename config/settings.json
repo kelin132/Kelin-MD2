@@ -1,11 +1,11 @@
 {
   "ownerName": "Kelin",
-  "ownerNumber": "",
+  "ownerNumber": "+27628114340",
   "botName": "KELIN MD",
   "prefix": ".",
   "themeEmoji": "⚡",
   "footer": "© KELIN MD",
-  "mongoUri": "",
+  "mongoUri": "mongodb+srv://Moonlight:mudaumudau.dev@moonlight.i7jdbyl.mongodb.net/?appName=Moonlight",
   "sessionFolder": "sessions",
   "premiumUsers": [],
   "adminNumbers": [],
