@@ -12,19 +12,40 @@ const COL_SETTINGS = "card_settings";   // per-chat settings (spawn enabled, etc
 // ─── Card API ─────────────────────────────────────────────────────────────────
 
 const API_BASE = "https://anime-db.p.rapidapi.com";
-const API_KEY  = process.env.RAPIDAPI_KEY ?? "";
 const API_HOST = "anime-db.p.rapidapi.com";
 
-const headers = {
-  "x-rapidapi-key":  API_KEY,
-  "x-rapidapi-host": API_HOST,
-};
+function getHeaders() {
+  const key = process.env.RAPIDAPI_KEY;
+  if (!key) {
+    throw new Error(
+      "RAPIDAPI_KEY is not set!\n\n" +
+      "Add this to your bot's .env file:\n" +
+      "RAPIDAPI_KEY=your_key_here\n\n" +
+      "Get your key at: https://rapidapi.com/"
+    );
+  }
+  return {
+    "x-rapidapi-key":  key,
+    "x-rapidapi-host": API_HOST,
+  };
+}
+
+async function apiFetch(url) {
+  const res = await fetch(url, { headers: getHeaders() });
+  if (res.status === 401) {
+    throw new Error(
+      "Invalid or missing RAPIDAPI_KEY (401).\n" +
+      "Check that RAPIDAPI_KEY is correctly set in your .env file\n" +
+      "and that you are subscribed to the anime-db API on RapidAPI."
+    );
+  }
+  if (!res.ok) throw new Error(`Card API error: ${res.status}`);
+  return res.json();
+}
 
 export async function fetchRandomCard() {
   const randomPage = Math.floor(Math.random() * 1784) + 1;
-  const res = await fetch(`${API_BASE}/character?page=${randomPage}&limit=20`, { headers });
-  if (!res.ok) throw new Error(`Card API error: ${res.status}`);
-  const json = await res.json();
+  const json = await apiFetch(`${API_BASE}/character?page=${randomPage}&limit=20`);
   const cards = json.data ?? [];
   if (!cards.length) throw new Error("No cards returned from API");
   return cards[Math.floor(Math.random() * cards.length)];
@@ -32,17 +53,13 @@ export async function fetchRandomCard() {
 
 export async function searchCardsApi(query, page = 1, limit = 10) {
   const params = new URLSearchParams({ name: query, page: String(page), limit: String(limit) });
-  const res = await fetch(`${API_BASE}/character?${params}`, { headers });
-  if (!res.ok) throw new Error(`Card API error: ${res.status}`);
-  const json = await res.json();
+  const json = await apiFetch(`${API_BASE}/character?${params}`);
   return { cards: json.data ?? [], pagination: json.pagination };
 }
 
 export async function browseCardsApi(page = 1, limit = 10) {
   const params = new URLSearchParams({ page: String(page), limit: String(limit) });
-  const res = await fetch(`${API_BASE}/character?${params}`, { headers });
-  if (!res.ok) throw new Error(`Card API error: ${res.status}`);
-  const json = await res.json();
+  const json = await apiFetch(`${API_BASE}/character?${params}`);
   return { cards: json.data ?? [], pagination: json.pagination };
 }
 
@@ -52,7 +69,7 @@ export async function browseCardsApi(page = 1, limit = 10) {
  */
 export async function fetchCardImage(cdnPath) {
   const url = `${API_BASE}${cdnPath}`;
-  const res = await fetch(url, { headers });
+  const res = await fetch(url, { headers: getHeaders() });
   if (!res.ok) throw new Error(`Image fetch error: ${res.status}`);
   const buf = await res.arrayBuffer();
   return Buffer.from(buf);
