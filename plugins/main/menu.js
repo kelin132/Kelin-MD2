@@ -112,7 +112,7 @@ export default {
     await sock.sendMessage(
       msg.key.remoteJid,
       {
-        image: { url: "https://h.uguu.se/OvjbLVNr.jpg" },
+        image: { url: "https://cdn.phototourl.com/free/2026-07-19-d1c912db-8aa1-468e-8419-0051ce547478.jpg" },
         caption: text,
       },
       { quoted: msg }
