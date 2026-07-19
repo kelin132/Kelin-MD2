@@ -12,7 +12,7 @@ export default {
   usage: ".mods | .addmod @user | .removemod @user",
   aliases: ["addmod", "removemod", "modlist"],
   cooldown: 5,
-  isOwner: true,
+  isOwner: false,
 
   async run({ sock, msg, cmd }) {
     const jid  = msg.key.remoteJid;
