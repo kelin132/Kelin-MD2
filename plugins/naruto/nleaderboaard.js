@@ -7,7 +7,7 @@ export default {
   name: "nrank",
   description: "View ninja rank and promotion progress",
   category: "naruto",
-  usage: ".nrank,nr",
+  usage: ".nrank,.nr",
 
   async run({ sock, msg, sender }) {
 
