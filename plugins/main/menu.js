@@ -110,7 +110,7 @@ export default {
 │  • Play     : ${prefix}wordle
 ╰━━━━━━━━━━━━━━━━━━━━╯
 
-> © KELIN MD — Stay Premium ⚡`;
+> © AKIRA`;
 
     await sock.sendMessage(
       jid,
