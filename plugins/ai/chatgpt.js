@@ -1,21 +1,27 @@
+import { askGemini } from "../../lib/gemini.mjs";
+
+const SYSTEM = "You are ChatGPT, a helpful, concise, and friendly AI assistant by OpenAI. Answer clearly and directly.";
+
 export default {
   name: "chatgpt",
-  description: "Chat with ChatGPT AI",
+  description: "Chat with AI (powered by Gemini)",
   category: "ai",
-  usage: ".chatgpt <prompt>",
+  usage: ".chatgpt <question>",
   aliases: ["gpt", "ai"],
   cooldown: 10,
   isOwner: false,
   isAdmin: false,
   isPremium: false,
-  version: "1.0.0",
+  version: "2.0.0",
   async run({ sock, msg, text }) {
-    if (!text) {
-      await sock.sendMessage(msg.key.remoteJid, { text: "Usage: .chatgpt <your question>" });
-      return;
+    const jid = msg.key.remoteJid;
+    if (!text) return sock.sendMessage(jid, { text: "Usage: .chatgpt <your question>" });
+    await sock.sendMessage(jid, { text: "💬 Thinking..." });
+    try {
+      const reply = await askGemini(text, SYSTEM);
+      await sock.sendMessage(jid, { text: `💬 *ChatGPT:*\n\n${reply}` }, { quoted: msg });
+    } catch (err) {
+      await sock.sendMessage(jid, { text: `❌ ${err.message}` });
     }
-    await sock.sendMessage(msg.key.remoteJid, {
-      text: "ChatGPT requires an OpenAI API key. Set it in dashboard Settings > API Keys.",
-    });
   },
 };
