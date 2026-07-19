@@ -1,4 +1,4 @@
-import { Col } from "./database.js";
+import { Col } from "./db.js";
 
 function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

@@ -1,4 +1,4 @@
-import { Col, findOrCreateUser } from "./database.js";
+import { Col, findOrCreateUser } from "./db.js";
 
 // Shared global so spawner can write and this command can read
 const activeSpawns = global.activeSpawns || (global.activeSpawns = {});

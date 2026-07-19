@@ -1,4 +1,4 @@
-import { Col } from "./database.js";
+import { Col } from "./db.js";
 
 const RARITY_MAP = {
   "1": "Common", "2": "Uncommon", "3": "Rare",

@@ -1,4 +1,4 @@
-import { Col } from "./database.js";
+import { Col } from "./db.js";
 
 const TIER_POWER = {
   Common: 1, Uncommon: 2, Rare: 3, Epic: 4, Legendary: 5, Mythic: 6,

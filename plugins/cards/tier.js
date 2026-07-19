@@ -1,4 +1,4 @@
-import { findOrCreateUser } from "./database.js";
+import { findOrCreateUser } from "./db.js";
 
 const TIER_MAP = {
   Common: "1", Uncommon: "2", Rare: "3",

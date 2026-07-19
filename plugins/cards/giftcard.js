@@ -1,4 +1,4 @@
-import { findOrCreateUser } from "./database.js";
+import { findOrCreateUser } from "./db.js";
 
 function resolveTarget(msg) {
   const ctx = msg.message?.extendedTextMessage?.contextInfo

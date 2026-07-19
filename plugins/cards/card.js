@@ -1,4 +1,4 @@
-import { findOrCreateUser } from "./database.js";
+import { findOrCreateUser } from "./db.js";
 
 export default {
   name: "card",

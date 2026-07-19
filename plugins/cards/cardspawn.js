@@ -1,4 +1,4 @@
-import { isSpawnEnabled, setSpawnEnabled } from "./database.js";
+import { isSpawnEnabled, setSpawnEnabled } from "./db.js";
 
 export default {
   name: "cardspawn",

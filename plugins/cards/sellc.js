@@ -1,4 +1,4 @@
-import { Col, findOrCreateUser } from "./database.js";
+import { Col, findOrCreateUser } from "./db.js";
 
 export default {
   name: "sellc",

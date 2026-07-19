@@ -1,4 +1,4 @@
-import { Col } from "./database.js";
+import { Col } from "./db.js";
 
 export default {
   name: "unsps",

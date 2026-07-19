@@ -1,4 +1,4 @@
-import { findOrCreateUser, fmt, tag } from "./database.js";
+import { findOrCreateUser, fmt, tag } from "./db.js";
 
 // In-memory trade requests — keyed by jid+target so each chat is isolated
 const tradeRequests = new Map();
