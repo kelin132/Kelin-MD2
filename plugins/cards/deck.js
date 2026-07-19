@@ -1,6 +1,9 @@
-import { Col, findOrCreateUser } from "./db.js";
+import { findOrCreateUser } from "./db.js";
 
-const STARS = { Common: 1, Uncommon: 2, Rare: 3, Epic: 4, Legendary: 5, Mythic: 6 };
+const TIER_EMOJI = {
+  Common: "⚪", Uncommon: "🟢", Rare: "🔵", Epic: "🟣", Legendary: "🟡",
+};
+const STARS = { Common: 1, Uncommon: 2, Rare: 3, Epic: 4, Legendary: 5 };
 
 export default {
   name: "deck",
@@ -31,27 +34,22 @@ export default {
       const deckSlice = user.cards.slice(start, start + limit);
       const ReadMore  = "\u200e".repeat(4001);
 
-      let text = `🎴 *YOUR CURRENT DECK* 🎴\n`;
-      text += `> Page ${page}/${totalPages} | Total cards: ${totalCards}\n`;
+      let text = `🎴 *YOUR DECK*\n`;
+      text += `> Page ${page}/${totalPages} | Total: ${totalCards}\n`;
       text += ReadMore + "\n\n";
 
       for (let i = 0; i < deckSlice.length; i++) {
-        const card    = deckSlice[i];
+        const card      = deckSlice[i];
+        const emoji     = TIER_EMOJI[card.tier] || "⭐";
         const starCount = STARS[card.tier] || 1;
-        const stars   = "⭐".repeat(starCount);
-
-        // Find a few other holders
-        const holders = await Col.users().find(
-          { "cards.cardId": card.cardId, userId: { $ne: sender.split("@")[0] } },
-          { projection: { userId: 1, username: 1 } }
-        ).limit(3).toArray();
-
-        const holderNames = holders.map(u => u.username || `@${u.userId}`).join(", ") || "Only you";
+        const stars     = "⭐".repeat(starCount);
 
         text += `${start + i + 1}. *${card.name}*\n`;
-        text += `*Tier:* ${card.tier || "Common"} ${stars}\n`;
-        text += `*Other holders:* ${holderNames}\n\n`;
+        text += `${emoji} *${card.tier || "Common"}* ${stars}\n`;
+        text += `📺 ${card.series || "Unknown"}\n\n`;
       }
+
+      if (totalPages > 1) text += `_Use .deck <page> to see more_`;
 
       return reply(text);
 

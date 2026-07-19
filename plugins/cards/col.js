@@ -1,8 +1,7 @@
 import { findOrCreateUser } from "./db.js";
 
-const TIER_MAP = {
-  Common: "1", Uncommon: "2", Rare: "3",
-  Epic: "4", Legendary: "5", Mythic: "S",
+const TIER_EMOJI = {
+  Common: "⚪", Uncommon: "🟢", Rare: "🔵", Epic: "🟣", Legendary: "🟡",
 };
 
 export default {
@@ -10,39 +9,48 @@ export default {
   aliases: ["mycol", "mycards"],
   category: "cards",
   description: "View your card collection",
-  usage: ".col",
+  usage: ".col [page]",
 
-  async run({ sock, msg, sender }) {
-    const jid = msg.key.remoteJid;
+  async run({ sock, msg, sender, args }) {
+    const jid   = msg.key.remoteJid;
     const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
 
     try {
       const user = await findOrCreateUser(sender);
 
       if (!Array.isArray(user.cards) || user.cards.length === 0) {
-        return reply("❌ You don't have any cards yet. Wait for a spawn or use .claim!");
+        return reply("❌ You don't have any cards yet.\n\nWait for a spawn and type *.claim <ID>* to grab one!");
       }
 
+      const limit      = 20;
+      let   page       = parseInt(args[0]) || 1;
+      const total      = user.cards.length;
+      const totalPages = Math.ceil(total / limit);
+      if (page < 1) page = 1;
+      if (page > totalPages) page = totalPages;
+
+      const start = (page - 1) * limit;
+      const slice = user.cards.slice(start, start + limit);
+
       const ReadMore = "\u200e".repeat(4000);
-
       let text =
-`🃏 *Your Card Collection*
-
+`🃏 *Card Collection*
 ${ReadMore}
 👤 @${sender.split("@")[0]}
-📦 Total: ${user.cards.length}
+📦 ${total} card${total !== 1 ? "s" : ""} | Page ${page}/${totalPages}
 
 `;
 
-      user.cards.forEach((card, i) => {
-        const tier = TIER_MAP[card.tier] || "?";
-        text += `${i + 1}. 🃏 *${card.name}* (Tier: ${tier})\n`;
+      slice.forEach((card, i) => {
+        const emoji = TIER_EMOJI[card.tier] || "⭐";
+        text += `${start + i + 1}. ${emoji} *${card.name}*\n`;
       });
 
-      return await sock.sendMessage(jid, {
-        text,
-        mentions: [sender],
-      }, { quoted: msg });
+      if (totalPages > 1) {
+        text += `\n_Use .col <page> to see more_`;
+      }
+
+      return sock.sendMessage(jid, { text, mentions: [sender] }, { quoted: msg });
 
     } catch (err) {
       console.error("COL ERROR:", err);

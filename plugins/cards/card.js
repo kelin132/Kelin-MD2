@@ -1,5 +1,5 @@
 import { findOrCreateUser } from "./db.js";
-import { resolveMediaUrl } from "../../lib/cardApi.mjs";
+import { resolveMediaUrl, TIER_EMOJI } from "../../lib/cardApi.mjs";
 
 export default {
   name: "card",
@@ -9,50 +9,48 @@ export default {
   usage: ".card <index>",
 
   async run({ sock, msg, args, sender }) {
-    const jid = msg.key.remoteJid;
+    const jid   = msg.key.remoteJid;
     const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
 
     try {
       const user = await findOrCreateUser(sender);
 
       if (!Array.isArray(user.cards) || user.cards.length === 0) {
-        return reply("❌ You have no cards. Claim one when a card spawns!");
+        return reply("❌ You have no cards yet.\n\nWait for a spawn and type *.claim <ID>* to grab one!");
       }
 
-      if (!args[0]) return reply("❌ Usage: .card <index>\nUse .col to see your card indexes.");
+      if (!args[0]) return reply(`❌ Usage: .card <index>\n\nUse .col to see your ${user.cards.length} card(s).`);
 
       const index = parseInt(args[0]);
       if (isNaN(index) || index < 1 || index > user.cards.length) {
-        return reply(`❌ Invalid card number. You have ${user.cards.length} cards.`);
+        return reply(`❌ Invalid card number. You have ${user.cards.length} card(s).\nUse .col to see them.`);
       }
 
-      const card = user.cards[index - 1];
+      const card  = user.cards[index - 1];
+      const emoji = TIER_EMOJI[card.tier] || "⭐";
 
       const caption =
 `∘₊✧──────✧₊∘
 🎴 *CARD VIEW*
 ∘₊✧──────✧₊∘
 
-*Name:* ${card.name || "Unknown"}
-*ID:* ${card.cardId || "Unknown"}
-*Tier:* ${card.tier || "Unranked"}
-*Value:* $${(card.price || 0).toLocaleString()}
+*Name:*   ${card.name || "Unknown"}
+*Tier:*   ${emoji} ${card.tier || "Unknown"}
+*Series:* ${card.series || "Unknown"}
+*ID:*     ${card.cardId || "Unknown"}
+*Value:*  $${(card.price || 0).toLocaleString()}
 
-*Description:*
-${card.description || "No description"}
-
+*#${index} of ${user.cards.length}*
 ∘₊✧──────✧₊∘`;
 
       if (card.media) {
         try {
           const imgUrl = await resolveMediaUrl(card.media);
           return await sock.sendMessage(jid, {
-            image: { url: imgUrl },
+            image:   { url: imgUrl },
             caption,
           }, { quoted: msg });
-        } catch {
-          // fall through to text only
-        }
+        } catch { /* fall through to text */ }
       }
 
       return reply(caption);
