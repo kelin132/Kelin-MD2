@@ -16,6 +16,8 @@ const categoryEmojis = {
   admin:      "⚜️",
   anime:      "🍡",
   owner:      "👑",
+  staff:      "🔧",
+  
 };
 
 // Categories shown to everyone — staff/owner see all
