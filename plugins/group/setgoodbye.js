@@ -1,52 +1,78 @@
+/**
+ * KELIN MD — .setgoodbye
+ * Sets a custom goodbye message for the group.
+ * Actual goodbye sending is handled by lib/groupEventHandler.mjs
+ */
 import { groupSettings } from "../../lib/groupSettings.js";
 
 export default {
   name: "setgoodbye",
-  description: "Set group goodbye message",
+  description: "Set a custom goodbye message for the group",
   category: "group",
   usage: ".setgoodbye <message>",
-  aliases: ["goodbye"],
+  aliases: ["customgoodbye"],
   cooldown: 5,
-  isOwner: false,
   isAdmin: true,
-  isPremium: false,
-  version: "1.0.0",
 
   async run({ sock, msg, args }) {
-
-    const jid = msg.key.remoteJid;
+    const jid  = msg.key.remoteJid;
+    const text = args.join(" ").trim();
 
     if (!jid.endsWith("@g.us")) {
-      return sock.sendMessage(jid, {
-        text: "❌ This command only works in groups."
-      });
+      return sock.sendMessage(jid, { text: "❌ This command only works in groups." }, { quoted: msg });
     }
-
-    const text = args.join(" ");
 
     if (!text) {
+      const current = groupSettings.get(jid)?.goodbye;
       return sock.sendMessage(jid, {
         text:
-`Usage:
-.setgoodbye Goodbye @user, thanks for staying! 👋
+`📝 *SET GOODBYE MESSAGE*
+
+Usage:
+  *.setgoodbye <your message>*
 
 Variables:
-@user = member name`
-      });
+  @user  — member's number
+  @group — group name
+  @count — remaining member count
+
+Examples:
+  .setgoodbye Goodbye @user, take care! 👋
+  .setgoodbye @user has left @group. We'll miss you! 😢
+
+Current message:
+${current || "_(not set — default will be used)_"}
+
+To reset to default: *.setgoodbye reset*
+To toggle on/off:    *.goodbye on* / *.goodbye off*`,
+      }, { quoted: msg });
     }
 
-    let settings = groupSettings.get(jid) || {};
+    if (text.toLowerCase() === "reset") {
+      const s = groupSettings.get(jid) || {};
+      delete s.goodbye;
+      groupSettings.set(jid, s);
+      return sock.sendMessage(jid, {
+        text: "🔄 Goodbye message reset to default.",
+      }, { quoted: msg });
+    }
 
-    settings.goodbye = text;
+    groupSettings.set(jid, { goodbye: text });
 
-    groupSettings.set(jid, settings);
+    const preview = text
+      .replace(/@user/g,  "0712345678")
+      .replace(/@group/g, "Your Group")
+      .replace(/@count/g, "41");
 
     await sock.sendMessage(jid, {
       text:
-`✅ Goodbye message updated!
+`✅ *Goodbye message saved!*
 
-Message:
-${text}`
-    });
-  }
+📝 Template:
+${text}
+
+👁 Preview:
+${preview}`,
+    }, { quoted: msg });
+  },
 };
