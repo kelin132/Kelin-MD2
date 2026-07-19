@@ -20,12 +20,13 @@ const categoryEmojis = {
   anime:      "🍡",
   cards:      "🃏",
   owner:      "👑",
+  naruto:     "🪾",
 };
 
 // Categories shown to everyone — staff/owner see all
 const PUBLIC_CATS = new Set([
   "main", "economy", "guild", "games", "fun", "ai",
-  "search", "media", "utilities", "download", "group", "anime", "cards", "staff",
+  "search", "media", "utilities", "download", "group", "anime", "cards", "staff","naruto",
 ]);
 
 export default {
