@@ -75,11 +75,11 @@ export default {
     });
 
     // ── Greeting shown before the "read more" collapse ──────────────────────
-    let text = `*Hello* ${mention},I am Akira👋\n${READMORE}\n`;
+    let text = `*Hello* senpai ${mention},I am Akira👋\n${READMORE}\n`;
 
     // ── Header ───────────────────────────────────────────────────────────────
     text +=
-`╭━━━〔 🌙 *KELIN MD* 🌙 〕━━━╮
+`╭━━━〔 🌙 *AKIRA* 🌙 〕━━━╮
   🔑 Prefix   : ${prefix}
   📦 Plugins  : ${allPlugins.length}
   🕐 Time     : ${date}
