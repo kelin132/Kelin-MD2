@@ -14,16 +14,14 @@ export default {
 
   async run({ sock, msg }) {
     try {
-      const type = "waifu";
-
       const { data } = await axios.get(
-        `https://nekobot.xyz/api/image?type=${type}`
+        "https://api.waifu.pics/sfw/waifu"
       );
 
       await sock.sendMessage(
         msg.key.remoteJid,
         {
-          image: { url: data.message },
+          image: { url: data.url },
           caption: "🌸 Random Waifu — KELIN MD",
         },
         { quoted: msg }
