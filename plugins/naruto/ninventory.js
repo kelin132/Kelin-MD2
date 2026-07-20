@@ -2,188 +2,98 @@
 
 import players from "../../lib/naruto/players.js";
 import items from "../../lib/naruto/items.js";
+import { sendWithGif } from "../../lib/gifHelper.mjs";
 
 export default {
   name: "ninventory",
   description: "View and use ninja items",
   category: "naruto",
   usage: ".ninventory [item_id]",
+  aliases: ["ninv", "nbag"],
 
   async run({ sock, msg, sender, text }) {
+    const jid = msg.key.remoteJid;
 
     try {
-
       const player = await players.get(sender);
 
       if (!player) {
-        return sock.sendMessage(
-          msg.key.remoteJid,
-          {
-            text:
-`🥷 You don't have a ninja profile.
-
-Use .nstart first.`
-          },
-          { quoted: msg }
-        );
+        return sock.sendMessage(jid, {
+          text: "🥷 You don't have a ninja profile.\n\nUse .nstart first."
+        }, { quoted: msg });
       }
 
-
-      // View inventory
+      // No argument — view inventory
       if (!text) {
+        const inv = Array.isArray(player.inventory) && player.inventory.length
+          ? player.inventory.map(i => `🎒 *${i.name}* ×${i.amount || 1}`).join("\n")
+          : "Your inventory is empty.\n\nVisit .nshop to buy items.";
 
-        const inv =
-          player.inventory.length
-            ? player.inventory
-              .map(i =>
-`🎒 ${i.name}
-Amount: ${i.amount}`
-              )
-              .join("\n\n")
-            : "Your inventory is empty.";
-
-
-        return sock.sendMessage(
-          msg.key.remoteJid,
-          {
-            text:
-`🎒 NINJA INVENTORY
+        return sendWithGif(sock, jid, msg,
+`🎒 *NINJA INVENTORY*
 
 🥷 ${player.username}
 
 ${inv}
 
-
-Use:
-.ninventory <item_id>
-
-Example:
-.ninventory small_hp_potion`
-          },
-          { quoted: msg }
-        );
-
+Use *.ninventory <item_id>* to use an item.
+Example: .ninventory small_hp_potion`, "ninja inventory bag");
       }
 
-
-      const itemIndex =
-        player.inventory.findIndex(
-          i => i.id === text.toLowerCase()
-        );
-
+      const itemId    = text.trim().toLowerCase();
+      const itemIndex = Array.isArray(player.inventory)
+        ? player.inventory.findIndex(i => i.id === itemId)
+        : -1;
 
       if (itemIndex === -1) {
-
-        return sock.sendMessage(
-          msg.key.remoteJid,
-          {
-            text:
-`❌ You don't have this item.`
-          },
-          { quoted: msg }
-        );
-
+        return sock.sendMessage(jid, {
+          text: `❌ You don't have "*${itemId}*" in your bag.\n\nUse .ninventory to see what you own.`
+        }, { quoted: msg });
       }
 
-
-      const item =
-        items.find(
-          i => i.id === text.toLowerCase()
-        );
-
-
-      if (!item) {
-        return sock.sendMessage(
-          msg.key.remoteJid,
-          {
-            text:
-`❌ Invalid item.`
-          },
-          { quoted: msg }
-        );
+      const itemDef = items.find(i => i.id === itemId);
+      if (!itemDef) {
+        return sock.sendMessage(jid, { text: "❌ Invalid item." }, { quoted: msg });
       }
 
+      let effects = [];
 
-      // Healing effects
-
-      if (item.effect?.hp) {
-
-        player.hp = Math.min(
-          player.maxHp,
-          player.hp + item.effect.hp
-        );
-
+      if (itemDef.effect?.hp) {
+        const healed   = Math.min(itemDef.effect.hp, player.maxHp - player.hp);
+        player.hp      = Math.min(player.maxHp, player.hp + itemDef.effect.hp);
+        effects.push(`❤️ Restored ${healed} HP (${player.hp}/${player.maxHp})`);
       }
 
-
-      if (item.effect?.chakra) {
-
-        player.chakra = Math.min(
-          player.maxChakra,
-          player.chakra + item.effect.chakra
-        );
-
+      if (itemDef.effect?.chakra) {
+        const restored  = Math.min(itemDef.effect.chakra, player.maxChakra - player.chakra);
+        player.chakra   = Math.min(player.maxChakra, player.chakra + itemDef.effect.chakra);
+        effects.push(`💙 Restored ${restored} Chakra (${player.chakra}/${player.maxChakra})`);
       }
 
-
-      // XP scroll
-
-      if (item.xp) {
-
-        player.xp += item.xp;
-
+      if (itemDef.xp) {
+        player.xp += itemDef.xp;
+        effects.push(`✨ Gained ${itemDef.xp} XP`);
       }
 
-
-      // Remove item
-
-      player.inventory[itemIndex].amount--;
-
-
-      if (
-        player.inventory[itemIndex].amount <= 0
-      ) {
+      // Remove 1 from stack
+      player.inventory[itemIndex].amount = (player.inventory[itemIndex].amount || 1) - 1;
+      if (player.inventory[itemIndex].amount <= 0) {
         player.inventory.splice(itemIndex, 1);
       }
 
-
       await player.save();
 
+      return sendWithGif(sock, jid, msg,
+`✅ *ITEM USED*
 
-      await sock.sendMessage(
-        msg.key.remoteJid,
-        {
-          text:
-`✅ ITEM USED
+🎒 ${itemDef.name}
+📝 ${itemDef.description}
 
-🛒 ${item.name}
+${effects.join("\n") || "No effect."}`, "naruto potion heal");
 
-❤️ HP:
-${player.hp}/${player.maxHp}
-
-💙 Chakra:
-${player.chakra}/${player.maxChakra}
-
-⭐ XP:
-${player.xp}/${player.xpNeeded}`
-        },
-        { quoted: msg }
-      );
-
-
-    } catch(err) {
-
-      console.log(err);
-
-      await sock.sendMessage(
-        msg.key.remoteJid,
-        {
-          text:
-          "❌ Inventory error."
-        },
-        { quoted: msg }
-      );
-
+    } catch (err) {
+      console.error("NINVENTORY ERROR:", err);
+      return sock.sendMessage(jid, { text: "❌ Inventory error." }, { quoted: msg });
     }
   }
 };

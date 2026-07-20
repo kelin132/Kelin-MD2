@@ -1,115 +1,46 @@
-// plugins/naruto/nrank.js
+// plugins/naruto/nleaderboard.js
 
 import players from "../../lib/naruto/players.js";
-import ranks from "../../lib/naruto/ranks.js";
+import { sendWithGif } from "../../lib/gifHelper.mjs";
 
 export default {
-  name: "nrank",
-  description: "View ninja rank and promotion progress",
+  name: "nleaderboard",
+  description: "Top ninjas leaderboard",
   category: "naruto",
-  usage: ".nrank,.nr",
+  usage: ".nleaderboard",
+  aliases: ["ntop", "nrankings"],
 
-  async run({ sock, msg, sender }) {
+  async run({ sock, msg }) {
+    const jid = msg.key.remoteJid;
 
     try {
+      const all = await players.getAll();
 
-      const player = await players.get(sender);
-
-      if (!player) {
-        return sock.sendMessage(
-          msg.key.remoteJid,
-          {
-            text:
-`🥷 You don't have a ninja profile.
-
-Use .nstart first.`
-          },
-          { quoted: msg }
-        );
+      if (!all || !all.length) {
+        return sock.sendMessage(jid, {
+          text: "📊 No ninjas registered yet.\n\nUse .nstart to be the first!"
+        }, { quoted: msg });
       }
 
+      const sorted = [...all].sort((a, b) => b.level - a.level || b.xp - a.xp).slice(0, 10);
 
-      const currentIndex =
-        ranks.findIndex(
-          r => r.name === player.rank
-        );
+      const medals = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
 
+      const list = sorted.map((p, i) =>
+`${medals[i]} *${p.username}*
+⭐ Lv ${p.level} | 🏆 ${p.wins || 0}W | 💰 ${(p.ryo || 0).toLocaleString()} Ryo`
+      ).join("\n\n");
 
-      const nextRank =
-        ranks[currentIndex + 1];
+      return sendWithGif(sock, jid, msg,
+`🏆 *NINJA LEADERBOARD*
 
+${list}
 
-      let progress;
+Keep training to reach the top!`, "naruto strongest ninja");
 
-
-      if (nextRank) {
-
-        progress =
-`🎯 Next Rank:
-${nextRank.name}
-
-Required Level:
-${nextRank.level}
-
-Your Level:
-${player.level}
-
-Progress:
-${Math.min(
-  100,
-  Math.floor(
-    (player.level / nextRank.level) * 100
-  )
-)}%`;
-
-      } else {
-
-        progress =
-`🏆 You have reached the highest rank!
-
-You are a Legendary Shinobi.`;
-
-      }
-
-
-      await sock.sendMessage(
-        msg.key.remoteJid,
-        {
-          text:
-`🎖️ NINJA RANK
-
-🥷 Name:
-${player.username}
-
-🏯 Village:
-${player.village.emoji} ${player.village.name}
-
-👁️ Clan:
-${player.clan.name}
-
-Current Rank:
-${player.rank}
-
-
-${progress}`
-        },
-        { quoted: msg }
-      );
-
-
-    } catch(err) {
-
-      console.log(err);
-
-      await sock.sendMessage(
-        msg.key.remoteJid,
-        {
-          text:
-          "❌ Failed to check rank."
-        },
-        { quoted: msg }
-      );
-
+    } catch (err) {
+      console.error("NLEADERBOARD ERROR:", err);
+      return sock.sendMessage(jid, { text: "❌ Failed to load leaderboard." }, { quoted: msg });
     }
   }
 };

@@ -4,201 +4,95 @@ import players from "../../lib/naruto/players.js";
 import enemies from "../../lib/naruto/enemies.js";
 import battle from "../../lib/naruto/battle.js";
 import { random } from "../../lib/naruto/utils.js";
+import { sendWithGif } from "../../lib/gifHelper.mjs";
 
 export default {
   name: "nhunt",
   description: "Fight rogue ninjas and enemies",
   category: "naruto",
   usage: ".nhunt",
+  cooldown: 30,
 
   async run({ sock, msg, sender }) {
+    const jid = msg.key.remoteJid;
 
     try {
-
       const player = await players.get(sender);
 
       if (!player) {
-        return sock.sendMessage(
-          msg.key.remoteJid,
-          {
-            text:
-`🥷 You don't have a ninja profile.
-
-Use .nstart first.`
-          },
-          { quoted: msg }
-        );
+        return sock.sendMessage(jid, {
+          text: "🥷 You don't have a ninja profile.\n\nUse .nstart first."
+        }, { quoted: msg });
       }
 
-
-      const enemy = random(
-        enemies.filter(
-          e => e.level <= player.level + 10
-        )
-      );
-
+      const enemy = random(enemies.filter(e => e.level <= player.level + 10));
 
       if (!enemy) {
-        return sock.sendMessage(
-          msg.key.remoteJid,
-          {
-            text:
-`⚠️ No enemies found for your level.`
-          },
-          { quoted: msg }
-        );
+        return sock.sendMessage(jid, { text: "⚠️ No enemies found for your level." }, { quoted: msg });
       }
 
+      let fight = battle.create(player, enemy);
+      let log   = [];
 
-      let fight = battle.create(
-        player,
-        enemy
-      );
+      const playerAttack = battle.attack(fight.player, fight.enemy);
+      log.push(`🥷 ${playerAttack.message}`);
 
-
-      let log = [];
-
-
-      // Player attacks first
-      const playerAttack =
-        battle.attack(
-          fight.player,
-          fight.enemy
-        );
-
-
-      log.push(
-        `🥷 ${playerAttack.message}`
-      );
-
-
-      // Enemy attacks if alive
       if (fight.enemy.hp > 0) {
-
-        const enemyAttack =
-          battle.enemyTurn(
-            fight.player,
-            fight.enemy
-          );
-
-        log.push(
-          `👹 ${enemyAttack.message}`
-        );
-
+        const enemyAttack = battle.enemyTurn(fight.player, fight.enemy);
+        log.push(`👹 ${enemyAttack.message}`);
       }
-
-
-      // Result
 
       if (fight.enemy.hp <= 0) {
-
-        player.xp += enemy.xp;
-        player.ryo += enemy.ryo;
-
-        player.wins++;
-
-
+        player.xp   += enemy.xpReward || enemy.xp || 30;
+        player.ryo  += enemy.ryoReward || enemy.ryo || 80;
+        player.wins  = (player.wins || 0) + 1;
         await player.save();
 
+        return sendWithGif(sock, jid, msg,
+`🏆 *VICTORY!*
 
-        return sock.sendMessage(
-          msg.key.remoteJid,
-          {
-            text:
-`🏆 VICTORY!
+👹 Enemy: ${enemy.name} (Lv ${enemy.level})
 
-👹 Enemy:
-${enemy.name}
+${log.join("\n")}
 
-${log.join("\n\n")}
-
-🎁 Rewards:
-
-✨ XP:
-+${enemy.xp}
-
-💰 Ryo:
-+${enemy.ryo}
-
-🏆 Wins:
-${player.wins}`
-          },
-          { quoted: msg }
-        );
-
+🎁 *Rewards*
+✨ XP: +${enemy.xpReward || enemy.xp || 30}
+💰 Ryo: +${enemy.ryoReward || enemy.ryo || 80}
+🏆 Total Wins: ${player.wins}`, "naruto fight victory");
       }
-
 
       if (fight.player.hp <= 0) {
-
-        player.losses++;
-
-        player.hp = Math.floor(
-          player.maxHp / 2
-        );
-
-
+        player.losses = (player.losses || 0) + 1;
+        player.hp     = Math.floor(player.maxHp / 2);
         await player.save();
 
+        return sendWithGif(sock, jid, msg,
+`☠️ *DEFEATED!*
 
-        return sock.sendMessage(
-          msg.key.remoteJid,
-          {
-            text:
-`☠️ DEFEATED!
+👹 Enemy: ${enemy.name} (Lv ${enemy.level})
 
-👹 Enemy:
-${enemy.name}
-
-${log.join("\n\n")}
+${log.join("\n")}
 
 You escaped with half HP.
-
-Losses:
-${player.losses}`
-          },
-          { quoted: msg }
-        );
-
+❤️ HP: ${player.hp}/${player.maxHp}
+☠️ Losses: ${player.losses}`, "naruto defeat");
       }
 
+      return sendWithGif(sock, jid, msg,
+`⚔️ *BATTLE*
 
-      await sock.sendMessage(
-        msg.key.remoteJid,
-        {
-          text:
-`⚔️ BATTLE
+👹 Enemy: ${enemy.name} (Lv ${enemy.level})
 
-👹 Enemy:
-${enemy.name}
+${log.join("\n")}
 
-${log.join("\n\n")}
+❤️ Enemy HP: ${Math.max(0, fight.enemy.hp)}/${enemy.hp}
+❤️ Your HP: ${Math.max(0, fight.player.hp)}/${player.maxHp}
 
-❤️ Enemy HP:
-${fight.enemy.hp}/${enemy.hp}
+Use .nhunt again to continue.`, "naruto fight enemy");
 
-❤️ Your HP:
-${fight.player.hp}/${player.maxHp}
-
-Use .nhunt again to continue fighting.`
-        },
-        { quoted: msg }
-      );
-
-
-    } catch(err) {
-
-      console.log(err);
-
-      await sock.sendMessage(
-        msg.key.remoteJid,
-        {
-          text:
-          "❌ Hunt failed."
-        },
-        { quoted: msg }
-      );
-
+    } catch (err) {
+      console.error("NHUNT ERROR:", err);
+      return sock.sendMessage(jid, { text: "❌ Hunt failed." }, { quoted: msg });
     }
   }
 };
