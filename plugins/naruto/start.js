@@ -13,13 +13,15 @@ export default {
 
   async run({ sock, msg, sender }) {
 
+    const jid = msg.key.remoteJid;
+
     try {
 
       const existing = await players.get(sender);
 
       if (existing) {
         return sock.sendMessage(
-          sender,
+          jid,
           {
             text:
 `🥷 You already have a ninja profile!
@@ -119,7 +121,7 @@ Use .nprofile to view your stats.`
 
 
       await sock.sendMessage(
-        sender,
+        jid,
         {
           text:
 `🍃 NINJA REGISTRATION COMPLETE 🍃
@@ -168,7 +170,7 @@ Use:
       console.log(err);
 
       await sock.sendMessage(
-        sender,
+        jid,
         {
           text:
           "❌ Failed to create ninja profile."
