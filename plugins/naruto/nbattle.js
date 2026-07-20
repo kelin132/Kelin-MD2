@@ -59,7 +59,7 @@ function buildPrompt(battle, mover) {
     hpLine(battle.challenger),
     hpLine(battle.opponent),
     ``,
-    `🎯 *${mover.username}*, choose your action:`,
+    `🎯 @${mover.jid.split('@')[0]}, choose your action:`,
     ``,
     `🥊 *.nbattle attack* — Basic Attack`,
   ];
@@ -115,10 +115,10 @@ async function endBattle(sock, battle, winnerKey) {
   ].join('\n');
 
   const caption = [
-    `💀 *${loser.username}* has been reduced to *0 HP!*`,
+    `💀 @${loser.jid.split('@')[0]} has been reduced to *0 HP!*`,
     finalBoard,
     ``,
-    `🏆 @${winner.jid.split('@')[0]} (*${winner.username}*) wins the battle!`,
+    `🏆 @${winner.jid.split('@')[0]} wins the battle!`,
     `💰 +300 Ryo | ✨ +100 XP`,
   ].join('\n');
 
@@ -295,11 +295,11 @@ export default {
       const hitMsg = [
         header,
         ``,
-        `💥 *${target.username}* was dealt *${damage}* damage!`,
-        `❤️ *${target.username}*'s remaining HP: ${Math.max(0, target.hp)}/${target.maxHp} ${healthBar(Math.max(0, target.hp), target.maxHp, 10)}`,
+        `💥 @${target.jid.split('@')[0]} was dealt *${damage}* damage!`,
+        `❤️ @${target.jid.split('@')[0]}'s remaining HP: ${Math.max(0, target.hp)}/${target.maxHp} ${healthBar(Math.max(0, target.hp), target.maxHp, 10)}`,
       ].join('\n');
 
-      await sock.sendMessage(groupJid, { text: hitMsg, mentions: [target.jid] });
+      await sock.sendMessage(groupJid, { text: hitMsg, mentions: [mover.jid, target.jid] });
 
       if (target.hp <= 0) {
         return endBattle(sock, battle, moverKey);
@@ -327,7 +327,7 @@ export default {
       target.hp -= damage;
 
       return afterDamage(
-        `🥊 *${mover.username}* throws a *Basic Attack* at *${target.username}*!`,
+        `🥊 @${mover.jid.split('@')[0]} throws a *Basic Attack* at @${target.jid.split('@')[0]}!`,
         damage,
       );
     }
@@ -376,7 +376,8 @@ export default {
           deleteBattle(groupJid);
         });
         await sock.sendMessage(groupJid, {
-          text: `💨 *${mover.username}* unleashed *${jutsu.name}*... but it *missed!* 💫\n💙 Chakra: ${mover.chakra}/${mover.maxChakra}`,
+          text: `💨 @${mover.jid.split('@')[0]} unleashed *${jutsu.name}*... but it *missed!* 💫\n💙 Chakra: ${mover.chakra}/${mover.maxChakra}`,
+          mentions: [mover.jid],
         });
         return sock.sendMessage(groupJid, {
           text:     buildPrompt(battle, nextMover),
@@ -391,7 +392,7 @@ export default {
       target.hp -= damage;
 
       const header = [
-        `🌀 *${mover.username}* unleashes *${jutsu.name}*!`,
+        `🌀 @${mover.jid.split('@')[0]} unleashes *${jutsu.name}*!`,
         crit ? `✨ *CRITICAL HIT!*` : null,
       ].filter(Boolean).join('\n');
 
@@ -463,7 +464,7 @@ export default {
           deleteBattle(groupJid);
         });
         await sock.sendMessage(groupJid, {
-          text: `🎒 *${mover.username}* uses *${def.name}*!\n\n${effects.join('\n')}`,
+          text: `🎒 @${mover.jid.split('@')[0]} uses *${def.name}*!\n\n${effects.join('\n')}`,
           mentions: [mover.jid],
         });
         return sock.sendMessage(groupJid, {
@@ -477,7 +478,7 @@ export default {
         const damage = def.damage || 0;
         target.hp -= damage;
         return afterDamage(
-          `💣 *${mover.username}* hurls a *${def.name}* at *${target.username}*!`,
+          `💣 @${mover.jid.split('@')[0]} hurls a *${def.name}* at @${target.jid.split('@')[0]}!`,
           damage,
         );
       }
@@ -487,9 +488,9 @@ export default {
     if (cmd === 'flee') {
       await sock.sendMessage(groupJid, {
         text: [
-          `🏃 *${mover.username}* has fled the battle!`,
+          `🏃 @${mover.jid.split('@')[0]} has fled the battle!`,
           ``,
-          `🏆 @${target.jid.split('@')[0]} (*${target.username}*) wins by default!`,
+          `🏆 @${target.jid.split('@')[0]} wins by default!`,
           `💰 +150 Ryo | ✨ +50 XP`,
         ].join('\n'),
         mentions: [target.jid, mover.jid],
