@@ -14,12 +14,8 @@ export default {
     const jid = msg.key.remoteJid;
 
     try {
-      const mentioned =
-        msg.message?.extendedTextMessage?.contextInfo?.mentionedJid
-        || msg.message?.extendedTextMessage?.contextInfo?.quotedParticipant
-        || null;
-
-      const opponent = Array.isArray(mentioned) ? mentioned[0] : mentioned;
+      const ctx      = msg.message?.extendedTextMessage?.contextInfo || {};
+      const opponent = ctx.mentionedJid?.[0] || ctx.participant || ctx.quotedParticipant || null;
 
       if (!opponent) {
         return sock.sendMessage(jid, {
@@ -31,16 +27,29 @@ export default {
         return sock.sendMessage(jid, { text: "❌ You cannot fight yourself." }, { quoted: msg });
       }
 
-      const player = await players.get(sender);
-      const enemy  = await players.get(opponent);
+      const playerDoc   = await players.get(sender);
+      const opponentDoc = await players.get(opponent);
 
-      if (!player || !enemy) {
+      if (!playerDoc || !opponentDoc) {
         return sock.sendMessage(jid, {
           text: "❌ Both players need a ninja profile.\n\nUse .nstart to create one."
         }, { quoted: msg });
       }
 
-      let fight = battle.create(player, enemy);
+      // battle.create() expects enemy.name (not .username) — normalise here
+      const opponentForBattle = {
+        username: opponentDoc.username,
+        name:     opponentDoc.username,
+        hp:       opponentDoc.hp,
+        maxHp:    opponentDoc.maxHp,
+        chakra:   opponentDoc.chakra,
+        attack:   opponentDoc.attack,
+        defense:  opponentDoc.defense,
+        speed:    opponentDoc.speed,
+        jutsu:    (opponentDoc.jutsu || []).map(j => j.id), // enemyTurn expects id strings
+      };
+
+      let fight = battle.create(playerDoc, opponentForBattle);
       let log   = [];
 
       const playerFirst = fight.player.speed >= fight.enemy.speed;
@@ -59,19 +68,19 @@ export default {
       const winner = battle.winner(fight);
 
       if (winner === "player") {
-        player.wins   = (player.wins   || 0) + 1;
-        player.xp    += 100;
-        player.ryo   += 300;
-        enemy.losses  = (enemy.losses  || 0) + 1;
+        playerDoc.wins    = (playerDoc.wins    || 0) + 1;
+        playerDoc.xp     += 100;
+        playerDoc.ryo    += 300;
+        opponentDoc.losses = (opponentDoc.losses || 0) + 1;
       } else if (winner === "enemy") {
-        enemy.wins    = (enemy.wins    || 0) + 1;
-        enemy.xp     += 100;
-        enemy.ryo    += 300;
-        player.losses = (player.losses || 0) + 1;
+        opponentDoc.wins  = (opponentDoc.wins  || 0) + 1;
+        opponentDoc.xp   += 100;
+        opponentDoc.ryo  += 300;
+        playerDoc.losses  = (playerDoc.losses  || 0) + 1;
       }
 
-      await player.save();
-      await enemy.save();
+      await playerDoc.save();
+      await opponentDoc.save();
 
       const winnerName = winner === "player"
         ? `@${sender.split("@")[0]}`
@@ -80,22 +89,19 @@ export default {
       const caption =
 `⚔️ *NINJA BATTLE*
 
-👤 ${player.username} vs ${enemy.username}
+👤 *${playerDoc.username}* vs *${opponentDoc.username}*
 
 ━━━━━━━━━━━━
 ${log.slice(0, 6).join("\n")}
 ━━━━━━━━━━━━
 
-❤️ ${player.username} HP: ${Math.max(0, fight.player.hp)}/${fight.player.maxHp}
-❤️ ${enemy.username} HP: ${Math.max(0, fight.enemy.hp)}/${fight.enemy.maxHp}
+❤️ ${playerDoc.username}: ${Math.max(0, fight.player.hp)}/${fight.player.maxHp} HP
+❤️ ${opponentDoc.username}: ${Math.max(0, fight.enemy.hp)}/${fight.enemy.maxHp} HP
 
 🏆 Winner: *${winnerName}*
 💰 Reward: +300 Ryo | +100 XP`;
 
-      return await sock.sendMessage(jid, {
-        text: caption,
-        mentions: [sender, opponent]
-      }, { quoted: msg });
+      return sendWithGif(sock, jid, msg, caption, "naruto battle fight");
 
     } catch (err) {
       console.error("NBATTLE ERROR:", err);
