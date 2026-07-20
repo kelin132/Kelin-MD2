@@ -15,6 +15,7 @@
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "7.0.0-rc13",
     "axios": "^1.11.0",
+    "canvas": "^3.2.3",
     "dotenv": "^17.4.2",
     "mongodb": "^7.5.0",
     "pino": "^9.14.0",
