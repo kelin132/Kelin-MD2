@@ -11,9 +11,11 @@ import {
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
+/** Short tag helper */
+const tag = (jid) => `@${jid.split('@')[0]}`;
+
 /** Build a battle-ready combatant snapshot from a DB player doc. */
 function snap(doc) {
-  // Resolve full jutsu definitions the player knows
   const jutsu = (doc.jutsu || [])
     .map(j => {
       const id = typeof j === 'string' ? j : j.id;
@@ -32,18 +34,18 @@ function snap(doc) {
     defense:   doc.defense,
     speed:     doc.speed,
     jutsu,
-    inventory: JSON.parse(JSON.stringify(doc.inventory || [])), // deep copy
-    cooldowns: {},  // jutsuId → turns remaining
+    inventory: JSON.parse(JSON.stringify(doc.inventory || [])),
+    cooldowns: {},
   };
 }
 
-/** One-line HP display with coloured bar. */
+/** One-line HP display with bar. */
 function hpLine(c) {
   const hp = Math.max(0, c.hp);
-  return `❤️ *${c.username}*: ${hp}/${c.maxHp} HP ${healthBar(hp, c.maxHp, 10)}`;
+  return `❤️ ${tag(c.jid)}: ${hp}/${c.maxHp} HP ${healthBar(hp, c.maxHp, 10)}`;
 }
 
-/** Decrement all jutsu cooldowns by 1 after a player's turn. */
+/** Decrement all jutsu cooldowns after a player's turn. */
 function tickCooldowns(c) {
   for (const id of Object.keys(c.cooldowns)) {
     c.cooldowns[id]--;
@@ -59,35 +61,27 @@ function buildPrompt(battle, mover) {
     hpLine(battle.challenger),
     hpLine(battle.opponent),
     ``,
-    `🎯 @${mover.jid.split('@')[0]}, choose your action:`,
+    `🎯 ${tag(mover.jid)}, choose your action:`,
     ``,
     `🥊 *.nbattle attack* — Basic Attack`,
   ];
 
-  // Jutsu list
   mover.jutsu.forEach((j, i) => {
     const cd       = mover.cooldowns[j.id] || 0;
     const noChakra = mover.chakra < j.chakra;
     let icon, note;
-
-    if (cd > 0) {
-      icon = '🔒'; note = ` ❌ cooldown: ${cd} turn(s)`;
-    } else if (noChakra) {
-      icon = '⚠️'; note = ` ⚠️ need ${j.chakra}💙 (have ${mover.chakra})`;
-    } else {
-      icon = '🌀'; note = ` — ${j.damage} dmg, ${j.chakra}💙`;
-    }
+    if (cd > 0)        { icon = '🔒'; note = ` ❌ cooldown: ${cd} turn(s)`; }
+    else if (noChakra) { icon = '⚠️'; note = ` ⚠️ need ${j.chakra}💙 (have ${mover.chakra})`; }
+    else               { icon = '🌀'; note = ` — ${j.damage} dmg, ${j.chakra}💙`; }
     lines.push(`${icon} *.nbattle jutsu ${i + 1}* — ${j.name}${note}`);
   });
 
-  // Battle-usable items
   const usable = (mover.inventory || []).filter(inv => {
     const def = itemsLib.find(x => x.id === inv.id);
     return def && (def.type === 'consumable' || def.type === 'battle');
   });
-
   if (usable.length) {
-    lines.push(``, `*🎒 Items (use *.nbattle item <id>*):*`);
+    lines.push(``, `*🎒 Items (*.nbattle item <id>*):*`);
     usable.forEach(inv => {
       const def = itemsLib.find(x => x.id === inv.id);
       lines.push(`   • *${def.name}* ×${inv.amount || 1}  \`${inv.id}\``);
@@ -96,54 +90,37 @@ function buildPrompt(battle, mover) {
 
   lines.push(``, `🏃 *.nbattle flee* — Forfeit`);
   lines.push(``, `⏳ 2 minutes to respond or battle cancels.`);
-
   return lines.join('\n');
 }
 
-/** Announce battle end, update DB, clean up. */
+/** Announce battle end, save DB, clean up. */
 async function endBattle(sock, battle, winnerKey) {
-  const loserKey  = winnerKey === 'challenger' ? 'opponent' : 'challenger';
-  const winner    = battle[winnerKey];
-  const loser     = battle[loserKey];
-  const groupJid  = battle.groupJid;
+  const loserKey = winnerKey === 'challenger' ? 'opponent' : 'challenger';
+  const winner   = battle[winnerKey];
+  const loser    = battle[loserKey];
+  const gid      = battle.groupJid;
 
-  // Final HP snapshot
-  const finalBoard = [
-    ``,
-    hpLine(battle.challenger),
-    hpLine(battle.opponent),
-  ].join('\n');
-
-  const caption = [
-    `💀 @${loser.jid.split('@')[0]} has been reduced to *0 HP!*`,
-    finalBoard,
-    ``,
-    `🏆 @${winner.jid.split('@')[0]} wins the battle!`,
-    `💰 +300 Ryo | ✨ +100 XP`,
-  ].join('\n');
-
-  await sock.sendMessage(groupJid, {
-    text: caption,
+  await sock.sendMessage(gid, {
+    text: [
+      `💀 ${tag(loser.jid)} has been reduced to *0 HP!*`,
+      ``,
+      hpLine(battle.challenger),
+      hpLine(battle.opponent),
+      ``,
+      `🏆 ${tag(winner.jid)} wins the battle!`,
+      `💰 +300 Ryo | ✨ +100 XP`,
+    ].join('\n'),
     mentions: [winner.jid, loser.jid],
   });
 
-  // Persist results to DB
   const [winDoc, loseDoc] = await Promise.all([
     players.get(winner.jid),
     players.get(loser.jid),
   ]);
-  if (winDoc) {
-    winDoc.wins  = (winDoc.wins  || 0) + 1;
-    winDoc.xp   += 100;
-    winDoc.ryo  += 300;
-    await winDoc.save();
-  }
-  if (loseDoc) {
-    loseDoc.losses = (loseDoc.losses || 0) + 1;
-    await loseDoc.save();
-  }
+  if (winDoc)  { winDoc.wins    = (winDoc.wins    || 0) + 1; winDoc.xp  += 100; winDoc.ryo  += 300; await winDoc.save(); }
+  if (loseDoc) { loseDoc.losses = (loseDoc.losses || 0) + 1; await loseDoc.save(); }
 
-  deleteBattle(groupJid);
+  deleteBattle(gid);
 }
 
 // ─── plugin ──────────────────────────────────────────────────────────────────
@@ -155,115 +132,93 @@ export default {
   usage:       '.nbattle @user | accept | attack | jutsu <n> | item <id> | flee',
 
   async run({ sock, msg, sender, text }) {
-    const groupJid = msg.key.remoteJid;
-    const args     = (text || '').trim().split(/\s+/);
-    const cmd      = args[0].toLowerCase();
+    const gid  = msg.key.remoteJid;
+    const args = (text || '').trim().split(/\s+/);
+    const cmd  = args[0].toLowerCase();
 
     const ctx          = msg.message?.extendedTextMessage?.contextInfo || {};
     const mentionedJid = ctx.mentionedJid?.[0];
 
-    // ── CHALLENGE ──────────────────────────────────────────
+    // ── CHALLENGE ──────────────────────────────────────────────────────────────
     if (mentionedJid && !['accept','attack','jutsu','item','flee'].includes(cmd)) {
-      if (sender === mentionedJid) {
-        return sock.sendMessage(groupJid, { text: `❌ You can't battle yourself.` }, { quoted: msg });
-      }
+      if (sender === mentionedJid)
+        return sock.sendMessage(gid, { text: `❌ You can't battle yourself.` }, { quoted: msg });
 
-      if (getBattle(groupJid)) {
-        return sock.sendMessage(groupJid, { text: `⚔️ A battle is already underway in this group!` }, { quoted: msg });
-      }
+      if (getBattle(gid))
+        return sock.sendMessage(gid, { text: `⚔️ A battle is already underway in this group!` }, { quoted: msg });
 
-      if (getBattleByPlayer(sender) || getBattleByPlayer(mentionedJid)) {
-        return sock.sendMessage(groupJid, { text: `❌ One of you is already in a battle elsewhere.` }, { quoted: msg });
-      }
+      if (getBattleByPlayer(sender) || getBattleByPlayer(mentionedJid))
+        return sock.sendMessage(gid, { text: `❌ One of you is already in a battle.` }, { quoted: msg });
 
-      const [challengerDoc, opponentDoc] = await Promise.all([
-        players.get(sender),
-        players.get(mentionedJid),
-      ]);
+      const [cDoc, oDoc] = await Promise.all([players.get(sender), players.get(mentionedJid)]);
 
-      if (!challengerDoc) {
-        return sock.sendMessage(groupJid, { text: `🥷 You don't have a ninja profile yet.\n\nUse *.nstart* first.` }, { quoted: msg });
-      }
-      if (!opponentDoc) {
-        return sock.sendMessage(groupJid, { text: `❌ That ninja hasn't started their journey yet.\n\nThey need to use *.nstart* first.` }, { quoted: msg });
-      }
+      if (!cDoc) return sock.sendMessage(gid, { text: `🥷 You don't have a ninja profile.\n\nUse *.nstart* first.` }, { quoted: msg });
+      if (!oDoc) return sock.sendMessage(gid, { text: `❌ That ninja hasn't created a profile yet.\n\nThey need to use *.nstart* first.` }, { quoted: msg });
 
-      const battle = createBattle(groupJid, snap(challengerDoc), snap(opponentDoc));
+      const battle = createBattle(gid, snap(cDoc), snap(oDoc));
 
-      // Auto-expire challenge after 2 min
       armTimer(battle, () => {
-        if (getBattle(groupJid)?.status === 'pending') {
-          deleteBattle(groupJid);
-          sock.sendMessage(groupJid, {
-            text: `⏰ Battle challenge from *${challengerDoc.username}* expired — no response.`,
-          });
+        if (getBattle(gid)?.status === 'pending') {
+          deleteBattle(gid);
+          sock.sendMessage(gid, { text: `⏰ Battle challenge from ${tag(sender)} expired — no response.`, mentions: [sender] });
         }
       });
 
-      return sock.sendMessage(groupJid, {
+      return sock.sendMessage(gid, {
         text: [
           `⚔️ *BATTLE CHALLENGE!*`,
           ``,
-          `@${sender.split('@')[0]} (*${challengerDoc.username}*) challenges @${mentionedJid.split('@')[0]} (*${opponentDoc.username}*) to a ninja duel!`,
+          `${tag(sender)} challenges ${tag(mentionedJid)} to a ninja duel!`,
           ``,
-          `@${mentionedJid.split('@')[0]} type *.nbattle accept* to begin!`,
+          `${tag(mentionedJid)} type *.nbattle accept* to begin!`,
           `⏳ Challenge expires in 2 minutes.`,
         ].join('\n'),
         mentions: [sender, mentionedJid],
       }, { quoted: msg });
     }
 
-    // ── ACCEPT ─────────────────────────────────────────────
+    // ── ACCEPT ─────────────────────────────────────────────────────────────────
     if (cmd === 'accept') {
-      const battle = getBattle(groupJid);
-      if (!battle)                         return sock.sendMessage(groupJid, { text: `❌ No pending battle in this group.` }, { quoted: msg });
-      if (battle.status === 'active')      return sock.sendMessage(groupJid, { text: `⚔️ Battle is already in progress!` }, { quoted: msg });
-      if (battle.opponent.jid !== sender)  return sock.sendMessage(groupJid, { text: `❌ You weren't challenged.` }, { quoted: msg });
+      const battle = getBattle(gid);
+      if (!battle)                        return sock.sendMessage(gid, { text: `❌ No pending battle in this group.` }, { quoted: msg });
+      if (battle.status === 'active')     return sock.sendMessage(gid, { text: `⚔️ Battle is already in progress!` }, { quoted: msg });
+      if (battle.opponent.jid !== sender) return sock.sendMessage(gid, { text: `❌ You weren't challenged.` }, { quoted: msg });
 
       battle.status = 'active';
       battle.round  = 1;
-      // Faster ninja strikes first
-      battle.turn = battle.challenger.speed >= battle.opponent.speed ? 'challenger' : 'opponent';
+      battle.turn   = battle.challenger.speed >= battle.opponent.speed ? 'challenger' : 'opponent';
 
-      const firstMover = battle[battle.turn];
+      const first = battle[battle.turn];
 
       armTimer(battle, async () => {
-        if (!getBattle(groupJid)) return;
-        await sock.sendMessage(groupJid, {
-          text: `⏰ @${firstMover.jid.split('@')[0]} took too long to move — battle cancelled!`,
-          mentions: [firstMover.jid],
-        });
-        deleteBattle(groupJid);
+        if (!getBattle(gid)) return;
+        await sock.sendMessage(gid, { text: `⏰ ${tag(first.jid)} took too long — battle cancelled!`, mentions: [first.jid] });
+        deleteBattle(gid);
       });
 
-      await sock.sendMessage(groupJid, {
+      await sock.sendMessage(gid, {
         text: [
           `⚔️ *NINJA BATTLE BEGINS!*`,
           ``,
-          `👤 *${battle.challenger.username}*  vs  *${battle.opponent.username}*`,
-          ``,
           hpLine(battle.challenger),
-          `💙 *${battle.challenger.username}*: ${battle.challenger.chakra}/${battle.challenger.maxChakra} Chakra ${chakraBar(battle.challenger.chakra, battle.challenger.maxChakra, 8)}`,
+          `💙 ${tag(battle.challenger.jid)}: ${battle.challenger.chakra}/${battle.challenger.maxChakra} Chakra ${chakraBar(battle.challenger.chakra, battle.challenger.maxChakra, 8)}`,
           ``,
           hpLine(battle.opponent),
-          `💙 *${battle.opponent.username}*: ${battle.opponent.chakra}/${battle.opponent.maxChakra} Chakra ${chakraBar(battle.opponent.chakra, battle.opponent.maxChakra, 8)}`,
+          `💙 ${tag(battle.opponent.jid)}: ${battle.opponent.chakra}/${battle.opponent.maxChakra} Chakra ${chakraBar(battle.opponent.chakra, battle.opponent.maxChakra, 8)}`,
           ``,
-          `🏃 Fastest ninja goes first — @${firstMover.jid.split('@')[0]} attacks!`,
+          `🏃 Fastest ninja goes first — ${tag(first.jid)} attacks!`,
         ].join('\n'),
         mentions: [battle.challenger.jid, battle.opponent.jid],
       });
 
-      return sock.sendMessage(groupJid, {
-        text:     buildPrompt(battle, firstMover),
-        mentions: [firstMover.jid],
-      });
+      return sock.sendMessage(gid, { text: buildPrompt(battle, first), mentions: [first.jid] });
     }
 
-    // ── MOVE COMMANDS — need an active battle ──────────────
-    const battle = getBattle(groupJid);
+    // ── MOVE COMMANDS ──────────────────────────────────────────────────────────
+    const battle = getBattle(gid);
 
     if (!battle || battle.status !== 'active') {
-      return sock.sendMessage(groupJid, {
+      return sock.sendMessage(gid, {
         text: [
           `⚔️ *NINJA BATTLE*`,
           ``,
@@ -279,154 +234,114 @@ export default {
     const mover     = battle[moverKey];
     const target    = battle[targetKey];
 
-    // Wrong player's turn
     if (mover.jid !== sender) {
-      return sock.sendMessage(groupJid, {
-        text: `⏳ It's *${mover.username}*'s turn! Wait for them to move.`,
+      return sock.sendMessage(gid, {
+        text: `⏳ It's ${tag(mover.jid)}'s turn! Wait for them to move.`,
+        mentions: [mover.jid],
       }, { quoted: msg });
     }
 
-    // ── shared: after any damaging move ───────────────────
+    // Shared: called after every damaging move
     async function afterDamage(header, damage) {
       tickCooldowns(mover);
-      battle.turn  = targetKey;
+      battle.turn = targetKey;
       battle.round++;
 
-      const hitMsg = [
-        header,
-        ``,
-        `💥 @${target.jid.split('@')[0]} was dealt *${damage}* damage!`,
-        `❤️ @${target.jid.split('@')[0]}'s remaining HP: ${Math.max(0, target.hp)}/${target.maxHp} ${healthBar(Math.max(0, target.hp), target.maxHp, 10)}`,
-      ].join('\n');
+      await sock.sendMessage(gid, {
+        text: [
+          header,
+          ``,
+          `💥 ${tag(target.jid)} was dealt *${damage}* damage!`,
+          `❤️ ${tag(target.jid)}'s remaining HP: ${Math.max(0, target.hp)}/${target.maxHp} ${healthBar(Math.max(0, target.hp), target.maxHp, 10)}`,
+        ].join('\n'),
+        mentions: [mover.jid, target.jid],
+      });
 
-      await sock.sendMessage(groupJid, { text: hitMsg, mentions: [mover.jid, target.jid] });
+      if (target.hp <= 0) return endBattle(sock, battle, moverKey);
 
-      if (target.hp <= 0) {
-        return endBattle(sock, battle, moverKey);
-      }
-
-      const nextMover = battle[battle.turn];
+      const next = battle[battle.turn];
       armTimer(battle, async () => {
-        if (!getBattle(groupJid)) return;
-        await sock.sendMessage(groupJid, {
-          text: `⏰ @${nextMover.jid.split('@')[0]} took too long — battle cancelled!`,
-          mentions: [nextMover.jid],
-        });
-        deleteBattle(groupJid);
+        if (!getBattle(gid)) return;
+        await sock.sendMessage(gid, { text: `⏰ ${tag(next.jid)} took too long — battle cancelled!`, mentions: [next.jid] });
+        deleteBattle(gid);
       });
-
-      return sock.sendMessage(groupJid, {
-        text:     buildPrompt(battle, nextMover),
-        mentions: [nextMover.jid],
-      });
+      return sock.sendMessage(gid, { text: buildPrompt(battle, next), mentions: [next.jid] });
     }
 
-    // ── ATTACK ────────────────────────────────────────────
+    // ── ATTACK ─────────────────────────────────────────────────────────────────
     if (cmd === 'attack') {
       const damage = calculateDamage(mover, target, null);
       target.hp -= damage;
-
-      return afterDamage(
-        `🥊 @${mover.jid.split('@')[0]} throws a *Basic Attack* at @${target.jid.split('@')[0]}!`,
-        damage,
-      );
+      return afterDamage(`🥊 ${tag(mover.jid)} throws a *Basic Attack* at ${tag(target.jid)}!`, damage);
     }
 
-    // ── JUTSU ─────────────────────────────────────────────
+    // ── JUTSU ──────────────────────────────────────────────────────────────────
     if (cmd === 'jutsu') {
       const num   = parseInt(args[1], 10);
       const jutsu = mover.jutsu[num - 1];
 
-      if (!jutsu || isNaN(num)) {
-        return sock.sendMessage(groupJid, {
-          text: `❌ Invalid jutsu number. Pick 1–${mover.jutsu.length}.`,
-        }, { quoted: msg });
-      }
+      if (!jutsu || isNaN(num))
+        return sock.sendMessage(gid, { text: `❌ Invalid jutsu number. Pick 1–${mover.jutsu.length}.` }, { quoted: msg });
 
-      const cd = mover.cooldowns[jutsu.id] || 0;
-      if (cd > 0) {
-        return sock.sendMessage(groupJid, {
-          text: `🔒 *${jutsu.name}* is on cooldown for *${cd}* more turn(s).`,
-        }, { quoted: msg });
-      }
+      if ((mover.cooldowns[jutsu.id] || 0) > 0)
+        return sock.sendMessage(gid, { text: `🔒 *${jutsu.name}* is on cooldown for *${mover.cooldowns[jutsu.id]}* more turn(s).` }, { quoted: msg });
 
-      if (mover.chakra < jutsu.chakra) {
-        return sock.sendMessage(groupJid, {
-          text: `💙 Not enough chakra for *${jutsu.name}*!\nNeeded: ${jutsu.chakra} | Yours: ${mover.chakra}`,
-        }, { quoted: msg });
-      }
+      if (mover.chakra < jutsu.chakra)
+        return sock.sendMessage(gid, { text: `💙 Not enough chakra for *${jutsu.name}*!\nNeeded: ${jutsu.chakra} | Yours: ${mover.chakra}` }, { quoted: msg });
 
-      // Deduct chakra & set cooldown before accuracy roll
       mover.chakra -= jutsu.chakra;
       if (jutsu.cooldown) mover.cooldowns[jutsu.id] = jutsu.cooldown;
 
-      // Accuracy check
-      const hit = jutsu.accuracy >= 100 || Math.random() * 100 < jutsu.accuracy;
-      if (!hit) {
+      // Miss check
+      if (jutsu.accuracy < 100 && Math.random() * 100 >= jutsu.accuracy) {
         tickCooldowns(mover);
-        battle.turn  = targetKey;
+        battle.turn = targetKey;
         battle.round++;
-        const nextMover = battle[battle.turn];
+        const next = battle[battle.turn];
         armTimer(battle, async () => {
-          if (!getBattle(groupJid)) return;
-          await sock.sendMessage(groupJid, {
-            text: `⏰ @${nextMover.jid.split('@')[0]} took too long — battle cancelled!`,
-            mentions: [nextMover.jid],
-          });
-          deleteBattle(groupJid);
+          if (!getBattle(gid)) return;
+          await sock.sendMessage(gid, { text: `⏰ ${tag(next.jid)} took too long — battle cancelled!`, mentions: [next.jid] });
+          deleteBattle(gid);
         });
-        await sock.sendMessage(groupJid, {
-          text: `💨 @${mover.jid.split('@')[0]} unleashed *${jutsu.name}*... but it *missed!* 💫\n💙 Chakra: ${mover.chakra}/${mover.maxChakra}`,
+        await sock.sendMessage(gid, {
+          text: `💨 ${tag(mover.jid)} unleashed *${jutsu.name}*... but it *missed!* 💫\n💙 Chakra: ${mover.chakra}/${mover.maxChakra}`,
           mentions: [mover.jid],
         });
-        return sock.sendMessage(groupJid, {
-          text:     buildPrompt(battle, nextMover),
-          mentions: [nextMover.jid],
-        });
+        return sock.sendMessage(gid, { text: buildPrompt(battle, next), mentions: [next.jid] });
       }
 
-      // Hit
       const crit   = chance(10);
       const base   = calculateDamage(mover, target, jutsu);
       const damage = crit ? base * 2 : base;
       target.hp -= damage;
 
       const header = [
-        `🌀 @${mover.jid.split('@')[0]} unleashes *${jutsu.name}*!`,
+        `🌀 ${tag(mover.jid)} unleashes *${jutsu.name}*!`,
         crit ? `✨ *CRITICAL HIT!*` : null,
       ].filter(Boolean).join('\n');
 
       return afterDamage(header, damage);
     }
 
-    // ── ITEM ──────────────────────────────────────────────
+    // ── ITEM ───────────────────────────────────────────────────────────────────
     if (cmd === 'item') {
       const itemId = args[1];
-      if (!itemId) {
-        return sock.sendMessage(groupJid, {
-          text: `❌ Specify item ID.\nExample: *.nbattle item small_hp_potion*`,
-        }, { quoted: msg });
-      }
+      if (!itemId)
+        return sock.sendMessage(gid, { text: `❌ Specify item ID.\nExample: *.nbattle item small_hp_potion*` }, { quoted: msg });
 
       const invIdx = (mover.inventory || []).findIndex(i => i.id === itemId);
-      if (invIdx === -1) {
-        return sock.sendMessage(groupJid, {
-          text: `❌ You don't have *${itemId}* in your bag.\n\nCheck *.nbattle* for your available items.`,
-        }, { quoted: msg });
-      }
+      if (invIdx === -1)
+        return sock.sendMessage(gid, { text: `❌ You don't have *${itemId}* in your bag.` }, { quoted: msg });
 
       const def = itemsLib.find(x => x.id === itemId);
-      if (!def || !['consumable', 'battle'].includes(def.type)) {
-        return sock.sendMessage(groupJid, {
-          text: `❌ *${itemId}* can't be used during battle.`,
-        }, { quoted: msg });
-      }
+      if (!def || !['consumable', 'battle'].includes(def.type))
+        return sock.sendMessage(gid, { text: `❌ *${itemId}* can't be used in battle.` }, { quoted: msg });
 
-      // Remove from battle snapshot
+      // Remove from snapshot
       mover.inventory[invIdx].amount = (mover.inventory[invIdx].amount || 1) - 1;
       if (mover.inventory[invIdx].amount <= 0) mover.inventory.splice(invIdx, 1);
 
-      // Remove from DB inventory
+      // Remove from DB
       const playerDoc = await players.get(sender);
       if (playerDoc) {
         const dbIdx = (playerDoc.inventory || []).findIndex(i => i.id === itemId);
@@ -437,12 +352,12 @@ export default {
         }
       }
 
-      // ── Consumable: heal self, counts as turn ──────────
+      // Consumable — heal self, use up turn
       if (def.type === 'consumable') {
         const effects = [];
         if (def.effect?.hp) {
-          const healed  = Math.min(def.effect.hp, mover.maxHp - mover.hp);
-          mover.hp      = Math.min(mover.maxHp, mover.hp + def.effect.hp);
+          const healed = Math.min(def.effect.hp, mover.maxHp - mover.hp);
+          mover.hp     = Math.min(mover.maxHp, mover.hp + def.effect.hp);
           effects.push(`❤️ Restored ${healed} HP → ${mover.hp}/${mover.maxHp} ${healthBar(mover.hp, mover.maxHp, 8)}`);
         }
         if (def.effect?.chakra) {
@@ -452,64 +367,49 @@ export default {
         }
 
         tickCooldowns(mover);
-        battle.turn  = targetKey;
+        battle.turn = targetKey;
         battle.round++;
-        const nextMover = battle[battle.turn];
+        const next = battle[battle.turn];
         armTimer(battle, async () => {
-          if (!getBattle(groupJid)) return;
-          await sock.sendMessage(groupJid, {
-            text: `⏰ @${nextMover.jid.split('@')[0]} took too long — battle cancelled!`,
-            mentions: [nextMover.jid],
-          });
-          deleteBattle(groupJid);
+          if (!getBattle(gid)) return;
+          await sock.sendMessage(gid, { text: `⏰ ${tag(next.jid)} took too long — battle cancelled!`, mentions: [next.jid] });
+          deleteBattle(gid);
         });
-        await sock.sendMessage(groupJid, {
-          text: `🎒 @${mover.jid.split('@')[0]} uses *${def.name}*!\n\n${effects.join('\n')}`,
+        await sock.sendMessage(gid, {
+          text: `🎒 ${tag(mover.jid)} uses *${def.name}*!\n\n${effects.join('\n')}`,
           mentions: [mover.jid],
         });
-        return sock.sendMessage(groupJid, {
-          text:     buildPrompt(battle, nextMover),
-          mentions: [nextMover.jid],
-        });
+        return sock.sendMessage(gid, { text: buildPrompt(battle, next), mentions: [next.jid] });
       }
 
-      // ── Battle item: deal damage ───────────────────────
+      // Battle item — deal damage
       if (def.type === 'battle') {
         const damage = def.damage || 0;
         target.hp -= damage;
-        return afterDamage(
-          `💣 @${mover.jid.split('@')[0]} hurls a *${def.name}* at @${target.jid.split('@')[0]}!`,
-          damage,
-        );
+        return afterDamage(`💣 ${tag(mover.jid)} hurls a *${def.name}* at ${tag(target.jid)}!`, damage);
       }
     }
 
-    // ── FLEE ──────────────────────────────────────────────
+    // ── FLEE ───────────────────────────────────────────────────────────────────
     if (cmd === 'flee') {
-      await sock.sendMessage(groupJid, {
+      await sock.sendMessage(gid, {
         text: [
-          `🏃 @${mover.jid.split('@')[0]} has fled the battle!`,
+          `🏃 ${tag(mover.jid)} has fled the battle!`,
           ``,
-          `🏆 @${target.jid.split('@')[0]} wins by default!`,
+          `🏆 ${tag(target.jid)} wins by default!`,
           `💰 +150 Ryo | ✨ +50 XP`,
         ].join('\n'),
-        mentions: [target.jid, mover.jid],
+        mentions: [mover.jid, target.jid],
       });
 
-      const [winDoc, loseDoc] = await Promise.all([
-        players.get(target.jid),
-        players.get(sender),
-      ]);
-      if (winDoc) { winDoc.wins = (winDoc.wins || 0) + 1; winDoc.xp += 50; winDoc.ryo += 150; await winDoc.save(); }
+      const [winDoc, loseDoc] = await Promise.all([players.get(target.jid), players.get(sender)]);
+      if (winDoc)  { winDoc.wins    = (winDoc.wins    || 0) + 1; winDoc.xp  += 50; winDoc.ryo  += 150; await winDoc.save(); }
       if (loseDoc) { loseDoc.losses = (loseDoc.losses || 0) + 1; await loseDoc.save(); }
 
-      return deleteBattle(groupJid);
+      return deleteBattle(gid);
     }
 
-    // ── No recognised sub-command: show current prompt ────
-    return sock.sendMessage(groupJid, {
-      text:     buildPrompt(battle, mover),
-      mentions: [mover.jid],
-    }, { quoted: msg });
+    // Fallback — show current prompt again
+    return sock.sendMessage(gid, { text: buildPrompt(battle, mover), mentions: [mover.jid] }, { quoted: msg });
   },
 };
