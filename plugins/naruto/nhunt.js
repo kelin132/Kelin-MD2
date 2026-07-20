@@ -19,7 +19,7 @@ export default {
 
       if (!player) {
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `🥷 You don't have a ninja profile.
@@ -40,7 +40,7 @@ Use .nstart first.`
 
       if (!enemy) {
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `⚠️ No enemies found for your level.`
@@ -102,7 +102,7 @@ Use .nstart first.`
 
 
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `🏆 VICTORY!
@@ -142,7 +142,7 @@ ${player.wins}`
 
 
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `☠️ DEFEATED!
@@ -164,7 +164,7 @@ ${player.losses}`
 
 
       await sock.sendMessage(
-        sender,
+        msg.key.remoteJid,
         {
           text:
 `⚔️ BATTLE
@@ -191,7 +191,7 @@ Use .nhunt again to continue fighting.`
       console.log(err);
 
       await sock.sendMessage(
-        sender,
+        msg.key.remoteJid,
         {
           text:
           "❌ Hunt failed."

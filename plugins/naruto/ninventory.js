@@ -17,7 +17,7 @@ export default {
 
       if (!player) {
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `🥷 You don't have a ninja profile.
@@ -44,7 +44,7 @@ Amount: ${i.amount}`
 
 
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `🎒 NINJA INVENTORY
@@ -75,7 +75,7 @@ Example:
       if (itemIndex === -1) {
 
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `❌ You don't have this item.`
@@ -94,7 +94,7 @@ Example:
 
       if (!item) {
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `❌ Invalid item.`
@@ -151,7 +151,7 @@ Example:
 
 
       await sock.sendMessage(
-        sender,
+        msg.key.remoteJid,
         {
           text:
 `✅ ITEM USED
@@ -176,7 +176,7 @@ ${player.xp}/${player.xpNeeded}`
       console.log(err);
 
       await sock.sendMessage(
-        sender,
+        msg.key.remoteJid,
         {
           text:
           "❌ Inventory error."

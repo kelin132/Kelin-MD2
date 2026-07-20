@@ -17,7 +17,7 @@ export default {
 
       if (!player) {
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `🥷 You don't have a ninja profile.
@@ -44,7 +44,7 @@ Use .nstart first.`
 
 
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `📜 AVAILABLE JUTSU
@@ -70,7 +70,7 @@ Example:
 
       if (!jutsu) {
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `❌ Jutsu not found.
@@ -84,7 +84,7 @@ Use .nlearn to see available techniques.`
 
       if (player.level < jutsu.level) {
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `⚠️ Your level is too low.
@@ -106,7 +106,7 @@ ${player.level}`
       ) {
 
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `❌ Clan restriction!
@@ -131,7 +131,7 @@ ${player.clan.name}`
 
       if (already) {
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `🌀 You already know ${jutsu.name}.`
@@ -146,7 +146,7 @@ ${player.clan.name}`
 
       if (player.ryo < cost) {
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `💰 Not enough Ryo!
@@ -175,7 +175,7 @@ ${player.ryo}`
 
 
       await sock.sendMessage(
-        sender,
+        msg.key.remoteJid,
         {
           text:
 `🎉 JUTSU LEARNED!

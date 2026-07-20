@@ -19,7 +19,7 @@ export default {
 
       if (!player) {
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `🥷 You don't have a ninja profile.
@@ -38,7 +38,7 @@ Use .nstart first.`
 
       if (!available.length) {
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `⚠️ You are not strong enough for any missions yet.
@@ -69,7 +69,7 @@ Train using .ntrain`
 
 
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `❌ MISSION FAILED
@@ -130,7 +130,7 @@ New Level: ${player.level}`;
 
 
       await sock.sendMessage(
-        sender,
+        msg.key.remoteJid,
         {
           text:
 `✅ MISSION COMPLETE
@@ -163,7 +163,7 @@ ${player.missionsCompleted}`
       console.log(err);
 
       await sock.sendMessage(
-        sender,
+        msg.key.remoteJid,
         {
           text:
           "❌ Mission error."

@@ -16,7 +16,7 @@ export default {
 
       if (!player) {
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `🥷 You don't have a ninja profile.
@@ -37,7 +37,7 @@ Use .nstart first.`
 
 
       await sock.sendMessage(
-        sender,
+        msg.key.remoteJid,
         {
           text:
 `🌀 YOUR JUTSU LIST
@@ -63,7 +63,7 @@ Use .nlearn to learn new techniques.`
       console.log(err);
 
       await sock.sendMessage(
-        sender,
+        msg.key.remoteJid,
         {
           text:
           "❌ Failed to load jutsu."

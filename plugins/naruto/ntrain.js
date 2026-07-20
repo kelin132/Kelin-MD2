@@ -18,7 +18,7 @@ export default {
 
       if (!player) {
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `🥷 You don't have a ninja profile.
@@ -43,7 +43,7 @@ Use .nstart first.`
           );
 
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `⏳ You are exhausted!
@@ -106,7 +106,7 @@ Train again in ${remaining} minutes.`
 
 
       await sock.sendMessage(
-        sender,
+        msg.key.remoteJid,
         {
           text:
 `🥋 TRAINING COMPLETE
@@ -143,7 +143,7 @@ Next training:
       console.log(err);
 
       await sock.sendMessage(
-        sender,
+        msg.key.remoteJid,
         {
           text:
           "❌ Training failed."

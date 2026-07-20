@@ -17,7 +17,7 @@ export default {
 
       if (!player) {
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `🥷 You don't have a ninja profile.
@@ -73,7 +73,7 @@ You are a Legendary Shinobi.`;
 
 
       await sock.sendMessage(
-        sender,
+        msg.key.remoteJid,
         {
           text:
 `🎖️ NINJA RANK
@@ -102,7 +102,7 @@ ${progress}`
       console.log(err);
 
       await sock.sendMessage(
-        sender,
+        msg.key.remoteJid,
         {
           text:
           "❌ Failed to check rank."

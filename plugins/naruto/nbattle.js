@@ -21,7 +21,7 @@ export default {
 
       if (!mentioned || !mentioned[0]) {
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `⚔️ Mention a ninja to battle.
@@ -48,7 +48,7 @@ Example:
 
       if (!player || !enemy) {
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `❌ Both players need a ninja profile.
@@ -63,7 +63,7 @@ Use:
 
       if (sender === opponent) {
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `❌ You cannot fight yourself.`

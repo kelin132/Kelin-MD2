@@ -17,7 +17,7 @@ export default {
 
       if (!player) {
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `🥷 You don't have a ninja profile.
@@ -48,7 +48,7 @@ ${item.description}`
 
 
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `🏪 NINJA SHOP
@@ -75,7 +75,7 @@ Example:
 
       if (!item) {
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `❌ Item not found.
@@ -90,7 +90,7 @@ Use .nshop to view items.`
       if (player.ryo < item.price) {
 
         return sock.sendMessage(
-          sender,
+          msg.key.remoteJid,
           {
             text:
 `💰 Not enough Ryo!
@@ -124,7 +124,7 @@ ${player.ryo}`
 
 
       await sock.sendMessage(
-        sender,
+        msg.key.remoteJid,
         {
           text:
 `✅ PURCHASE COMPLETE
@@ -149,7 +149,7 @@ Use .ninventory to view items.`
       console.log(err);
 
       await sock.sendMessage(
-        sender,
+        msg.key.remoteJid,
         {
           text:
           "❌ Shop error."
