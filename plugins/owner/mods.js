@@ -27,7 +27,6 @@ async function resolveName(sock, targetJid, chatJid) {
     } catch { /* ignore */ }
   }
 
-  // 3. Nothing found — return null so caller can decide
   return null;
 }
 
@@ -61,8 +60,10 @@ Usage:
 
       const lines = [`👮 *Bot Moderators* (${data.length})`, ""];
       data.forEach(({ num, name }, i) => {
-        lines.push(`${i + 1}. *${name}*`);
-        lines.push(`    +${num}`);
+        const displayJid = `${num}@s.whatsapp.net`;
+        lines.push(`${i + 1}. *${name || `+${num}`}*`);
+        lines.push(`    📞 +${num}`);
+        lines.push(`    🆔 \`${displayJid}\``);
         if (i < data.length - 1) lines.push("");
       });
       lines.push("", "_Use .removemod @user to remove._");
@@ -73,12 +74,12 @@ Usage:
     }
 
     // ── Resolve target JID ────────────────────────────────────────────────
-    const ctx         = msg.message?.extendedTextMessage?.contextInfo;
-    const mentionJid  = ctx?.mentionedJid?.[0];
-    const quotedPart  = ctx?.participant;
+    const ctx        = msg.message?.extendedTextMessage?.contextInfo;
+    const mentionJid = ctx?.mentionedJid?.[0];
+    const quotedPart = ctx?.participant;
 
-    const rawText = msg.message?.conversation || msg.message?.extendedTextMessage?.text || "";
-    const numArg  = rawText.trim().split(/\s+/).slice(1)[0];
+    const rawText  = msg.message?.conversation || msg.message?.extendedTextMessage?.text || "";
+    const numArg   = rawText.trim().split(/\s+/).slice(1)[0];
     const numMatch = numArg?.replace(/\D/g, "");
 
     const targetJid =
@@ -98,18 +99,17 @@ Ways to target someone:
       }, { quoted: msg });
     }
 
-    const num = targetJid.split("@")[0].split(":")[0].replace(/\D/g, "");
+    const num  = targetJid.split("@")[0].split(":")[0].replace(/\D/g, "");
     const list = getMods(); // plain nums for checks
 
     // ── .addmod ───────────────────────────────────────────────────────────
     if (cmd === "addmod") {
       if (list.includes(num)) {
         return sock.sendMessage(jid, {
-          text: `❌ +${num} is already a mod.`,
+          text: `❌ \`${num}@s.whatsapp.net\` is already a mod.`,
         }, { quoted: msg });
       }
 
-      // Resolve the best name we can find right now
       const resolvedName = await resolveName(sock, targetJid, jid);
       const name = resolvedName || `+${num}`;
 
@@ -117,7 +117,13 @@ Ways to target someone:
       saveModsData(data);
 
       return sock.sendMessage(jid, {
-        text: `✅ *${name}* is now a bot mod!\n\n+${num}\n\nThey can use mod-only commands.`,
+        text:
+`✅ *${name}* is now a bot mod!
+
+📞 +${num}
+🆔 \`${num}@s.whatsapp.net\`
+
+They can now use mod-only commands.`,
       }, { quoted: msg });
     }
 
@@ -126,14 +132,14 @@ Ways to target someone:
       const idx = data.findIndex(e => e.num === num);
       if (idx === -1) {
         return sock.sendMessage(jid, {
-          text: `❌ +${num} is not in the mods list.`,
+          text: `❌ \`${num}@s.whatsapp.net\` is not in the mods list.`,
         }, { quoted: msg });
       }
       const { name } = data[idx];
       data.splice(idx, 1);
       saveModsData(data);
       return sock.sendMessage(jid, {
-        text: `✅ *${name}* (+${num}) removed from mods.`,
+        text: `✅ *${name}* (+${num}) removed from mods.\n🆔 \`${num}@s.whatsapp.net\``,
       }, { quoted: msg });
     }
   },
