@@ -81,7 +81,7 @@ export default {
 ╭━━━━━━━━━━━━━━━━━━━━╮
 |ꕥ ${prefix}*reg* to use economy cmds
 |ꕥ ${prefix}*support* for official group
-|ꕥ ${prefix}*addbot* for adding in your group 
+|ꕥ ${prefix}*reqbot* for adding in your group 
 ╰━━━━━━━━━━━━━━━━━━━━╯
 \n${READMORE}\n`;
 
