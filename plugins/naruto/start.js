@@ -34,7 +34,7 @@ export default {
       const baseSpd    = 10  + (clan.bonus?.speed   || 0);
 
       const player = await players.create({
-        jid,
+        jid: sender,
         username:     msg.pushName || "Unknown Ninja",
         village:      { id: village.id, name: village.name, emoji: village.emoji },
         clan:         { name: clan.name, ability: clan.ability },
