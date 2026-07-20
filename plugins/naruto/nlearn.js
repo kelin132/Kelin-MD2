@@ -11,181 +11,121 @@ export default {
 
   async run({ sock, msg, sender, text }) {
 
+    const jid = msg.key.remoteJid;
+
     try {
 
       const player = await players.get(sender);
 
       if (!player) {
-        return sock.sendMessage(
-          msg.key.remoteJid,
-          {
-            text:
+        return sock.sendMessage(jid, {
+          text:
 `🥷 You don't have a ninja profile.
 
 Use .nstart first.`
-          },
-          { quoted: msg }
-        );
+        }, { quoted: msg });
       }
 
-
-      // Show available jutsu
+      // No argument — show available jutsu
       if (!text) {
-
         const available = jutsuList
-          .filter(j => player.level >= j.level)
-          .map(j =>
-`${j.id}
-🌀 ${j.name}
-⭐ Level: ${j.level}
-💰 Cost: ${j.level * 100} Ryo`
-          )
+          .filter(j => !j.clan || player.clan?.name === j.clan)
+          .map(j => {
+            const cost       = j.level * 100;
+            const canAfford  = player.ryo >= cost;
+            const levelOk    = player.level >= j.level;
+            const alreadyHas = player.jutsu?.some(k => k.id === j.id);
+            const status     = alreadyHas ? "✅ Learned" : (!levelOk ? `🔒 Lv ${j.level}` : (!canAfford ? `💸 ${cost} Ryo` : "📖 Available"));
+            return `*${j.name}* (${j.id})\nRank: ${j.rank} | Cost: ${cost} Ryo | ${status}`;
+          })
           .join("\n\n");
 
+        return sock.sendMessage(jid, {
+          text:
+`📜 *JUTSU LIST*
 
-        return sock.sendMessage(
-          msg.key.remoteJid,
-          {
-            text:
-`📜 AVAILABLE JUTSU
+${available || "No jutsu available for your clan/level."}
 
-${available || "No jutsu available."}
-
-
-Use:
-.nlearn <jutsu_id>
-
-Example:
-.nlearn rasengan`
-          },
-          { quoted: msg }
-        );
+Use *.nlearn <jutsu_id>* to learn one.
+Example: .nlearn shadow_clone`
+        }, { quoted: msg });
       }
 
-
-      const jutsu = jutsuList.find(
-        j => j.id === text.toLowerCase()
-      );
-
+      const jutsuId = text.trim().toLowerCase();
+      const jutsu   = jutsuList.find(j => j.id === jutsuId);
 
       if (!jutsu) {
-        return sock.sendMessage(
-          msg.key.remoteJid,
-          {
-            text:
-`❌ Jutsu not found.
+        return sock.sendMessage(jid, {
+          text:
+`❌ Jutsu "*${jutsuId}*" not found.
 
-Use .nlearn to see available techniques.`
-          },
-          { quoted: msg }
-        );
+Use *.nlearn* (no argument) to see available techniques.`
+        }, { quoted: msg });
       }
-
 
       if (player.level < jutsu.level) {
-        return sock.sendMessage(
-          msg.key.remoteJid,
-          {
-            text:
-`⚠️ Your level is too low.
+        return sock.sendMessage(jid, {
+          text:
+`⚠️ Your level is too low!
 
-Required:
-Level ${jutsu.level}
-
-Your level:
-${player.level}`
-          },
-          { quoted: msg }
-        );
+Required: Level ${jutsu.level}
+Your level: ${player.level}`
+        }, { quoted: msg });
       }
 
-
-      if (
-        jutsu.clan &&
-        player.clan.name !== jutsu.clan
-      ) {
-
-        return sock.sendMessage(
-          msg.key.remoteJid,
-          {
-            text:
+      if (jutsu.clan && player.clan?.name !== jutsu.clan) {
+        return sock.sendMessage(jid, {
+          text:
 `❌ Clan restriction!
 
-This jutsu requires:
-${jutsu.clan} clan
-
-Your clan:
-${player.clan.name}`
-          },
-          { quoted: msg }
-        );
-
+This jutsu requires the *${jutsu.clan}* clan.
+Your clan: ${player.clan?.name || "None"}`
+        }, { quoted: msg });
       }
 
-
-      const already =
-        player.jutsu.some(
-          j => j.id === jutsu.id
-        );
-
-
-      if (already) {
-        return sock.sendMessage(
-          msg.key.remoteJid,
-          {
-            text:
-`🌀 You already know ${jutsu.name}.`
-          },
-          { quoted: msg }
-        );
+      const alreadyKnown = player.jutsu?.some(j => j.id === jutsu.id);
+      if (alreadyKnown) {
+        return sock.sendMessage(jid, {
+          text: `🌀 You already know *${jutsu.name}*!`
+        }, { quoted: msg });
       }
-
 
       const cost = jutsu.level * 100;
-
-
       if (player.ryo < cost) {
-        return sock.sendMessage(
-          msg.key.remoteJid,
-          {
-            text:
+        return sock.sendMessage(jid, {
+          text:
 `💰 Not enough Ryo!
 
-Required:
-${cost}
-
-Your Ryo:
-${player.ryo}`
-          },
-          { quoted: msg }
-        );
+Cost: ${cost} Ryo
+Your Ryo: ${player.ryo}`
+        }, { quoted: msg });
       }
 
-
+      // Deduct cost and learn
       player.ryo -= cost;
-
-
-      player.jutsu.push({
-        id: jutsu.id,
-        name: jutsu.name
-      });
-
-
+      if (!Array.isArray(player.jutsu)) player.jutsu = [];
+      player.jutsu.push({ id: jutsu.id, name: jutsu.name });
       await player.save();
 
-
-      await sock.sendMessage(
-        msg.key.remoteJid,
-        {
-          text:
-`🎉 JUTSU LEARNED!
+      await sock.sendMessage(jid, {
+        text:
+`🎉 *JUTSU LEARNED!*
 
 🌀 ${jutsu.name}
+⭐ Rank: ${jutsu.rank}
+💥 Type: ${jutsu.type}
+⚡ Damage: ${jutsu.damage}
+💙 Chakra cost: ${jutsu.chakra}
 
-Rank:
-${jutsu.rank}
+💰 Ryo spent: ${cost}
+💰 Ryo remaining: ${player.ryo}`
+      }, { quoted: msg });
 
-Type:
-${jutsu.type}
-
-💰
+    } catch (err) {
+      console.error("NLEARN ERROR:", err);
+      await sock.sendMessage(jid, {
+        text: "❌ Failed to learn jutsu. Please try again."
+      }, { quoted: msg });
+    }
+  }
+};
