@@ -46,4 +46,4 @@ module.exports = {
   };
   
 
-> *_Powered by XYTHERA_*
+> THIS MESSAGE WAS BROADCASTED BY THE OWNER
