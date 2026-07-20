@@ -1,129 +1,58 @@
-// plugins/media/sticker.js
-// Convert image, short video, or existing sticker → WhatsApp sticker.
-// wa-sticker-formatter is CJS — import it via createRequire to avoid
-// the "named exports" warning from Node's ESM/CJS interop.
-
-import { createRequire }        from "module";
-import { downloadMediaMessage } from "@whiskeysockets/baileys";
-import pino                     from "pino";
-
-const _require    = createRequire(import.meta.url);
-const stickerPkg  = _require("wa-sticker-formatter");
-const Sticker      = stickerPkg.Sticker;
-const StickerTypes = stickerPkg.StickerTypes;
-
-function unwrapMessage(message) {
-  if (!message) return null;
-  if (message.ephemeralMessage)           return unwrapMessage(message.ephemeralMessage.message);
-  if (message.viewOnceMessage)            return unwrapMessage(message.viewOnceMessage.message);
-  if (message.viewOnceMessageV2)          return unwrapMessage(message.viewOnceMessageV2.message);
-  if (message.documentWithCaptionMessage) return unwrapMessage(message.documentWithCaptionMessage.message);
-  return message;
-}
-
-function getContext(m) {
-  return (
-    m.message?.extendedTextMessage?.contextInfo ||
-    m.message?.imageMessage?.contextInfo        ||
-    m.message?.videoMessage?.contextInfo        ||
-    m.message?.stickerMessage?.contextInfo      ||
-    {}
-  );
-}
-
-function getMediaType(message) {
-  if (!message) return null;
-  if (message.imageMessage)   return "imageMessage";
-  if (message.videoMessage)   return "videoMessage";
-  if (message.stickerMessage) return "stickerMessage";
-  return null;
-}
-
 export default {
-  name:        "sticker",
-  aliases:     ["s", "stik", "stiker"],
-  category:    "media",
-  description: "Convert an image, short video, or sticker to a sticker",
-  usage:       ".s (reply to or caption an image/video/sticker)",
-  cooldown:    5,
-  isOwner:     false,
-  isAdmin:     false,
-  isPremium:   false,
+  name: "sticker",
+  description: "Convert a replied image or video into a sticker",
+  category: "converter",
+  usage: ".sticker",
+  aliases: ["s", "stk"],
+  cooldown: 5,
+  isOwner: false,
+  isAdmin: false,
+  isPremium: false,
+  version: "1.0.0",
 
-  async run({ sock, msg, sender }) {
-    const jid   = msg.key.remoteJid;
-    const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
-
+  async run({ sock, msg, text }) {
     try {
-      const ctx    = getContext(msg);
-      const quoted = unwrapMessage(ctx?.quotedMessage);
-      const own    = unwrapMessage(msg.message);
+      const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
 
-      let targetMessage;
-      let messageToDownload;
-
-      if (quoted && getMediaType(quoted)) {
-        targetMessage     = quoted;
-        messageToDownload = {
-          message: quoted,
-          key: {
-            remoteJid:   jid,
-            id:          ctx.stanzaId,
-            participant: ctx.participant || ctx.quotedParticipant || sender,
-          },
-        };
-      } else if (own && getMediaType(own)) {
-        targetMessage     = own;
-        messageToDownload = msg;
-      } else {
-        return reply("❌ Reply to an image, short video, or sticker to make a sticker.");
+      if (!quoted) {
+        return await sock.sendMessage(
+          msg.key.remoteJid,
+          { text: "❌ Reply to an image or video." },
+          { quoted: msg }
+        );
       }
 
-      const type  = getMediaType(targetMessage);
-      const media = targetMessage[type];
+      // Download media
+      const buffer = await sock.downloadMediaMessage(msg);
 
-      if (type === "videoMessage" && Number(media?.seconds || 0) > 10) {
-        return reply("❌ Video is too long. Please use a video under 10 seconds.");
+      let packname = process.env.STICKER_PACKNAME || "KELIN-MD";
+      let author = process.env.STICKER_AUTHOR || "Kelin";
+
+      if (text) {
+        const parts = text.split(/[,;|]/).map(x => x.trim());
+        packname = parts[0] || packname;
+        author = parts[1] || author;
       }
 
-      const status = await sock.sendMessage(jid, { text: "⏳ Creating sticker…" }, { quoted: msg });
-
-      const buffer = await downloadMediaMessage(
-        messageToDownload,
-        "buffer",
-        {},
+      // Send sticker (replace with your sticker helper)
+      await sock.sendMessage(
+        msg.key.remoteJid,
         {
-          logger:          pino({ level: "silent" }),
-          reuploadRequest: sock.updateMediaMessage,
-        }
-      ).catch(err => {
-        console.error("STICKER DOWNLOAD ERROR:", err);
-        return null;
-      });
-
-      if (!buffer || !Buffer.isBuffer(buffer) || buffer.length < 50) {
-        return sock.sendMessage(jid, {
-          text: "❌ Failed to download media. Please resend the image/video and try again.",
-          edit: status.key,
-        });
-      }
-
-      const sticker = new Sticker(buffer, {
-        pack:       "KELIN-MD",
-        author:     "KELIN-MD",
-        type:       StickerTypes.FULL,
-        categories: ["🤩", "✨"],
-        id:         "kelin-md-sticker",
-        quality:    80,
-      });
-
-      const stickerBuffer = await sticker.toBuffer();
-      await sock.sendMessage(jid, { sticker: stickerBuffer }, { quoted: msg });
-      await sock.sendMessage(jid, { text: "✅ Sticker created!", edit: status.key });
+          sticker: buffer,
+          packname,
+          author,
+        },
+        { quoted: msg }
+      );
 
     } catch (err) {
-      console.error("STICKER CMD ERROR:", err);
-      return reply("❌ Failed to create sticker. Make sure the file is an image or a short video under 10 seconds.");
+      console.error(err);
+
+      await sock.sendMessage(
+        msg.key.remoteJid,
+        { text: "❌ Failed to create sticker." },
+        { quoted: msg }
+      );
     }
-  },
+  }
 };
