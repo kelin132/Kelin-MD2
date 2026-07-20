@@ -1,6 +1,6 @@
 const config = require('../../config');
 // ── NEW: tell the force-add handler this join is intentional ──────────────────
-const { markIntentionalJoin } = require('../../handlers/Bot');
+const { markIntentionalJoin } = require('../../libs/bot.mjs');
 
 moon({
   name: 'join',
