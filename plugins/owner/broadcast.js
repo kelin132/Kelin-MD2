@@ -1,4 +1,4 @@
-import { sendReaction } from "./_helper.js";
+import { sendReaction } from "./libs/bot.mjs";
 
 export default {
   name: "broadcast",
