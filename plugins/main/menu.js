@@ -7,6 +7,9 @@ const categoryEmojis = {
   main:       "🏡",
   economy:    "💰",
   guild:      "⚔️",
+  naruto:     "🪾",
+  cards:      "🃏",
+  anime:      "🍡", 
   staff:      "🛡️",
   games:      "🎮",
   fun:        "🎀",
@@ -17,10 +20,7 @@ const categoryEmojis = {
   download:   "📥",
   group:      "🌸",
   admin:      "⚜️",
-  anime:      "🍡",
-  cards:      "🃏",
   owner:      "👑",
-  naruto:     "🪾",
 };
 
 // Categories shown to everyone — staff/owner see all
