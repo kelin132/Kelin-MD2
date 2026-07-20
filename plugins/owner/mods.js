@@ -33,9 +33,17 @@ Usage:
         }, { quoted: msg });
       }
 
-      const jids  = list.map(num => `${num}@s.whatsapp.net`);
+      const jids = list.map(num => `${num}@s.whatsapp.net`);
+
       const lines = [`👮 *Bot Moderators* (${list.length})`, ""];
-      list.forEach((num, i) => lines.push(`${i + 1}. @${num}`));
+      list.forEach((num, i) => {
+        const modJid = `${num}@s.whatsapp.net`;
+        const contact = sock.contacts?.[modJid] ?? {};
+        const name = contact.notify || contact.verifiedName || contact.name || "Unknown";
+        lines.push(`${i + 1}. *${name}*`);
+        lines.push(`    @${num}`);
+        if (i < list.length - 1) lines.push("");
+      });
       lines.push("", "_Use .removemod @user to remove._");
 
       return sock.sendMessage(jid, {
