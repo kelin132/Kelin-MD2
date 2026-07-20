@@ -1,21 +1,49 @@
-export default {
-  name: "broadcast",
-  description: "Broadcast a message to all chats",
-  category: "owner",
-  usage: ".broadcast <message>",
-  aliases: ["bc"],
-  cooldown: 30,
-  isOwner: true,
-  isAdmin: false,
-  isPremium: false,
-  version: "1.0.0",
-  async run({ sock, msg, text }) {
-    if (!text) {
-      await sock.sendMessage(msg.key.remoteJid, { text: "Usage: .broadcast <message>" });
-      return;
+
+const { randomReact } = require('../../utils/ranks');
+/**
+ * Broadcast Command - Send message to all chats
+ */
+
+module.exports = {
+    name: 'broadcast',
+    aliases: ['bc'],
+    category: 'owner',
+    description: 'Broadcast message to all chats',
+    usage: '.broadcast <message>',
+    ownerOnly: true,
+    
+    async execute(sock, msg, args, extra) {
+      try {
+        if (args.length === 0) {
+          return extra.reply('❌ Usage: .broadcast <message>\n\nExample: .broadcast Hello everyone!');
+        }
+        
+        const message = args.join(' ');
+        
+        const chats = await sock.groupFetchAllParticipating();
+        const groups = Object.values(chats);
+        
+        let success = 0;
+        let failed = 0;
+        
+        for (const group of groups) {
+          try {
+            await sock.sendMessage(group.id, {
+              text: `📢 *BROADCAST MESSAGE*\n\n${message}\n\n_This is a broadcast message from bot owner_`
+            });
+            success++;
+          } catch (e) {
+            failed++;
+          }
+        }
+        
+        await extra.reply(`✅ Broadcast complete!\n\n✅ Success: ${success}\n❌ Failed: ${failed}`);
+        
+      } catch (error) {
+        await extra.reply(`❌ Error: ${error.message}`);
+      }
     }
-    await sock.sendMessage(msg.key.remoteJid, {
-      text: `Broadcast sent: "${text}"`,
-    });
-  },
-};
+  };
+  
+
+> *_Powered by XYTHERA_*
