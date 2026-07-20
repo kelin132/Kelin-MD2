@@ -13,7 +13,8 @@ export default {
 
     try {
       const userId = sender.split("@")[0];
-      const cards  = await Col.market().find({ sellerId: userId }).toArray();
+      const market = await Col.market();
+      const cards  = await market.find({ sellerId: userId }).toArray();
 
       if (!cards.length) return reply("📭 You haven't listed any cards for sale.\n\nUse .sellc <index> <price> to list one.");
 

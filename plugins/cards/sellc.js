@@ -21,9 +21,10 @@ export default {
       const user = await findOrCreateUser(sender);
       if (!user.cards || !user.cards[index]) return reply("❌ Invalid card index. Use .col to check.");
 
-      const card = user.cards[index];
+      const card   = user.cards[index];
+      const market = await Col.market();
 
-      await Col.market().insertOne({
+      await market.insertOne({
         sellerId:   sender.split("@")[0],
         cardId:     card.cardId,
         cardName:   card.name || "Unknown Card",

@@ -41,7 +41,8 @@ export default {
       const cardIds = slice.map(c => c.cardId);
       let ownerMap  = new Map();
       try {
-        const users = await Col.users().find(
+        const userCol = await Col.users();
+        const users   = await userCol.find(
           { "cards.cardId": { $in: cardIds } },
           { projection: { userId: 1, username: 1, "cards.cardId": 1 } }
         ).toArray();

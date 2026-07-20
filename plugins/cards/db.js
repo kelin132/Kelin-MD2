@@ -19,12 +19,14 @@ export function fmt(n) {
 }
 
 // ── Collections ───────────────────────────────────────────────────────────────
+// Each method is async — always await the call before chaining .find()/.insertOne() etc.
+// Usage: const col = await Col.users();  await col.findOne(...)
 
 export const Col = {
-  users:   () => getDb().collection("mn_users"),
-  cards:   () => getDb().collection("mn_cards"),
-  market:  () => getDb().collection("mn_card_market"),
-  spawns:  () => getDb().collection("mn_spawn_settings"),
+  users:  async () => (await getDb()).collection("mn_users"),
+  cards:  async () => (await getDb()).collection("mn_cards"),
+  market: async () => (await getDb()).collection("mn_card_market"),
+  spawns: async () => (await getDb()).collection("mn_spawn_settings"),
 };
 
 // ── User helpers ──────────────────────────────────────────────────────────────
@@ -33,7 +35,7 @@ export const Col = {
  * Find or create a user. Returns the document with a save() method attached.
  */
 export async function findOrCreateUser(sender) {
-  const col = Col.users();
+  const col    = await Col.users();
   const userId = uid(sender);
 
   let user = await col.findOne({ userId });
@@ -41,12 +43,12 @@ export async function findOrCreateUser(sender) {
     user = {
       userId,
       whatsappNumber: sender,
-      balance: 0,
-      cards: [],
-      cardLimit: 100,
+      balance:    0,
+      cards:      [],
+      cardLimit:  100,
       totalCards: 0,
-      username: null,
-      createdAt: new Date(),
+      username:   null,
+      createdAt:  new Date(),
     };
     const { insertedId } = await col.insertOne(user);
     user._id = insertedId;
@@ -54,8 +56,9 @@ export async function findOrCreateUser(sender) {
 
   user.markModified = () => {}; // no-op — raw driver doesn't need it
   user.save = async () => {
+    const c = await Col.users();
     const { _id, save, markModified, ...data } = user;
-    await col.updateOne({ userId }, { $set: data });
+    await c.updateOne({ userId }, { $set: data });
   };
 
   return user;
@@ -65,28 +68,31 @@ export async function findOrCreateUser(sender) {
  * Find a user without creating one. Returns null if not found.
  */
 export async function getUser(sender) {
-  const col = Col.users();
+  const col    = await Col.users();
   const userId = uid(sender);
-  const user = await col.findOne({ userId });
+  const user   = await col.findOne({ userId });
   if (!user) return null;
 
   user.markModified = () => {};
   user.save = async () => {
+    const c = await Col.users();
     const { _id, save, markModified, ...data } = user;
-    await col.updateOne({ userId }, { $set: data });
+    await c.updateOne({ userId }, { $set: data });
   };
   return user;
 }
 
-// ── Spawn settings (used by cardspawn.js + cardSpawner.mjs) ──────────────────
+// ── Spawn settings (used by cardspawn.js + autoSpawn.js) ─────────────────────
 
 export async function isSpawnEnabled(chatId) {
-  const doc = await Col.spawns().findOne({ chatId });
+  const col = await Col.spawns();
+  const doc = await col.findOne({ chatId });
   return doc?.enabled === true;
 }
 
 export async function setSpawnEnabled(chatId, enabled) {
-  await Col.spawns().updateOne(
+  const col = await Col.spawns();
+  await col.updateOne(
     { chatId },
     { $set: { chatId, enabled } },
     { upsert: true }
@@ -94,6 +100,7 @@ export async function setSpawnEnabled(chatId, enabled) {
 }
 
 export async function getEnabledSpawnChats() {
-  const docs = await Col.spawns().find({ enabled: true }).toArray();
+  const col  = await Col.spawns();
+  const docs = await col.find({ enabled: true }).toArray();
   return docs.map(d => d.chatId);
 }

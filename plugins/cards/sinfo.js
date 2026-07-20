@@ -12,8 +12,9 @@ export default {
     const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
 
     try {
-      const index = parseInt(args[0]) - 1;
-      const cards = await Col.market().find().toArray();
+      const index  = parseInt(args[0]) - 1;
+      const market = await Col.market();
+      const cards  = await market.find().toArray();
 
       if (isNaN(index) || !cards[index]) return reply(`❌ Invalid index. There are ${cards.length} active listing(s).`);
 
