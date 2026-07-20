@@ -1,49 +1,89 @@
+import { sendReaction } from "./_helper.js";
 
-const { randomReact } = require('../../utils/ranks');
-/**
- * Broadcast Command - Send message to all chats
- */
+export default {
+  name: "broadcast",
+  description: "Broadcast a message to all groups",
+  category: "owner",
+  usage: ".broadcast <message>",
+  aliases: ["bc"],
+  cooldown: 5,
+  isOwner: true,
+  isAdmin: false,
+  isPremium: false,
+  version: "1.0.0",
 
-module.exports = {
-    name: 'broadcast',
-    aliases: ['bc'],
-    category: 'owner',
-    description: 'Broadcast message to all chats',
-    usage: '.broadcast <message>',
-    ownerOnly: true,
-    
-    async execute(sock, msg, args, extra) {
-      try {
-        if (args.length === 0) {
-          return extra.reply('❌ Usage: .broadcast <message>\n\nExample: .broadcast Hello everyone!');
-        }
-        
-        const message = args.join(' ');
-        
-        const chats = await sock.groupFetchAllParticipating();
-        const groups = Object.values(chats);
-        
-        let success = 0;
-        let failed = 0;
-        
-        for (const group of groups) {
-          try {
-            await sock.sendMessage(group.id, {
-              text: `📢 *BROADCAST MESSAGE*\n\n${message}\n\n_This is a broadcast message from bot owner_`
-            });
-            success++;
-          } catch (e) {
-            failed++;
-          }
-        }
-        
-        await extra.reply(`✅ Broadcast complete!\n\n✅ Success: ${success}\n❌ Failed: ${failed}`);
-        
-      } catch (error) {
-        await extra.reply(`❌ Error: ${error.message}`);
+  async run({ sock, msg, sender, text }) {
+    try {
+      if (!text) {
+        return await sock.sendMessage(
+          msg.key.remoteJid,
+          {
+            text: "❌ Usage:\n.broadcast <message>\n\nExample:\n.broadcast Hello everyone!"
+          },
+          { quoted: msg }
+        );
       }
-    }
-  };
-  
+
+      await sendReaction({
+        sock,
+        msg,
+        sender,
+        type: "⚡"
+      });
+
+      const chats = await sock.groupFetchAllParticipating();
+      const groups = Object.values(chats);
+
+      let success = 0;
+      let failed = 0;
+
+      for (const group of groups) {
+        try {
+          await sock.sendMessage(group.id, {
+            text: `╭━━━〔 📢 KELIN-MD BROADCAST 〕━━━╮
+
+${text}
+
+━━━━━━━━━━━━━━━━━━━━
 
 > THIS MESSAGE WAS BROADCASTED BY THE OWNER
+
+━━━━━━━━━━━━━━━━━━━━
+🤖 KELIN-MD • Anime WhatsApp Bot
+🌸 Thank you for using KELIN-MD!
+
+╰━━━━━━━━━━━━━━━━━━━━╯`
+          });
+
+          success++;
+        } catch (err) {
+          console.error(`Failed to send to ${group.subject}:`, err);
+          failed++;
+        }
+      }
+
+      await sock.sendMessage(
+        msg.key.remoteJid,
+        {
+          text: `✅ Broadcast completed!
+
+📨 Total Groups: ${groups.length}
+✅ Sent: ${success}
+❌ Failed: ${failed}`
+        },
+        { quoted: msg }
+      );
+
+    } catch (err) {
+      console.error(err);
+
+      await sock.sendMessage(
+        msg.key.remoteJid,
+        {
+          text: `❌ Broadcast failed!\n\n${err.message}`
+        },
+        { quoted: msg }
+      );
+    }
+  }
+};
