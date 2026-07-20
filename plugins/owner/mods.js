@@ -1,7 +1,6 @@
 /**
  * KELIN MD — .mods / .addmod / .removemod
  * Manages the bot moderator list (stored in data/mods.json).
- * Mods get isMod=true in the permission system via lib/permissions.mjs.
  */
 import { getModsData, saveModsData, getMods } from "../../lib/permissions.mjs";
 
@@ -9,12 +8,10 @@ import { getModsData, saveModsData, getMods } from "../../lib/permissions.mjs";
 async function resolveName(sock, targetJid, chatJid) {
   const num = targetJid.split("@")[0].split(":")[0];
 
-  // 1. sock.contacts (populated from synced contacts + past messages)
   const c = sock.contacts?.[targetJid] ?? sock.contacts?.[`${num}@s.whatsapp.net`] ?? {};
   const fromContacts = c.notify || c.verifiedName || c.name;
   if (fromContacts) return fromContacts;
 
-  // 2. Group participant pushName (if command used in a group)
   if (chatJid?.endsWith("@g.us")) {
     try {
       const meta = await sock.groupMetadata(chatJid);
@@ -43,30 +40,34 @@ export default {
     const jid  = msg.key.remoteJid;
     const data = getModsData(); // [{ num, name }]
 
-    // ── .mods / .modlist — show current list ──────────────────────────────
+    // ── .mods / .modlist ──────────────────────────────────────────────────
     if (cmd === "mods" || cmd === "modlist") {
       if (!data.length) {
         return sock.sendMessage(jid, {
           text:
-`👮 *Bot Moderators*
+`*MODS*
 
 No mods set yet.
 
-Usage:
 • *.addmod @user* — grant mod access
 • *.removemod @user* — revoke mod access`,
         }, { quoted: msg });
       }
 
-      const lines = [`👮 *Bot Moderators* (${data.length})`, ""];
-      data.forEach(({ num, name }, i) => {
-        const displayJid = `${num}@s.whatsapp.net`;
-        lines.push(`${i + 1}. *${name || `+${num}`}*`);
-        lines.push(`    📞 +${num}`);
-        lines.push(`    🆔 \`${displayJid}\``);
-        if (i < data.length - 1) lines.push("");
+      const lines = [`*MODS*`, ``];
+      let counter = 1;
+
+      data.forEach(({ num, name }) => {
+        const label  = "(MOD)";
+        const display = name || `+${num}`;
+        lines.push(`${counter}. ${label} ${display}`);
+        counter++;
+        lines.push(`${counter}. ${label} +${num}`);
+        counter++;
+        lines.push(``);
       });
-      lines.push("", "_Use .removemod @user to remove._");
+
+      lines.push(`_Use .removemod @user to remove a mod._`);
 
       return sock.sendMessage(jid, {
         text: lines.join("\n"),
@@ -92,7 +93,6 @@ Usage:
         text:
 `❌ Please specify a user.
 
-Ways to target someone:
 • @mention them: *.addmod @user*
 • Reply to their message: *.addmod* (while replying)
 • Type their number: *.addmod 27628114340*`,
@@ -100,13 +100,13 @@ Ways to target someone:
     }
 
     const num  = targetJid.split("@")[0].split(":")[0].replace(/\D/g, "");
-    const list = getMods(); // plain nums for checks
+    const list = getMods();
 
     // ── .addmod ───────────────────────────────────────────────────────────
     if (cmd === "addmod") {
       if (list.includes(num)) {
         return sock.sendMessage(jid, {
-          text: `❌ \`${num}@s.whatsapp.net\` is already a mod.`,
+          text: `❌ +${num} is already a mod.`,
         }, { quoted: msg });
       }
 
@@ -117,13 +117,7 @@ Ways to target someone:
       saveModsData(data);
 
       return sock.sendMessage(jid, {
-        text:
-`✅ *${name}* is now a bot mod!
-
-📞 +${num}
-🆔 \`${num}@s.whatsapp.net\`
-
-They can now use mod-only commands.`,
+        text: `✅ *${name}* is now a bot mod!\n\n+${num}`,
       }, { quoted: msg });
     }
 
@@ -132,14 +126,14 @@ They can now use mod-only commands.`,
       const idx = data.findIndex(e => e.num === num);
       if (idx === -1) {
         return sock.sendMessage(jid, {
-          text: `❌ \`${num}@s.whatsapp.net\` is not in the mods list.`,
+          text: `❌ +${num} is not in the mods list.`,
         }, { quoted: msg });
       }
       const { name } = data[idx];
       data.splice(idx, 1);
       saveModsData(data);
       return sock.sendMessage(jid, {
-        text: `✅ *${name}* (+${num}) removed from mods.\n🆔 \`${num}@s.whatsapp.net\``,
+        text: `✅ *${name}* (+${num}) removed from mods.`,
       }, { quoted: msg });
     }
   },
