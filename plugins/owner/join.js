@@ -1,120 +1,150 @@
-const config = require('../../config');
-// ── NEW: tell the force-add handler this join is intentional ──────────────────
-const { markIntentionalJoin } = require('../../libs/bot.mjs');
+/**
+ * KELIN MD — .join / .leave
+ * Owner-only commands to join a group via invite link and leave a group.
+ *
+ * Settings pulled from settings.cjs (botName, ownerName).
+ * No external lib needed — uses Baileys sock.groupGetInviteInfo +
+ * sock.groupAcceptInvite directly, matching the rest of this codebase.
+ */
+import { createRequire } from "module";
 
-moon({
-  name: 'join',
-  category: 'owner',
-  roles: ["Owner", "True Owner"],
-  description: 'Make the bot join a group via invite link',
-  async execute(sock, jid, sender, args, m, { reply }) {
+const _require  = createRequire(import.meta.url);
+const _settings = _require("../../settings.cjs");
+
+const BOT_NAME   = _settings.botName   || "KELIN MD";
+const OWNER_NAME = _settings.botOwner  || "Kelin";
+
+export default {
+  name:        "join",
+  aliases:     ["leave"],
+  category:    "owner",
+  description: "Join a group via invite link (or leave current group)",
+  usage:       ".join <invite_link>  |  .leave",
+  cooldown:    5,
+  isOwner:     true,
+
+  async run({ sock, msg, cmd, args }) {
+    const jid   = msg.key.remoteJid;
+    const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
+
+    // ── .leave ───────────────────────────────────────────────────────────
+    if (cmd === "leave") {
+      if (!jid.endsWith("@g.us")) {
+        return reply("❌ This command can only be used inside a group.");
+      }
+      try {
+        await reply("👋 Leaving this group now. Goodbye!");
+        await sock.groupLeave(jid);
+      } catch (err) {
+        console.error("[join.js] Leave error:", err.message);
+        return reply(`❌ Failed to leave: ${err.message}`);
+      }
+      return;
+    }
+
+    // ── .join ────────────────────────────────────────────────────────────
+    const inviteLink = args[0];
+    if (!inviteLink) {
+      return reply(
+`❌ Please provide a WhatsApp group invite link.
+
+*Usage:*
+.join https://chat.whatsapp.com/XXXXXXXXXXXXXXXXXXXXXX`
+      );
+    }
+
+    // Extract the invite code from any valid chat.whatsapp.com URL format
+    const inviteRegex = /chat\.whatsapp\.com\/(?:invite\/)?([a-zA-Z0-9_-]{20,26})/;
+    const match       = inviteLink.match(inviteRegex);
+    const inviteCode  = match ? match[1] : null;
+
+    if (!inviteCode) {
+      return reply(
+`❌ Invalid invite link format.
+
+Make sure the link looks like:
+https://chat.whatsapp.com/XXXXXXXXXXXXXXXXXXXXXX`
+      );
+    }
+
+    // ── Step 1: preview the group before joining ─────────────────────────
+    let groupInfo;
     try {
-      const inviteLink = args[0];
-      if (!inviteLink) {
-        return reply("❌ Please provide a WhatsApp group invite link.");
-      }
-      const inviteRegex = /chat\.whatsapp\.com\/(?:invite\/)?([a-zA-Z0-9_-]{20,26})/;
-      const match = inviteLink.match(inviteRegex);
-      const inviteCode = match ? match[1] : null;
-      if (!inviteCode) {
-        return reply("❌ Invalid invite link format. Please provide a full chat.whatsapp.com link.");
-      }
-      let groupJid;
-      try {
-        const info = await sock.groupGetInviteInfo(inviteCode);
-        // ── Mark as intentional BEFORE joining ───────────────────────────
-        if (info?.id) markIntentionalJoin(info.id);
-        groupJid = await sock.groupAcceptInvite(inviteCode);
-        if (!groupJid) {
-          groupJid = info.id;
-        }
-      } catch (err) {
-        console.error("Join failed:", err.message);
-        if (err.message.includes('406') || err.message.includes('not-authorized')) {
-          return reply("❌ Could not join: The bot might be banned from this group or the invite is restricted.");
-        } else if (err.message.includes('410') || err.message.includes('gone')) {
-          return reply("❌ Could not join: This invite link has expired or been reset.");
-   } else if (err.message.includes('409') || err.message.includes('conflict')) {
-          return reply("ℹ️ The bot is already a member of this group.");
-        } else if (err.message.includes('429')) {
-          return reply("❌ Rate limited: Too many join attempts. Please try again later.");
-        }
-        return reply(`❌ Could not join group: ${err.message || "Invalid or expired invite"}`);
-      }
-      const text = `
-╭━━━『 𝚳OO𝚴𝐋𝚰𝐆𝚮𝚻 』━━━╮
-⟢ ${config.BOT_NAME} joined the group
-> *hy* my name is *${config.BOT_NAME}* i am a private bot that was created by my good lord ${config.BOT_NAME}
-╰━━━━━━━━━━━━━━━━━╯
-📌 *IMPORTANT INFORMATION*
-• Use \`.rules\` to see full community/usage rules
-• Do NOT DM the bot privately
-• Do NOT spam commands
-• Keep group behavior clean
-⚙️ *System Notice:*
-This bot requires admin permissions.
-Please promote it immediately as it join the group.
-> 🔐 ${config.BOT_NAME} System Active
-if you have any questions please use \`.mods\` and get support
-`.trim();
-      try {
-        if (config.MENU_IMAGE) {
-          await sock.sendMessage(groupJid, { 
-            image: { url: config.MENU_IMAGE },
-            caption: text 
-          });
-  } else {
-          await sock.sendMessage(groupJid, { text });
-        }
-      } catch (err) {
-        console.error("Post-join message failed:", err.message);
-        await sock.sendMessage(groupJid, { text }).catch(e => console.error("Fallback failed:", e.message));
-      }
-      return reply('✅ Successfully joined the group.');
-    } catch (err) {  } else if (err.message.includes('409') || err.message.includes('conflict')) {
-          return reply("ℹ️ The bot is already a member of this group.");
-        } else if (err.message.includes('429')) {
-          return reply("❌ Rate limited: Too many join attempts. Please try again later.");
-        }
-        return reply(`❌ Could not join group: ${err.message || "Invalid or expired invite"}`);
-      }
-const text = `
-╭━━━『 𝚳OO𝚴𝐋𝚰𝐆𝚮𝚻 』━━━╮
-⟢ ${config.BOT_NAME} joined the group
-> *hy* my name is *${config.BOT_NAME}* i am a private bot that was created by my good lord ${config.BOT_NAME}
-╰━━━━━━━━━━━━━━━━━╯
-📌 *IMPORTANT INFORMATION*
-• Use \`.rules\` to see full community/usage rules
-• Do NOT DM the bot privately
-• Do NOT spam commands
-• Keep group behavior clean
-⚙️ *System Notice:*
-This bot requires admin permissions.
-Please promote it immediately as it join the group.
-> 🔐 ${config.BOT_NAME} System Active
-if you have any questions please use \`.mods\` and get support
-`.trim();
-      try {
-        if (config.MENU_IMAGE) {
-          await sock.sendMessage(groupJid, { 
-            image: { url: config.MENU_IMAGE },
-            caption: text 
-          });
-        } else {
-          await sock.sendMessage(groupJid, { text });
-        }
-      } catch (err) {
-        console.error("Post-join message failed:", err.message);
-        await sock.sendMessage(groupJid, { text }).catch(e => console.error("Fallback failed:", e.message));
-      }
-      return reply('✅ Successfully joined the group.');
+      groupInfo = await sock.groupGetInviteInfo(inviteCode);
     } catch (err) {
-      console.error('Join command error:', err);
-      return reply("❌ An unexpected error occurred while trying to join.");
+      console.error("[join.js] groupGetInviteInfo error:", err.message);
+      if (err.message?.includes("410") || err.message?.includes("gone")) {
+        return reply("❌ This invite link has *expired* or been reset.");
+      }
+      if (err.message?.includes("404")) {
+        return reply("❌ Invite link not found — it may have been revoked.");
+      }
+      return reply(`❌ Could not fetch group info: ${err.message}`);
     }
-  }
-console.error('Join command error:', err);
-      return reply("❌ An unexpected error occurred while trying to join.");
+
+    const groupName = groupInfo?.subject || "Unknown Group";
+    const groupId   = groupInfo?.id;
+
+    // ── Step 2: accept the invite ─────────────────────────────────────────
+    let groupJid;
+    try {
+      groupJid = await sock.groupAcceptInvite(inviteCode);
+      // Some Baileys versions return null; fall back to the previewed ID
+      if (!groupJid && groupId) groupJid = groupId;
+    } catch (err) {
+      console.error("[join.js] groupAcceptInvite error:", err.message);
+
+      if (err.message?.includes("406") || err.message?.includes("not-authorized")) {
+        return reply("❌ Could not join: The bot may be *banned* from this group, or the invite is admin-only.");
+      }
+      if (err.message?.includes("410") || err.message?.includes("gone")) {
+        return reply("❌ Could not join: This invite link has *expired* or been reset.");
+      }
+      if (err.message?.includes("409") || err.message?.includes("conflict")) {
+        return reply("ℹ️ The bot is *already a member* of this group.");
+      }
+      if (err.message?.includes("429")) {
+        return reply("❌ *Rate limited* — too many join attempts. Please wait a few minutes and try again.");
+      }
+      return reply(`❌ Could not join group: ${err.message || "Unknown error"}`);
     }
-  }
-});
+
+    // ── Step 3: confirm to the command sender ────────────────────────────
+    await reply(
+`✅ *Successfully joined!*
+
+📌 Group: *${groupName}*
+🆔 JID: \`${groupJid}\`
+
+${BOT_NAME} is now in the group.`
+    );
+
+    // ── Step 4: send intro message in the new group ───────────────────────
+    if (!groupJid) return; // safety — can't send without a valid JID
+
+    const introText =
+`╭━━━『 ${BOT_NAME} 』━━━╮
+
+👋 Hey everyone! I'm *${BOT_NAME}*, a private WhatsApp bot created by *${OWNER_NAME}*.
+
+📌 *IMPORTANT INFORMATION*
+• Use *.menu* to see all available commands
+• Do NOT spam commands
+• Keep the group clean and respectful
+• Bot DMs are disabled
+
+⚙️ *System Notice:*
+For full functionality, please promote me to *group admin*.
+
+> Use *.mods* if you need support
+
+╰━━━━━━━━━━━━━━━━━━━━╯`;
+
+    try {
+      await sock.sendMessage(groupJid, { text: introText });
+    } catch (err) {
+      // Intro message is best-effort — don't surface this as a command error
+      console.error("[join.js] Post-join message failed:", err.message);
+    }
+  },
+};
