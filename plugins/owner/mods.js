@@ -109,7 +109,7 @@ export default {
         `   │ *「 MODS & STAFF 」*\n` +
         `${rows}\n` +
         `   └────────────┈ ⳹\n` +
-        `> *INFO:* Need help? These guardians will assist you. Respect the staff and they will resolve your issue. Use *.rules* if you are unsure of the rules.`;
+        `> *INFO:* Need help? These mods and staff will help you. Use *.rules* if you are unsure of the rules.`;
 
       return sock.sendMessage(jid, {
         text:     caption,
