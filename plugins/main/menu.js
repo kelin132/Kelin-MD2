@@ -80,6 +80,7 @@ export default {
     let text = `*Hello* senpai ${mention},I am Akira👋
 ╭━━━━━━━━━━━━━━━━━━━━╮
 |ꕥ ${prefix}*reg* to use economy cmds
+|ꕥ ${prefix}*rules* to see bot rules 
 |ꕥ ${prefix}*support* for official group
 |ꕥ ${prefix}*reqbot* for adding in your group 
 ╰━━━━━━━━━━━━━━━━━━━━╯
