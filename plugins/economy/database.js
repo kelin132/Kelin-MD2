@@ -9,20 +9,30 @@ export const DEFAULTS = {
   money:         0,
   bank:          0,
   vault:         0,
+  orbs:          0,           // premium currency earned from dig/fish/events
   level:         1,
   xp:            0,
+  bio:           "",
+  age:           null,
   inventory:     [],
-  history:       [],        // last 10 transactions [{type,amount,desc,ts}]
+  history:       [],          // last 10 transactions [{type,amount,desc,ts}]
   lastDaily:     0,
   lastWeekly:    0,
   lastMonthly:   0,
   lastWork:      0,
   lastCrime:     0,
   lastRob:       0,
+  lastDig:       0,
+  lastFish:      0,
+  lastGamble:    0,
   jail:          false,
   jailed:        false,
   jailUntil:     null,
-  staffLevel:    0,         // 0=user 1=mod 2=staff 3=admin
+  shame:         0,           // times shamed by others
+  shameBy:       null,        // last person who shamed you
+  loan:          null,        // { amount, due, active, interest }
+  afk:           null,        // { active, message, since }
+  staffLevel:    0,           // 0=user 1=mod 2=staff 3=admin
   isPremium:     false,
   staffImmunity: false,
   registered:    false,

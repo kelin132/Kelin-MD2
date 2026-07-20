@@ -9,7 +9,7 @@ export default {
   description: "View your economy profile card",
   category: "economy",
   usage: ".profile [@user]",
-  aliases: ["me", "acc", "account"],
+  aliases: ["me", "acc", "account", "p"],
   cooldown: 5,
 
   async run({ sock, msg, sender, isOwner, isMod, isStaff }) {

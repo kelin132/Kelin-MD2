@@ -1,19 +1,5 @@
 import { getUser, saveUser, requireRegistration } from "./database.js";
-
-const shopItems = {
-  sword:   { price: 5000,  emoji: "⚔️",  rarity: "common",    xpBonus: 20 },
-  shield:  { price: 4000,  emoji: "🛡️",  rarity: "common",    xpBonus: 15 },
-  gun:     { price: 8000,  emoji: "🔫",  rarity: "rare",      xpBonus: 40 },
-  armor:   { price: 6000,  emoji: "🦾",  rarity: "rare",      xpBonus: 30 },
-  potion:  { price: 500,   emoji: "🧪",  rarity: "common",    xpBonus: 5  },
-  diamond: { price: 15000, emoji: "💎",  rarity: "legendary", xpBonus: 100 },
-  ring:    { price: 3000,  emoji: "💍",  rarity: "common",    xpBonus: 10 },
-  scroll:  { price: 2000,  emoji: "📜",  rarity: "common",    xpBonus: 8  },
-  axe:     { price: 7000,  emoji: "🪓",  rarity: "rare",      xpBonus: 35 },
-  boots:   { price: 3500,  emoji: "👢",  rarity: "common",    xpBonus: 12 },
-};
-
-const rarityColors = { common: "⚪", rare: "🔵", legendary: "🟡" };
+import { SHOP_ITEMS as shopItems, RARITY_COLORS as rarityColors } from "./_items.js";
 
 export default {
   name: "shop",
