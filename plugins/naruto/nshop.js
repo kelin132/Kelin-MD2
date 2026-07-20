@@ -1,8 +1,9 @@
 // plugins/naruto/nshop.js
+// Buy ninja items — shows Tsunade (Konoha's shop keeper / Hokage) art
 
 import players from "../../lib/naruto/players.js";
-import items from "../../lib/naruto/items.js";
-import { sendWithGif } from "../../lib/gifHelper.mjs";
+import items   from "../../lib/naruto/items.js";
+import { sendWithCharacterImage } from "../../lib/gifHelper.mjs";
 
 export default {
   name: "nshop",
@@ -24,15 +25,27 @@ export default {
 
       // No argument — show shop
       if (!text) {
-        const shopList = items
-          .map(i =>
-`🛒 *${i.name}*
-ID: \`${i.id}\`
-💰 Price: ${i.price} Ryo
-📝 ${i.description}`
-          ).join("\n\n");
+        // Group items by type for a cleaner display
+        const grouped = {};
+        for (const i of items) {
+          if (!grouped[i.type]) grouped[i.type] = [];
+          grouped[i.type].push(i);
+        }
 
-        return sendWithGif(sock, jid, msg,
+        const typeEmoji = {
+          consumable: "🧪", battle: "💣", weapon: "⚔️",
+          armor: "🛡️", special: "📜", boost: "💫",
+        };
+
+        const shopList = Object.entries(grouped).map(([type, arr]) => {
+          const emoji = typeEmoji[type] || "📦";
+          const items = arr.map(i =>
+            `  ${emoji} *${i.name}* | \`${i.id}\` | 💰${i.price} Ryo\n     ${i.description}`
+          ).join("\n");
+          return `*${type.toUpperCase()}*\n${items}`;
+        }).join("\n\n");
+
+        return sendWithCharacterImage(sock, jid, msg,
 `🏪 *NINJA SHOP*
 
 ${shopList}
@@ -40,7 +53,8 @@ ${shopList}
 💰 Your Ryo: ${player.ryo}
 
 Use *.nshop <item_id>* to buy.
-Example: .nshop small_hp_potion`, "anime shop");
+Example: .nshop small_hp_potion`,
+          "Tsunade", "shop");
       }
 
       const itemId = text.trim().toLowerCase();
@@ -71,7 +85,7 @@ Example: .nshop small_hp_potion`, "anime shop");
 
       await player.save();
 
-      return sendWithGif(sock, jid, msg,
+      return sendWithCharacterImage(sock, jid, msg,
 `✅ *PURCHASE COMPLETE*
 
 🛒 ${item.name}
@@ -79,7 +93,8 @@ Example: .nshop small_hp_potion`, "anime shop");
 💰 Paid: ${item.price} Ryo
 💳 Remaining: ${player.ryo} Ryo
 
-Use .ninventory to view and use items.`, "anime shopping");
+Use .ninventory to view and use items.`,
+        "Tsunade", "shop");
 
     } catch (err) {
       console.error("NSHOP ERROR:", err);

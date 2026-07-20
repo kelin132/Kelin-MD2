@@ -1,8 +1,12 @@
 // plugins/naruto/ntrain.js
+// Train your ninja — shows Might Guy / Rock Lee training art
 
 import players from "../../lib/naruto/players.js";
 import { randomInt } from "../../lib/naruto/utils.js";
-import { sendWithGif } from "../../lib/gifHelper.mjs";
+import { sendWithCharacterImage } from "../../lib/gifHelper.mjs";
+
+// Alternate training characters for variety
+const TRAINERS = ["Might Guy", "Rock Lee", "Kakashi Hatake", "Jiraiya"];
 
 export default {
   name: "ntrain",
@@ -51,19 +55,24 @@ export default {
         player.xp      -= player.xpNeeded;
         player.level++;
         player.xpNeeded = Math.floor(player.xpNeeded * 1.25);
-        player.maxHp   += 20;
+        player.maxHp     += 20;
         player.maxChakra += 15;
-        player.hp       = player.maxHp;
-        player.chakra   = player.maxChakra;
+        player.attack    += 3;
+        player.defense   += 2;
+        player.speed     += 2;
+        player.hp     = player.maxHp;
+        player.chakra = player.maxChakra;
         levelUp = `\n\n🎉 *LEVEL UP!* You are now Level ${player.level}!`;
       }
 
       await player.save();
 
-      return sendWithGif(sock, jid, msg,
-`💪 *TRAINING COMPLETE*
+      const trainer = TRAINERS[Math.floor(Math.random() * TRAINERS.length)];
 
-🥷 ${player.username}
+      return sendWithCharacterImage(sock, jid, msg,
+`💪 *TRAINING SESSION*
+
+🥷 ${player.username} trained hard!
 
 📈 *Gains*
 ⚔️ Attack: +${gainAtk}
@@ -73,12 +82,13 @@ export default {
 
 📊 *Current Stats*
 ⭐ Level: ${player.level}
-✨ XP: ${player.xp}/${player.xpNeeded}
 ⚔️ Attack: ${player.attack}
 🛡️ Defense: ${player.defense}
 💨 Speed: ${player.speed}
+✨ XP: ${player.xp}/${player.xpNeeded}
 
-⏳ Next training in 15 minutes.${levelUp}`, "naruto training");
+⏳ Next training: 15 minutes${levelUp}`,
+        trainer, "train");
 
     } catch (err) {
       console.error("NTRAIN ERROR:", err);

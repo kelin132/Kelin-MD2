@@ -1,7 +1,8 @@
 // plugins/naruto/nleaderboard.js
+// Top ninjas leaderboard — shows Naruto (the strongest) at the top
 
 import players from "../../lib/naruto/players.js";
-import { sendWithGif } from "../../lib/gifHelper.mjs";
+import { sendWithCharacterImage } from "../../lib/gifHelper.mjs";
 
 export default {
   name: "nleaderboard",
@@ -28,15 +29,16 @@ export default {
 
       const list = sorted.map((p, i) =>
 `${medals[i]} *${p.username}*
-⭐ Lv ${p.level} | 🏆 ${p.wins || 0}W | 💰 ${(p.ryo || 0).toLocaleString()} Ryo`
+⭐ Lv ${p.level} | ${p.rank || "Academy Student"} | 🏆 ${p.wins || 0}W | 💰 ${(p.ryo || 0).toLocaleString()} Ryo`
       ).join("\n\n");
 
-      return sendWithGif(sock, jid, msg,
+      return sendWithCharacterImage(sock, jid, msg,
 `🏆 *NINJA LEADERBOARD*
 
 ${list}
 
-Keep training to reach the top!`, "naruto strongest ninja");
+Keep training to reach the top!`,
+        "Naruto Uzumaki", "leaderboard");
 
     } catch (err) {
       console.error("NLEADERBOARD ERROR:", err);

@@ -1,10 +1,11 @@
 // plugins/naruto/start.js (nstart)
+// Creates the ninja profile and shows real clan character art
 
-import players from "../../lib/naruto/players.js";
+import players  from "../../lib/naruto/players.js";
 import villages from "../../lib/naruto/villages.js";
-import clans from "../../lib/naruto/clans.js";
+import clans    from "../../lib/naruto/clans.js";
 import { random } from "../../lib/naruto/utils.js";
-import { sendWithGif } from "../../lib/gifHelper.mjs";
+import { sendWithClanImage } from "../../lib/gifHelper.mjs";
 
 export default {
   name: "nstart",
@@ -60,7 +61,7 @@ export default {
 
       await player.save();
 
-      return sendWithGif(sock, jid, msg,
+      const caption =
 `🍃 *NINJA REGISTRATION COMPLETE* 🍃
 
 🥷 Name: *${player.username}*
@@ -77,7 +78,10 @@ export default {
 💰 Starting Ryo: 500
 
 Your ninja journey begins! 🥷
-Use *.nprofile* | *.nmission* | *.ntrain*`, "naruto begin journey");
+Use *.nprofile* | *.nmission* | *.ntrain*`;
+
+      // Show real character art from the player's clan
+      return sendWithClanImage(sock, jid, msg, caption, clan.name, "start");
 
     } catch (err) {
       console.error("NSTART ERROR:", err);

@@ -1,8 +1,21 @@
 // plugins/naruto/nrank.js
+// View ninja rank and promotion progress — shows rank-appropriate character art
 
 import players from "../../lib/naruto/players.js";
-import ranks from "../../lib/naruto/ranks.js";
-import { sendWithGif } from "../../lib/gifHelper.mjs";
+import ranks   from "../../lib/naruto/ranks.js";
+import { sendWithCharacterImage } from "../../lib/gifHelper.mjs";
+
+// Rank → iconic character for that rank
+const RANK_CHARACTERS = {
+  "Academy Student": "Naruto Uzumaki",
+  "Genin":           "Naruto Uzumaki",
+  "Chunin":          "Shikamaru Nara",
+  "Special Jonin":   "Kakashi Hatake",
+  "Jonin":           "Kakashi Hatake",
+  "ANBU":            "Itachi Uchiha",
+  "Kage":            "Minato Namikaze",
+  "Legendary Shinobi": "Hashirama Senju",
+};
 
 export default {
   name: "nrank",
@@ -38,7 +51,9 @@ Progress: [${bar}] ${pct}%`;
         progress = "🏆 You have reached the *highest rank!*\nYou are a Legendary Shinobi.";
       }
 
-      return sendWithGif(sock, jid, msg,
+      const charName = RANK_CHARACTERS[player.rank || "Academy Student"] || "Naruto Uzumaki";
+
+      return sendWithCharacterImage(sock, jid, msg,
 `🎖️ *NINJA RANK*
 
 🥷 ${player.username}
@@ -47,7 +62,8 @@ Progress: [${bar}] ${pct}%`;
 
 🏅 Current Rank: *${player.rank || "Academy Student"}*
 
-${progress}`, "naruto rank power up");
+${progress}`,
+        charName, "rank");
 
     } catch (err) {
       console.error("NRANK ERROR:", err);

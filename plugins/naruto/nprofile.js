@@ -1,5 +1,8 @@
+// plugins/naruto/nprofile.js
+// Shows the ninja profile with real character art from Dattebayo API
+
 import players from "../../lib/naruto/players.js";
-import { sendWithGif } from "../../lib/gifHelper.mjs";
+import { sendWithClanImage, sendWithNarutoTheme } from "../../lib/gifHelper.mjs";
 
 export default {
   name: "nprofile",
@@ -37,6 +40,11 @@ export default {
 💰 Ryo: ${player.ryo}
 🏆 Wins: ${player.wins || 0} | ☠️ Losses: ${player.losses || 0}`;
 
-    return sendWithGif(sock, jid, msg, caption, "naruto ninja profile");
+    // Use real character art based on clan — falls back to static Naruto image
+    const clanName = player.clan?.name;
+    if (clanName) {
+      return sendWithClanImage(sock, jid, msg, caption, clanName, "profile");
+    }
+    return sendWithNarutoTheme(sock, jid, msg, caption, "profile");
   },
 };

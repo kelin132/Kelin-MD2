@@ -1,10 +1,11 @@
 // plugins/naruto/nhunt.js
+// Fight rogue ninjas and enemies — shows real villain character art
 
 import players from "../../lib/naruto/players.js";
 import enemies from "../../lib/naruto/enemies.js";
-import battle from "../../lib/naruto/battle.js";
+import battle  from "../../lib/naruto/battle.js";
 import { random } from "../../lib/naruto/utils.js";
-import { sendWithGif } from "../../lib/gifHelper.mjs";
+import { sendWithEnemyImage, sendWithNarutoTheme } from "../../lib/gifHelper.mjs";
 
 export default {
   name: "nhunt",
@@ -48,7 +49,7 @@ export default {
         player.wins  = (player.wins || 0) + 1;
         await player.save();
 
-        return sendWithGif(sock, jid, msg,
+        return sendWithEnemyImage(sock, jid, msg,
 `🏆 *VICTORY!*
 
 👹 Enemy: ${enemy.name} (Lv ${enemy.level})
@@ -58,7 +59,8 @@ ${log.join("\n")}
 🎁 *Rewards*
 ✨ XP: +${enemy.xpReward || enemy.xp || 30}
 💰 Ryo: +${enemy.ryoReward || enemy.ryo || 80}
-🏆 Total Wins: ${player.wins}`, "naruto fight victory");
+🏆 Total Wins: ${player.wins}`,
+          enemy.name);
       }
 
       if (fight.player.hp <= 0) {
@@ -66,7 +68,7 @@ ${log.join("\n")}
         player.hp     = Math.floor(player.maxHp / 2);
         await player.save();
 
-        return sendWithGif(sock, jid, msg,
+        return sendWithEnemyImage(sock, jid, msg,
 `☠️ *DEFEATED!*
 
 👹 Enemy: ${enemy.name} (Lv ${enemy.level})
@@ -75,10 +77,11 @@ ${log.join("\n")}
 
 You escaped with half HP.
 ❤️ HP: ${player.hp}/${player.maxHp}
-☠️ Losses: ${player.losses}`, "naruto defeat");
+☠️ Losses: ${player.losses}`,
+          enemy.name);
       }
 
-      return sendWithGif(sock, jid, msg,
+      return sendWithEnemyImage(sock, jid, msg,
 `⚔️ *BATTLE*
 
 👹 Enemy: ${enemy.name} (Lv ${enemy.level})
@@ -88,7 +91,8 @@ ${log.join("\n")}
 ❤️ Enemy HP: ${Math.max(0, fight.enemy.hp)}/${enemy.hp}
 ❤️ Your HP: ${Math.max(0, fight.player.hp)}/${player.maxHp}
 
-Use .nhunt again to continue.`, "naruto fight enemy");
+Use .nhunt again to continue.`,
+        enemy.name);
 
     } catch (err) {
       console.error("NHUNT ERROR:", err);

@@ -1,8 +1,9 @@
 // plugins/naruto/ninventory.js
+// View and use ninja items — shows player's clan art
 
 import players from "../../lib/naruto/players.js";
-import items from "../../lib/naruto/items.js";
-import { sendWithGif } from "../../lib/gifHelper.mjs";
+import items   from "../../lib/naruto/items.js";
+import { sendWithClanImage, sendWithNarutoTheme } from "../../lib/gifHelper.mjs";
 
 export default {
   name: "ninventory",
@@ -23,13 +24,24 @@ export default {
         }, { quoted: msg });
       }
 
+      const sendReply = async (caption) => {
+        if (player.clan?.name) {
+          return sendWithClanImage(sock, jid, msg, caption, player.clan.name, "inventory");
+        }
+        return sendWithNarutoTheme(sock, jid, msg, caption, "inventory");
+      };
+
       // No argument — view inventory
       if (!text) {
         const inv = Array.isArray(player.inventory) && player.inventory.length
-          ? player.inventory.map(i => `🎒 *${i.name}* ×${i.amount || 1}`).join("\n")
+          ? player.inventory.map(i => {
+              const def = items.find(x => x.id === i.id);
+              const desc = def ? ` — ${def.description}` : "";
+              return `🎒 *${i.name}* ×${i.amount || 1}${desc}`;
+            }).join("\n")
           : "Your inventory is empty.\n\nVisit .nshop to buy items.";
 
-        return sendWithGif(sock, jid, msg,
+        return sendReply(
 `🎒 *NINJA INVENTORY*
 
 🥷 ${player.username}
@@ -37,7 +49,8 @@ export default {
 ${inv}
 
 Use *.ninventory <item_id>* to use an item.
-Example: .ninventory small_hp_potion`, "ninja inventory bag");
+Example: .ninventory small_hp_potion`
+        );
       }
 
       const itemId    = text.trim().toLowerCase();
@@ -59,14 +72,14 @@ Example: .ninventory small_hp_potion`, "ninja inventory bag");
       let effects = [];
 
       if (itemDef.effect?.hp) {
-        const healed   = Math.min(itemDef.effect.hp, player.maxHp - player.hp);
-        player.hp      = Math.min(player.maxHp, player.hp + itemDef.effect.hp);
+        const healed = Math.min(itemDef.effect.hp, player.maxHp - player.hp);
+        player.hp    = Math.min(player.maxHp, player.hp + itemDef.effect.hp);
         effects.push(`❤️ Restored ${healed} HP (${player.hp}/${player.maxHp})`);
       }
 
       if (itemDef.effect?.chakra) {
-        const restored  = Math.min(itemDef.effect.chakra, player.maxChakra - player.chakra);
-        player.chakra   = Math.min(player.maxChakra, player.chakra + itemDef.effect.chakra);
+        const restored = Math.min(itemDef.effect.chakra, player.maxChakra - player.chakra);
+        player.chakra  = Math.min(player.maxChakra, player.chakra + itemDef.effect.chakra);
         effects.push(`💙 Restored ${restored} Chakra (${player.chakra}/${player.maxChakra})`);
       }
 
@@ -83,13 +96,14 @@ Example: .ninventory small_hp_potion`, "ninja inventory bag");
 
       await player.save();
 
-      return sendWithGif(sock, jid, msg,
+      return sendReply(
 `✅ *ITEM USED*
 
 🎒 ${itemDef.name}
 📝 ${itemDef.description}
 
-${effects.join("\n") || "No effect."}`, "naruto potion heal");
+${effects.join("\n") || "No effect."}`
+      );
 
     } catch (err) {
       console.error("NINVENTORY ERROR:", err);

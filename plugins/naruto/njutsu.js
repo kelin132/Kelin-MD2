@@ -1,7 +1,8 @@
 // plugins/naruto/njutsu.js
+// View your learned jutsu — shows character art based on most powerful jutsu
 
 import players from "../../lib/naruto/players.js";
-import { sendWithGif } from "../../lib/gifHelper.mjs";
+import { sendWithClanImage, sendWithNarutoTheme } from "../../lib/gifHelper.mjs";
 
 export default {
   name: "njutsu",
@@ -22,17 +23,28 @@ export default {
       }
 
       const jutsuList = Array.isArray(player.jutsu) && player.jutsu.length
-        ? player.jutsu.map((j, i) => `${i + 1}. 🌀 *${j.name}*`).join("\n")
+        ? player.jutsu.map((j, i) => {
+            const id = typeof j === "string" ? j : j.id;
+            const name = typeof j === "string" ? j : j.name;
+            return `${i + 1}. 🌀 *${name}* \`[${id}]\``;
+          }).join("\n")
         : "You haven't learned any jutsu yet.\n\nUse .nlearn to see available techniques.";
 
-      return sendWithGif(sock, jid, msg,
+      const caption =
 `🌀 *JUTSU LIST*
 
 🥷 ${player.username}
+👁️ Clan: ${player.clan?.name || "None"}
 
 ${jutsuList}
 
-💡 Use *.nlearn <jutsu_id>* to learn new techniques.`, "naruto jutsu chakra");
+💡 Use *.nlearn <jutsu_id>* to learn new techniques.`;
+
+      // Show clan-appropriate character image (they know the jutsu of their clan)
+      if (player.clan?.name) {
+        return sendWithClanImage(sock, jid, msg, caption, player.clan.name, "jutsu");
+      }
+      return sendWithNarutoTheme(sock, jid, msg, caption, "jutsu");
 
     } catch (err) {
       console.error("NJUTSU ERROR:", err);
