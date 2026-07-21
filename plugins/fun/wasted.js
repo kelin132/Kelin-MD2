@@ -1,4 +1,4 @@
-import { GET } from "../../lib/davidcyrilAPI.mjs";
+import { canvas } from "../../lib/davidcyrilAPI.mjs";
 
 export default {
   name: "wanted",
