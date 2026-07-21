@@ -50,19 +50,10 @@ export default {
     await saveUser(mentionedJid, target_user);
 
     const targetTag = mentionedJid.split("@")[0];
-    const senderTag = sender.split("@")[0];
 
     await sock.sendMessage(msg.key.remoteJid, {
       text: `✅ *Transfer Successful!*\n\n💸 Sent   : $${amount.toLocaleString()}\n👤 To     : @${targetTag}\n💰 Balance: $${sender_user.money.toLocaleString()}`,
       mentions: [sender, mentionedJid]
     }, { quoted: msg });
-
-    // Notify target
-    try {
-      await sock.sendMessage(mentionedJid, {
-        text: `💰 *Money Received!*\n\n@${senderTag} sent you *$${amount.toLocaleString()}*\n💵 New Balance: $${target_user.money.toLocaleString()}`,
-        mentions: [sender]
-      });
-    } catch { /* DM may fail in groups */ }
   }
 };
