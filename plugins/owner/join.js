@@ -125,16 +125,12 @@ ${BOT_NAME} is now in the group.`
     const introText =
 `╭━━━『 ${BOT_NAME} 』━━━╮
 
-👋 Hey everyone! I'm *${BOT_NAME}*, a private WhatsApp bot created by *${OWNER_NAME}*.
+👋 Hey everyone! I'm *${BOT_NAME}*.
 
 📌 *IMPORTANT INFORMATION*
 • Use *.menu* to see all available commands
 • Do NOT spam commands
-• Keep the group clean and respectful
 • Bot DMs are disabled
-
-⚙️ *System Notice:*
-For full functionality, please promote me to *group admin*.
 
 > Use *.mods* if you need support
 
