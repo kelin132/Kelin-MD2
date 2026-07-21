@@ -6,10 +6,10 @@ const COOLDOWN_MS  = 2 * 60 * 60 * 1000; // 2 hours
 const HUNGER_GAIN  = 30;
 
 export default {
-  name: "feed",
+  name: "petfeed",
   description: "Feed your active pet",
   category: "pets",
-  usage: ".feed",
+  usage: ".petfeed",
   aliases: ["feedpet"],
   checkJail: true,
 
