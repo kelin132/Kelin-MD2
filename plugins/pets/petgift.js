@@ -42,7 +42,7 @@ export default {
 
     // Find pet by partial ID match
     const myPets = await getAllPets(sender);
-    const pet    = myPets.find(p => p.petId.startsWith(petIdFragment));
+    const pet    = myPets.find(p => p.petId === petIdFragment);
     if (!pet) {
       return sock.sendMessage(jid, {
         text: `❌ Pet not found. Use *.pets* to see your pet IDs.`,

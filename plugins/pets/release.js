@@ -57,7 +57,7 @@ export default {
       }
       const list = all.map(p => {
         const r = RARITIES[p.rarity] || RARITIES.common;
-        return `${r.color} *${p.name}* (Lv.${p.level}) — ID: \`${p.petId.slice(0, 8)}\``;
+        return `${r.color} *${p.name}* (Lv.${p.level}) — ID: \`${p.petId}\``;
       }).join("\n");
       return sock.sendMessage(jid, {
         text: `💔 Usage: *.release <petId>*\n\nYour pets:\n${list}`,
@@ -65,7 +65,7 @@ export default {
     }
 
     const all   = await getAllPets(sender);
-    const found = all.find(p => p.petId === petIdInput || p.petId.startsWith(petIdInput));
+    const found = all.find(p => p.petId === petIdInput);
 
     if (!found) {
       return sock.sendMessage(jid, { text: `❌ No pet found with that ID.\n\nUse *.pets* to see your pet IDs.` }, { quoted: msg });

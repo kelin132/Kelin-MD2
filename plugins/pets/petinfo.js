@@ -49,7 +49,7 @@ export default {
       `${rarity.color} *${pet.name}*`,
       `📖 Species: ${sp.name || pet.species}`,
       `⭐ Rarity:  ${rarity.label}`,
-      `🆔 ID: \`${pet.petId.slice(0, 8)}\``,
+      `🆔 ID: \`${pet.petId}\``,
       ``,
       `— *LEVEL & EXP* —`,
       `✨ Level: ${pet.level}`,
@@ -76,9 +76,6 @@ export default {
       `╰━━━━━━━━━━━━━━━━━━━━━━╯`,
     ].join("\n");
 
-    if (pet.imageUrl) {
-      return sock.sendMessage(jid, { image: { url: pet.imageUrl }, caption: text }, { quoted: msg });
-    }
     return sock.sendMessage(jid, { text }, { quoted: msg });
   },
 };

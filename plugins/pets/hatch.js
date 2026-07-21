@@ -58,7 +58,7 @@ export default {
         ``,
         isFirst
           ? `🌟 Set as your active pet! Use *.pet* to view.`
-          : `💡 Use *.pets select ${pet.petId.slice(0, 8)}* to make it active.`,
+          : `💡 Use *.pets select ${pet.petId}* to make it active.`,
       ].join("\n"),
     }, { quoted: msg });
   },

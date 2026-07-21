@@ -18,7 +18,7 @@ export default {
     if (args[0]?.toLowerCase() === "select" && args[1]) {
       const petId = args[1];
       const all   = await getAllPets(sender);
-      const found = all.find(p => p.petId === petId || p.petId.startsWith(petId));
+      const found = all.find(p => p.petId === petId);
       if (!found) {
         return sock.sendMessage(jid, { text: `❌ No pet found with that ID.\n\nUse *.pets* to see your pet IDs.` }, { quoted: msg });
       }
@@ -42,7 +42,7 @@ export default {
         `${i + 1}. ${rarity.color} *${p.name}*${active}`,
         `   Lv.${p.level} ${rarity.label} | ⚔️ ${p.attack} | ❤️ ${p.maxHp}`,
         `   🍖 ${p.hunger ?? 100}% | 😊 ${p.happiness ?? 100}%`,
-        `   🆔 \`${p.petId.slice(0, 8)}\``,
+        `   🆔 \`${p.petId}\``,
       ].join("\n");
     });
 
