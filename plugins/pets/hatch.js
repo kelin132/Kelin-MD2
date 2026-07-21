@@ -1,7 +1,7 @@
 // plugins/pets/hatch.js
 // .hatch — Hatch a random egg into a pet (rarity-weighted roll)
 import { getAllPets, createPet } from "../../lib/petDatabase.js";
-import { rollRarity, pickSpecies, PET_SPECIES, RARITIES, getSpeciesImage } from "../../lib/petData.js";
+import { rollRarity, pickSpecies, PET_SPECIES, RARITIES } from "../../lib/petData.js";
 
 const MAX_PETS = 5;
 
@@ -24,7 +24,6 @@ export default {
       }, { quoted: msg });
     }
 
-    // Hatch animation
     await sock.sendMessage(jid, {
       text: `🥚 *Hatching your egg...*\n\n✨ Craaaack... ✨\n\n🐣 Something is emerging!`,
     }, { quoted: msg });
@@ -32,41 +31,35 @@ export default {
     const rarity     = rollRarity();
     const speciesKey = pickSpecies(rarity);
     const sp         = PET_SPECIES[speciesKey];
-    const imageUrl   = getSpeciesImage(speciesKey, 1);
     const isFirst    = all.length === 0;
-
-    const pet        = await createPet(sender, speciesKey, imageUrl || "", isFirst);
+    const pet        = await createPet(sender, speciesKey, "", isFirst);
     const rarityData = RARITIES[rarity];
 
-    // Excitement message scales with rarity
     let exclaim = "✨ A new companion has hatched!";
     if (rarity === "rare")      exclaim = "💙 A *Rare* pet appeared!";
     if (rarity === "epic")      exclaim = "🟣 *EPIC!* You're very lucky!";
     if (rarity === "legendary") exclaim = "🌟 *LEGENDARY!* Incredible luck!";
     if (rarity === "mythic")    exclaim = "🔥🔥 *M Y T H I C !!* UNBELIEVABLE!! 🔥🔥";
 
-    const caption = [
-      `🥚 *EGG HATCHED!*`,
-      ``,
-      exclaim,
-      ``,
-      `${rarityData.color} *${pet.name}*`,
-      `📖 Species: ${sp.name}`,
-      `⭐ Rarity: ${rarityData.label}`,
-      ``,
-      `❤️ HP: ${pet.maxHp}   ⚔️ ATK: ${pet.attack}`,
-      `🛡 DEF: ${pet.defense}  ⚡ SPD: ${pet.speed}`,
-      ``,
-      `🎁 Skill: *${pet.skill}*`,
-      ``,
-      isFirst
-        ? `🌟 Set as your active pet! Use *.pet* to view.`
-        : `💡 Use *.pets select ${pet.petId.slice(0, 8)}* to make it active.`,
-    ].join("\n");
-
-    if (imageUrl) {
-      return sock.sendMessage(jid, { image: { url: imageUrl }, caption }, { quoted: msg });
-    }
-    return sock.sendMessage(jid, { text: caption }, { quoted: msg });
+    return sock.sendMessage(jid, {
+      text: [
+        `🥚 *EGG HATCHED!*`,
+        ``,
+        exclaim,
+        ``,
+        `${rarityData.color} *${pet.name}*`,
+        `📖 Species: ${sp.name}`,
+        `⭐ Rarity: ${rarityData.label}`,
+        ``,
+        `❤️ HP: ${pet.maxHp}   ⚔️ ATK: ${pet.attack}`,
+        `🛡 DEF: ${pet.defense}  ⚡ SPD: ${pet.speed}`,
+        ``,
+        `🎁 Skill: *${pet.skill}*`,
+        ``,
+        isFirst
+          ? `🌟 Set as your active pet! Use *.pet* to view.`
+          : `💡 Use *.pets select ${pet.petId.slice(0, 8)}* to make it active.`,
+      ].join("\n"),
+    }, { quoted: msg });
   },
 };

@@ -26,12 +26,12 @@ export default {
       }, { quoted: msg });
     }
 
-    const sp      = PET_SPECIES[pet.species] || {};
-    const rarity  = RARITIES[pet.rarity] || RARITIES.common;
-    const hunger  = Math.max(0, pet.hunger ?? 100);
-    const happy   = Math.max(0, pet.happiness ?? 100);
+    const sp     = PET_SPECIES[pet.species] || {};
+    const rarity = RARITIES[pet.rarity] || RARITIES.common;
+    const hunger = Math.max(0, pet.hunger ?? 100);
+    const happy  = Math.max(0, pet.happiness ?? 100);
 
-    const caption = [
+    const text = [
       `╭━━━〔 🐾 PET PROFILE 〕━━━╮`,
       ``,
       `${rarity.color} *Name:* ${pet.name}`,
@@ -49,15 +49,11 @@ export default {
       `✨ *Level:* ${pet.level}`,
       `📈 *EXP:* ${pet.exp}/${pet.expNeeded}`,
       ``,
-      `🎁 *Skill:*`,
-      `   ${pet.skill}`,
+      `🎁 *Skill:* ${pet.skill}`,
       ``,
       `╰━━━━━━━━━━━━━━━━━━━━━━╯`,
     ].join("\n");
 
-    if (pet.imageUrl) {
-      return sock.sendMessage(jid, { image: { url: pet.imageUrl }, caption }, { quoted: msg });
-    }
-    return sock.sendMessage(jid, { text: caption }, { quoted: msg });
+    return sock.sendMessage(jid, { text }, { quoted: msg });
   },
 };

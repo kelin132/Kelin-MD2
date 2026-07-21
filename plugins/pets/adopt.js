@@ -1,7 +1,7 @@
 // plugins/pets/adopt.js
 // .adopt — Get your first pet (free starter, one-time)
 import { getAllPets, createPet } from "../../lib/petDatabase.js";
-import { PET_SPECIES, RARITIES, getSpeciesImage } from "../../lib/petData.js";
+import { PET_SPECIES, RARITIES } from "../../lib/petData.js";
 
 const STARTER_SPECIES = ["cat", "dog", "bunny", "fox", "moon_cat", "sakura_bunny", "fire_slime"];
 
@@ -17,7 +17,6 @@ export default {
     const jid    = msg.key.remoteJid;
     const sender = msg.key.participant || msg.key.remoteJid;
 
-    // Check if user already has pets
     const existing = await getAllPets(sender);
     if (existing.length > 0) {
       return sock.sendMessage(jid, {
@@ -37,32 +36,27 @@ export default {
       }, { quoted: msg });
     }
 
-    const sp       = PET_SPECIES[choice];
-    const imageUrl = getSpeciesImage(choice, 1);
-
-    const pet = await createPet(sender, choice, imageUrl || "", true);
+    const sp  = PET_SPECIES[choice];
+    const pet = await createPet(sender, choice, "", true);
     const rarity = RARITIES[pet.rarity];
 
-    const caption = [
-      `🐾 *WELCOME YOUR NEW PET!*`,
-      ``,
-      `${rarity.color} *${pet.name}*`,
-      `📖 Species: ${sp.name}`,
-      `⭐ Rarity: ${rarity.label}`,
-      ``,
-      `❤️ HP: ${pet.maxHp}   ⚔️ ATK: ${pet.attack}`,
-      `🛡 DEF: ${pet.defense}  ⚡ SPD: ${pet.speed}`,
-      ``,
-      `🍖 Hunger: 100%  😊 Happiness: 100%`,
-      `✨ Level 1  |  🎁 Skill: *${pet.skill}*`,
-      ``,
-      `Use *.pet* to view your companion!`,
-      `Use *.feed* and *.play* to keep them happy!`,
-    ].join("\n");
-
-    if (imageUrl) {
-      return sock.sendMessage(jid, { image: { url: imageUrl }, caption }, { quoted: msg });
-    }
-    return sock.sendMessage(jid, { text: caption }, { quoted: msg });
+    return sock.sendMessage(jid, {
+      text: [
+        `🐾 *WELCOME YOUR NEW PET!*`,
+        ``,
+        `${rarity.color} *${pet.name}*`,
+        `📖 Species: ${sp.name}`,
+        `⭐ Rarity: ${rarity.label}`,
+        ``,
+        `❤️ HP: ${pet.maxHp}   ⚔️ ATK: ${pet.attack}`,
+        `🛡 DEF: ${pet.defense}  ⚡ SPD: ${pet.speed}`,
+        ``,
+        `🍖 Hunger: 100%  😊 Happiness: 100%`,
+        `✨ Level 1  |  🎁 Skill: *${pet.skill}*`,
+        ``,
+        `Use *.pet* to view your companion!`,
+        `Use *.feed* and *.play* to keep them happy!`,
+      ].join("\n"),
+    }, { quoted: msg });
   },
 };

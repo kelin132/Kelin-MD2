@@ -1,7 +1,7 @@
 // plugins/pets/evolve.js
 // .evolve — Evolve your active pet when level requirement is met
 import { getActivePet, savePet } from "../../lib/petDatabase.js";
-import { currentEvolStage, nextEvolStage, PET_SPECIES, RARITIES, getSpeciesImage } from "../../lib/petData.js";
+import { currentEvolStage, nextEvolStage, PET_SPECIES, RARITIES } from "../../lib/petData.js";
 
 export default {
   name: "evolve",
@@ -22,8 +22,8 @@ export default {
       }, { quoted: msg });
     }
 
-    const sp    = PET_SPECIES[pet.species];
-    const next  = nextEvolStage(pet.species, pet.level);
+    const sp   = PET_SPECIES[pet.species];
+    const next = nextEvolStage(pet.species, pet.level);
 
     if (!next) {
       return sock.sendMessage(jid, {
@@ -45,39 +45,30 @@ export default {
       }, { quoted: msg });
     }
 
-    // Evolve — get the image for the new stage
     await sock.sendMessage(jid, {
       text: `🌟 *${pet.name}* is evolving...\n\n✨✨✨ The light is blinding! ✨✨✨`,
     }, { quoted: msg });
 
-    // Use the next stage's specific image, or fall back to species default
-    const newImageUrl = next.image || getSpeciesImage(pet.species, next.minLevel) || pet.imageUrl;
+    await savePet(sender, pet.petId, { name: next.name });
 
-    await savePet(sender, pet.petId, {
-      name:     next.name,
-      imageUrl: newImageUrl,
-    });
+    const rarity = RARITIES[pet.rarity] || RARITIES.common;
 
-    const rarity  = RARITIES[pet.rarity] || RARITIES.common;
-    const caption = [
-      `🎊 *EVOLUTION COMPLETE!*`,
-      ``,
-      `${rarity.color} *${pet.name}* → ✨ *${next.name}*!`,
-      ``,
-      `📖 Species: ${sp?.name || pet.species}`,
-      `⭐ Level: ${pet.level}`,
-      ``,
-      `❤️ HP: ${pet.maxHp}   ⚔️ ATK: ${pet.attack}`,
-      `🛡 DEF: ${pet.defense}  ⚡ SPD: ${pet.speed}`,
-      ``,
-      `🎁 Skill: *${pet.skill}*`,
-      ``,
-      `Your companion has grown stronger! 💪`,
-    ].join("\n");
-
-    if (newImageUrl) {
-      return sock.sendMessage(jid, { image: { url: newImageUrl }, caption }, { quoted: msg });
-    }
-    return sock.sendMessage(jid, { text: caption }, { quoted: msg });
+    return sock.sendMessage(jid, {
+      text: [
+        `🎊 *EVOLUTION COMPLETE!*`,
+        ``,
+        `${rarity.color} *${pet.name}* → ✨ *${next.name}*!`,
+        ``,
+        `📖 Species: ${sp?.name || pet.species}`,
+        `⭐ Level: ${pet.level}`,
+        ``,
+        `❤️ HP: ${pet.maxHp}   ⚔️ ATK: ${pet.attack}`,
+        `🛡 DEF: ${pet.defense}  ⚡ SPD: ${pet.speed}`,
+        ``,
+        `🎁 Skill: *${pet.skill}*`,
+        ``,
+        `Your companion has grown stronger! 💪`,
+      ].join("\n"),
+    }, { quoted: msg });
   },
 };
