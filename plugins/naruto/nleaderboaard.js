@@ -5,7 +5,7 @@ import players from "../../lib/naruto/players.js";
 import { sendWithCharacterImage } from "../../lib/gifHelper.mjs";
 
 export default {
-  name: "nleaderboard",
+  name: "nlb",
   description: "Top ninjas leaderboard",
   category: "naruto",
   usage: ".nlb",
