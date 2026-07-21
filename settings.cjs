@@ -1,6 +1,6 @@
 const settings = {
-  packname: 'Kelin-MD',
-  botName: "KELIN-MD",
+  packname: 'AKIRA',
+  botName: "AKIRA",
   botOwner: 'KELIN-MD', // Your name
   ownerNumber: '27628114340', // Your number without + symbol
   ownerContact: '2348152077346', // Number shown when someone uses .owner command
