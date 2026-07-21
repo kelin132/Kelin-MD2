@@ -119,37 +119,28 @@ https://chat.whatsapp.com/XXXXXXXXXXXXXXXXXXXXXX`
 ${BOT_NAME} is now in the group.`
     );
 
-    // ── Step 4: send intro image in the new group ───────────────────────
-    if (!groupJid) return;
+    // ── Step 4: send intro message in the new group ───────────────────────
+    if (!groupJid) return; // safety — can't send without a valid JID
 
     const introText =
 `╭━━━『 ${BOT_NAME} 』━━━╮
 
- *Hey Everyone!* I'm *${BOT_NAME}*.
+👋 Hey everyone! I'm *${BOT_NAME}*.
 
 📌 *IMPORTANT INFORMATION*
 • Use *.menu* to see all available commands
 • Do NOT spam commands
 • Bot DMs are disabled
 
- Use *.mods* if you need help!
+> Use *.mods* if you need support
 
 ╰━━━━━━━━━━━━━━━━━━━━╯`;
 
     try {
-      await sock.sendMessage(groupJid, {
-        image: {
-          url: "https://cdn.phototourl.com/free/2026-07-21-94dccfa3-fa8a-4b74-8492-4a1b8034c379.jpg"
-        },
-        caption: introText
-      });
+      await sock.sendMessage(groupJid, { text: introText });
     } catch (err) {
-      console.error("[join.js] Post-join image failed:", err.message);
-
-      // Fallback to text if the image can't be sent
-      try {
-        await sock.sendMessage(groupJid, {
-          text: introText
-        });
-      } catch {}
+      // Intro message is best-effort — don't surface this as a command error
+      console.error("[join.js] Post-join message failed:", err.message);
     }
+  },
+};
