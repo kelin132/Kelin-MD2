@@ -5,13 +5,13 @@ import os from "os";
 import path from "path";
 
 async function uploadToCatbox(buffer, filename = "wanted.jpg") {
-  const temp = path.join(os.tmpdir(), filename);
+  const tempFile = path.join(os.tmpdir(), filename);
 
-  fs.writeFileSync(temp, buffer);
+  fs.writeFileSync(tempFile, buffer);
 
   const form = new FormData();
   form.append("reqtype", "fileupload");
-  form.append("fileToUpload", fs.createReadStream(temp));
+  form.append("fileToUpload", fs.createReadStream(tempFile));
 
   const { data } = await axios.post(
     "https://catbox.moe/user/api.php",
@@ -21,16 +21,17 @@ async function uploadToCatbox(buffer, filename = "wanted.jpg") {
     }
   );
 
-  fs.unlinkSync(temp);
+  fs.unlinkSync(tempFile);
 
-  return data;
+  return data.trim();
 }
 
 export default {
   name: "wanted",
-  description: "Create a Wanted poster sticker",
-  category: "sticker",
+  description: "Generate a Wanted poster from a replied image",
+  category: "fun",
   usage: ".wanted (reply to an image)",
+  aliases: ["wantedposter"],
   cooldown: 5,
 
   async run({ sock, msg }) {
@@ -44,7 +45,7 @@ export default {
         return await sock.sendMessage(
           jid,
           {
-            text: "❌ Reply to an image.\n\nExample:\nReply to a photo and type *.wanted*",
+            text: "❌ Reply to an image.\n\nExample:\nReply to a photo and send *.wanted*",
           },
           { quoted: msg }
         );
@@ -58,7 +59,7 @@ export default {
         return await sock.sendMessage(
           jid,
           {
-            text: "❌ The replied message must be an image.",
+            text: "❌ The replied message is not an image.",
           },
           { quoted: msg }
         );
@@ -67,7 +68,7 @@ export default {
       await sock.sendMessage(
         jid,
         {
-          text: "🎨 Creating wanted sticker...",
+          text: "🎨 Creating your wanted poster...",
         },
         { quoted: msg }
       );
@@ -77,35 +78,4 @@ export default {
           remoteJid: jid,
           id: msg.message.extendedTextMessage.contextInfo.stanzaId,
           participant:
-            msg.message.extendedTextMessage.contextInfo.participant,
-        },
-        message: quoted,
-      });
-
-      const imageUrl = await uploadToCatbox(media);
-
-      const stickerUrl =
-        `https://apis.davidcyril.name.ng/canvas/wanted?image=${encodeURIComponent(imageUrl)}`;
-
-      await sock.sendMessage(
-        jid,
-        {
-          sticker: {
-            url: stickerUrl,
-          },
-        },
-        { quoted: msg }
-      );
-    } catch (err) {
-      console.error("[wanted]", err);
-
-      await sock.sendMessage(
-        jid,
-        {
-          text: "❌ Failed to create the wanted sticker.",
-        },
-        { quoted: msg }
-      );
-    }
-  },
-};
+            msg.message.extendedTextMessage.contextInfo
