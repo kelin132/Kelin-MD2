@@ -3,7 +3,7 @@
  * Downloads Facebook videos using David Cyril API.
  */
 
-import { GET } from "../../lib/davidcyrilAPI.mjs";
+import { GET } from "../../lib/gifted.js";
 
 function pickVideo(result) {
   if (!result) return null;
