@@ -1,4 +1,4 @@
-import axios from "axios";
+import { GET } from "../../lib/davidcyrilAPI.mjs";
 
 export default {
   name: "wanted",
