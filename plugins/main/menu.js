@@ -106,7 +106,7 @@ for (const cat of sortedCats) {
     await sock.sendMessage(
       jid,
       {
-        image:    { url: "https://cdn.phototourl.com/free/2026-07-20-39c64ceb-8083-433e-a6ce-bac6a8877cc6.jpg" },
+        image:    { url: "https://cdn.phototourl.com/free/2026-07-21-15f31899-103f-4c9e-ba3c-16f0ffe0e2e7.jpg" },
         caption:  text,
         mentions: [sender],
       },
