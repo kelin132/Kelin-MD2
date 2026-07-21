@@ -82,7 +82,7 @@ Examples:
 ⚔️ *Jutsu (Top 10):*
 ${jutsuList}${tools ? `\n\n🗡️ *Tools:* ${tools}` : ""}${family}${debut}
 
-Data from Dattebayo API 🍃`;
+AKIRA`;
 
       // Pick the best (last) image — usually the Shippuden/mature version
       const imgUrl = char.images?.length
