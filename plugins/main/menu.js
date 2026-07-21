@@ -61,8 +61,8 @@ export default {
 
     // Ordered list
     const order = [
-      "main", "economy", "guild", "pets", "games", "fun", "ai",
-      "search", "media", "utilities", "download", "group", "admin", "anime", "cards",
+      "main", "economy", "guild", "pets", "cards","games", "fun", "ai",
+      "search", "media", "images","utilities", "download", "group", "admin", "anime", 
       ...(showStaff ? ["staff"] : []),
       ...(showOwner ? ["owner"] : []),
     ];
