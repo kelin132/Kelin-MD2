@@ -49,13 +49,12 @@ export default {
         try {
           await sock.sendMessage(group.id, {
             text:
-              `╭━━━〔 📢 KELIN-MD BROADCAST 〕━━━╮\n\n` +
+              `╭━━━〔 📢 BROADCAST 〕━━━╮\n\n` +
               `${text}\n\n` +
               `━━━━━━━━━━━━━━━━━━━━\n` +
               `> THIS MESSAGE WAS BROADCASTED BY THE OWNER\n` +
               `━━━━━━━━━━━━━━━━━━━━\n` +
-              `🤖 KELIN-MD • Anime WhatsApp Bot\n` +
-              `🌸 Thank you for using KELIN-MD!\n\n` +
+              `🤖 AKIRA` +
               `╰━━━━━━━━━━━━━━━━━━━━╯`
           });
           success++;
