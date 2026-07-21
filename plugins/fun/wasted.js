@@ -1,21 +1,47 @@
-import { canvas } from "../../lib/davidcyrilAPI.mjs";
+import axios from "axios";
+import FormData from "form-data";
+import fs from "fs";
+import os from "os";
+import path from "path";
+
+async function uploadToCatbox(buffer, filename = "wanted.jpg") {
+  const temp = path.join(os.tmpdir(), filename);
+
+  fs.writeFileSync(temp, buffer);
+
+  const form = new FormData();
+  form.append("reqtype", "fileupload");
+  form.append("fileToUpload", fs.createReadStream(temp));
+
+  const { data } = await axios.post(
+    "https://catbox.moe/user/api.php",
+    form,
+    {
+      headers: form.getHeaders(),
+    }
+  );
+
+  fs.unlinkSync(temp);
+
+  return data;
+}
 
 export default {
   name: "wanted",
   description: "Create a Wanted poster sticker",
   category: "sticker",
   usage: ".wanted (reply to an image)",
-  aliases: [],
   cooldown: 5,
 
   async run({ sock, msg }) {
     const jid = msg.key.remoteJid;
 
     try {
-      const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+      const quoted =
+        msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
 
       if (!quoted) {
-        return sock.sendMessage(
+        return await sock.sendMessage(
           jid,
           {
             text: "❌ Reply to an image.\n\nExample:\nReply to a photo and type *.wanted*",
@@ -29,14 +55,22 @@ export default {
         quoted.viewOnceMessageV2?.message?.imageMessage;
 
       if (!image) {
-        return sock.sendMessage(
+        return await sock.sendMessage(
           jid,
           {
-            text: "❌ The replied message is not an image.",
+            text: "❌ The replied message must be an image.",
           },
           { quoted: msg }
         );
       }
+
+      await sock.sendMessage(
+        jid,
+        {
+          text: "🎨 Creating wanted sticker...",
+        },
+        { quoted: msg }
+      );
 
       const media = await sock.downloadMediaMessage({
         key: {
@@ -48,20 +82,10 @@ export default {
         message: quoted,
       });
 
-      const upload = await axios.post(
-        "https://telegra.ph/upload",
-        media,
-        {
-          headers: {
-            "Content-Type": "image/jpeg",
-          },
-        }
-      );
-
-      const imageUrl = "https://telegra.ph" + upload.data[0].src;
+      const imageUrl = await uploadToCatbox(media);
 
       const stickerUrl =
-        `https://api.dhamzxploit.my.id/api/canvas/wanted?url=${encodeURIComponent(imageUrl)}`;
+        `https://apis.davidcyril.name.ng/canvas/wanted?image=${encodeURIComponent(imageUrl)}`;
 
       await sock.sendMessage(
         jid,
@@ -72,9 +96,8 @@ export default {
         },
         { quoted: msg }
       );
-
     } catch (err) {
-      console.error(err);
+      console.error("[wanted]", err);
 
       await sock.sendMessage(
         jid,
