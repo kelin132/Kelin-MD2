@@ -8,7 +8,7 @@ export default {
   name: "nleaderboard",
   description: "Top ninjas leaderboard",
   category: "naruto",
-  usage: ".nleaderboard",
+  usage: ".nlb",
   aliases: ["ntop", "nrankings"],
 
   async run({ sock, msg }) {
