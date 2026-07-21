@@ -16,6 +16,7 @@ const categoryEmojis = {
   fun:        "🎀",
   ai:         "🪄",
   search:     "🔎",
+  images:     "🎨",
   media:      "🖼️",
   utilities:  "🔧",
   download:   "📥",
