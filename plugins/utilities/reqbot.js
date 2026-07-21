@@ -23,7 +23,7 @@ export default {
       if (!text) {
         return await sock.sendMessage(jid, {
           text:
-            "❌ Please provide your group invite link.\n\n" +
+            "❌ *Please provide your group invite link*.\n\n" +
             "Example:\n.reqbot https://chat.whatsapp.com/XXXXXXXXXXXX"
         }, { quoted: msg });
       }
