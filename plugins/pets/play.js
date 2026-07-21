@@ -1,5 +1,5 @@
 // plugins/pets/play.js
-// .play — Play with your pet to increase happiness
+// .petplay — Play with your pet to increase happiness
 import { getActivePet, savePet } from "../../lib/petDatabase.js";
 
 const COOLDOWN_MS   = 1 * 60 * 60 * 1000; // 1 hour
@@ -18,11 +18,11 @@ const PLAY_ACTIONS = [
 ];
 
 export default {
-  name: "play",
+  name: "petplay",
   description: "Play with your active pet",
   category: "pets",
   usage: ".play",
-  aliases: ["playpet"],
+  aliases: ["playpet", "play"],
   checkJail: true,
 
   async run({ sock, msg }) {
