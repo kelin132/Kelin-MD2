@@ -7,8 +7,8 @@ export default {
   name: "link",
   description: "Get or reset the group invite link",
   category: "group",
-  usage: ".link | .revoke",
-  aliases: ["revoke", "grouplink", "invitelink"],
+  usage: ".invite | .revoke",
+  aliases: ["revoke", "grouplink", "invite"],
   cooldown: 10,
   isAdmin: true,
 
