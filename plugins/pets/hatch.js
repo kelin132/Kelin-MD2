@@ -1,20 +1,9 @@
 // plugins/pets/hatch.js
-// .hatch — Hatch a random egg into a pet
+// .hatch — Hatch a random egg into a pet (rarity-weighted roll)
 import { getAllPets, createPet } from "../../lib/petDatabase.js";
-import { rollRarity, pickSpecies, PET_SPECIES, RARITIES } from "../../lib/petData.js";
+import { rollRarity, pickSpecies, PET_SPECIES, RARITIES, getSpeciesImage } from "../../lib/petData.js";
 
 const MAX_PETS = 5;
-const EGG_COST = 500; // Placeholder — integrate with economy if desired
-
-async function fetchNekoImage(imgCat) {
-  try {
-    const res  = await fetch(`https://nekos.best/api/v2/${imgCat}?amount=1`);
-    const json = await res.json();
-    return json.results?.[0]?.url || null;
-  } catch {
-    return null;
-  }
-}
 
 export default {
   name: "hatch",
@@ -43,23 +32,23 @@ export default {
     const rarity     = rollRarity();
     const speciesKey = pickSpecies(rarity);
     const sp         = PET_SPECIES[speciesKey];
-    const imageUrl   = await fetchNekoImage(sp.imgCat);
+    const imageUrl   = getSpeciesImage(speciesKey, 1);
     const isFirst    = all.length === 0;
 
-    const pet = await createPet(sender, speciesKey, imageUrl || "", isFirst);
-
+    const pet        = await createPet(sender, speciesKey, imageUrl || "", isFirst);
     const rarityData = RARITIES[rarity];
 
-    // Build excitement message based on rarity
-    let exclaim = "A new companion has hatched!";
-    if (rarity === "epic")      exclaim = "✨ Wow! An Epic pet appeared!";
-    if (rarity === "legendary") exclaim = "🌟 LEGENDARY! You're so lucky!";
-    if (rarity === "mythic")    exclaim = "🔥🔥 M Y T H I C ! INCREDIBLE!! 🔥🔥";
+    // Excitement message scales with rarity
+    let exclaim = "✨ A new companion has hatched!";
+    if (rarity === "rare")      exclaim = "💙 A *Rare* pet appeared!";
+    if (rarity === "epic")      exclaim = "🟣 *EPIC!* You're very lucky!";
+    if (rarity === "legendary") exclaim = "🌟 *LEGENDARY!* Incredible luck!";
+    if (rarity === "mythic")    exclaim = "🔥🔥 *M Y T H I C !!* UNBELIEVABLE!! 🔥🔥";
 
     const caption = [
       `🥚 *EGG HATCHED!*`,
       ``,
-      `${exclaim}`,
+      exclaim,
       ``,
       `${rarityData.color} *${pet.name}*`,
       `📖 Species: ${sp.name}`,

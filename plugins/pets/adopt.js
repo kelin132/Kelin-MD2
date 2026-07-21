@@ -1,25 +1,15 @@
 // plugins/pets/adopt.js
 // .adopt — Get your first pet (free starter, one-time)
 import { getAllPets, createPet } from "../../lib/petDatabase.js";
-import { PET_SPECIES, RARITIES } from "../../lib/petData.js";
+import { PET_SPECIES, RARITIES, getSpeciesImage } from "../../lib/petData.js";
 
-const STARTER_SPECIES = ["cat", "dog", "bunny", "fox"];
-
-async function fetchNekoImage(imgCat) {
-  try {
-    const res  = await fetch(`https://nekos.best/api/v2/${imgCat}?amount=1`);
-    const json = await res.json();
-    return json.results?.[0]?.url || null;
-  } catch {
-    return null;
-  }
-}
+const STARTER_SPECIES = ["cat", "dog", "bunny", "fox", "moon_cat", "sakura_bunny", "fire_slime"];
 
 export default {
   name: "adopt",
   description: "Get your first pet for free",
   category: "pets",
-  usage: ".adopt <cat|dog|bunny|fox>",
+  usage: ".adopt <species>",
   aliases: ["getpet"],
   checkJail: true,
 
@@ -35,26 +25,30 @@ export default {
       }, { quoted: msg });
     }
 
-    const choice = (text || "").trim().toLowerCase();
+    const choice = (text || "").trim().toLowerCase().replace(/\s+/g, "_");
+
     if (!choice || !STARTER_SPECIES.includes(choice)) {
-      const list = STARTER_SPECIES
-        .map(s => `• *${s}* — ${PET_SPECIES[s].name} (${RARITIES[PET_SPECIES[s].rarity].label})`)
-        .join("\n");
+      const list = STARTER_SPECIES.map(s => {
+        const sp = PET_SPECIES[s];
+        return `• *${s}* — ${sp.name} (${RARITIES[sp.rarity].label})`;
+      }).join("\n");
       return sock.sendMessage(jid, {
         text: `🐾 *PET ADOPTION*\n\nChoose your starter companion:\n\n${list}\n\nUsage: *.adopt <name>*\nExample: *.adopt cat*`,
       }, { quoted: msg });
     }
 
     const sp       = PET_SPECIES[choice];
-    const imageUrl = await fetchNekoImage(sp.imgCat);
+    const imageUrl = getSpeciesImage(choice, 1);
 
     const pet = await createPet(sender, choice, imageUrl || "", true);
+    const rarity = RARITIES[pet.rarity];
 
     const caption = [
       `🐾 *WELCOME YOUR NEW PET!*`,
       ``,
-      `${RARITIES[pet.rarity].color} *${pet.name}*`,
-      `📖 Species: ${sp.name} | ⭐ Rarity: ${RARITIES[pet.rarity].label}`,
+      `${rarity.color} *${pet.name}*`,
+      `📖 Species: ${sp.name}`,
+      `⭐ Rarity: ${rarity.label}`,
       ``,
       `❤️ HP: ${pet.maxHp}   ⚔️ ATK: ${pet.attack}`,
       `🛡 DEF: ${pet.defense}  ⚡ SPD: ${pet.speed}`,
