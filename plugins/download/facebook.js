@@ -1,6 +1,6 @@
 /**
  * KELIN MD — .facebook command
- * Downloads Facebook videos using David Cyril API.
+ * Downloads Facebook. videos using David Cyril API.
  */
 
 import { get } from "../../lib/gifted.js";
