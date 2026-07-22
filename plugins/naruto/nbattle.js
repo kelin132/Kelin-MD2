@@ -4,10 +4,12 @@
 import players  from '../../lib/naruto/players.js';
 import jutsuLib from '../../lib/jutsu.js';
 import itemsLib from '../../lib/items.js';
-import { calculateDamage, chance, healthBar, chakraBar } from '../../lib/naruto/utils.js';
+import { calculateDamage, chance, healthBar } from '../../lib/naruto/utils.js';
 import {
   createBattle, getBattle, deleteBattle, getBattleByPlayer, armTimer,
 } from '../../lib/battleState.mjs';
+import { getClanImage } from '../../lib/narutoAPI.mjs';
+import { generateBattleScene, generateResultScene } from '../../lib/battleCanvas.mjs';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -15,7 +17,7 @@ import {
 const tag = (jid) => `@${jid.split('@')[0]}`;
 
 /** Build a battle-ready combatant snapshot from a DB player doc. */
-function snap(doc) {
+async function snap(doc) {
   const jutsu = (doc.jutsu || [])
     .map(j => {
       const id = typeof j === 'string' ? j : j.id;
@@ -23,9 +25,13 @@ function snap(doc) {
     })
     .filter(Boolean);
 
+  const imageUrl = await getClanImage(doc.clan?.name, 'battle').catch(() => null);
+
   return {
     jid:       doc.jid,
     username:  doc.username,
+    clan:      doc.clan?.name || null,
+    imageUrl,
     hp:        doc.hp,
     maxHp:     doc.maxHp,
     chakra:    doc.chakra,
@@ -37,6 +43,37 @@ function snap(doc) {
     inventory: JSON.parse(JSON.stringify(doc.inventory || [])),
     cooldowns: {},
   };
+}
+
+/** Render + send the current battle scene as an image, with a text caption. */
+async function sendBattleImage(sock, gid, battle, caption, opts = {}) {
+  try {
+    const buffer = await generateBattleScene({
+      left:  battle.challenger,
+      right: battle.opponent,
+      round: battle.round,
+      ...opts,
+    });
+    return sock.sendMessage(gid, {
+      image: buffer,
+      caption,
+      mentions: opts.mentions,
+    });
+  } catch (err) {
+    console.error('BATTLE CANVAS ERROR:', err);
+    return sock.sendMessage(gid, { text: caption, mentions: opts.mentions });
+  }
+}
+
+/** Render + send the win/loss result card as an image, with a text caption. */
+async function sendResultImage(sock, gid, { winner, loser, rewardText, outcome, caption, mentions }) {
+  try {
+    const buffer = await generateResultScene({ winner, loser, rewardText, outcome });
+    return sock.sendMessage(gid, { image: buffer, caption, mentions });
+  } catch (err) {
+    console.error('BATTLE RESULT CANVAS ERROR:', err);
+    return sock.sendMessage(gid, { text: caption, mentions });
+  }
 }
 
 /** One-line HP display with bar. */
@@ -100,15 +137,14 @@ async function endBattle(sock, battle, winnerKey) {
   const loser    = battle[loserKey];
   const gid      = battle.groupJid;
 
-  await sock.sendMessage(gid, {
-    text: [
+  await sendResultImage(sock, gid, {
+    winner: { username: winner.username, imageUrl: winner.imageUrl },
+    loser:  { username: loser.username,  imageUrl: loser.imageUrl },
+    rewardText: '💰 +300 Ryo | ✨ +100 XP',
+    outcome: 'victory',
+    caption: [
       `💀 ${tag(loser.jid)} has been reduced to *0 HP!*`,
-      ``,
-      hpLine(battle.challenger),
-      hpLine(battle.opponent),
-      ``,
       `🏆 ${tag(winner.jid)} wins the battle!`,
-      `💰 +300 Ryo | ✨ +100 XP`,
     ].join('\n'),
     mentions: [winner.jid, loser.jid],
   });
@@ -155,7 +191,8 @@ export default {
       if (!cDoc) return sock.sendMessage(gid, { text: `🥷 You don't have a ninja profile.\n\nUse *.nstart* first.` }, { quoted: msg });
       if (!oDoc) return sock.sendMessage(gid, { text: `❌ That ninja hasn't created a profile yet.\n\nThey need to use *.nstart* first.` }, { quoted: msg });
 
-      const battle = createBattle(gid, snap(cDoc), snap(oDoc));
+      const [cSnap, oSnap] = await Promise.all([snap(cDoc), snap(oDoc)]);
+      const battle = createBattle(gid, cSnap, oSnap);
 
       armTimer(battle, () => {
         if (getBattle(gid)?.status === 'pending') {
@@ -196,20 +233,14 @@ export default {
         deleteBattle(gid);
       });
 
-      await sock.sendMessage(gid, {
-        text: [
+      await sendBattleImage(sock, gid, battle,
+        [
           `⚔️ *NINJA BATTLE BEGINS!*`,
-          ``,
-          hpLine(battle.challenger),
-          `💙 ${tag(battle.challenger.jid)}: ${battle.challenger.chakra}/${battle.challenger.maxChakra} Chakra ${chakraBar(battle.challenger.chakra, battle.challenger.maxChakra, 8)}`,
-          ``,
-          hpLine(battle.opponent),
-          `💙 ${tag(battle.opponent.jid)}: ${battle.opponent.chakra}/${battle.opponent.maxChakra} Chakra ${chakraBar(battle.opponent.chakra, battle.opponent.maxChakra, 8)}`,
           ``,
           `🏃 Fastest ninja goes first — ${tag(first.jid)} attacks!`,
         ].join('\n'),
-        mentions: [battle.challenger.jid, battle.opponent.jid],
-      });
+        { mentions: [battle.challenger.jid, battle.opponent.jid] }
+      );
 
       return sock.sendMessage(gid, { text: buildPrompt(battle, first), mentions: [first.jid] });
     }
@@ -242,20 +273,21 @@ export default {
     }
 
     // Shared: called after every damaging move
-    async function afterDamage(header, damage) {
+    async function afterDamage(header, damage, crit = false) {
       tickCooldowns(mover);
       battle.turn = targetKey;
       battle.round++;
 
-      await sock.sendMessage(gid, {
-        text: [
+      const hitSide = targetKey === 'challenger' ? 'left' : 'right';
+
+      await sendBattleImage(sock, gid, battle,
+        [
           header,
           ``,
           `💥 ${tag(target.jid)} was dealt *${damage}* damage!`,
-          `❤️ ${tag(target.jid)}'s remaining HP: ${Math.max(0, target.hp)}/${target.maxHp} ${healthBar(Math.max(0, target.hp), target.maxHp, 10)}`,
         ].join('\n'),
-        mentions: [mover.jid, target.jid],
-      });
+        { hitSide, damage, crit, mentions: [mover.jid, target.jid] }
+      );
 
       if (target.hp <= 0) return endBattle(sock, battle, moverKey);
 
@@ -320,7 +352,7 @@ export default {
         crit ? `✨ *CRITICAL HIT!*` : null,
       ].filter(Boolean).join('\n');
 
-      return afterDamage(header, damage);
+      return afterDamage(header, damage, crit);
     }
 
     // ── ITEM ───────────────────────────────────────────────────────────────────
@@ -392,12 +424,14 @@ export default {
 
     // ── FLEE ───────────────────────────────────────────────────────────────────
     if (cmd === 'flee') {
-      await sock.sendMessage(gid, {
-        text: [
+      await sendResultImage(sock, gid, {
+        winner: { username: target.username, imageUrl: target.imageUrl },
+        loser:  { username: mover.username,  imageUrl: mover.imageUrl },
+        rewardText: '💰 +150 Ryo | ✨ +50 XP',
+        outcome: 'flee',
+        caption: [
           `🏃 ${tag(mover.jid)} has fled the battle!`,
-          ``,
           `🏆 ${tag(target.jid)} wins by default!`,
-          `💰 +150 Ryo | ✨ +50 XP`,
         ].join('\n'),
         mentions: [mover.jid, target.jid],
       });

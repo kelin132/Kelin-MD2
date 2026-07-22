@@ -1,5 +1,6 @@
 // plugins/naruto/nshop.js
 // Buy ninja items — shows Tsunade (Konoha's shop keeper / Hokage) art
+// Supports buying by index number OR item_id
 
 import players from "../../lib/naruto/players.js";
 import items   from "../../lib/naruto/items.js";
@@ -9,12 +10,12 @@ export default {
   name: "nshop",
   description: "Buy ninja items",
   category: "naruto",
-  usage: ".nshop [item_id]",
-  cooldown: 10, // seconds between purchases (enforced manually below via player.cooldowns.shop)
+  usage: ".nshop [index or item_id]",
+  cooldown: 10,
 
   async run({ sock, msg, sender, text }) {
     const jid = msg.key.remoteJid;
-    const SHOP_COOLDOWN_MS = 10 * 1000; // 10s between purchases
+    const SHOP_COOLDOWN_MS = 10 * 1000;
 
     try {
       const player = await players.get(sender);
@@ -25,9 +26,8 @@ export default {
         }, { quoted: msg });
       }
 
-      // No argument — show shop (browsing is always free, no cooldown)
+      // No argument — show shop with numbered list
       if (!text) {
-        // Group items by type for a cleaner display
         const grouped = {};
         for (const i of items) {
           if (!grouped[i.type]) grouped[i.type] = [];
@@ -39,12 +39,21 @@ export default {
           armor: "🛡️", special: "📜", boost: "💫",
         };
 
+        // Build a flat ordered list for index-based buying
+        const orderedItems = [];
+        for (const type of Object.keys(grouped)) {
+          for (const i of grouped[type]) {
+            orderedItems.push(i);
+          }
+        }
+
         const shopList = Object.entries(grouped).map(([type, arr]) => {
           const emoji = typeEmoji[type] || "📦";
-          const items = arr.map(i =>
-            `  ${emoji} *${i.name}* | \`${i.id}\` | 💰${i.price} Ryo\n     ${i.description}`
-          ).join("\n");
-          return `*${type.toUpperCase()}*\n${items}`;
+          const lines = arr.map(i => {
+            const idx = orderedItems.findIndex(x => x.id === i.id) + 1;
+            return `  ${emoji} *[${idx}] ${i.name}* | 💰${i.price} Ryo\n     ${i.description}`;
+          }).join("\n");
+          return `*${type.toUpperCase()}*\n${lines}`;
         }).join("\n\n");
 
         return sendWithCharacterImage(sock, jid, msg,
@@ -54,21 +63,42 @@ ${shopList}
 
 💰 Your Ryo: ${player.ryo}
 
-Use *.nshop <item_id>* to buy.
-Example: .nshop small_hp_potion`,
+Use *.nshop <number>* or *.nshop <item_id>* to buy.
+Example: .nshop 1   or   .nshop small_hp_potion`,
           "Tsunade", "shop");
       }
 
-      const itemId = text.trim().toLowerCase();
-      const item   = items.find(i => i.id === itemId);
+      // ── Resolve item by index or id ───────────────────────────────────────
+      const input = text.trim();
+
+      // Build flat ordered list (same order as display)
+      const grouped = {};
+      for (const i of items) {
+        if (!grouped[i.type]) grouped[i.type] = [];
+        grouped[i.type].push(i);
+      }
+      const orderedItems = [];
+      for (const type of Object.keys(grouped)) {
+        for (const i of grouped[type]) orderedItems.push(i);
+      }
+
+      let item;
+      const idx = parseInt(input, 10);
+      if (!isNaN(idx) && idx >= 1 && idx <= orderedItems.length) {
+        // Index-based purchase
+        item = orderedItems[idx - 1];
+      } else {
+        // ID-based purchase (fallback)
+        item = items.find(i => i.id === input.toLowerCase());
+      }
 
       if (!item) {
         return sock.sendMessage(jid, {
-          text: `❌ Item "*${itemId}*" not found.\n\nUse .nshop to see available items.`
+          text: `❌ Item "*${input}*" not found.\n\nUse *.nshop* to see available items with their numbers.`
         }, { quoted: msg });
       }
 
-      // Purchase cooldown — prevents rapid-fire buying
+      // Purchase cooldown
       const now = Date.now();
       if (player.cooldowns?.shop && now < player.cooldowns.shop) {
         const remaining = Math.ceil((player.cooldowns.shop - now) / 1000);

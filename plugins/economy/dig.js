@@ -1,13 +1,13 @@
 import { getUser, saveUser, requireRegistration, addHistory } from "./database.js";
 import { DIG_LOOT, SHOP_ITEMS, rollLoot } from "./_items.js";
 
-const COOLDOWN = 30 * 60 * 1000; // 30 minutes
+const COOLDOWN = 5 * 1000; // 5 seconds
 
 export default {
   name: "dig",
   aliases: ["mine"],
   category: "economy",
-  description: "Dig for buried treasure — cash, items, or orbs (30 min cooldown)",
+  description: "Dig for buried treasure — cash, items, or orbs (5 sec cooldown)",
   usage: ".dig",
 
   async run({ sock, msg, sender }) {
@@ -21,9 +21,8 @@ export default {
 
     if (now - (user.lastDig || 0) < COOLDOWN) {
       const rem  = COOLDOWN - (now - user.lastDig);
-      const mins = Math.floor(rem / 60000);
-      const secs = Math.floor((rem % 60000) / 1000);
-      return reply(`⛏️ *Tired!*\n\nYour arms need rest. Come back in *${mins}m ${secs}s*.`);
+      const secs = Math.ceil(rem / 1000);
+      return reply(`⛏️ *Tired!*\n\nYour arms need rest. Come back in *${secs}s*.`);
     }
 
     const loot = rollLoot(DIG_LOOT);

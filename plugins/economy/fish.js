@@ -1,13 +1,13 @@
 import { getUser, saveUser, requireRegistration, addHistory } from "./database.js";
 import { FISH_LOOT, SHOP_ITEMS, rollLoot } from "./_items.js";
 
-const COOLDOWN = 20 * 60 * 1000; // 20 minutes
+const COOLDOWN = 5 * 1000; // 5 seconds
 
 export default {
   name: "fish",
   aliases: ["fishing"],
   category: "economy",
-  description: "Go fishing for cash, items, or orbs (20 min cooldown)",
+  description: "Go fishing for cash, items, or orbs (5 sec cooldown)",
   usage: ".fish",
 
   async run({ sock, msg, sender }) {
@@ -21,9 +21,8 @@ export default {
 
     if (now - (user.lastFish || 0) < COOLDOWN) {
       const rem  = COOLDOWN - (now - user.lastFish);
-      const mins = Math.floor(rem / 60000);
-      const secs = Math.floor((rem % 60000) / 1000);
-      return reply(`🎣 *Waiting...*\n\nThe fish aren't biting. Try again in *${mins}m ${secs}s*.`);
+      const secs = Math.ceil(rem / 1000);
+      return reply(`🎣 *Waiting...*\n\nThe fish aren't biting. Try again in *${secs}s*.`);
     }
 
     const loot   = rollLoot(FISH_LOOT);

@@ -1,35 +1,38 @@
 /**
  * KELIN MD — .bet
- * Gamble a chosen amount of cash. 50/50 win or lose.
+ * Gamble a chosen amount of cash. 60% win rate.
  * Usage: .bet <amount|all|half>
  */
 import { getUser, saveUser, requireRegistration, addHistory } from "./database.js";
 
 const COOLDOWN = 30 * 1000; // 30 seconds between bets
 
-// Possible outcomes — adds flavour without changing the 50/50 odds
+// Possible outcomes — adds flavour without changing the odds
 const WIN_LINES = [
   "🎰 Jackpot! The dice rolled in your favour!",
   "🍀 Lucky break! You walked away richer!",
   "🎲 High roller! You doubled down and won!",
   "💫 The stars aligned — you won!",
   "🔥 On fire! You're on a winning streak!",
+  "🤑 Easy money! Your instincts were right!",
+  "🎯 Bullseye! That's how you do it!",
 ];
 
 const LOSE_LINES = [
-  "💀 Tough luck. The house always wins.",
+  "💀 Tough luck. The house still wins sometimes.",
   "😬 Ouch. Should've stopped while you were ahead.",
   "🎲 The dice betrayed you. Better luck next time.",
   "💸 Gone in seconds. Easy come, easy go.",
   "🌧️ Rough roll. Your wallet is crying.",
+  "😤 So close! But not quite.",
 ];
 
 export default {
   name: "bet",
-  description: "Gamble your cash — win or lose",
+  description: "Gamble your cash — 60% win rate",
   category: "economy",
   usage: ".bet <amount | all | half>",
-  aliases: ["gamble", "wager"],
+  aliases: ["gamble2", "wager"],
   cooldown: 2,
   checkJail: true,
 
@@ -61,7 +64,8 @@ Usage:
   *.bet all*      — bet everything in your wallet
   *.bet half*     — bet half your wallet
 
-💵 Wallet: $${user.money.toLocaleString()}`,
+💵 Wallet: $${user.money.toLocaleString()}
+🎯 Win Rate: *60%*`,
       }, { quoted: msg });
     }
 
@@ -92,8 +96,8 @@ Usage:
       }, { quoted: msg });
     }
 
-    // ── Resolve outcome — straight 50/50 ─────────────────────────────────
-    const won      = Math.random() < 0.5;
+    // ── Resolve outcome — 60% win rate ────────────────────────────────────
+    const won      = Math.random() < 0.6;
     const flavour  = won
       ? WIN_LINES[Math.floor(Math.random() * WIN_LINES.length)]
       : LOSE_LINES[Math.floor(Math.random() * LOSE_LINES.length)];

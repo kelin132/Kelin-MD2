@@ -1,6 +1,7 @@
 /**
  * KELIN MD — .setwelcome
  * Sets a custom welcome message for the group.
+ * Supports multi-line messages (use actual line breaks or \n escape).
  * Actual welcome sending is handled by lib/groupEventHandler.mjs
  */
 import { groupSettings } from "../../lib/groupSettings.js";
@@ -15,12 +16,22 @@ export default {
   isAdmin: true,
 
   async run({ sock, msg, args }) {
-    const jid  = msg.key.remoteJid;
-    const text = args.join(" ").trim();
+    const jid = msg.key.remoteJid;
 
     if (!jid.endsWith("@g.us")) {
       return sock.sendMessage(jid, { text: "❌ This command only works in groups." }, { quoted: msg });
     }
+
+    // Extract full message body preserving newlines (supports paragraph spacing)
+    const rawBody =
+      msg.message?.conversation ||
+      msg.message?.extendedTextMessage?.text ||
+      "";
+    // Strip command prefix + command name (e.g. ".setwelcome ")
+    const prefixMatch = rawBody.match(/^[.!#/]?(setwelcome|customwelcome)\s*/i);
+    const text = prefixMatch
+      ? rawBody.slice(prefixMatch[0].length).trimEnd()
+      : args.join(" ").trim();
 
     if (!text) {
       const current = groupSettings.get(jid)?.welcome;
@@ -36,13 +47,16 @@ Variables:
   @group — group name
   @count — total member count
 
+Paragraph spacing:
+  • Send a multi-line message (press Enter between lines)
+  • Or type *\\n* where you want a line break
+
 Examples:
   .setwelcome Welcome @user to @group! 🎉
-  .setwelcome Hey @user! Glad to have you in @group 👋
-  .setwelcome @user joined! We now have @count members 🥳
+  .setwelcome Hey @user!\\n\\nWelcome to @group 👋\\nWe have @count members!
 
 Current message:
-${current || "_(not set — default will be used)_"}
+${current ? current : "_(not set — default will be used)_"}
 
 To reset to default: *.setwelcome reset*
 To toggle on/off:    *.welcome on* / *.welcome off*`,
@@ -61,11 +75,12 @@ To toggle on/off:    *.welcome on* / *.welcome off*`,
 
     groupSettings.set(jid, { welcome: text });
 
-    // Build a preview using placeholder values
+    // Build a preview using placeholder values (also process \n escapes)
     const preview = text
       .replace(/@user/g,  "0712345678")
       .replace(/@group/g, "Your Group")
-      .replace(/@count/g, "42");
+      .replace(/@count/g, "42")
+      .replace(/\\n/g, "\n");
 
     await sock.sendMessage(jid, {
       text:
