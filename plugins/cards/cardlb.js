@@ -2,6 +2,7 @@
  * .cardlb   — Top 10 card collectors by total cards & rarity score
  */
 import { Col } from "./db.js";
+import { getUser as getEconomyUser } from "../economy/database.js";
 
 const TIER_EMOJI = {
   Common: "⚪", Uncommon: "🟢", Rare: "🔵", Epic: "🟣", Legendary: "🟡",
@@ -40,11 +41,11 @@ export default {
             rarityScore  += TIER_SCORE[t] || 1;
           }
           return {
-            userId:     u.userId || "?",
-            total:      u.cards.length,
+            userId:      u.userId || "?",
+            whatsappJid: u.whatsappNumber || `${u.userId}@s.whatsapp.net`,
+            total:       u.cards.length,
             rarityScore,
             tierCounts,
-            // Best card (highest tier)
             bestTier: ["Legendary","Epic","Rare","Uncommon","Common"].find((t) => tierCounts[t]) || "Common",
           };
         })
@@ -52,6 +53,17 @@ export default {
         .slice(0, 10);
 
       if (scored.length === 0) return reply("❌ No one has collected any cards yet!");
+
+      // Look up registered names from the economy database in parallel
+      const names = await Promise.all(
+        scored.map(async (u) => {
+          try {
+            const econUser = await getEconomyUser(u.whatsappJid);
+            if (econUser?.registered && econUser?.name) return econUser.name;
+          } catch { /* fall through */ }
+          return u.userId;
+        })
+      );
 
       const medals = ["🥇", "🥈", "🥉"];
 
@@ -66,7 +78,7 @@ export default {
           .map((t) => `${TIER_EMOJI[t]}×${u.tierCounts[t]}`)
           .join(" ");
 
-        text += `${rank} *${u.userId}*\n`;
+        text += `${rank} *${names[i]}*\n`;
         text += `   📦 ${u.total} cards  |  ⭐ Score: ${u.rarityScore.toLocaleString()}\n`;
         text += `   ${tiers}\n\n`;
       });
