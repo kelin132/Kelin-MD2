@@ -10,9 +10,11 @@ export default {
   description: "Buy ninja items",
   category: "naruto",
   usage: ".nshop [item_id]",
+  cooldown: 10, // seconds between purchases (enforced manually below via player.cooldowns.shop)
 
   async run({ sock, msg, sender, text }) {
     const jid = msg.key.remoteJid;
+    const SHOP_COOLDOWN_MS = 10 * 1000; // 10s between purchases
 
     try {
       const player = await players.get(sender);
@@ -23,7 +25,7 @@ export default {
         }, { quoted: msg });
       }
 
-      // No argument — show shop
+      // No argument — show shop (browsing is always free, no cooldown)
       if (!text) {
         // Group items by type for a cleaner display
         const grouped = {};
@@ -66,6 +68,15 @@ Example: .nshop small_hp_potion`,
         }, { quoted: msg });
       }
 
+      // Purchase cooldown — prevents rapid-fire buying
+      const now = Date.now();
+      if (player.cooldowns?.shop && now < player.cooldowns.shop) {
+        const remaining = Math.ceil((player.cooldowns.shop - now) / 1000);
+        return sock.sendMessage(jid, {
+          text: `⏳ Tsunade is still processing your last order!\n\nWait *${remaining}s* before buying again.`
+        }, { quoted: msg });
+      }
+
       if (player.ryo < item.price) {
         return sock.sendMessage(jid, {
           text: `💰 Not enough Ryo!\n\nCost: ${item.price} Ryo\nYour Ryo: ${player.ryo}`
@@ -82,6 +93,9 @@ Example: .nshop small_hp_potion`,
       } else {
         player.inventory.push({ id: item.id, name: item.name, amount: 1 });
       }
+
+      if (!player.cooldowns) player.cooldowns = {};
+      player.cooldowns.shop = now + SHOP_COOLDOWN_MS;
 
       await player.save();
 
