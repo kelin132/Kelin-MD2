@@ -4,11 +4,11 @@ import { getActivePet, savePet } from "../../lib/petDatabase.js";
 import { currentEvolStage, nextEvolStage, PET_SPECIES, RARITIES } from "../../lib/petData.js";
 
 export default {
-  name: "evolve",
+  name: "petevolve",
   description: "Evolve your pet when requirements are met",
   category: "pets",
-  usage: ".evolve",
-  aliases: ["petevolve"],
+  usage: ".petevolve",
+  aliases: ["evolvepet"],
   checkJail: true,
 
   async run({ sock, msg }) {
