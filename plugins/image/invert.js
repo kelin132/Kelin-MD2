@@ -1,3 +1,5 @@
+// plugins/image/invert.js — Invert image colors via PopCat API
+
 import { getQuotedImageUrl, noQuoteText } from "./_imageHelper.js";
 
 export default {
@@ -12,11 +14,13 @@ export default {
     const jid = msg.key.remoteJid;
     try {
       const imgUrl = await getQuotedImageUrl(sock, msg);
-      const url = `https://api.nexoracle.com/image-processing/invert?apikey=free_key@maher_apis&img=${encodeURIComponent(imgUrl)}`;
-      await sock.sendMessage(jid, { image: { url }, caption: "🔄 Colors inverted!" }, { quoted: msg });
+      const url    = `https://api.popcat.xyz/invert?image=${encodeURIComponent(imgUrl)}`;
+      await sock.sendMessage(jid, { image: { url }, caption: "🔄 *Colors inverted!*" }, { quoted: msg });
     } catch (err) {
-      if (err.message === "NOQUOTE" || err.message === "NOIMAGE") return sock.sendMessage(jid, { text: noQuoteText() }, { quoted: msg });
-      console.error(err);
+      if (err.message === "NOQUOTE" || err.message === "NOIMAGE") {
+        return sock.sendMessage(jid, { text: noQuoteText() }, { quoted: msg });
+      }
+      console.error("INVERT ERROR:", err);
       await sock.sendMessage(jid, { text: "❌ Failed to invert image. Try again!" }, { quoted: msg });
     }
   },
