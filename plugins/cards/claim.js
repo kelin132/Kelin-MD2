@@ -5,7 +5,7 @@ const activeSpawns = global.activeSpawns || (global.activeSpawns = {});
 
 export default {
   name: "claim",
-  aliases: ["catch", "collect"],
+  aliases: ["collect"],
   category: "cards",
   description: "Claim a spawned card — first come, first served!",
   usage: ".claim <card_id>",
