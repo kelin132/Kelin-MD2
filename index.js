@@ -21,6 +21,7 @@ import { loadPlugins } from "./lib/pluginManager.mjs";
 import { log } from "./lib/logger.mjs";
 import { autoUpdate } from "./lib/updater.js";
 import { connectDb } from "./lib/mongo.mjs";
+import { initGroupSettings } from "./lib/groupSettings.js";
 import { startCardSpawner } from "./lib/cardSpawner.mjs";
 
 // settings.js is CommonJS — import via createRequire
@@ -65,6 +66,7 @@ if (!isRegistered()) {
 // ── Connect to MongoDB ────────────────────────────────────────────────────────
 try {
   await connectDb();
+  await initGroupSettings();   // load group settings (welcome, antilink, etc.) from MongoDB
 } catch (err) {
   log("warn", "MongoDB connection failed: " + String(err));
   log("warn", "Economy/guild/staff features require MongoDB. Add MONGO_URI to your .env");
