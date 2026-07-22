@@ -1,18 +1,16 @@
 // plugins/pokemon/heal.js
-// Heal all Pokémon in party — costs economy money
+// Heal all Pokémon in party — FREE, 150-second cooldown
 
 import { getTrainer } from "../../lib/pokemon/players.mjs";
 import { getTrainerParty, healParty } from "../../lib/pokemon/pokemonDb.mjs";
-import { getUser, addMoney } from "../economy/database.js";
-
-const HEAL_COST = 200;
 
 export default {
   name: "heal",
   aliases: ["pokecenter", "healparty"],
-  description: "Heal all Pokémon in your party",
+  description: "Heal all Pokémon in your party (free, 150s cooldown)",
   category: "pokemon",
   usage: ".heal",
+  cooldown: 150,
 
   async run({ sock, msg, sender }) {
     const jid = msg.key.remoteJid;
@@ -32,21 +30,11 @@ export default {
     const allHealthy = party.every(p => p.hp >= p.maxHp);
     if (allHealthy) {
       return sock.sendMessage(jid, {
-        text: "✅ All your Pokémon are already at full health!",
-      }, { quoted: msg });
-    }
-
-    const econUser = await getUser(sender);
-    const balance = econUser.money || 0;
-
-    if (balance < HEAL_COST) {
-      return sock.sendMessage(jid, {
-        text: `❌ Not enough money! Healing costs *$${HEAL_COST}*.\nYou have: *$${balance}*`,
+        text: "✅ All your Pokémon are already at full health!\n⏳ Next free heal in 150 seconds.",
       }, { quoted: msg });
     }
 
     await healParty(sender);
-    await addMoney(sender, -HEAL_COST);
 
     const healed = party.map(p => `  🐉 ${p.displayName || p.name} — ❤️ FULL`).join("\n");
 
@@ -58,8 +46,8 @@ Your Pokémon have been fully healed! 💚
 
 ${healed}
 
-💵 Paid: *$${HEAL_COST}*
-💵 Remaining: *$${balance - HEAL_COST}*`,
+💚 *Healing is free!*
+⏳ Next free heal available in *150 seconds*.`,
     }, { quoted: msg });
   },
 };

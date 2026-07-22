@@ -48,38 +48,31 @@ async function sendScene(sock, jid, msg, battle, statusText, hitSide, damage, cr
   }
 }
 
-/** Show the current HP and all available battle commands so the fight always continues */
+/** Show battle status in the same format as the original BATTLE STARTED message */
 async function sendBattlePrompt(sock, jid, msg, myPokemon, enemyPokemon, battleType) {
   const myName    = myPokemon.displayName    || myPokemon.name;
   const enemyName = enemyPokemon.displayName || enemyPokemon.name;
-  const moves     = myPokemon.moves || [];
+  const isWild    = battleType === "wild";
 
-  const moveLines = moves.map((m, i) => {
-    const emoji = TYPE_EMOJIS[m.type] || "⭐";
-    const power = m.power ? `Power: ${m.power}` : "Status";
-    const desc  = m.desc ? `\n   📖 ${m.desc}` : "";
-    return `*${i + 1}.* ${emoji} *${m.name}* (${power}, PP: ${m.pp})${desc}\n   ➤ \`.battle fight ${i + 1}\``;
-  }).join("\n\n");
-
-  const catchLine = battleType === "wild"
-    ? `\n🎾 *Catch:* \`.battle pokeball <type>\` (e.g. pokeball, greatball, ultraball)`
+  const catchLine = isWild
+    ? `\n🎾 \`.battle pokeball <type>\` — Throw a Pokéball`
     : "";
 
   await sock.sendMessage(jid, {
     text:
-`⚔️ *YOUR TURN — CHOOSE AN ACTION!*
+`⚔️ *BATTLE STARTED!*
 
-🐉 *${myName}* Lv.${myPokemon.level} ❤️ ${myPokemon.hp}/${myPokemon.maxHp}
-🐾 *${enemyName}* Lv.${enemyPokemon.level} ❤️ ${enemyPokemon.hp}/${enemyPokemon.maxHp}
+🐉 Your Pokémon: *${myName}* Lv.${myPokemon.level}
+❤️ HP: ${myPokemon.hp}/${myPokemon.maxHp}
 
-━━━━━━━━━━━━━━━━━━━━
-*⚔️ MOVES:*
-${moveLines}
+🐾 ${isWild ? "Wild" : "Opponent"}: *${enemyName}* Lv.${enemyPokemon.level}
+❤️ HP: ${enemyPokemon.hp}/${enemyPokemon.maxHp}
 
-━━━━━━━━━━━━━━━━━━━━
-💊 *Items:* \`.battle item\` — see your bag
-🔄 *Switch:* \`.battle switch\` — swap Pokémon${catchLine}
-🏃 *Flee:* \`.battle run\``,
+*Battle Commands:*
+⚔️ \`.battle fight\` — See your moves
+⚔️ \`.battle fight <1-6>\` — Use a move${catchLine}
+💊 \`.battle item <item>\` — Use a heal item
+🏃 \`.battle run\` — Flee from battle`,
   }, { quoted: msg });
 }
 

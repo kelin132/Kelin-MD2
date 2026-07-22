@@ -1,8 +1,20 @@
 // plugins/pokemon/bag.js
-// Show everything a trainer has in their bag
+// Show everything a trainer has in their bag, grouped by category
 
 import { getTrainer } from "../../lib/pokemon/players.mjs";
 import { MART_ITEMS } from "../../lib/pokemon/martItems.mjs";
+
+// Category display order and labels
+const CAT_META = {
+  ball:    { label: "🎾 *POKÉBALLS*",           hint: (k) => `\`.battle pokeball ${k}\`` },
+  heal:    { label: "💊 *HEALING ITEMS*",        hint: (k) => `\`.battle item ${k}\`` },
+  battle:  { label: "⚔️  *BATTLE ITEMS*",        hint: (k) => `\`.battle item ${k}\`` },
+  stone:   { label: "🪨 *EVOLUTION STONES*",     hint: (k) => `\`.evolve <pokémon> ${k}\`` },
+  cure:    { label: "🩹 *STATUS CURES*",         hint: (k) => `\`.battle item ${k}\`` },
+  vitamin: { label: "💊 *VITAMINS & BOOSTERS*",  hint: (k) => `\`.use ${k} <pokémon>\`` },
+  key:     { label: "🔑 *KEY ITEMS*",            hint: (k) => k === "keystone" ? `\`.equip <pokémon>\`` : `\`.use ${k}\`` },
+  other:   { label: "🎒 *OTHER ITEMS*",          hint: (k) => `\`.use ${k}\`` },
+};
 
 export default {
   name: "bag",
@@ -22,29 +34,21 @@ export default {
 
     const inv = trainer.inventory || {};
 
-    // Group items by category
-    const categories = {
-      ball:   { label: "🎾 *POKÉBALLS*",        items: [] },
-      heal:   { label: "💊 *HEALING ITEMS*",     items: [] },
-      battle: { label: "⚔️  *BATTLE ITEMS*",     items: [] },
-      stone:  { label: "🪨 *EVOLUTION STONES*",  items: [] },
-      key:    { label: "🔑 *KEY ITEMS*",          items: [] },
-      other:  { label: "🎒 *OTHER ITEMS*",        items: [] },
-    };
-
+    // Group owned items by category
+    const groups = {};
     let totalItems = 0;
 
     for (const [key, qty] of Object.entries(inv)) {
       if (!qty || qty <= 0) continue;
       const itemData = MART_ITEMS[key];
       const cat      = itemData?.category || "other";
-      const group    = categories[cat] || categories.other;
-      group.items.push({
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push({
+        key,
+        qty,
         emoji: itemData?.emoji || "📦",
         name:  itemData?.name  || key,
-        qty,
         desc:  itemData?.desc  || "",
-        key,
       });
       totalItems += qty;
     }
@@ -55,28 +59,21 @@ export default {
 `🎒 *${trainer.username}'s BAG*
 
 Your bag is empty!
-
 Visit *.mart* to buy items.`,
       }, { quoted: msg });
     }
 
-    // Build sections
-    const sections = Object.values(categories)
-      .filter(c => c.items.length > 0)
-      .map(c => {
-        const lines = c.items.map(it => {
-          const usageHint = it.key.includes("ball")
-            ? `_(use in battle: \`.battle pokeball ${it.key}\`)_`
-            : it.key === "potion" || it.key === "superpotion" || it.key === "hyperpotion" || it.key === "fullrestore" || it.key === "revive" || it.key === "maxrevive"
-              ? `_(use in battle: \`.battle item ${it.key}\`)_`
-              : it.key.startsWith("xattack") || it.key.startsWith("xdefense") || it.key.startsWith("xspeed")
-                ? `_(use in battle: \`.battle item ${it.key}\`)_`
-                : it.key.endsWith("stone")
-                  ? `_(evolve: \`.evolve <pokémon> ${it.key}\`)_`
-                  : "";
-          return `  ${it.emoji} *${it.name}* × *${it.qty}*\n    ↳ ${it.desc}${usageHint ? `\n    ↳ ${usageHint}` : ""}`;
+    // Build sections in defined order
+    const catOrder = ["ball", "heal", "cure", "battle", "vitamin", "stone", "key", "other"];
+    const sections = catOrder
+      .filter(cat => groups[cat] && groups[cat].length > 0)
+      .map(cat => {
+        const meta  = CAT_META[cat] || CAT_META.other;
+        const lines = groups[cat].map(it => {
+          const hint = meta.hint(it.key);
+          return `  ${it.emoji} *${it.name}* × *${it.qty}*\n    ↳ ${it.desc}\n    ↳ ${hint}`;
         }).join("\n");
-        return `${c.label}\n${lines}`;
+        return `${meta.label}\n${lines}`;
       })
       .join("\n\n");
 
@@ -88,7 +85,7 @@ ${sections}
 
 ━━━━━━━━━━━━━━━━━━━━
 🛒 Buy more at *.mart*
-⚔️ Use items mid-battle with \`.battle item\``,
+⚔️ Use items in battle: \`.battle item\``,
     }, { quoted: msg });
   },
 };
