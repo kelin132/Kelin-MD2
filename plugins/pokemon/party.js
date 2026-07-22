@@ -27,7 +27,7 @@ export default {
         text:
 `🎒 *YOUR PARTY IS EMPTY!*
 
-Use *.t2party <pokémon name>* to move Pokémon from PC.
+Use *.t2party <pokémon name>* to move Pokémon from PC to party.
 Or catch wild Pokémon with *.wild* then *.catch*!`,
       }, { quoted: msg });
     }
@@ -58,7 +58,11 @@ Or catch wild Pokémon with *.wild* then *.catch*!`,
 
 ${slots.join("\n")}
 
-`;
+━━━━━━━━━━━━━━━━━━━━
+📋 *Party Management:*
+• *.t2pc <name or slot>* — Move a Pokémon to PC storage
+• *.t2party <name or slot>* — Bring a Pokémon from PC to party
+• *.pc* — View all Pokémon stored in your PC`;
 
     if (buf) {
       await sock.sendMessage(jid, { image: buf, caption }, { quoted: msg });

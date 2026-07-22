@@ -1,5 +1,5 @@
 // plugins/pokemon/battle.js
-// Handles all battle subcommands: fight, run, item, pokeball
+// Handles all battle subcommands: fight, run, item, pokeball, switch
 
 import { getBattle, updateBattle, endBattle, isMyTurn } from "../../lib/pokemon/battleState.mjs";
 import { clearWild, updateWildHp } from "../../lib/pokemon/wildState.mjs";
@@ -42,13 +42,13 @@ async function sendScene(sock, jid, msg, battle, statusText, hitSide, damage, cr
   }
 }
 
-/** Format the move list with descriptions for display */
+/** Format the move list with descriptions and command hints for display */
 function formatMoveList(moves) {
   return moves.map((m, i) => {
     const emoji = TYPE_EMOJIS[m.type] || "⭐";
     const power = m.power ? `Power: ${m.power}` : "Status";
-    const desc = m.desc ? `\n     📖 ${m.desc}` : "";
-    return `*${i + 1}.* ${emoji} *${m.name}* (${power}, PP: ${m.pp})${desc}`;
+    const desc = m.desc ? `\n   📖 *What it does:* ${m.desc}` : "";
+    return `*${i + 1}.* ${emoji} *${m.name}* (${power}, PP: ${m.pp})${desc}\n   ➤ Use \`.battle fight ${i + 1}\``;
   }).join("\n\n");
 }
 
@@ -178,9 +178,9 @@ async function handlePvPDefeat(sock, jid, msg, battle, loserJid) {
 export default {
   name: "battle",
   aliases: ["b"],
-  description: "Battle commands: fight, run, item, pokeball",
+  description: "Battle commands: fight, run, item, pokeball, switch",
   category: "pokemon",
-  usage: ".battle <fight|run|item|pokeball> [args]",
+  usage: ".battle <fight|run|item|pokeball|switch> [args]",
 
   async run({ sock, msg, sender, args }) {
     const jid = msg.key.remoteJid;
@@ -224,6 +224,140 @@ export default {
       }
     }
 
+    // ── SWITCH ────────────────────────────────────────────────────────────────
+    if (sub === "switch" || sub === "swap") {
+      if (!isMyTurn(jid, sender)) {
+        return sock.sendMessage(jid, { text: "⏳ It's not your turn!" }, { quoted: msg });
+      }
+
+      const party = await getTrainerParty(sender);
+      const aliveParty = (party || []).filter(p => p.hp > 0);
+
+      // No slot given — show the party so they can pick
+      if (!args[1]) {
+        if (aliveParty.length <= 1) {
+          return sock.sendMessage(jid, {
+            text: `❌ You have no other Pokémon to switch to!\nAll others have fainted. Use *.heal* after battle.`,
+          }, { quoted: msg });
+        }
+
+        const myCurrentId = (myPokemon._id || myPokemon.id)?.toString();
+        const partyList = aliveParty
+          .map((p, i) => {
+            const isCurrent = (p._id || p.id)?.toString() === myCurrentId;
+            const emoji = TYPE_EMOJIS[p.primaryType] || "⭐";
+            return `${i + 1}. ${emoji} *${p.displayName || p.name}* Lv.${p.level} ❤️ ${p.hp}/${p.maxHp}${isCurrent ? " *(current)*" : ""}`;
+          })
+          .join("\n");
+
+        return sock.sendMessage(jid, {
+          text:
+`🔄 *SWITCH POKÉMON*
+
+*Your Party (alive):*
+${partyList}
+
+Reply: \`.battle switch <slot number>\`
+Example: \`.battle switch 2\``,
+        }, { quoted: msg });
+      }
+
+      const slotNum = parseInt(args[1]);
+      if (isNaN(slotNum) || slotNum < 1 || slotNum > aliveParty.length) {
+        return sock.sendMessage(jid, {
+          text: `❌ Invalid slot! Choose between *1* and *${aliveParty.length}*.\nType \`.battle switch\` to see your party.`,
+        }, { quoted: msg });
+      }
+
+      const newPoke = aliveParty[slotNum - 1];
+      const myCurrentId = (myPokemon._id || myPokemon.id)?.toString();
+      const newPokeId = (newPoke._id || newPoke.id)?.toString();
+
+      if (newPokeId === myCurrentId) {
+        return sock.sendMessage(jid, {
+          text: `❌ *${newPoke.displayName || newPoke.name}* is already in battle!`,
+        }, { quoted: msg });
+      }
+
+      // Swap the active Pokémon in battle state
+      updateBattle(jid, isChallenger
+        ? { challengerPokemon: newPoke, turn: "opponent" }
+        : { opponentPokemon: newPoke, turn: "challenger" }
+      );
+
+      const oldName = myPokemon.displayName || myPokemon.name;
+      const newName = newPoke.displayName || newPoke.name;
+
+      await sock.sendMessage(jid, {
+        text: `🔄 *${oldName}* → *${newName}*!\n${newName} is now in battle! ❤️ ${newPoke.hp}/${newPoke.maxHp}`,
+      }, { quoted: msg });
+
+      // Wild auto-counter after switch
+      if (battle.type === "wild") {
+        const currentBattle = getBattle(jid);
+        if (!currentBattle) return;
+        const wildMoves = currentBattle.opponentPokemon.moves || [];
+        if (wildMoves.length > 0) {
+          const wildMove = wildMoves[Math.floor(Math.random() * wildMoves.length)];
+          const wildDmg = calcDamage(currentBattle.opponentPokemon, newPoke, wildMove);
+          const wildCrit = Math.random() < 0.0625;
+          const wildFinalDmg = wildCrit ? Math.floor(wildDmg * 1.5) : wildDmg;
+          const newPlayerHp = Math.max(0, newPoke.hp - wildFinalDmg);
+          const updatedSwitched = { ...newPoke, hp: newPlayerHp };
+          const stateAfterWild = updateBattle(jid, isChallenger
+            ? { challengerPokemon: updatedSwitched, turn: "challenger" }
+            : { opponentPokemon: updatedSwitched, turn: "opponent" }
+          );
+
+          const wildEmoji = TYPE_EMOJIS[wildMove.type] || "⭐";
+          const wildText = `${wildEmoji} *Wild ${currentBattle.opponentPokemon.displayName || currentBattle.opponentPokemon.name}* used *${wildMove.name}*!${wildCrit ? " ⚡ Critical hit!" : ""}\n💥 -${wildFinalDmg} HP to ${newName}${newPlayerHp <= 0 ? `\n💀 *${newName} has fainted!*` : `\n❤️ ${newName}: ${newPlayerHp}/${newPoke.maxHp}`}`;
+
+          if (newPlayerHp <= 0) {
+            const tr = await getTrainer(sender);
+            const trName = tr?.username || msg.pushName || "Trainer";
+            endBattle(jid);
+            clearWild(jid);
+            const faintCaption = `💀 *${trName}'s ${newName} has fainted!*\nYou lost the battle. Use *.heal* to heal your party.`;
+            await sock.sendMessage(jid, { text: faintCaption }, { quoted: msg });
+          } else if (stateAfterWild) {
+            await sendScene(sock, jid, msg, stateAfterWild, wildText, "player", wildFinalDmg, wildCrit);
+            // Prompt moves after enemy counter
+            const myMoves = newPoke.moves || [];
+            if (myMoves.length > 0) {
+              await sock.sendMessage(jid, {
+                text:
+`⚔️ *${newName.toUpperCase()} — CHOOSE YOUR NEXT MOVE!*
+
+${formatMoveList(myMoves)}
+
+━━━━━━━━━━━━━━━━━━━━
+🐾 Enemy: *${currentBattle.opponentPokemon.displayName || currentBattle.opponentPokemon.name}* Lv.${currentBattle.opponentPokemon.level} ❤️ ${currentBattle.opponentPokemon.hp}/${currentBattle.opponentPokemon.maxHp}
+🔄 Switch: \`.battle switch\``,
+              }, { quoted: msg });
+            }
+          }
+        } else {
+          updateBattle(jid, { turn: "challenger" });
+          // Prompt moves after turn reset
+          const myMoves = newPoke.moves || [];
+          if (myMoves.length > 0) {
+            await sock.sendMessage(jid, {
+              text:
+`⚔️ *${newName.toUpperCase()} — CHOOSE YOUR NEXT MOVE!*
+
+${formatMoveList(myMoves)}
+
+━━━━━━━━━━━━━━━━━━━━
+🐾 Enemy: *${enemyPokemon.displayName || enemyPokemon.name}* Lv.${enemyPokemon.level} ❤️ ${enemyPokemon.hp}/${enemyPokemon.maxHp}
+🔄 Switch: \`.battle switch\``,
+            }, { quoted: msg });
+          }
+        }
+      }
+
+      return;
+    }
+
     // ── FIGHT ─────────────────────────────────────────────────────────────────
     if (sub === "fight" || sub === "attack" || sub === "move") {
       if (!isMyTurn(jid, sender)) {
@@ -244,8 +378,7 @@ ${formatMoveList(moves)}
 
 ━━━━━━━━━━━━━━━━━━━━
 🐾 Enemy: *${enemyName}* Lv.${enemyPokemon.level} ❤️ ${enemyPokemon.hp}/${enemyPokemon.maxHp}
-
-Reply: \`.battle fight <1-${moves.length}>\``,
+🔄 Switch: \`.battle switch\``,
         }, { quoted: msg });
       }
 
@@ -302,6 +435,17 @@ Reply: \`.battle fight <1-${moves.length}>\``,
         if (wildMoves.length === 0) {
           // Wild has no moves — reset turn so player can attack again
           updateBattle(jid, { turn: "challenger" });
+          // Prompt player to pick their next move
+          await sock.sendMessage(jid, {
+            text:
+`⚔️ *${myName.toUpperCase()} — CHOOSE YOUR NEXT MOVE!*
+
+${formatMoveList(moves)}
+
+━━━━━━━━━━━━━━━━━━━━
+🐾 Enemy: *${enemyName}* Lv.${updated.opponentPokemon.level} ❤️ ${updated.opponentPokemon.hp}/${updated.opponentPokemon.maxHp}
+🔄 Switch: \`.battle switch\``,
+          }, { quoted: msg });
         } else {
           const wildMove = wildMoves[Math.floor(Math.random() * wildMoves.length)];
           const wildDmg = calcDamage(updated.opponentPokemon, updated.challengerPokemon, wildMove);
@@ -333,6 +477,17 @@ Reply: \`.battle fight <1-${moves.length}>\``,
             }
           } else if (stateAfterWild) {
             await sendScene(sock, jid, msg, stateAfterWild, wildText, "player", wildFinalDmg, wildCrit);
+            // ── Prompt player to pick their next move so battle continues ──
+            await sock.sendMessage(jid, {
+              text:
+`⚔️ *${myName.toUpperCase()} — CHOOSE YOUR NEXT MOVE!*
+
+${formatMoveList(moves)}
+
+━━━━━━━━━━━━━━━━━━━━
+🐾 Enemy: *${enemyName}* Lv.${stateAfterWild.opponentPokemon.level} ❤️ ${stateAfterWild.opponentPokemon.hp}/${stateAfterWild.opponentPokemon.maxHp}
+🔄 Switch: \`.battle switch\``,
+            }, { quoted: msg });
           }
         }
       }
@@ -486,6 +641,8 @@ Reply: \`.battle fight <1-${moves.length}>\``,
 *Commands:*
 \`.battle fight\` — See your moves & choose an attack
 \`.battle fight <1-6>\` — Attack with a specific move
+\`.battle switch\` — Switch your active Pokémon
+\`.battle switch <slot>\` — Switch to party slot number
 \`.battle pokeball <type>\` — Catch (wild only)
 \`.battle item <item>\` — Use item
 \`.battle run\` — Flee`,
