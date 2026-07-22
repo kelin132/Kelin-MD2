@@ -22,11 +22,11 @@ export default {
   cooldown: 0,
   isOwner: true,
 
-  async run({ sock, msg, args, isOwner }) {
+  async run({ sock, msg, args, isOwner, isMod }) {
     const jid   = msg.key.remoteJid;
     const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
 
-    if (!isOwner) return reply("❌ Owner only command.");
+    if (!isOwner && !isMod) return reply("❌ Owner/mod only command.");
 
     // Resolve target from @mention or first arg
     const mentionedJids = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid ?? [];
