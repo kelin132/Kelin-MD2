@@ -91,14 +91,8 @@ export default {
 🔵 ${challengerTrainer.username}: *${challengerLead.displayName}* Lv.${challengerLead.level} ❤️${challengerLead.hp}/${challengerLead.maxHp}
 🔴 ${opponentTrainer.username || msg.pushName}: *${opponentLead.displayName}* Lv.${opponentLead.level} ❤️${opponentLead.hp}/${opponentLead.maxHp}
 
-📋 *${challengerTrainer.username}'s Moves:*
-${moveList(challengerLead)}
-
-📋 *${opponentTrainer.username || msg.pushName}'s Moves:*
-${moveList(opponentLead)}
-
 ⏳ *${challengerTrainer.username}* goes first!
-Use \`.battle fight <1-4>\` to attack
+Use \`.battle fight\` to see moves, \`.battle fight <1-6>\` to attack
 Use \`.battle run\` to forfeit`;
 
       if (buf) {

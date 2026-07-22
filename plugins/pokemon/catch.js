@@ -79,11 +79,9 @@ export default {
 🐾 Wild: *${wild.pokemon.displayName}* Lv.${wild.pokemon.level}
 ❤️ HP: ${wild.pokemon.hp}/${wild.pokemon.maxHp}
 
-📋 *Your Moves:*
-${moves}
-
 *Battle Commands:*
-⚔️ \`.battle fight <1-4>\` — Use a move
+⚔️ \`.battle fight\` — See your moves
+⚔️ \`.battle fight <1-6>\` — Use a move
 🎾 \`.battle pokeball <type>\` — Throw a Pokéball
 💊 \`.battle item <item>\` — Use a heal item
 🏃 \`.battle run\` — Flee from battle`;

@@ -1,8 +1,9 @@
 // plugins/pokemon/party.js
-// View your active battle party (up to 6 Pokémon)
+// View your active battle party as a canvas image
 
 import { getTrainer } from "../../lib/pokemon/players.mjs";
 import { getTrainerParty } from "../../lib/pokemon/pokemonDb.mjs";
+import { generatePartyCanvas } from "../../lib/pokemon/canvas.mjs";
 
 export default {
   name: "party",
@@ -27,41 +28,42 @@ export default {
 `🎒 *YOUR PARTY IS EMPTY!*
 
 Use *.t2party <pokémon name>* to move Pokémon from PC.
-Or use *.catch* to catch a wild Pokémon!`,
+Or catch wild Pokémon with *.wild* then *.catch*!`,
       }, { quoted: msg });
     }
 
-    const typeEmojis = { fire:"🔥",water:"💧",grass:"🍃",electric:"⚡",psychic:"🔮",
-      normal:"⭐",flying:"🌤️",bug:"🐛",poison:"☠️",rock:"🪨",ground:"🌍",
-      ice:"❄️",fighting:"🥊",ghost:"👻",dragon:"🐉",dark:"🌑",steel:"⚙️",fairy:"🌸" };
+    let buf = null;
+    try {
+      buf = await generatePartyCanvas(party, trainer.username);
+    } catch (err) {
+      console.error("[party canvas]", err?.message);
+    }
 
+    // Compact text fallback (also shown as caption under the image)
+    const typeEmojis = {
+      fire:"🔥",water:"💧",grass:"🍃",electric:"⚡",psychic:"🔮",normal:"⭐",
+      flying:"🌤️",bug:"🐛",poison:"☠️",rock:"🪨",ground:"🌍",ice:"❄️",
+      fighting:"🥊",ghost:"👻",dragon:"🐉",dark:"🌑",steel:"⚙️",fairy:"🌸",
+    };
     const slots = party.map((p, i) => {
-      const typeIcon = typeEmojis[p.primaryType] || "⭐";
-      const shiny = p.shiny ? " ✨" : "";
+      const icon = typeEmojis[p.primaryType] || "⭐";
+      const hpBar = p.hp <= 0 ? "💀" : p.hp / p.maxHp > 0.5 ? "🟩" : p.hp / p.maxHp > 0.2 ? "🟨" : "🟥";
       const nick = p.nickname ? ` "${p.nickname}"` : "";
-      const hpBar = () => {
-        const pct = p.hp / p.maxHp;
-        if (pct > 0.5) return "🟩";
-        if (pct > 0.2) return "🟨";
-        if (p.hp > 0) return "🟥";
-        return "💀";
-      };
-      const status = p.hp <= 0 ? " *(Fainted)*" : "";
-      return `${i + 1}. ${typeIcon}${hpBar()} *${p.displayName || p.name}${nick}${shiny}*${status}\n   Lv.${p.level} ❤️${p.hp}/${p.maxHp} ⚔️${p.attack} 🛡️${p.defense}`;
+      const shiny = p.shiny ? " ✨" : "";
+      return `${i + 1}. ${icon}${hpBar} *${p.displayName || p.name}${nick}${shiny}* Lv.${p.level} ❤️${p.hp}/${p.maxHp}`;
     });
 
-    await sock.sendMessage(jid, {
-      text:
-`🎒 *${trainer.username}'s PARTY* (${party.length}/6)
+    const caption =
+`⚡ *${trainer.username}'s Party* (${party.length}/6)
 
 ${slots.join("\n")}
 
-💰 Coins: ${trainer.coins}
-🏆 Wins: ${trainer.wins} | Losses: ${trainer.losses}
+💰 ${trainer.coins} coins  🏆 ${trainer.wins}W / ${trainer.losses}L`;
 
-*.t2party <name>* — Move from PC
-*.t2pc <name>* — Move to PC
-*.heal* — Heal party (${200} coins)`,
-    }, { quoted: msg });
+    if (buf) {
+      await sock.sendMessage(jid, { image: buf, caption }, { quoted: msg });
+    } else {
+      await sock.sendMessage(jid, { text: caption }, { quoted: msg });
+    }
   },
 };
