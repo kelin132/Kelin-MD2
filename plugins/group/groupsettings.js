@@ -124,7 +124,7 @@ const FEATURES = [
 
 export default {
   name:        "groupsettings",
-  aliases:     ["gsettings", "groupset", "gset"],
+  aliases:     ["enable", "groupset", "gset"],
   description: "View and toggle all group features (admins only)",
   category:    "group",
   usage:       ".groupsettings [feature] [on|off]",
