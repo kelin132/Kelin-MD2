@@ -1,23 +1,34 @@
 /**
  * KELIN MD — .summon
- * Summon a random card from any tier (or a specific tier) and claim it instantly. FREE.
+ * Summon a random card from any tier (or a specific tier).
+ * Costs coins from the user's card balance based on the tier summoned.
  *
  * Usage:
- *   .summon           — random tier summon (free)
+ *   .summon           — random tier summon
  *   .summon <tier>    — specific tier (1-5 or Common/Uncommon/Rare/Epic/Legendary)
  */
 import { findOrCreateUser } from "./db.js";
 import {
-  fetchAllCards,
   getCardsByTier,
-  pickRandomCard,
   resolveMediaUrl,
   TIER_EMOJI,
   TIER_NUM,
   TIER_NAME,
 } from "../../lib/cardApi.mjs";
 
-// Weighted random tier for "random" summon (bias towards lower tiers)
+// ── Summon costs by tier ──────────────────────────────────────────────────────
+// Higher tiers cost more coins from the user's card balance.
+
+export const SUMMON_COST = {
+  Common:    50,
+  Uncommon:  200,
+  Rare:      600,
+  Epic:      2000,
+  Legendary: 6000,
+};
+
+// ── Weighted random tier (bias towards lower tiers) ───────────────────────────
+
 const RANDOM_TIER_WEIGHTS = [
   { tier: "Common",    weight: 45 },
   { tier: "Uncommon",  weight: 25 },
@@ -39,9 +50,7 @@ function rollRandomTier() {
 function resolveTierName(input) {
   if (!input) return null;
   const lower = input.toLowerCase();
-  // Number input: 1-5
   if (TIER_NAME[lower]) return TIER_NAME[lower];
-  // Name input
   const found = Object.values(TIER_NAME).find(n => n.toLowerCase() === lower);
   return found || null;
 }
@@ -50,7 +59,7 @@ export default {
   name: "summon",
   aliases: ["nsummon", "cardsummon", "pull"],
   category: "cards",
-  description: "Summon and instantly claim a card for free",
+  description: "Summon and instantly claim a card — costs coins based on tier",
   usage: ".summon [tier]  — e.g. .summon  |  .summon rare  |  .summon 5",
 
   async run({ sock, msg, args, sender }) {
@@ -63,16 +72,25 @@ export default {
         return reply(
 `🔮 *SUMMON SYSTEM*
 
-Summon & instantly claim a card — completely free!
+Summon & instantly claim a card — costs coins per tier!
+
+💰 *Summon Costs:*
+  ⚪ Common     — ${SUMMON_COST.Common.toLocaleString()} coins
+  🟢 Uncommon   — ${SUMMON_COST.Uncommon.toLocaleString()} coins
+  🔵 Rare       — ${SUMMON_COST.Rare.toLocaleString()} coins
+  🟣 Epic       — ${SUMMON_COST.Epic.toLocaleString()} coins
+  🟡 Legendary  — ${SUMMON_COST.Legendary.toLocaleString()} coins
 
 📖 *Usage:*
-  *.summon*           — random tier
+  *.summon*           — random tier (based on rarity weights)
   *.summon 1*         — Common
   *.summon 2*         — Uncommon
   *.summon 3*         — Rare
   *.summon 4*         — Epic
   *.summon 5*         — Legendary
-  *.summon legendary* — Legendary by name`
+  *.summon legendary* — Legendary by name
+
+💡 Earn coins from the economy system to summon cards!`
         );
       }
 
@@ -90,21 +108,45 @@ Summon & instantly claim a card — completely free!
       }
 
       const emoji = TIER_EMOJI[tierName] || "⭐";
+      const cost  = SUMMON_COST[tierName] || SUMMON_COST.Common;
 
-      // Fetch a card from the resolved tier
+      // ── Check and deduct balance ────────────────────────────────────────────
+      const cardUser = await findOrCreateUser(sender);
+      cardUser.balance = cardUser.balance || 0;
+
+      if (cardUser.balance < cost) {
+        return reply(
+`❌ *Insufficient coins!*
+
+You need *${cost.toLocaleString()} coins* to summon a *${emoji} ${tierName}* card.
+Your balance: *${cardUser.balance.toLocaleString()} coins*
+
+💡 Earn coins through the economy system (.daily, .work, .gamble, etc.)`
+        );
+      }
+
+      // Deduct cost
+      cardUser.balance -= cost;
+
+      // ── Fetch a card from the resolved tier ─────────────────────────────────
       const pool = await getCardsByTier(TIER_NUM[tierName.toLowerCase()] || "1");
       if (!pool || pool.length === 0) {
-        return reply(`❌ No cards available for tier *${tierName}* right now. Try again later.`);
+        // Refund if no cards available
+        cardUser.balance += cost;
+        await cardUser.save();
+        return reply(`❌ No cards available for tier *${tierName}* right now. Your coins have been refunded. Try again later.`);
       }
 
       const card = pool[Math.floor(Math.random() * pool.length)];
 
-      // Add card to user's collection
-      const cardUser = await findOrCreateUser(sender);
+      // ── Add card to collection ──────────────────────────────────────────────
       cardUser.cards = cardUser.cards || [];
 
       if (cardUser.cards.length >= (cardUser.cardLimit || 100)) {
-        return reply(`❌ Your card collection is full! (${cardUser.cards.length}/${cardUser.cardLimit || 100})\n\nDelete some cards with *.delc <index>* to make room.`);
+        // Refund if collection full
+        cardUser.balance += cost;
+        await cardUser.save();
+        return reply(`❌ Your card collection is full! (${cardUser.cards.length}/${cardUser.cardLimit || 100})\n\nDelete some cards with *.delc <index>* to make room.\nYour coins have been refunded.`);
       }
 
       cardUser.cards.push({
@@ -129,9 +171,10 @@ Summon & instantly claim a card — completely free!
 ⭐ Tier: *${card.tier}*
 📺 Series: *${card.series}*
 ${isRandom ? `🎲 You rolled a *${tierName}* tier summon!\n` : ""}
-Card added to your collection!
+💰 Cost: *${cost.toLocaleString()} coins*
+💳 Remaining balance: *${cardUser.balance.toLocaleString()} coins*
 
-Use *.col* to view your cards.`;
+Card added to your collection! Use *.col* to view your cards.`;
 
       if (card.media) {
         try {

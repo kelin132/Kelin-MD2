@@ -1,12 +1,12 @@
 /**
  * KELIN MD — .play command
- * Searches YouTube and downloads audio via the GiftedTech API.
- * Adapted from dara-studio-bot reference (uses gifted API instead of direct ytdl stream).
+ * Searches YouTube and downloads audio.
+ * Tries multiple API endpoints with automatic fallback.
  */
 import yts from "yt-search";
-import { get } from "../../lib/gifted.js";
+import { get, davidGet } from "../../lib/gifted.js";
 
-// ── Search YouTube ────────────────────────────────────────────────────────────
+// ── YouTube search ────────────────────────────────────────────────────────────
 
 async function ytSearch(input) {
   if (/youtube\.com|youtu\.be/i.test(input)) {
@@ -25,10 +25,22 @@ async function ytSearch(input) {
   };
 }
 
-function pickDl(result) {
+// ── Extract a download link from any API response shape ──────────────────────
+
+function pickAudio(result) {
   if (!result) return null;
-  return result.download_url || result.audio_url || result.url || result.link || null;
+  return (
+    result.download_url ||
+    result.audio_url    ||
+    result.audio        ||
+    result.mp3          ||
+    result.url          ||
+    result.link         ||
+    null
+  );
 }
+
+// ── Send the track thumbnail / banner ─────────────────────────────────────────
 
 async function sendBanner(sock, jid, msg, meta, action) {
   const caption = [
@@ -43,12 +55,37 @@ async function sendBanner(sock, jid, msg, meta, action) {
   if (meta.thumbnail) {
     try {
       return await sock.sendMessage(jid, { image: { url: meta.thumbnail }, caption }, { quoted: msg });
-    } catch { /* fallthrough to text */ }
+    } catch { /* fall through to text */ }
   }
   return sock.sendMessage(jid, { text: caption }, { quoted: msg });
 }
 
-// ── .play — YouTube audio (128kbps) ─────────────────────────────────────────
+// ── Try downloading via multiple endpoints ────────────────────────────────────
+
+async function fetchAudio(videoUrl) {
+  const endpoints = [
+    // Gifted API — primary endpoints
+    () => get("/download/ytmp3",   { url: videoUrl }),
+    () => get("/download/ytaudio", { url: videoUrl }),
+    () => get("/download/youtube", { url: videoUrl, type: "audio" }),
+    // David Cyril API — fallback
+    () => davidGet("/download/ytmp3",   { url: videoUrl }),
+    () => davidGet("/download/ytaudio", { url: videoUrl }),
+  ];
+
+  for (const attempt of endpoints) {
+    try {
+      const data   = await attempt();
+      const result = data?.result || data?.data || data;
+      const dl     = pickAudio(result);
+      if (dl) return { dl, title: result?.title || "" };
+    } catch { /* try next */ }
+  }
+
+  throw new Error("All audio download sources failed. Try a direct YouTube URL.");
+}
+
+// ── .play ─────────────────────────────────────────────────────────────────────
 
 export default {
   name: "play",
@@ -69,25 +106,22 @@ export default {
 
     try {
       const meta = await ytSearch(text);
-      await sendBanner(sock, jid, msg, meta, "Downloading audio…");
+      await sendBanner(sock, jid, msg, meta, "Fetching audio… please wait");
 
-      const data = await get("/download/ytaudio", { url: meta.url });
-      const dl   = pickDl(data?.result);
-      if (!dl) throw new Error("No download URL returned from API");
-
-      const title = data?.result?.title || meta.title;
+      const { dl, title } = await fetchAudio(meta.url);
+      const trackTitle    = title || meta.title;
 
       await sock.sendMessage(jid, {
         audio:    { url: dl },
         mimetype: "audio/mpeg",
-        fileName: `${title}.mp3`,
+        fileName: `${trackTitle}.mp3`,
         ptt:      false,
       }, { quoted: msg });
 
     } catch (err) {
       console.error("[play]", err.message);
       await sock.sendMessage(jid, {
-        text: "❌ Audio download failed. Try again or use a direct YouTube URL."
+        text: `❌ Audio download failed.\n\n_${err.message}_\n\nTry again or use a direct YouTube URL.`
       }, { quoted: msg });
     }
   },
