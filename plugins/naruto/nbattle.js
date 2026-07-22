@@ -26,6 +26,7 @@ async function snap(doc) {
     .filter(Boolean);
 
   const imageUrl = await getClanImage(doc.clan?.name, 'battle').catch(() => null);
+  console.log(`[nbattle] portrait for ${doc.username} (clan: ${doc.clan?.name || 'none'}) → ${imageUrl}`);
 
   return {
     jid:       doc.jid,
