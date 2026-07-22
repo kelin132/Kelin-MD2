@@ -6,9 +6,10 @@ import { clearWild, updateWildHp } from "../../lib/pokemon/wildState.mjs";
 import { getTrainer, removeItem, addCoins } from "../../lib/pokemon/players.mjs";
 import { getPokemon, updatePokemon, addPokemonXP, buildPokemon, savePokemon, getTrainerParty } from "../../lib/pokemon/pokemonDb.mjs";
 import { addToParty, addToPC, updateTrainer } from "../../lib/pokemon/players.mjs";
-import { calcDamage, tryCatch, xpReward, coinReward, getMovesForType } from "../../lib/pokemon/gameLogic.mjs";
+import { calcDamage, tryCatch, xpReward, coinReward, getMovesForType, getLearnableMoveAtLevel, TYPE_EMOJIS } from "../../lib/pokemon/gameLogic.mjs";
 import { generateBattleScene, generateCatchScene, generateBattleResult } from "../../lib/pokemon/canvas.mjs";
 import { fetchPokemon } from "../../lib/pokemon/api.mjs";
+import { setPendingLearn } from "../../lib/pokemon/moveLearnState.mjs";
 
 async function sendScene(sock, jid, msg, battle, statusText, hitSide, damage, crit) {
   try {
@@ -38,6 +39,58 @@ async function sendScene(sock, jid, msg, battle, statusText, hitSide, damage, cr
     await sock.sendMessage(jid, { text: statusText }, { quoted: msg });
     return false;
   }
+}
+
+/** Format the move list with descriptions for display */
+function formatMoveList(moves) {
+  return moves.map((m, i) => {
+    const emoji = TYPE_EMOJIS[m.type] || "⭐";
+    const power = m.power ? `Power: ${m.power}` : "Status";
+    const desc = m.desc ? `\n     📖 ${m.desc}` : "";
+    return `*${i + 1}.* ${emoji} *${m.name}* (${power}, PP: ${m.pp})${desc}`;
+  }).join("\n\n");
+}
+
+/** Check for a learnable move after level-up and prompt the trainer */
+async function checkMoveLearn(sock, jid, msg, trainerJid, pokemonResult) {
+  if (!pokemonResult?.leveledUp) return;
+
+  const { newLevel, pokemon } = pokemonResult;
+  const pokemon_name = pokemon.displayName || pokemon.name;
+  const newMove = getLearnableMoveAtLevel(pokemon.primaryType, newLevel, pokemon.moves || []);
+  if (!newMove) return;
+
+  const currentMoves = pokemon.moves || [];
+  const moveId = pokemon._id?.toString() || pokemon.id?.toString();
+
+  setPendingLearn(trainerJid, {
+    pokemonId: moveId,
+    pokemonName: pokemon_name,
+    newMove,
+    currentMoves,
+    chatId: jid,
+  });
+
+  const newEmoji = TYPE_EMOJIS[newMove.type] || "⭐";
+  const currentList = currentMoves.map((m, i) => {
+    const e = TYPE_EMOJIS[m.type] || "⭐";
+    return `  *${i + 1}.* ${e} ${m.name} (Power: ${m.power || "—"})`;
+  }).join("\n");
+
+  await sock.sendMessage(jid, {
+    text:
+`🌟 *${pokemon_name.toUpperCase()} WANTS TO LEARN A NEW MOVE!*
+
+${newEmoji} *${newMove.name}* (Power: ${newMove.power || "—"}, PP: ${newMove.pp})
+📖 ${newMove.desc || "A powerful new move."}
+
+*Current Moves:*
+${currentList}
+
+Reply *.learnmove <1-6>* to replace a move with *${newMove.name}*
+Reply *.learnmove cancel* to skip this move.
+⏳ *You have 60 seconds to decide!*`,
+  }, { quoted: msg });
 }
 
 async function handleWildDefeat(sock, jid, msg, battle, trainer) {
@@ -72,6 +125,9 @@ async function handleWildDefeat(sock, jid, msg, battle, trainer) {
   } catch {
     await sock.sendMessage(jid, { text: resultText }, { quoted: msg });
   }
+
+  // Check for move learn after battle ends
+  await checkMoveLearn(sock, jid, msg, battle.challengerJid, xpRes);
 }
 
 async function handlePvPDefeat(sock, jid, msg, battle, loserJid) {
@@ -83,12 +139,27 @@ async function handlePvPDefeat(sock, jid, msg, battle, loserJid) {
 
   const coins = coinReward((winner.pokemon.level + loser.pokemon.level) / 2) * 2;
   const xp = xpReward(loser.pokemon);
+
+  const xpRes = await addPokemonXP(winner.pokemon._id || winner.pokemon.id, xp);
   await addCoins(winner.jid, coins);
-  await addPokemonXP(winner.pokemon._id || winner.pokemon.id, xp);
+  await updateTrainer(winner.jid, { $inc: { wins: 1 } });
+  await updateTrainer(loser.jid, { $inc: { losses: 1 } });
 
   endBattle(jid);
 
-  let resultText = `🏆 *BATTLE OVER!*\n\n🥇 Winner: *${winner.name}*\n💀 Loser: *${loser.name}*\n\n💰 +${coins} coins to ${winner.name}\n✨ +${xp} XP`;
+  let resultText = `
+🏆 *${winner.name.toUpperCase()} WINS THE BATTLE!*
+
+🐉 Winner: *${winner.name}* with *${winner.pokemon.displayName || winner.pokemon.name}*
+💀 Loser: *${loser.name}* with *${loser.pokemon.displayName || loser.pokemon.name}*
+
+🌟 *Rewards for ${winner.name}:*
+💰 +${coins} coins
+✨ +${xp} XP`;
+
+  if (xpRes?.leveledUp) {
+    resultText += `\n🎉 *${winner.pokemon.displayName || winner.pokemon.name} leveled up! Now Lv.${xpRes.newLevel}*`;
+  }
 
   try {
     const buf = await generateBattleResult({
@@ -100,6 +171,9 @@ async function handlePvPDefeat(sock, jid, msg, battle, loserJid) {
   } catch {
     await sock.sendMessage(jid, { text: resultText }, { quoted: msg });
   }
+
+  // Check for move learn for the winner
+  await checkMoveLearn(sock, jid, msg, winner.jid, xpRes);
 }
 
 export default {
@@ -156,12 +230,30 @@ export default {
       if (!isMyTurn(jid, sender)) {
         return sock.sendMessage(jid, { text: "⏳ It's not your turn!" }, { quoted: msg });
       }
-      const moveIdx = parseInt(args[1]) - 1;
+
       const moves = myPokemon.moves || [];
-      if (isNaN(moveIdx) || moveIdx < 0 || moveIdx >= moves.length) {
-        const list = moves.map((m, i) => `*${i + 1}.* ${m.name} (Power: ${m.power || "—"})`).join("\n");
+
+      // No move number given → show moves with full explanations
+      if (!args[1]) {
+        const myName = myPokemon.displayName || myPokemon.name;
+        const enemyName = enemyPokemon.displayName || enemyPokemon.name;
         return sock.sendMessage(jid, {
-          text: `📋 Choose a move:\n${list}\n\nUsage: \`.battle fight <1-${moves.length}>\``,
+          text:
+`⚔️ *${myName.toUpperCase()} — CHOOSE A MOVE!*
+
+${formatMoveList(moves)}
+
+━━━━━━━━━━━━━━━━━━━━
+🐾 Enemy: *${enemyName}* Lv.${enemyPokemon.level} ❤️ ${enemyPokemon.hp}/${enemyPokemon.maxHp}
+
+Reply: \`.battle fight <1-${moves.length}>\``,
+        }, { quoted: msg });
+      }
+
+      const moveIdx = parseInt(args[1]) - 1;
+      if (isNaN(moveIdx) || moveIdx < 0 || moveIdx >= moves.length) {
+        return sock.sendMessage(jid, {
+          text: `❌ Invalid move! Choose a number between *1* and *${moves.length}*.\nType \`.battle fight\` to see your moves.`,
         }, { quoted: msg });
       }
 
@@ -188,66 +280,72 @@ export default {
 
       const updated = updateBattle(jid, newState);
 
-      const statusText = `${myName} used ${move.name}!${crit ? " Critical hit!" : ""} -${finalDmg} HP${newEnemyHp <= 0 ? `\n${enemyName} fainted!` : ""}`;
-      const hitSide = "enemy";
+      const typeEmoji = TYPE_EMOJIS[move.type] || "⭐";
+      const statusText = `${typeEmoji} *${myName}* used *${move.name}*!${crit ? " ⚡ Critical hit!" : ""}\n💥 -${finalDmg} HP to ${enemyName}${newEnemyHp <= 0 ? `\n💀 *${enemyName} fainted!*` : `\n❤️ ${enemyName}: ${newEnemyHp}/${enemyPokemon.maxHp}`}`;
 
-      // Check faint
+      // ── Enemy fainted ──────────────────────────────────────────────────────
       if (newEnemyHp <= 0) {
-        // Update battle state before sending result
-        updateBattle(jid, newState);
+        await sendScene(sock, jid, msg, updated, statusText, "enemy", finalDmg, crit);
+        const trainer = await getTrainer(sender);
         if (battle.type === "wild") {
-          return handleWildDefeat(sock, jid, msg, updated, null);
+          await handleWildDefeat(sock, jid, msg, { ...battle, opponentPokemon: updatedPokemon }, trainer);
         } else {
-          return handlePvPDefeat(sock, jid, msg, updated, enemyPokemon.ownerJid || battle.opponentJid);
+          await handlePvPDefeat(sock, jid, msg, { ...battle, ...(isChallenger ? { opponentPokemon: updatedPokemon } : { challengerPokemon: updatedPokemon }) }, isChallenger ? battle.opponentJid : battle.challengerJid);
+        }
+        return;
+      }
+
+      await sendScene(sock, jid, msg, updated, statusText, "enemy", finalDmg, crit);
+
+      // Wild auto-counter
+      if (battle.type === "wild" && updated) {
+        const wildMoves = updated.opponentPokemon.moves || [];
+        if (wildMoves.length > 0) {
+          const wildMove = wildMoves[Math.floor(Math.random() * wildMoves.length)];
+          const wildDmg = calcDamage(updated.opponentPokemon, updated.challengerPokemon, wildMove);
+          const wildCrit = Math.random() < 0.0625;
+          const wildFinalDmg = wildCrit ? Math.floor(wildDmg * 1.5) : wildDmg;
+          const newPlayerHp = Math.max(0, updated.challengerPokemon.hp - wildFinalDmg);
+          const updatedPlayer = { ...updated.challengerPokemon, hp: newPlayerHp };
+          const stateAfterWild = updateBattle(jid, { challengerPokemon: updatedPlayer, turn: "challenger" });
+
+          const wildEmoji = TYPE_EMOJIS[wildMove.type] || "⭐";
+          const wildText = `${wildEmoji} *Wild ${enemyName}* used *${wildMove.name}*!${wildCrit ? " ⚡ Critical hit!" : ""}\n💥 -${wildFinalDmg} HP to ${myName}${newPlayerHp <= 0 ? `\n💀 *${myName} fainted!*` : `\n❤️ ${myName}: ${newPlayerHp}/${updated.challengerPokemon.maxHp}`}`;
+
+          if (newPlayerHp <= 0) {
+            // Player's Pokémon fainted
+            endBattle(jid);
+            clearWild(jid);
+            try {
+              const buf = await generateBattleResult({
+                winner: { name: enemyName, imageUrl: updated.opponentPokemon.imageUrl },
+                loser: { name: myName, imageUrl: updated.challengerPokemon.imageUrl },
+                rewardText: `${myName} fainted!`,
+              });
+              await sock.sendMessage(jid, { image: buf, caption: `💀 *${myName} fainted! You lost the battle.*\nUse *.heal* to heal your party.` }, { quoted: msg });
+            } catch {
+              await sock.sendMessage(jid, { text: `💀 *${myName} fainted! You lost the battle.*\nUse *.heal* to heal your party.` }, { quoted: msg });
+            }
+          } else if (stateAfterWild) {
+            await sendScene(sock, jid, msg, stateAfterWild, wildText, "player", wildFinalDmg, wildCrit);
+          }
         }
       }
 
-      // Wild Pokémon counterattacks
-      let counterText = "";
-      if (battle.type === "wild") {
-        const wildMoves = enemyPokemon.moves || [{ name: "Tackle", power: 40 }];
-        const wMove = wildMoves[Math.floor(Math.random() * wildMoves.length)];
-        const wDmg = calcDamage(enemyPokemon, myPokemon, wMove);
-        const newMyHp = Math.max(0, myPokemon.hp - wDmg);
-
-        const myUpdated = { ...myPokemon, hp: newMyHp };
-        updateBattle(jid, { challengerPokemon: myUpdated, turn: "challenger" });
-        if (myPokemon._id) await updatePokemon(myPokemon._id, { hp: newMyHp });
-
-        counterText = `\n🐾 Wild ${enemyName} used ${wMove.name}! -${wDmg} HP`;
-        if (newMyHp <= 0) counterText += `\n💔 ${myName} fainted!`;
-
-        if (newMyHp <= 0) {
-          endBattle(jid);
-          clearWild(jid);
-          return sock.sendMessage(jid, {
-            text: `💔 *${myName} fainted!*\n\nYou lost the battle. Use *.heal* to recover your Pokémon.`,
-          }, { quoted: msg });
-        }
-      }
-
-      // Build the updated battle object for canvas
-      const displayBattle = getBattle(jid) || updated;
-      await sendScene(sock, jid, msg, displayBattle, statusText + counterText, hitSide, finalDmg, crit);
-
-      if (battle.type === "pvp") {
-        const nextTurn = isChallenger ? battle.opponentName : battle.challengerName;
-        await sock.sendMessage(jid, { text: `⏳ It's *${nextTurn}'s* turn!\nUse \`.battle fight <1-4>\`` }, { quoted: msg });
-      }
       return;
     }
 
-    // ── POKEBALL ─────────────────────────────────────────────────────────────
-    if (sub === "pokeball" || sub === "ball" || sub === "throw") {
+    // ── POKEBALL ──────────────────────────────────────────────────────────────
+    if (sub === "pokeball" || sub === "catch" || sub === "ball") {
       if (battle.type !== "wild") {
-        return sock.sendMessage(jid, { text: "❌ You can only throw Pokéballs at wild Pokémon!" }, { quoted: msg });
+        return sock.sendMessage(jid, { text: "❌ You can only throw a Pokéball at wild Pokémon!" }, { quoted: msg });
       }
       if (!isMyTurn(jid, sender)) {
         return sock.sendMessage(jid, { text: "⏳ It's not your turn!" }, { quoted: msg });
       }
 
-      const ballType = (args[1] || "pokeball").toLowerCase().replace(/\s+/g, "").replace("ball", "ball");
-      const validBalls = ["pokeball","greatball","ultraball","masterball","premierball","healball","duskball","netball","luxuryball","quickball"];
+      const validBalls = ["pokeball","greatball","ultraball","masterball","quickball","duskball","nestball","healball","timerball","luxuryball"];
+      const ballType = (args[1] || "pokeball").toLowerCase().replace(/\s/g,"");
       const ball = validBalls.find(b => b.includes(ballType.replace("ball","")) || b === ballType) || "pokeball";
 
       const trainer = await getTrainer(sender);
@@ -295,13 +393,11 @@ export default {
         };
 
         const built = buildPokemon(caughtPoke, sender, wp.level, false);
-        // Heal ball heals to full
         if (ball === "healball") built.hp = built.maxHp;
         await savePokemon(built);
 
-        const trainerData = await getTrainer(sender);
-        const partyFull = (trainerData?.party || []).length >= 6;
-        if (!partyFull) {
+        const party = await getTrainerParty(sender);
+        if (party.length < 6) {
           await addToParty(sender, built._id.toString());
           built.inParty = true;
         } else {
@@ -311,48 +407,35 @@ export default {
         endBattle(jid);
         clearWild(jid);
 
-        const dest = partyFull ? "📦 PC" : "🎒 Party";
-        const resultText = `🎉 *GOTCHA!* ${wp.displayName} was caught!\nSent to your ${dest}.`;
-
+        const caption = `🎉 *Gotcha! ${wp.displayName || wp.name} was caught!*\n${built.inParty ? "Added to your party! 🎒" : "Sent to PC. 💻"}`;
         if (catchBuf) {
-          await sock.sendMessage(jid, { image: catchBuf, caption: resultText }, { quoted: msg });
+          await sock.sendMessage(jid, { image: catchBuf, caption }, { quoted: msg });
         } else {
-          await sock.sendMessage(jid, { text: resultText }, { quoted: msg });
+          await sock.sendMessage(jid, { text: caption }, { quoted: msg });
         }
       } else {
-        // Failed — wild Pokémon attacks back
-        const wildMoves = wp.moves || [{ name: "Tackle", power: 40 }];
-        const wMove = wildMoves[Math.floor(Math.random() * wildMoves.length)];
-        const wDmg = calcDamage(wp, myPokemon, wMove);
-        const newMyHp = Math.max(0, myPokemon.hp - wDmg);
-        const myUpdated = { ...myPokemon, hp: newMyHp };
-        updateBattle(jid, { challengerPokemon: myUpdated });
-        if (myPokemon._id) await updatePokemon(myPokemon._id, { hp: newMyHp });
+        updateBattle(jid, { turn: "challenger", catchAttempts: (battle.catchAttempts || 0) + 1 });
 
-        const failText = `${wp.displayName} broke free!\n🐾 Wild ${wp.displayName} used ${wMove.name}! -${wDmg} HP`;
-
+        const caption = `💨 *${wp.displayName || wp.name} broke free!*\nTry again or use a stronger ball.`;
         if (catchBuf) {
-          await sock.sendMessage(jid, { image: catchBuf, caption: failText }, { quoted: msg });
+          await sock.sendMessage(jid, { image: catchBuf, caption }, { quoted: msg });
         } else {
-          await sock.sendMessage(jid, { text: `❌ ${failText}` }, { quoted: msg });
-        }
-
-        if (newMyHp <= 0) {
-          endBattle(jid);
-          clearWild(jid);
-          await sock.sendMessage(jid, { text: `💔 ${myPokemon.displayName || myPokemon.name} fainted! The wild ${wp.displayName} escaped.` }, { quoted: msg });
+          await sock.sendMessage(jid, { text: caption }, { quoted: msg });
         }
       }
+
       return;
     }
 
-    // ── ITEM ─────────────────────────────────────────────────────────────────
+    // ── ITEM ──────────────────────────────────────────────────────────────────
     if (sub === "item" || sub === "use") {
+      if (!isMyTurn(jid, sender)) {
+        return sock.sendMessage(jid, { text: "⏳ It's not your turn!" }, { quoted: msg });
+      }
+
       const itemKey = (args[1] || "").toLowerCase();
       if (!itemKey) {
-        return sock.sendMessage(jid, {
-          text: "Usage: `.battle item <item>`\nHeal items: potion, superpotion, hyperpotion, fullrestore, revive",
-        }, { quoted: msg });
+        return sock.sendMessage(jid, { text: "Usage: `.battle item <potion|superpotion|hyperpotion|fullrestore>`" }, { quoted: msg });
       }
 
       const healAmounts = { potion: 20, superpotion: 50, hyperpotion: 200, fullrestore: 9999 };
@@ -384,7 +467,7 @@ export default {
       return;
     }
 
-    // ── STATUS ────────────────────────────────────────────────────────────────
+    // ── STATUS (default / no sub) ─────────────────────────────────────────────
     return sock.sendMessage(jid, {
       text:
 `⚔️ *BATTLE STATUS*
@@ -396,7 +479,8 @@ export default {
 ❤️ HP: ${enemyPokemon.hp}/${enemyPokemon.maxHp}
 
 *Commands:*
-\`.battle fight <1-4>\` — Attack
+\`.battle fight\` — See your moves & choose an attack
+\`.battle fight <1-6>\` — Attack with a specific move
 \`.battle pokeball <type>\` — Catch (wild only)
 \`.battle item <item>\` — Use item
 \`.battle run\` — Flee`,

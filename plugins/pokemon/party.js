@@ -50,14 +50,11 @@ Or use *.catch* to catch a wild Pokémon!`,
       return `${i + 1}. ${typeIcon}${hpBar()} *${p.displayName || p.name}${nick}${shiny}*${status}\n   Lv.${p.level} ❤️${p.hp}/${p.maxHp} ⚔️${p.attack} 🛡️${p.defense}`;
     });
 
-    const empty = 6 - party.length;
-    const empties = Array(empty).fill("—").map((_, i) => `${party.length + i + 1}. ⬜ *Empty*`);
-
     await sock.sendMessage(jid, {
       text:
 `🎒 *${trainer.username}'s PARTY* (${party.length}/6)
 
-${[...slots, ...empties].join("\n")}
+${slots.join("\n")}
 
 💰 Coins: ${trainer.coins}
 🏆 Wins: ${trainer.wins} | Losses: ${trainer.losses}
