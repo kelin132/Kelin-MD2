@@ -1,118 +1,129 @@
-// plugins/naruto/nboost.js
-// View active stat boosts or use a boost item — shows Naruto/Guy art
-
+/**
+ * KELIN MD — .nboost (OWNER ONLY)
+ * Directly boost any player's Naruto stats.
+ *
+ * Usage:
+ *   .nboost @user <stat> <amount>        — boost one stat
+ *   .nboost @user all <amount>           — boost all stats equally
+ *   .nboost @user reset                  — wipe all boosts on a player
+ *
+ * Valid stats: hp, attack, defense, speed, chakra
+ */
 import players from "../../lib/naruto/players.js";
-import items from "../../lib/naruto/items.js";
-import { sendWithCharacterImage } from "../../lib/gifHelper.mjs";
+
+const VALID_STATS = ["hp", "attack", "defense", "speed", "chakra"];
 
 export default {
   name: "nboost",
-  description: "View your active stat boosts or use a boost item",
+  description: "[OWNER] Directly boost a player's Naruto stats",
   category: "naruto",
-  usage: ".nboost [item_id]",
+  usage: ".nboost @user <stat|all|reset> [amount]",
   aliases: ["nbuff"],
-  cooldown: 5,
+  cooldown: 0,
+  isOwner: true,
 
-  async run({ sock, msg, sender, text }) {
-    const jid = msg.key.remoteJid;
+  async run({ sock, msg, args, isOwner }) {
+    const jid   = msg.key.remoteJid;
+    const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
 
-    try {
-      const player = await players.get(sender);
+    if (!isOwner) return reply("❌ Owner only command.");
 
-      if (!player) {
-        return sock.sendMessage(jid, {
-          text: "🥷 You don't have a ninja profile.\n\nUse .nstart first."
-        }, { quoted: msg });
+    // Resolve target from @mention or first arg
+    const mentionedJids = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid ?? [];
+    let targetJid = mentionedJids[0] || null;
+
+    // Strip mention tokens from args to get clean arg list
+    const cleanArgs = args.filter(a => !a.startsWith("@"));
+
+    if (!targetJid) {
+      // Try bare number as JID
+      const bare = cleanArgs[0]?.replace(/\D/g, "");
+      if (bare && bare.length > 4) {
+        targetJid = `${bare}@s.whatsapp.net`;
+        cleanArgs.shift();
       }
-
-      // No argument — show active boosts and available boost items
-      if (!text) {
-        const activeBoosts = Object.entries(player.boosts || {});
-
-        let boostText = "";
-        if (activeBoosts.length === 0) {
-          boostText = "  _(No active boosts)_";
-        } else {
-          boostText = activeBoosts
-            .map(([stat, b]) => `  ⬆️ +${b.amount} ${stat.toUpperCase()} — ${b.turns} turn(s) left`)
-            .join("\n");
-        }
-
-        const boostItems = (player.inventory || [])
-          .filter(inv => {
-            const def = items.find(i => i.id === inv.id);
-            return def && def.type === "boost";
-          })
-          .map(inv => {
-            const def = items.find(i => i.id === inv.id);
-            return `  💫 *${def.name}* ×${inv.amount || 1}  \`${inv.id}\` — ${def.description}`;
-          });
-
-        return sock.sendMessage(jid, {
-          text:
-`💫 *STAT BOOSTS*
-
-*🔥 Active Boosts:*
-${boostText}
-
-*🎒 Boost Items in Inventory:*
-${boostItems.length ? boostItems.join("\n") : "  _(None)_"}
-
-Use *.nshop* to buy boost items.
-Use *.nboost <item_id>* to activate a boost item.`
-        }, { quoted: msg });
-      }
-
-      // Use a boost item
-      const itemId = text.trim().toLowerCase();
-      const itemDef = items.find(i => i.id === itemId && i.type === "boost");
-
-      if (!itemDef) {
-        return sock.sendMessage(jid, {
-          text: `❌ Boost item "*${itemId}*" not found.\n\nUse .nboost to see your available boost items.`
-        }, { quoted: msg });
-      }
-
-      const invItem = (player.inventory || []).find(i => i.id === itemId);
-      if (!invItem || (invItem.amount || 1) < 1) {
-        return sock.sendMessage(jid, {
-          text: `❌ You don't have *${itemDef.name}* in your inventory.\n\nBuy it from *.nshop*.`
-        }, { quoted: msg });
-      }
-
-      // Consume item
-      invItem.amount = (invItem.amount || 1) - 1;
-      if (invItem.amount <= 0) {
-        player.inventory = player.inventory.filter(i => i.id !== itemId);
-      }
-
-      // Apply boost
-      if (!player.boosts) player.boosts = {};
-      const boostStat = itemDef.boostStat || "attack";
-      player.boosts[boostStat] = {
-        amount: itemDef.boostAmount || 10,
-        turns: itemDef.boostTurns || 3,
-      };
-
-      await player.save();
-
-      const char = ["Might Guy", "Rock Lee", "Naruto Uzumaki"][Math.floor(Math.random() * 3)];
-
-      return sendWithCharacterImage(sock, jid, msg,
-`💫 *BOOST ACTIVATED!*
-
-🧪 ${itemDef.name}
-📝 ${itemDef.description}
-
-⬆️ +${itemDef.boostAmount || 10} ${(itemDef.boostStat || "attack").toUpperCase()}
-⏳ Duration: ${itemDef.boostTurns || 3} battle turns
-
-Boost active in your next battle! Use *.nboost* to check active buffs.`,
-        char, "train");
-
-    } catch (err) {
-      console.error("NBOOST ERROR:", err);
-      return sock.sendMessage(jid, { text: "❌ Boost error." }, { quoted: msg });
     }
+
+    if (!targetJid) {
+      return reply(
+`❌ *Usage:*
+.nboost @user <stat> <amount>
+.nboost @user all <amount>
+.nboost @user reset
+
+*Stats:* hp, attack, defense, speed, chakra`
+      );
+    }
+
+    const player = await players.get(targetJid);
+    if (!player) {
+      return reply(`❌ That player has no ninja profile. They need to use *.nstart* first.`);
+    }
+
+    const statArg   = (cleanArgs[0] || "").toLowerCase();
+    const amountArg = parseInt(cleanArgs[1], 10);
+
+    // ── RESET ────────────────────────────────────────────────────────────────
+    if (statArg === "reset") {
+      player.boosts = {};
+      await player.save();
+      return reply(`✅ All boosts cleared for *${player.name || targetJid.split("@")[0]}*.`);
+    }
+
+    // ── ALL ──────────────────────────────────────────────────────────────────
+    if (statArg === "all") {
+      const amount = isNaN(amountArg) ? 50 : amountArg;
+      if (!player.boosts) player.boosts = {};
+      for (const stat of VALID_STATS) {
+        player.boosts[stat] = { amount, turns: 999 };
+      }
+      // Also bump base stats directly
+      for (const stat of VALID_STATS) {
+        if (stat === "hp") {
+          player.maxHp   = (player.maxHp   || 100) + amount;
+          player.hp      = player.maxHp;
+        } else {
+          player[stat] = (player[stat] || 0) + amount;
+        }
+      }
+      await player.save();
+      return reply(
+`✅ *All stats boosted!*
+
+👤 Player: *${player.name || targetJid.split("@")[0]}*
+⬆️ +${amount} to: HP, Attack, Defense, Speed, Chakra`
+      );
+    }
+
+    // ── SINGLE STAT ──────────────────────────────────────────────────────────
+    if (!VALID_STATS.includes(statArg)) {
+      return reply(`❌ Invalid stat "*${statArg}*".\n\nValid stats: ${VALID_STATS.join(", ")}, all, reset`);
+    }
+    if (isNaN(amountArg) || amountArg <= 0) {
+      return reply(`❌ Provide a positive number for the boost amount.\n\nExample: *.nboost @user attack 100*`);
+    }
+
+    // Apply to base stat
+    if (statArg === "hp") {
+      player.maxHp = (player.maxHp || 100) + amountArg;
+      player.hp    = player.maxHp;
+    } else {
+      player[statArg] = (player[statArg] || 0) + amountArg;
+    }
+
+    // Also register as an active boost (shows in .nboost check)
+    if (!player.boosts) player.boosts = {};
+    player.boosts[statArg] = { amount: amountArg, turns: 999 };
+
+    await player.save();
+
+    return reply(
+`✅ *Stat Boosted!*
+
+👤 Player : *${player.name || targetJid.split("@")[0]}*
+📊 Stat   : *${statArg.toUpperCase()}*
+⬆️ Boosted: *+${amountArg}*
+📈 New ${statArg.toUpperCase()}: *${statArg === "hp" ? player.maxHp : player[statArg]}*`
+    );
   }
 };

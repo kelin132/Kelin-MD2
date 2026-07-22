@@ -1,18 +1,10 @@
 /**
  * KELIN MD — .summon
- * Spend orbs to summon a random card from any tier (or a specific tier) and claim it instantly.
+ * Summon a random card from any tier (or a specific tier) and claim it instantly. FREE.
  *
  * Usage:
- *   .summon           — random tier summon (10 orbs)
+ *   .summon           — random tier summon (free)
  *   .summon <tier>    — specific tier (1-5 or Common/Uncommon/Rare/Epic/Legendary)
- *
- * Orb costs by tier:
- *   Random    :  10 orbs
- *   Common    :   5 orbs
- *   Uncommon  :  15 orbs
- *   Rare      :  35 orbs
- *   Epic      :  75 orbs
- *   Legendary : 150 orbs
  */
 import { findOrCreateUser } from "./db.js";
 import {
@@ -24,16 +16,6 @@ import {
   TIER_NUM,
   TIER_NAME,
 } from "../../lib/cardApi.mjs";
-import { getUser, saveUser } from "../economy/database.js";
-
-const ORB_COST = {
-  random:    10,
-  Common:     5,
-  Uncommon:  15,
-  Rare:      35,
-  Epic:      75,
-  Legendary: 150,
-};
 
 // Weighted random tier for "random" summon (bias towards lower tiers)
 const RANDOM_TIER_WEIGHTS = [
@@ -68,7 +50,7 @@ export default {
   name: "summon",
   aliases: ["nsummon", "cardsummon", "pull"],
   category: "cards",
-  description: "Spend orbs to summon and instantly claim a card",
+  description: "Summon and instantly claim a card for free",
   usage: ".summon [tier]  — e.g. .summon  |  .summon rare  |  .summon 5",
 
   async run({ sock, msg, args, sender }) {
@@ -76,20 +58,12 @@ export default {
     const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
 
     try {
-      // Show help if no arg but user typed "help"
+      // Help
       if ((args[0] || "").toLowerCase() === "help") {
         return reply(
 `🔮 *SUMMON SYSTEM*
 
-Spend orbs to instantly summon & claim a card!
-
-💎 *Orb Costs:*
-  Random    :  10 orbs  (weighted random tier)
-  Common    :   5 orbs
-  Uncommon  :  15 orbs
-  Rare      :  35 orbs
-  Epic      :  75 orbs
-  Legendary : 150 orbs
+Summon & instantly claim a card — completely free!
 
 📖 *Usage:*
   *.summon*           — random tier
@@ -115,28 +89,9 @@ Spend orbs to instantly summon & claim a card!
         }
       }
 
-      const cost = isRandom ? ORB_COST.random : ORB_COST[tierName];
       const emoji = TIER_EMOJI[tierName] || "⭐";
 
-      // Get economy user for orb balance
-      const econUser = await getUser(sender);
-      const orbs = econUser.orbs || 0;
-
-      if (orbs < cost) {
-        return reply(
-`🔮 *Not enough orbs!*
-
-You need *${cost} orbs* to summon a ${isRandom ? "random" : tierName} card.
-You have *${orbs} orbs*.
-
-Earn orbs by:
-• *.dig* — digging
-• *.fish* — fishing
-• *.daily* — daily reward`
-        );
-      }
-
-      // Fetch a random card from the resolved tier
+      // Fetch a card from the resolved tier
       const pool = await getCardsByTier(TIER_NUM[tierName.toLowerCase()] || "1");
       if (!pool || pool.length === 0) {
         return reply(`❌ No cards available for tier *${tierName}* right now. Try again later.`);
@@ -144,18 +99,11 @@ Earn orbs by:
 
       const card = pool[Math.floor(Math.random() * pool.length)];
 
-      // Deduct orbs
-      econUser.orbs = orbs - cost;
-      await saveUser(sender, econUser);
-
       // Add card to user's collection
       const cardUser = await findOrCreateUser(sender);
       cardUser.cards = cardUser.cards || [];
 
       if (cardUser.cards.length >= (cardUser.cardLimit || 100)) {
-        // Refund orbs
-        econUser.orbs += cost;
-        await saveUser(sender, econUser);
         return reply(`❌ Your card collection is full! (${cardUser.cards.length}/${cardUser.cardLimit || 100})\n\nDelete some cards with *.delc <index>* to make room.`);
       }
 
@@ -180,10 +128,8 @@ Earn orbs by:
 🃏 *${card.name}*
 ⭐ Tier: *${card.tier}*
 📺 Series: *${card.series}*
-💎 Cost: *${cost} orbs*
-
-${isRandom ? `🎲 You rolled a *${tierName}* tier summon!\n` : ""}Card added to your collection!
-🔮 Orbs remaining: *${econUser.orbs}*
+${isRandom ? `🎲 You rolled a *${tierName}* tier summon!\n` : ""}
+Card added to your collection!
 
 Use *.col* to view your cards.`;
 
@@ -195,7 +141,7 @@ Use *.col* to view your cards.`;
             caption:  claimText,
             mentions: [sender],
           }, { quoted: msg });
-        } catch { /* fall through */ }
+        } catch { /* fall through to text */ }
       }
 
       return sock.sendMessage(jid, {
