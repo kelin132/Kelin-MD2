@@ -164,7 +164,6 @@ Example: \`.startjourney 2\` or \`.startjourney charmander\`
 🎯 *Starter Moves:*
 ${moveList}
 
-💰 Starting Coins: ${trainer.coins}
 🎾 Starter Pokéballs: 3
 
 *Your adventure begins!* 🌟

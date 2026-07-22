@@ -123,6 +123,18 @@ export async function addHistory(id, type, amount, desc) {
   );
 }
 
+/**
+ * Add (or subtract) economy money from a user's cash balance.
+ * Safe with upsert:false — won't create a user that doesn't exist.
+ */
+export async function addMoney(id, amount) {
+  const db = await getDb();
+  await db.collection("users").updateOne(
+    { _id: id },
+    { $inc: { money: amount } }
+  );
+}
+
 // ─── Staff / Mod ──────────────────────────────────────────────────────────────
 
 /**

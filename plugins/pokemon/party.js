@@ -58,7 +58,7 @@ Or catch wild Pokémon with *.wild* then *.catch*!`,
 
 ${slots.join("\n")}
 
-💰 ${trainer.coins} coins  🏆 ${trainer.wins}W / ${trainer.losses}L`;
+`;
 
     if (buf) {
       await sock.sendMessage(jid, { image: buf, caption }, { quoted: msg });

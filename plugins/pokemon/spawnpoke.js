@@ -4,7 +4,7 @@
 import { fetchRandom } from "../../lib/pokemon/api.mjs";
 import { getWild, setWild } from "../../lib/pokemon/wildState.mjs";
 import { getTrainer } from "../../lib/pokemon/players.mjs";
-import { wildLevel } from "../../lib/pokemon/gameLogic.mjs";
+import { wildLevel, getMovesForType } from "../../lib/pokemon/gameLogic.mjs";
 
 const SPAWN_COOLDOWN_MS = 5 * 60 * 1000; // 5 min between spawns per group
 const spawnCooldowns = new Map();
@@ -64,6 +64,7 @@ export default {
       defense: Math.max(5, Math.floor(apiData.baseDefense * (1 + level * 0.05))),
       speed: Math.max(5, Math.floor(apiData.baseSpeed * (1 + level * 0.05))),
       imageUrl: apiData.imageUrl,
+      moves: getMovesForType(apiData.primaryType, apiData.types),
     };
 
     setWild(jid, wildPoke, sender);

@@ -1,10 +1,11 @@
 // plugins/pokemon/heal.js
-// Heal all Pokémon in party (costs coins or uses a Pokémon Center)
+// Heal all Pokémon in party — costs economy money
 
-import { getTrainer, addCoins } from "../../lib/pokemon/players.mjs";
+import { getTrainer } from "../../lib/pokemon/players.mjs";
 import { getTrainerParty, healParty } from "../../lib/pokemon/pokemonDb.mjs";
+import { getUser, addMoney } from "../economy/database.js";
 
-const HEAL_COST = 200; // coins per heal
+const HEAL_COST = 200;
 
 export default {
   name: "heal",
@@ -35,14 +36,17 @@ export default {
       }, { quoted: msg });
     }
 
-    if ((trainer.coins || 0) < HEAL_COST) {
+    const econUser = await getUser(sender);
+    const balance = econUser.money || 0;
+
+    if (balance < HEAL_COST) {
       return sock.sendMessage(jid, {
-        text: `❌ Not enough coins! Healing costs *${HEAL_COST} coins*.\nYou have: *${trainer.coins} coins*`,
+        text: `❌ Not enough money! Healing costs *$${HEAL_COST}*.\nYou have: *$${balance}*`,
       }, { quoted: msg });
     }
 
     await healParty(sender);
-    await addCoins(sender, -HEAL_COST);
+    await addMoney(sender, -HEAL_COST);
 
     const healed = party.map(p => `  🐉 ${p.displayName || p.name} — ❤️ FULL`).join("\n");
 
@@ -54,8 +58,8 @@ Your Pokémon have been fully healed! 💚
 
 ${healed}
 
-💰 Paid: *${HEAL_COST} coins*
-💰 Remaining: *${(trainer.coins - HEAL_COST)} coins*`,
+💵 Paid: *$${HEAL_COST}*
+💵 Remaining: *$${balance - HEAL_COST}*`,
     }, { quoted: msg });
   },
 };

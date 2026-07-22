@@ -1,8 +1,9 @@
 // plugins/pokemon/mart.js
-// The Pokémon Mart — buy items with coins
+// The Pokémon Mart — buy items with economy money
 
-import { getTrainer, addCoins, addItem } from "../../lib/pokemon/players.mjs";
+import { getTrainer, addItem } from "../../lib/pokemon/players.mjs";
 import { getMartMenu, getItem } from "../../lib/pokemon/martItems.mjs";
+import { getUser, addMoney } from "../economy/database.js";
 
 export default {
   name: "mart",
@@ -38,13 +39,16 @@ export default {
       }
 
       const totalCost = itemData.price * qty;
-      if ((trainer.coins || 0) < totalCost) {
+      const econUser = await getUser(sender);
+      const balance = econUser.money || 0;
+
+      if (balance < totalCost) {
         return sock.sendMessage(jid, {
-          text: `❌ Not enough coins!\n💰 You have: *${trainer.coins}*\n🏷️ Cost: *${totalCost}* (${qty}x ${itemData.name})`,
+          text: `❌ Not enough money!\n💵 You have: *$${balance}*\n🏷️ Cost: *$${totalCost}* (${qty}x ${itemData.name})`,
         }, { quoted: msg });
       }
 
-      await addCoins(sender, -totalCost);
+      await addMoney(sender, -totalCost);
       await addItem(sender, itemKey, qty);
 
       return sock.sendMessage(jid, {
@@ -52,8 +56,8 @@ export default {
 `🛒 *PURCHASE SUCCESSFUL!*
 
 ${itemData.emoji} *${qty}x ${itemData.name}*
-💰 Paid: *${totalCost} coins*
-💰 Balance: *${trainer.coins - totalCost} coins*
+💵 Paid: *$${totalCost}*
+💵 Balance: *$${balance - totalCost}*
 
 ${itemData.desc}`,
       }, { quoted: msg });
@@ -62,11 +66,12 @@ ${itemData.desc}`,
     // Show mart menu
     const inv = trainer.inventory || {};
     const ballCount = (inv.pokeball || 0) + (inv.greatball || 0) + (inv.ultraball || 0) + (inv.masterball || 0);
+    const econUser = await getUser(sender);
 
     await sock.sendMessage(jid, {
       text:
 `🏪 *POKÉMON MART*
-💰 Your coins: *${trainer.coins}*
+💵 Your balance: *$${econUser.money || 0}*
 🎾 Pokéballs: ${ballCount}
 
 ${getMartMenu()}
