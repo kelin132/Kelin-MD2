@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { getUser } from "../economy/database.js";
 
 const STATS_PATH = path.resolve("./database/wordleStats.json");
 
@@ -28,16 +29,26 @@ export default {
         { quoted: msg });
     }
 
+    // Look up registered names for all players in parallel
+    const names = await Promise.all(
+      leaderboard.map(async ([playerJid]) => {
+        try {
+          const user = await getUser(playerJid);
+          if (user?.registered && user?.name) return user.name;
+        } catch { /* fall through */ }
+        return playerJid.split("@")[0];
+      })
+    );
+
     const medals   = ["🥇", "🥈", "🥉"];
-    const mentions = [];
+    const mentions = leaderboard.map(([j]) => j);
     let text       = "🏆 *WORDLE LEADERBOARD*\n\n";
 
-    leaderboard.forEach(([jid, data], i) => {
+    leaderboard.forEach(([playerJid, data], i) => {
       const rank     = medals[i] || `${i + 1}.`;
       const winRate  = data.played > 0 ? Math.round((data.wins / data.played) * 100) : 0;
-      text += `${rank} @${jid.split("@")[0]}\n`;
+      text += `${rank} *${names[i]}*\n`;
       text += `   🏆 Wins: ${data.wins}  🎮 Played: ${data.played}  📈 ${winRate}%  🔥 Best: ${data.bestStreak}\n\n`;
-      mentions.push(jid);
     });
 
     await sock.sendMessage(msg.key.remoteJid, { text, mentions }, { quoted: msg });

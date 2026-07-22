@@ -2,6 +2,7 @@
 // .petlb — Top pet trainers leaderboard
 import { getPetLeaderboard } from "../../lib/petDatabase.js";
 import { RARITIES } from "../../lib/petData.js";
+import { getUser } from "../economy/database.js";
 
 export default {
   name: "petlb",
@@ -23,13 +24,25 @@ export default {
 
     const medals = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
 
+    // Look up registered names for all owners in parallel
+    const ownerNames = await Promise.all(
+      top.map(async (pet) => {
+        try {
+          const user = await getUser(pet.owner);
+          return user?.name || `+${pet.owner.split("@")[0].split(":")[0]}`;
+        } catch {
+          return `+${pet.owner.split("@")[0].split(":")[0]}`;
+        }
+      })
+    );
+
     const lines = top.map((pet, i) => {
       const rarity  = RARITIES[pet.rarity] || RARITIES.common;
-      const trainer = pet.owner.split("@")[0].split(":")[0];
+      const trainer = ownerNames[i];
       return [
         `${medals[i]} *${pet.name}*`,
         `   ${rarity.color} ${rarity.label} | ⭐ Lv.${pet.level} | ⚔️ ${pet.attack}`,
-        `   👤 Trainer: +${trainer}`,
+        `   👤 Trainer: ${trainer}`,
       ].join("\n");
     });
 
