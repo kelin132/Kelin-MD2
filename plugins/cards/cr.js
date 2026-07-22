@@ -1,4 +1,5 @@
 import { findOrCreateUser, fmt, tag } from "./db.js";
+import { getUser, saveUser } from "../economy/database.js";
 
 // In-memory trade requests — keyed by jid+target so each chat is isolated
 const tradeRequests = new Map();
@@ -22,15 +23,36 @@ export default {
         const req = tradeRequests.get(jid + sender);
         if (!req) return reply("❌ You don't have any pending card purchase requests.");
 
+        // Economy money lives in the economy DB (money field), NOT the card system balance
+        const econBuyer  = await getUser(req.buyer);
+        const econSeller = await getUser(req.seller);
+
+        const buyerMoney = (econBuyer?.money || 0) + (econBuyer?.bank || 0);
+        if (buyerMoney < req.price) {
+          tradeRequests.delete(jid + sender);
+          return reply(
+            `❌ You don't have enough money to buy this card.\n\n` +
+            `💰 You have: *$${fmt(econBuyer?.money || 0)}* (wallet) + *$${fmt(econBuyer?.bank || 0)}* (bank)\n` +
+            `🏷️ Price: *$${fmt(req.price)}*`
+          );
+        }
+
+        // Deduct from buyer — take from wallet first, then bank if needed
+        let remaining = req.price;
+        const walletDeduct = Math.min(econBuyer.money || 0, remaining);
+        econBuyer.money = (econBuyer.money || 0) - walletDeduct;
+        remaining -= walletDeduct;
+        if (remaining > 0) {
+          econBuyer.bank = (econBuyer.bank || 0) - remaining;
+        }
+
+        // Credit seller's wallet
+        econSeller.money = (econSeller.money || 0) + req.price;
+
+        // Verify seller still has the card (by cardId + index)
         const seller = await findOrCreateUser(req.seller);
         const buyer  = await findOrCreateUser(req.buyer);
 
-        if (buyer.balance < req.price) {
-          tradeRequests.delete(jid + sender);
-          return reply("❌ You don't have enough balance to buy this card.");
-        }
-
-        // Verify seller still has the card (by cardId + index)
         const cardIdx = seller.cards.findIndex((c, i) => i === req.cardIndex && c.cardId === req.cardId);
         if (cardIdx === -1) {
           tradeRequests.delete(jid + sender);
@@ -38,14 +60,14 @@ export default {
         }
 
         const card = seller.cards[cardIdx];
-        buyer.balance  -= req.price;
-        seller.balance  = (seller.balance || 0) + req.price;
-
         seller.cards.splice(cardIdx, 1);
         buyer.cards.push(card);
 
+        // Save card collections and economy balances
         await seller.save();
         await buyer.save();
+        await saveUser(req.buyer,  econBuyer);
+        await saveUser(req.seller, econSeller);
         tradeRequests.delete(jid + sender);
 
         return await sock.sendMessage(jid, {
