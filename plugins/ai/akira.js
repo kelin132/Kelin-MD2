@@ -3,7 +3,7 @@
  * .akira <message> | .akira reset | .akira info
  * AI logic lives in lib/akiraAI.mjs (shared with the group auto-trigger).
  */
-import { callAkira, chatHistory } from "../../lib/akiraAI.mjs";
+import { callAkira, resetAkiraSession } from "../../lib/akiraAI.mjs";
 
 const AKIRA_INFO_CARD = `╭━━━〔 🌸 *AKIRA* 〕━━━╮
 
@@ -30,8 +30,7 @@ const AKIRA_INFO_CARD = `╭━━━〔 🌸 *AKIRA* 〕━━━╮
   When senpai ignores me
 
   🌸 *How to summon me in a group:*
-  Just say my name — *Akira* — or tag me,
-  or reply to any of my messages!
+  Just say my name — *Akira* — or tag me!
   I'll come running~ (n-not that I wanted to!)
 
   🗣️ *Direct chat:*
@@ -61,10 +60,12 @@ export default {
     }
 
     if (sub === "reset" || sub === "clear" || sub === "forget") {
-      chatHistory.delete(jid);
+      resetAkiraSession(jid);
       return sock.sendMessage(jid, {
         text:
+          `*Akira:* *blinks*\n\n` +
           `Eh? You want me to forget everything?\n\n` +
+          `*looks down quietly*\n\n` +
           `...Fine. Conversation cleared. I-it's not like I'll miss it or anything, baka~\n\n` +
           `_Say \`.akira hello\` to start fresh!_`
       }, { quoted: msg });
@@ -73,12 +74,13 @@ export default {
     if (!text || !text.trim()) {
       return sock.sendMessage(jid, {
         text:
+          `*Akira:* *taps foot impatiently*\n\n` +
           `Nee, senpai~ You called me but said nothing? Mou!\n\n` +
-          `Say something already!\n\n` +
+          `Say something already! ≧◡≦\n\n` +
           `📝 *.akira <message>* — talk to me\n` +
           `📋 *.akira info* — see my profile\n` +
           `🔄 *.akira reset* — start fresh\n` +
-          `💡 _In groups just say "Akira", tag me, or reply to my messages!_`
+          `💡 _In groups just say "Akira" or tag me!_`
       }, { quoted: msg });
     }
 

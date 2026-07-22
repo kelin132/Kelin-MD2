@@ -1,4 +1,4 @@
-import { askGeminiDC } from "../../lib/davidcyrilAPI.mjs";
+import { askGemini } from "../../lib/gemini.mjs";
 
 export default {
   name: "gemini",
@@ -13,7 +13,7 @@ export default {
     await sock.sendPresenceUpdate("composing", jid);
     try {
       const uid = sender?.split("@")[0] || jid;
-      const reply = await askGeminiDC(text, uid);
+      const reply = await askGemini(text, { uid });
       await sock.sendMessage(jid, { text: `🤖 *Gemini:*\n\n${reply}` }, { quoted: msg });
     } catch (err) {
       await sock.sendMessage(jid, { text: `❌ ${err.message}` }, { quoted: msg });
