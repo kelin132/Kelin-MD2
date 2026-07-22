@@ -2,6 +2,7 @@
 // .adopt — Get your first pet (free starter, one-time)
 import { getAllPets, createPet } from "../../lib/petDatabase.js";
 import { PET_SPECIES, RARITIES } from "../../lib/petData.js";
+import { getPetImage } from "../../lib/petImages.mjs";
 
 const STARTER_SPECIES = ["cat", "dog", "bunny", "fox", "moon_cat", "sakura_bunny", "fire_slime"];
 
@@ -36,27 +37,31 @@ export default {
       }, { quoted: msg });
     }
 
-    const sp  = PET_SPECIES[choice];
-    const pet = await createPet(sender, choice, "", true);
-    const rarity = RARITIES[pet.rarity];
+    const sp        = PET_SPECIES[choice];
+    const imageUrl  = await getPetImage(choice);
+    const pet       = await createPet(sender, choice, imageUrl || "", true);
+    const rarity    = RARITIES[pet.rarity];
 
-    return sock.sendMessage(jid, {
-      text: [
-        `🐾 *WELCOME YOUR NEW PET!*`,
-        ``,
-        `${rarity.color} *${pet.name}*`,
-        `📖 Species: ${sp.name}`,
-        `⭐ Rarity: ${rarity.label}`,
-        ``,
-        `❤️ HP: ${pet.maxHp}   ⚔️ ATK: ${pet.attack}`,
-        `🛡 DEF: ${pet.defense}  ⚡ SPD: ${pet.speed}`,
-        ``,
-        `🍖 Hunger: 100%  😊 Happiness: 100%`,
-        `✨ Level 1  |  🎁 Skill: *${pet.skill}*`,
-        ``,
-        `Use *.pet* to view your companion!`,
-        `Use *.feed* and *.play* to keep them happy!`,
-      ].join("\n"),
-    }, { quoted: msg });
+    const caption = [
+      `🐾 *WELCOME YOUR NEW PET!*`,
+      ``,
+      `${rarity.color} *${pet.name}*`,
+      `📖 Species: ${sp.name}`,
+      `⭐ Rarity: ${rarity.label}`,
+      ``,
+      `❤️ HP: ${pet.maxHp}   ⚔️ ATK: ${pet.attack}`,
+      `🛡 DEF: ${pet.defense}  ⚡ SPD: ${pet.speed}`,
+      ``,
+      `🍖 Hunger: 100%  😊 Happiness: 100%`,
+      `✨ Level 1  |  🎁 Skill: *${pet.skill}*`,
+      ``,
+      `Use *.pet* to view your companion!`,
+      `Use *.feed* and *.play* to keep them happy!`,
+    ].join("\n");
+
+    if (imageUrl) {
+      return sock.sendMessage(jid, { image: { url: imageUrl }, caption }, { quoted: msg });
+    }
+    return sock.sendMessage(jid, { text: caption }, { quoted: msg });
   },
 };

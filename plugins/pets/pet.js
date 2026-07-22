@@ -1,7 +1,8 @@
 // plugins/pets/pet.js
 // .pet — View your active pet with RPG card
-import { getActivePet } from "../../lib/petDatabase.js";
+import { getActivePet, savePet } from "../../lib/petDatabase.js";
 import { RARITIES, PET_SPECIES } from "../../lib/petData.js";
+import { getPetImage } from "../../lib/petImages.mjs";
 
 function bar(value, max, len = 10) {
   const filled = Math.round((value / max) * len);
@@ -31,7 +32,14 @@ export default {
     const hunger = Math.max(0, pet.hunger ?? 100);
     const happy  = Math.max(0, pet.happiness ?? 100);
 
-    const text = [
+    // Older pets were created before pet images existed — backfill once, then reuse.
+    let imageUrl = pet.imageUrl;
+    if (!imageUrl) {
+      imageUrl = await getPetImage(pet.species);
+      if (imageUrl) await savePet(sender, pet.petId, { imageUrl });
+    }
+
+    const caption = [
       `╭━━━〔 🐾 PET PROFILE 〕━━━╮`,
       ``,
       `${rarity.color} *Name:* ${pet.name}`,
@@ -54,6 +62,9 @@ export default {
       `╰━━━━━━━━━━━━━━━━━━━━━━╯`,
     ].join("\n");
 
-    return sock.sendMessage(jid, { text }, { quoted: msg });
+    if (imageUrl) {
+      return sock.sendMessage(jid, { image: { url: imageUrl }, caption }, { quoted: msg });
+    }
+    return sock.sendMessage(jid, { text: caption }, { quoted: msg });
   },
 };

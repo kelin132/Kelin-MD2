@@ -2,6 +2,7 @@
 // .hatch — Hatch a random egg into a pet (rarity-weighted roll)
 import { getAllPets, createPet } from "../../lib/petDatabase.js";
 import { rollRarity, pickSpecies, PET_SPECIES, RARITIES } from "../../lib/petData.js";
+import { getPetImage } from "../../lib/petImages.mjs";
 
 const MAX_PETS = 5;
 
@@ -32,7 +33,8 @@ export default {
     const speciesKey = pickSpecies(rarity);
     const sp         = PET_SPECIES[speciesKey];
     const isFirst    = all.length === 0;
-    const pet        = await createPet(sender, speciesKey, "", isFirst);
+    const imageUrl   = await getPetImage(speciesKey);
+    const pet        = await createPet(sender, speciesKey, imageUrl || "", isFirst);
     const rarityData = RARITIES[rarity];
 
     let exclaim = "✨ A new companion has hatched!";
@@ -41,25 +43,28 @@ export default {
     if (rarity === "legendary") exclaim = "🌟 *LEGENDARY!* Incredible luck!";
     if (rarity === "mythic")    exclaim = "🔥🔥 *M Y T H I C !!* UNBELIEVABLE!! 🔥🔥";
 
-    return sock.sendMessage(jid, {
-      text: [
-        `🥚 *EGG HATCHED!*`,
-        ``,
-        exclaim,
-        ``,
-        `${rarityData.color} *${pet.name}*`,
-        `📖 Species: ${sp.name}`,
-        `⭐ Rarity: ${rarityData.label}`,
-        ``,
-        `❤️ HP: ${pet.maxHp}   ⚔️ ATK: ${pet.attack}`,
-        `🛡 DEF: ${pet.defense}  ⚡ SPD: ${pet.speed}`,
-        ``,
-        `🎁 Skill: *${pet.skill}*`,
-        ``,
-        isFirst
-          ? `🌟 Set as your active pet! Use *.pet* to view.`
-          : `💡 Use *.pets select ${pet.petId}* to make it active.`,
-      ].join("\n"),
-    }, { quoted: msg });
+    const caption = [
+      `🥚 *EGG HATCHED!*`,
+      ``,
+      exclaim,
+      ``,
+      `${rarityData.color} *${pet.name}*`,
+      `📖 Species: ${sp.name}`,
+      `⭐ Rarity: ${rarityData.label}`,
+      ``,
+      `❤️ HP: ${pet.maxHp}   ⚔️ ATK: ${pet.attack}`,
+      `🛡 DEF: ${pet.defense}  ⚡ SPD: ${pet.speed}`,
+      ``,
+      `🎁 Skill: *${pet.skill}*`,
+      ``,
+      isFirst
+        ? `🌟 Set as your active pet! Use *.pet* to view.`
+        : `💡 Use *.pets select ${pet.petId}* to make it active.`,
+    ].join("\n");
+
+    if (imageUrl) {
+      return sock.sendMessage(jid, { image: { url: imageUrl }, caption }, { quoted: msg });
+    }
+    return sock.sendMessage(jid, { text: caption }, { quoted: msg });
   },
 };

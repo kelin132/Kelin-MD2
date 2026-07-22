@@ -11,11 +11,11 @@ export default {
   description: "Buy ninja items",
   category: "naruto",
   usage: ".nshop [index or item_id]",
-  cooldown: 10,
+  cooldown: 120,
 
   async run({ sock, msg, sender, text }) {
     const jid = msg.key.remoteJid;
-    const SHOP_COOLDOWN_MS = 10 * 1000;
+    const SHOP_COOLDOWN_MS = 120 * 1000;
 
     try {
       const player = await players.get(sender);
