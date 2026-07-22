@@ -8,6 +8,7 @@
  *   .summon <tier>    — specific tier (1-5 or Common/Uncommon/Rare/Epic/Legendary)
  */
 import { findOrCreateUser } from "./db.js";
+import { getUser, saveUser, requireRegistration, addHistory } from "../economy/database.js";
 import {
   getCardsByTier,
   resolveMediaUrl,
@@ -74,12 +75,12 @@ export default {
 
 Summon & instantly claim a card — costs coins per tier!
 
-💰 *Summon Costs:*
-  ⚪ Common     — ${SUMMON_COST.Common.toLocaleString()} coins
-  🟢 Uncommon   — ${SUMMON_COST.Uncommon.toLocaleString()} coins
-  🔵 Rare       — ${SUMMON_COST.Rare.toLocaleString()} coins
-  🟣 Epic       — ${SUMMON_COST.Epic.toLocaleString()} coins
-  🟡 Legendary  — ${SUMMON_COST.Legendary.toLocaleString()} coins
+💰 *Summon Costs (from your wallet):*
+  ⚪ Common     — $${SUMMON_COST.Common.toLocaleString()}
+  🟢 Uncommon   — $${SUMMON_COST.Uncommon.toLocaleString()}
+  🔵 Rare       — $${SUMMON_COST.Rare.toLocaleString()}
+  🟣 Epic       — $${SUMMON_COST.Epic.toLocaleString()}
+  🟡 Legendary  — $${SUMMON_COST.Legendary.toLocaleString()}
 
 📖 *Usage:*
   *.summon*           — random tier (based on rarity weights)
@@ -110,43 +111,52 @@ Summon & instantly claim a card — costs coins per tier!
       const emoji = TIER_EMOJI[tierName] || "⭐";
       const cost  = SUMMON_COST[tierName] || SUMMON_COST.Common;
 
-      // ── Check and deduct balance ────────────────────────────────────────────
-      const cardUser = await findOrCreateUser(sender);
-      cardUser.balance = cardUser.balance || 0;
+      // ── Require economy registration ────────────────────────────────────────
+      if (!await requireRegistration(sock, msg, sender)) return;
 
-      if (cardUser.balance < cost) {
+      // ── Check economy wallet ────────────────────────────────────────────────
+      const ecoUser = await getUser(sender);
+
+      if ((ecoUser.money || 0) < cost) {
         return reply(
-`❌ *Insufficient coins!*
+`❌ *Insufficient funds!*
 
-You need *${cost.toLocaleString()} coins* to summon a *${emoji} ${tierName}* card.
-Your balance: *${cardUser.balance.toLocaleString()} coins*
+You need *$${cost.toLocaleString()}* to summon a *${emoji} ${tierName}* card.
+Your wallet: *$${(ecoUser.money || 0).toLocaleString()}*
 
-💡 Earn coins through the economy system (.daily, .work, .gamble, etc.)`
+💡 Earn money through the economy system (.daily, .work, .crime, etc.)`
         );
       }
 
-      // Deduct cost
-      cardUser.balance -= cost;
+      // Deduct from economy wallet
+      ecoUser.money -= cost;
+      await saveUser(sender, ecoUser);
+
+      // Log transaction history
+      await addHistory(sender, "summon", -cost, `Summoned ${tierName} card`);
 
       // ── Fetch a card from the resolved tier ─────────────────────────────────
       const pool = await getCardsByTier(TIER_NUM[tierName.toLowerCase()] || "1");
       if (!pool || pool.length === 0) {
         // Refund if no cards available
-        cardUser.balance += cost;
-        await cardUser.save();
-        return reply(`❌ No cards available for tier *${tierName}* right now. Your coins have been refunded. Try again later.`);
+        ecoUser.money += cost;
+        await saveUser(sender, ecoUser);
+        await addHistory(sender, "summon_refund", cost, `Refund — no ${tierName} cards available`);
+        return reply(`❌ No cards available for tier *${tierName}* right now. Your money has been refunded. Try again later.`);
       }
 
       const card = pool[Math.floor(Math.random() * pool.length)];
 
       // ── Add card to collection ──────────────────────────────────────────────
+      const cardUser = await findOrCreateUser(sender);
       cardUser.cards = cardUser.cards || [];
 
       if (cardUser.cards.length >= (cardUser.cardLimit || 100)) {
         // Refund if collection full
-        cardUser.balance += cost;
-        await cardUser.save();
-        return reply(`❌ Your card collection is full! (${cardUser.cards.length}/${cardUser.cardLimit || 100})\n\nDelete some cards with *.delc <index>* to make room.\nYour coins have been refunded.`);
+        ecoUser.money += cost;
+        await saveUser(sender, ecoUser);
+        await addHistory(sender, "summon_refund", cost, `Refund — card collection full`);
+        return reply(`❌ Your card collection is full! (${cardUser.cards.length}/${cardUser.cardLimit || 100})\n\nDelete some cards with *.delc <index>* to make room.\nYour money has been refunded.`);
       }
 
       cardUser.cards.push({
@@ -171,8 +181,8 @@ Your balance: *${cardUser.balance.toLocaleString()} coins*
 ⭐ Tier: *${card.tier}*
 📺 Series: *${card.series}*
 ${isRandom ? `🎲 You rolled a *${tierName}* tier summon!\n` : ""}
-💰 Cost: *${cost.toLocaleString()} coins*
-💳 Remaining balance: *${cardUser.balance.toLocaleString()} coins*
+💰 Cost: *$${cost.toLocaleString()}*
+💵 Wallet: *$${ecoUser.money.toLocaleString()}*
 
 Card added to your collection! Use *.col* to view your cards.`;
 
