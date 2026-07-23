@@ -22,6 +22,8 @@ const RESELL_BASE = {
 };
 
 const PAYOUT_RATE = 0.5; // 50 % of card's stored value
+const RESELL_COOLDOWN_MS = 13_000;
+const resellCooldowns = new Map();
 
 export default {
   name:        "resell",
@@ -29,7 +31,7 @@ export default {
   category:    "cards",
   description: "Sell a card back to the bot for 50% of its value",
   usage:       ".resell <index>",
-  cooldown:    5,
+  cooldown:    13,
 
   async run({ sock, msg, args, sender }) {
     const jid   = msg.key.remoteJid;
@@ -49,6 +51,17 @@ Payout is added to your economy wallet.
 
 Example: \`.resell 3\``
         );
+      }
+
+      const now = Date.now();
+      const lastResell = resellCooldowns.get(sender);
+      if (lastResell !== undefined) {
+        const elapsed = now - lastResell;
+        if (elapsed < RESELL_COOLDOWN_MS) {
+          const remaining = Math.ceil((RESELL_COOLDOWN_MS - elapsed) / 1000);
+          return reply(`⏳ *Resell cooldown active!*\n\nPlease wait *${remaining}s* before selling another card.`);
+        }
+        resellCooldowns.delete(sender);
       }
 
       const index = parseInt(args[0]) - 1;
@@ -80,6 +93,9 @@ Example: \`.resell 3\``
       const cardEmoji = TIER_EMOJI[cardTier] || "⭐";
       const baseValue = card.price || RESELL_BASE[cardTier] || 200;
       const payout    = Math.floor(baseValue * PAYOUT_RATE);
+
+      // Start the cooldown only after all request/card validation succeeds.
+      resellCooldowns.set(sender, now);
 
       // ── Remove card from collection ───────────────────────────────────────
       cardUser.cards.splice(index, 1);
