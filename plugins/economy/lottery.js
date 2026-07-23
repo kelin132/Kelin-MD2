@@ -31,7 +31,7 @@ export default {
   description: "Buy lottery tickets or draw the jackpot",
   usage: ".lottery buy [amount]  |  .lottery draw  |  .lottery info",
 
-  async run({ sock, msg, sender, args, isOwner }) {
+  async run({ sock, msg, sender, args, isOwner, isMod }) {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const jid  = msg.key.remoteJid;
@@ -104,7 +104,7 @@ Max per user : ${MAX_TICKETS} tickets
 
     // ── DRAW (owner only) ──────────────────────────────────────────────────────
     if (sub === "draw") {
-      if (!isOwner) return reply("❌ Only the owner can draw the lottery.");
+      if (!isOwner && !isMod) return reply("❌ Only the owner or a mod/staff can draw the lottery.");
 
       const lot = await getLottery();
       if (lot.totalTickets === 0) return reply("❌ No tickets have been bought yet.");
@@ -135,7 +135,7 @@ Max per user : ${MAX_TICKETS} tickets
         text:
 `🎰 *LOTTERY DRAW RESULTS*
 
-🏆 WINNER: @${winner.userId}
+🏆 WINNER: ${winner.name}
 🎫 Tickets: ${winner.count}
 💰 JACKPOT WON: $${prize.toLocaleString()}
 

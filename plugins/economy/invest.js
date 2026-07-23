@@ -141,7 +141,7 @@ ${lost
     }
 
     // ── NEW INVESTMENT ────────────────────────────────────────────────────
-    if (!args[0] || !PLANS[args[0]?.toLowerCase()] || !args[1]) {
+    if (!args[0] || !args[1] || !PLANS[args[1]?.toLowerCase()]) {
       return reply(
 `🏦 *INVESTMENT*
 
@@ -164,9 +164,9 @@ _Only one active investment at a time._`
       return reply(`❌ You already have an active ${plan.label} investment!\n\nUse *.invest status* or collect it first with *.invest collect*.${now >= maturesAt ? "\n\n✅ It's ready to collect now!" : ""}`);
     }
 
-    const planKey = args[0].toLowerCase();
+    const planKey = args[1].toLowerCase();
     const plan    = PLANS[planKey];
-    const rawAmt  = (args[1] || "").toLowerCase();
+    const rawAmt  = (args[0] || "").toLowerCase();
 
     let amount = rawAmt === "all" ? user.money : rawAmt === "half" ? Math.floor(user.money / 2) : parseInt(rawAmt.replace(/\D/g, ""), 10);
 
