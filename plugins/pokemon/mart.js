@@ -6,6 +6,7 @@
 import { getTrainer, addItem, hasItem } from "../../lib/pokemon/players.mjs";
 import { getMartPage, getItem, TOTAL_PAGES, PAGE_LABELS } from "../../lib/pokemon/martItems.mjs";
 import { getUser, addMoney } from "../economy/database.js";
+import { getBattle } from "../../lib/pokemon/battleState.mjs";
 
 // 30-second buy cooldown per user
 const buyCooldowns = new Map(); // jid → timestamp
@@ -24,6 +25,14 @@ export default {
     const trainer = await getTrainer(sender);
     if (!trainer) {
       return sock.sendMessage(jid, { text: "❌ Start your journey first! Use *.startjourney*" }, { quoted: msg });
+    }
+
+    // Block mart use during an active battle
+    const activeBattle = getBattle(jid);
+    if (activeBattle && (activeBattle.challengerJid === sender || activeBattle.opponentJid === sender)) {
+      return sock.sendMessage(jid, {
+        text: "❌ You can't use the Mart during a battle!\nUse *.battle item* to access your bag, or finish the battle first.",
+      }, { quoted: msg });
     }
 
     const sub = (args[0] || "").toLowerCase();

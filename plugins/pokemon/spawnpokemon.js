@@ -12,6 +12,7 @@ export default {
   category: "pokemon",
   usage: ".spawnpokemon <name or number>",
   isMod: true,
+  hidden: true,
 
   async run({ sock, msg, sender, args }) {
     const jid = msg.key.remoteJid;

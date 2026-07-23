@@ -70,7 +70,7 @@ async function sendBattlePrompt(sock, jid, msg, myPokemon, enemyPokemon, battleT
 
 *Battle Commands:*
 ⚔️ \`.battle fight\` — See your moves
-⚔️ \`.battle fight <1-6>\` — Use a move${catchLine}
+⚔️ \`.battle switch\` — Switch Pokémon${catchLine}
 💊 \`.battle item <item>\` — Use a heal item
 🏃 \`.battle run\` — Flee from battle`,
   }, { quoted: msg });
@@ -569,7 +569,17 @@ Reply: \`.battle switch <slot number>\``,
           );
 
           const wildEmoji = TYPE_EMOJIS[wildMove.type] || "⭐";
-          const wildText  = `${wildEmoji} *Wild ${currentBattle.opponentPokemon.displayName || currentBattle.opponentPokemon.name}* used *${wildMove.name}*!${wildCrit ? " ⚡ Critical hit!" : ""}\n💥 -${wildFinalDmg} HP to ${newName}${newPlayerHp <= 0 ? `\n💀 *${newName} has fainted!*` : `\n❤️ ${newName}: ${newPlayerHp}/${newPoke.maxHp}`}`;
+          const wildEnemyName = currentBattle.opponentPokemon.displayName || currentBattle.opponentPokemon.name;
+
+          // Step 1 (switch counter) — "Wild Pokémon used Move"
+          const wildSwitchUsedText = `${wildEmoji} *Wild ${wildEnemyName}* used *${wildMove.name}*!${wildCrit ? " ⚡ Critical hit!" : ""}`;
+          await sock.sendMessage(jid, { text: wildSwitchUsedText }, { quoted: msg });
+          await sleep(DELAY);
+
+          // Step 2 (switch counter) — Damage scene image
+          const wildSwitchDamageCaption = newPlayerHp <= 0
+            ? `💥 *Wild ${wildEnemyName}* dealt *${wildFinalDmg}* damage to *${newName}*!\n💀 *${newName} has fainted!*`
+            : `💥 *Wild ${wildEnemyName}* dealt *${wildFinalDmg}* damage to *${newName}*!\n❤️ ${newName}: ${newPlayerHp}/${newPoke.maxHp}`;
 
           if (newPlayerHp <= 0) {
             const tr     = await getTrainer(sender);
@@ -578,7 +588,7 @@ Reply: \`.battle switch <slot number>\``,
             clearWild(jid);
             await sock.sendMessage(jid, { text: `💀 *${trName}'s ${newName} has fainted!*\nYou lost the battle. Use *.heal* to heal your party.` }, { quoted: msg });
           } else if (stateAfterWild) {
-            await sendScene(sock, jid, msg, stateAfterWild, wildText, "player", wildFinalDmg, wildCrit);
+            await sendScene(sock, jid, msg, stateAfterWild, wildSwitchDamageCaption, "player", wildFinalDmg, wildCrit);
             await sleep(DELAY);
             const freshBattle = getBattle(jid);
             if (freshBattle) {
@@ -646,11 +656,20 @@ ${formatMoveList(moves)}
 
       const updated    = updateBattle(jid, newState);
       const typeEmoji  = TYPE_EMOJIS[move.type] || "⭐";
-      const statusText = `${typeEmoji} *${myName}* used *${move.name}*!${crit ? " ⚡ Critical hit!" : ""}\n💥 -${finalDmg} HP to ${eName}${newEnemyHp <= 0 ? `\n💀 *${eName} fainted!*` : `\n❤️ ${eName}: ${newEnemyHp}/${enemyPokemon.maxHp}`}`;
+
+      // Step 1 — "Pokémon used Move" (text only, no damage yet)
+      const usedText = `${typeEmoji} *${myName}* used *${move.name}*!${crit ? " ⚡ Critical hit!" : ""}`;
+      await sock.sendMessage(jid, { text: usedText }, { quoted: msg });
+      await sleep(DELAY);
+
+      // Step 2 — Damage scene image with dealt-damage caption
+      const damageCaption = newEnemyHp <= 0
+        ? `💥 *${myName}* dealt *${finalDmg}* damage to *${eName}*!\n💀 *${eName} fainted!*`
+        : `💥 *${myName}* dealt *${finalDmg}* damage to *${eName}*!\n❤️ ${eName}: ${newEnemyHp}/${enemyPokemon.maxHp}`;
 
       // Enemy fainted
       if (newEnemyHp <= 0) {
-        await sendScene(sock, jid, msg, updated, statusText, "enemy", finalDmg, crit);
+        await sendScene(sock, jid, msg, updated, damageCaption, "enemy", finalDmg, crit);
         const trainer = await getTrainer(sender);
         if (battle.type === "wild") {
           await handleWildDefeat(sock, jid, msg, { ...battle, opponentPokemon: updatedEnemy, challengerJid: battle.challengerJid }, trainer);
@@ -663,8 +682,8 @@ ${formatMoveList(moves)}
         return;
       }
 
-      // Show attack scene
-      await sendScene(sock, jid, msg, updated, statusText, "enemy", finalDmg, crit);
+      // Show damage scene
+      await sendScene(sock, jid, msg, updated, damageCaption, "enemy", finalDmg, crit);
 
       // Wild auto-counter
       if (battle.type === "wild" && updated) {
@@ -691,7 +710,17 @@ ${formatMoveList(moves)}
           const stateAfterWild  = updateBattle(jid, { challengerPokemon: updatedPlayer, turn: "challenger" });
 
           const wildEmoji = TYPE_EMOJIS[wildMove.type] || "⭐";
-          const wildText  = `${wildEmoji} *Wild ${eName}* used *${wildMove.name}*!${wildCrit ? " ⚡ Critical hit!" : ""}\n💥 -${wildFinalDmg} HP to ${myName}${newPlayerHp <= 0 ? `\n💀 *${myName} has fainted!*` : `\n❤️ ${myName}: ${newPlayerHp}/${updated.challengerPokemon.maxHp}`}`;
+
+          // Step 1 (wild counter) — "Wild Pokémon used Move"
+          const wildUsedText = `${wildEmoji} *Wild ${eName}* used *${wildMove.name}*!${wildCrit ? " ⚡ Critical hit!" : ""}`;
+          await sleep(DELAY);
+          await sock.sendMessage(jid, { text: wildUsedText }, { quoted: msg });
+          await sleep(DELAY);
+
+          // Step 2 (wild counter) — Damage scene image
+          const wildDamageCaption = newPlayerHp <= 0
+            ? `💥 *Wild ${eName}* dealt *${wildFinalDmg}* damage to *${myName}*!\n💀 *${myName} has fainted!*`
+            : `💥 *Wild ${eName}* dealt *${wildFinalDmg}* damage to *${myName}*!\n❤️ ${myName}: ${newPlayerHp}/${updated.challengerPokemon.maxHp}`;
 
           if (newPlayerHp <= 0) {
             const tr     = await getTrainer(sender);
@@ -710,9 +739,9 @@ ${formatMoveList(moves)}
               await sock.sendMessage(jid, { text: faintCaption }, { quoted: msg });
             }
           } else if (stateAfterWild) {
-            // Show enemy attack scene
-            await sendScene(sock, jid, msg, stateAfterWild, wildText, "player", wildFinalDmg, wildCrit);
-            // 3-second delay then re-prompt player
+            // Show wild counter damage scene
+            await sendScene(sock, jid, msg, stateAfterWild, wildDamageCaption, "player", wildFinalDmg, wildCrit);
+            // Step 3 — 3-second delay then re-prompt player
             await sleep(DELAY);
             const freshBattle = getBattle(jid);
             if (freshBattle) {
@@ -729,8 +758,6 @@ ${formatMoveList(moves)}
         await sleep(DELAY);
         const freshBattle = getBattle(jid);
         if (freshBattle) {
-          const nextMy    = isChallenger ? freshBattle.opponentPokemon   : freshBattle.challengerPokemon;
-          const nextEnemy = isChallenger ? freshBattle.challengerPokemon : freshBattle.opponentPokemon;
           const nextName  = isChallenger ? battle.opponentName : battle.challengerName;
           await sock.sendMessage(jid, {
             text: `⏳ *${nextName}, it's your turn!*\nType \`.battle fight\` to see your moves.`,
@@ -742,20 +769,22 @@ ${formatMoveList(moves)}
     }
 
     // ── STATUS (default / no sub) ─────────────────────────────────────────────
+    const _isWild = battle.type === "wild";
     return sock.sendMessage(jid, {
       text:
-`⚔️ *BATTLE STATUS*
+`⚔️ *BATTLE STARTED!*
 
-🐉 *${myPokemon.displayName || myPokemon.name}* Lv.${myPokemon.level} ❤️ ${myPokemon.hp}/${myPokemon.maxHp}
-🐾 *${enemyPokemon.displayName || enemyPokemon.name}* Lv.${enemyPokemon.level} ❤️ ${enemyPokemon.hp}/${enemyPokemon.maxHp}
+🐉 Your Pokémon: *${myPokemon.displayName || myPokemon.name}* Lv.${myPokemon.level}
+❤️ HP: ${myPokemon.hp}/${myPokemon.maxHp}
 
-*Commands:*
-\`.battle fight\` — See moves & choose attack
-\`.battle fight <1-6>\` — Use a specific move
-\`.battle item\` — Open bag (healing + balls)
-\`.battle switch\` — Swap your active Pokémon
-\`.battle pokeball <type>\` — Throw a Pokéball (wild only)
-\`.battle run\` — Flee`,
+🐾 ${_isWild ? "Wild" : "Opponent"}: *${enemyPokemon.displayName || enemyPokemon.name}* Lv.${enemyPokemon.level}
+❤️ HP: ${enemyPokemon.hp}/${enemyPokemon.maxHp}
+
+*Battle Commands:*
+⚔️ \`.battle fight\` — See your moves
+⚔️ \`.battle switch\` — Switch Pokémon${_isWild ? `\n🎾 \`.battle pokeball <type>\` — Throw a Pokéball` : ""}
+💊 \`.battle item <item>\` — Use a heal item
+🏃 \`.battle run\` — Flee from battle`,
     }, { quoted: msg });
   },
 };
