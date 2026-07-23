@@ -40,10 +40,19 @@ export default {
     const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
 
     // ── Resolve target ────────────────────────────────────────────────────────
-    const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+    // Priority:
+    //   1. Reply/quote — mod replies to a player's message
+    //   2. @mention    — mod types @player in the command
+    //   3. Bare number — mod types the phone number directly
+    const ctx        = msg.message?.extendedTextMessage?.contextInfo;
+    const quotedJid  = ctx?.participant || ctx?.remoteJid || null;   // sender of quoted msg
+    const mentioned  = ctx?.mentionedJid?.[0];
     let targetJid = null;
 
-    if (mentioned) {
+    if (quotedJid && quotedJid !== (msg.key.participant || msg.key.remoteJid)) {
+      // Only use quoted sender if it's a different person (not the mod themselves)
+      targetJid = quotedJid;
+    } else if (mentioned) {
       targetJid = mentioned;
     } else if (args[0]?.match(/^\d+$/)) {
       targetJid = `${args[0]}@s.whatsapp.net`;
