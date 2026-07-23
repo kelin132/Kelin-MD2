@@ -98,14 +98,21 @@ export default {
       const rows = sorted.map((s, index) => {
         const number = s.jid.split('@')[0].split(':')[0].replace(/\D/g, '');
         const label  = LEVEL_LABEL[s.level] || 'MOD';
-        return `${index + 1}. 🛡️ *${s.name}*\n   Number: +${number}\n   Role: *${label}*`;
+        return [
+          `╭─❖ *${index + 1}. ${s.name}*`,
+          `│ 📱 Number: +${number}`,
+          `│ 🛡️ Role: *${label}*`,
+          '╰──────────────',
+        ].join('\n');
       }).join('\n\n');
 
       const caption =
-        `🛡️ *MODS & STAFF* (${sorted.length})\n` +
-        `${'─'.repeat(30)}\n\n` +
+        `╭━━━〔 🛡️ *MODS & STAFF* 〕━━━╮\n` +
+        `│ 👥 Members: *${sorted.length}*\n` +
+        `╰━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
         `${rows}\n\n` +
-        `> *INFO:* Need help? These mods and staff will help you. Use *.rules* if you are unsure of the rules.`;
+        `💬 *Need help?* Contact a listed team member.\n` +
+        `📖 Use *.rules* if you are unsure of the rules.`;
 
       return sock.sendMessage(jid, {
         text:     caption,

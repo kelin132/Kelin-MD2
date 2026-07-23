@@ -29,13 +29,19 @@ export default {
     const rows = list.map((u, i) => {
       const rank = LEVEL_NAMES[u.staffLevel] || "Unknown";
       const num  = u._id?.split("@")[0]?.split(":")[0]?.replace(/\D/g, "") || "?";
-      return `${i + 1}. ${rank} *${u.name || "Unknown"}*\n   Number: +${num}`;
+      return [
+        `╭─❖ *${i + 1}. ${u.name || "Unknown"}*`,
+        `│ 📱 Number: +${num}`,
+        `│ ${rank}`,
+        "╰──────────────",
+      ].join("\n");
     });
 
     await sock.sendMessage(jid, {
       text:
-        `🛡️ *STAFF MEMBERS* (${list.length})\n` +
-        `${"─".repeat(30)}\n\n` +
+        `╭━━━〔 🛡️ *STAFF MEMBERS* 〕━━━╮\n` +
+        `│ 👥 Members: *${list.length}*\n` +
+        `╰━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
         rows.join("\n\n")
     }, { quoted: msg });
   }

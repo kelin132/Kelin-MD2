@@ -38,22 +38,34 @@ export default {
           const uptime = Number.isFinite(startedAt)
             ? formatDuration(now - startedAt)
             : "Unknown";
-          return `${index + 1}. 🟢 *${name}*\n   Number: ${number}\n   Status: *Online*\n   Uptime: *${uptime}*`;
+          return [
+            `╭─❖ *${index + 1}. ${name}*`,
+            `│ 🟢 Status: *ONLINE*`,
+            `│ 📱 Number: ${number}`,
+            `│ ⏱️ Uptime: *${uptime}*`,
+            "╰──────────────",
+          ].join("\n");
         }
 
         const lastSeenAt = bot.lastSeenAt ? new Date(bot.lastSeenAt) : null;
         const lastSeen = lastSeenAt && !Number.isNaN(lastSeenAt.getTime())
           ? lastSeenAt.toLocaleString()
           : "Unknown";
-        return `${index + 1}. 🔴 *${name}*\n   Number: ${number}\n   Status: *Offline*\n   Last seen: *${lastSeen}*`;
+        return [
+          `╭─❖ *${index + 1}. ${name}*`,
+          `│ 🔴 Status: *OFFLINE*`,
+          `│ 📱 Number: ${number}`,
+          `│ 🕘 Last seen: *${lastSeen}*`,
+          "╰──────────────",
+        ].join("\n");
       }).join("\n\n")
       : "No paired bots have registered yet.";
 
     const text =
-`🤖 *PAIRED BOTS*
-
-🟢 Online: *${onlineBots.length}*
-📊 Total registered: *${bots.length}*
+`╭━━━〔 🤖 *PAIRED BOTS* 〕━━━╮
+│ 🟢 Online: *${onlineBots.length}*
+│ 📊 Registered: *${bots.length}*
+╰━━━━━━━━━━━━━━━━━━━━━━╯
 
 ${lines}`;
 
