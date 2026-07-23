@@ -13,28 +13,34 @@ export default {
   aliases: ["givepoke", "sendpoke", "tradegive"],
   description: "Give one of your party Pokémon to another trainer",
   category: "pokemon",
-  usage: ".giftpoke @user <party slot 1-6>",
+  usage: ".giftpoke @user <slot> | reply to a message from the user",
   cooldown: 30,
 
   async run({ sock, msg, sender, args }) {
     const jid = msg.key.remoteJid;
 
     const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+    // Also support replying to a message from the target user
+    const quotedSender = msg.message?.extendedTextMessage?.contextInfo?.participant;
+    const targetJid    = mentioned[0] || quotedSender;
+    const slotArg      = args.find(a => /^\d+$/.test(a));
 
-    // Show usage if missing args
-    if (mentioned.length === 0 || !args[1]) {
+    // Show usage if missing info
+    if (!targetJid || !slotArg) {
       return sock.sendMessage(jid, {
         text:
 `Usage: *.giftpoke @user <slot>*
+OR reply to someone's message: *.giftpoke <slot>*
 
 Example: \`.giftpoke @user 2\` — gives your slot-2 Pokémon to that trainer.
+Example: reply to their message and type \`.giftpoke 2\`
 
-Type *.party* to see your party slots.`,
+Type *.party* to see your party slots.
+*Note: You can only give Pokémon from your party, not PC.*`,
       }, { quoted: msg });
     }
 
-    const targetJid = mentioned[0];
-    const slotNum   = parseInt(args[1]);
+    const slotNum = parseInt(slotArg);
 
     if (sender === targetJid) {
       return sock.sendMessage(jid, { text: "❌ You can't gift a Pokémon to yourself!" }, { quoted: msg });
@@ -76,6 +82,15 @@ Type *.party* to see your party slots.`,
 
     const pokeName = pokemonToGift.displayName || pokemonToGift.name;
     const pokeId   = (pokemonToGift._id || pokemonToGift.id)?.toString();
+
+    // Block gifting the starter Pokémon
+    if (pokemonToGift.isStarter) {
+      return sock.sendMessage(jid, {
+        text: `❌ *${pokeName}* is your Starter Pokémon — it can never be given away!
+
+🏅 Your starter is a lifelong partner. Use a different slot.`,
+      }, { quoted: msg });
+    }
 
     // Check keystone — can't send a Pokémon holding the keystone
     if (senderTrainer.keystoneEquippedTo === pokeId) {

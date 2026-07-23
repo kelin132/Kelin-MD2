@@ -1,7 +1,7 @@
 // plugins/pokemon/challenge.js
 // Challenge another trainer to a Pokémon battle
 
-import { getTrainer } from "../../lib/pokemon/players.mjs";
+import { getTrainer, pickLeadFromParty } from "../../lib/pokemon/players.mjs";
 import { getTrainerParty } from "../../lib/pokemon/pokemonDb.mjs";
 import {
   setPendingChallenge, getIncomingChallenge,
@@ -41,8 +41,8 @@ export default {
       const challengerParty = await getTrainerParty(incoming.challengerJid);
       const opponentParty = await getTrainerParty(sender);
 
-      const challengerLead = challengerParty.find(p => p.hp > 0);
-      const opponentLead = opponentParty.find(p => p.hp > 0);
+      const challengerLead = pickLeadFromParty(challengerTrainer, challengerParty);
+      const opponentLead   = pickLeadFromParty(opponentTrainer,   opponentParty);
 
       if (!challengerLead || !opponentLead) {
         clearPendingChallenge(incoming.challengerJid);
@@ -127,8 +127,8 @@ Use \`.battle run\` to forfeit`;
     }
 
     const party = await getTrainerParty(sender);
-    const lead = party.find(p => p.hp > 0);
-    if (!lead) {
+    const lead = pickLeadFromParty(challenger, party);
+    if (!lead || lead.hp <= 0) {
       return sock.sendMessage(jid, {
         text: "💔 All your Pokémon have fainted! Use *.heal* first.",
       }, { quoted: msg });

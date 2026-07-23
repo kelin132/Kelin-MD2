@@ -4,10 +4,9 @@
 // - .startjourney <1-7>     → pick by number
 // - .startjourney <name>    → pick by name (e.g. ".startjourney charmander")
 
-import { getTrainer, createTrainer } from "../../lib/pokemon/players.mjs";
+import { getTrainer, createTrainer, addToParty, setLeadPokemonId } from "../../lib/pokemon/players.mjs";
 import { fetchPokemon } from "../../lib/pokemon/api.mjs";
-import { buildPokemon, savePokemon } from "../../lib/pokemon/pokemonDb.mjs";
-import { addToParty } from "../../lib/pokemon/players.mjs";
+import { buildPokemon, savePokemon, updatePokemon } from "../../lib/pokemon/pokemonDb.mjs";
 import { generateStarterCanvas } from "../../lib/pokemon/canvas.mjs";
 
 // ── The 7 starters shown to every new trainer ─────────────────────────────────
@@ -131,8 +130,10 @@ Example: \`.startjourney 2\` or \`.startjourney charmander\`
 
     const trainer = await createTrainer(sender, username);
     const starter = buildPokemon(apiData, sender, 5, true);
+    starter.isStarter = true; // starter is protected — cannot give away or sell
     await savePokemon(starter);
     await addToParty(sender, starter._id.toString());
+    await setLeadPokemonId(sender, starter._id.toString()); // starter begins as lead
 
     pendingSelections.delete(sender);
 

@@ -4,6 +4,7 @@
 import { getWild, clearWild } from "../../lib/pokemon/wildState.mjs";
 import { getTrainer } from "../../lib/pokemon/players.mjs";
 import { getTrainerParty } from "../../lib/pokemon/pokemonDb.mjs";
+import { pickLeadFromParty } from "../../lib/pokemon/players.mjs";
 import { startWildBattle, hasBattle } from "../../lib/pokemon/battleState.mjs";
 import { generateBattleScene } from "../../lib/pokemon/canvas.mjs";
 
@@ -44,8 +45,8 @@ export default {
       }, { quoted: msg });
     }
 
-    // Pick lead Pokémon (first healthy one)
-    const lead = party.find(p => p.hp > 0) || party[0];
+    // Pick the trainer's designated lead (or first healthy if no lead set)
+    const lead = pickLeadFromParty(trainer, party);
     if (lead.hp <= 0) {
       return sock.sendMessage(jid, {
         text: "💔 All your Pokémon have fainted! Use *.heal* to restore them.",

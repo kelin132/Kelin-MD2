@@ -57,6 +57,14 @@ export default {
       }, { quoted: msg });
     }
 
+    // Block moving the starter to PC
+    if (target.isStarter) {
+      const pokeName = target.displayName || target.name;
+      return sock.sendMessage(jid, {
+        text: `❌ *${pokeName}* is your Starter Pokémon — it must stay in your party at all times!\n\n🏅 Your starter is a lifelong partner and cannot be moved to PC.`,
+      }, { quoted: msg });
+    }
+
     await removeFromParty(sender, target._id.toString());
     await addToPC(sender, target._id.toString());
     await updatePokemon(target._id, { inParty: false });

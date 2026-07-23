@@ -2,7 +2,7 @@
 // Swap two Pokémon positions in your party with .swap <slot1> <slot2>
 // .swap 1 5 — makes slot 5 your lead Pokémon (or any two positions)
 
-import { getTrainer } from "../../lib/pokemon/players.mjs";
+import { getTrainer, setLeadPokemonId } from "../../lib/pokemon/players.mjs";
 import { getTrainerParty } from "../../lib/pokemon/pokemonDb.mjs";
 import { getBattle } from "../../lib/pokemon/battleState.mjs";
 import { getDb } from "../../lib/mongo.mjs";
@@ -66,8 +66,11 @@ export default {
       const slots = orderedParty.map((p, i) => {
         const icon = typeEmojis[p.primaryType] || "⭐";
         const hpBar = p.hp <= 0 ? "💀" : p.hp / p.maxHp > 0.5 ? "🟩" : p.hp / p.maxHp > 0.2 ? "🟨" : "🟥";
-        const lead = i === 0 ? " *(lead)*" : "";
-        return `${i + 1}. ${icon}${hpBar} *${p.displayName || p.name}* Lv.${p.level} ❤️ ${p.hp}/${p.maxHp}${lead}`;
+        const curLeadId = trainer.leadPokemonId?.toString();
+        const isLead    = (p._id || p.id)?.toString() === curLeadId;
+        const isStarter = p.isStarter;
+        const tags = [isLead ? "⚡LEAD" : "", isStarter ? "🏅STARTER" : ""].filter(Boolean).join(" ");
+        return `${i + 1}. ${icon}${hpBar} *${p.displayName || p.name}* Lv.${p.level} ❤️ ${p.hp}/${p.maxHp}${tags ? "  " + tags : ""}`;
       }).join("\n");
 
       return sock.sendMessage(jid, {
@@ -122,11 +125,15 @@ Example: *.swap 1 3* — swap slots 1 and 3
     const name1 = p1.displayName || p1.name;
     const name2 = p2.displayName || p2.name;
 
-    const leadNote = slot1 === 1
-      ? `\n⭐ *${name2}* is now your lead Pokémon!`
-      : slot2 === 1
-      ? `\n⭐ *${name1}* is now your lead Pokémon!`
-      : "";
+    // When something swaps into slot 1, automatically update the lead
+    let leadNote = "";
+    if (slot1 === 1) {
+      await setLeadPokemonId(sender, (p2._id || p2.id)?.toString());
+      leadNote = `\n⚡ *${name2}* is now your lead Pokémon (goes first in battle)!`;
+    } else if (slot2 === 1) {
+      await setLeadPokemonId(sender, (p1._id || p1.id)?.toString());
+      leadNote = `\n⚡ *${name1}* is now your lead Pokémon (goes first in battle)!`;
+    }
 
     return sock.sendMessage(jid, {
       text:

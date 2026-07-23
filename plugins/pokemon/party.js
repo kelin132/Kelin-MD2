@@ -78,8 +78,12 @@ Or catch wild Pokémon with *.spawnpoke* then *.catch*!`,
       const shiny = p.shiny    ? "\n✨ *This Pokémon is SHINY!*" : "";
       const caughtStr = p.caughtAt ? new Date(p.caughtAt).toLocaleDateString() : "Unknown";
 
+      const isLead2   = (p._id || p.id)?.toString() === (trainer.leadPokemonId || "").toString();
+      const leadBadge = isLead2   ? "\n⚡ *LEAD POKÉMON* — goes first in every battle" : "";
+      const strtBadge = p.isStarter ? "\n🏅 *STARTER POKÉMON* — cannot be given away" : "";
+
       const text =
-`${typeEmoji} *${p.displayName || p.name}${p.shiny ? " ✨" : ""}* — Slot ${slotArg}${nick}${shiny}
+`${typeEmoji} *${p.displayName || p.name}${p.shiny ? " ✨" : ""}* — Slot ${slotArg}${nick}${shiny}${leadBadge}${strtBadge}
 
 ━━━━━━━━━━━━━━━━━━━━
 📊 *STATS*
@@ -97,8 +101,8 @@ ${moveLines || "  No moves learned yet"}
 
 ━━━━━━━━━━━━━━━━━━━━
 💡 *Tips:*
-• *.swap ${slotArg} 1* — Make this your lead
-• *.t2pc ${slotArg}* — Move to PC storage`;
+• *.setlead ${slotArg}* — Make this your battle lead${p.isStarter ? "\n\n🏅 *This is your Starter Pokémon* — it can never be given away or moved to PC." : ""}
+• *.t2pc ${slotArg}* — Move to PC storage${p.isStarter ? " _(blocked for starter)_" : ""}`;
 
       return sock.sendMessage(jid, {
         image: { url: p.imageUrl },
@@ -114,12 +118,16 @@ ${moveLines || "  No moves learned yet"}
       console.error("[party canvas]", err?.message);
     }
 
+    const leadId  = trainer.leadPokemonId?.toString();
     const slots = party.map((p, i) => {
-      const icon  = TYPE_EMOJIS[p.primaryType] || "⭐";
-      const hpBar = p.hp <= 0 ? "💀" : p.hp / p.maxHp > 0.5 ? "🟩" : p.hp / p.maxHp > 0.2 ? "🟨" : "🟥";
-      const nick  = p.nickname ? ` "${p.nickname}"` : "";
-      const shiny = p.shiny    ? " ✨" : "";
-      return `${i + 1}. ${icon}${hpBar} *${p.displayName || p.name}${nick}${shiny}* Lv.${p.level} ❤️${p.hp}/${p.maxHp}`;
+      const icon    = TYPE_EMOJIS[p.primaryType] || "⭐";
+      const hpBar   = p.hp <= 0 ? "💀" : p.hp / p.maxHp > 0.5 ? "🟩" : p.hp / p.maxHp > 0.2 ? "🟨" : "🟥";
+      const nick    = p.nickname ? ` "${p.nickname}"` : "";
+      const shiny   = p.shiny    ? " ✨" : "";
+      const isLead  = (p._id || p.id)?.toString() === leadId;
+      const isStart = p.isStarter;
+      const tags    = [isLead ? "⚡LEAD" : "", isStart ? "🏅STARTER" : ""].filter(Boolean).join(" ");
+      return `${i + 1}. ${icon}${hpBar} *${p.displayName || p.name}${nick}${shiny}* Lv.${p.level} ❤️${p.hp}/${p.maxHp}${tags ? "  " + tags : ""}`;
     });
 
     const caption =
