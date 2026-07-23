@@ -1,4 +1,7 @@
-import axios from "axios";
+// plugins/anime/animeinfo.js
+// Search anime info via David Cyril AnimeIndo Search API
+
+import { searchAnimeIndo } from "../../lib/davidcyrilAPI.mjs";
 
 export default {
   name: "anime",
@@ -12,68 +15,43 @@ export default {
     const jid = msg.key.remoteJid;
 
     if (!text) {
-      return sock.sendMessage(
-        jid,
-        {
-          text: "❌ Please provide an anime name.\n\nExample:\n.anime Naruto",
-        },
-        { quoted: msg }
-      );
+      return sock.sendMessage(jid, {
+        text: "❌ Please provide an anime name.\n\nExample:\n.anime Naruto",
+      }, { quoted: msg });
     }
 
     try {
-      const { data } = await axios.get(
-        `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(text)}&limit=1`
-      );
+      const results = await searchAnimeIndo(text);
 
-      if (!data.data.length) {
-        return sock.sendMessage(
-          jid,
-          { text: "❌ No anime found." },
-          { quoted: msg }
-        );
+      if (!results.length) {
+        return sock.sendMessage(jid, {
+          text: `❌ No anime found for *"${text}"*.`,
+        }, { quoted: msg });
       }
 
-      const anime = data.data[0];
+      const anime = results[0];
+      const synopsis = (anime.description || "No synopsis available.").slice(0, 600);
+      const synopsisText = (anime.description || "").length > 600 ? synopsis + "..." : synopsis;
 
-      const genres = anime.genres.length
-        ? anime.genres.map(g => g.name).join(", ")
-        : "Unknown";
+      const caption =
+`🎌 *${anime.title}*
 
-      const caption = `🎌 *${anime.title}*
-
-📺 Episodes: ${anime.episodes || "Unknown"}
-🎭 Type: ${anime.type || "Unknown"}
-⭐ Score: ${anime.score || "N/A"}
-❤️ Rating: ${anime.rating || "Unknown"}
-🎬 Status: ${anime.status || "Unknown"}
-📅 Aired: ${anime.aired.string || "Unknown"}
-🎯 Genres: ${genres}
-👥 Members: ${anime.members.toLocaleString()}
+🎬 Type: ${anime.status || "Unknown"}
 
 📝 *Synopsis:*
-${anime.synopsis || "No synopsis available."}
+${synopsisText}
 
 🔗 ${anime.url}`;
 
-      await sock.sendMessage(
-        jid,
-        {
-          image: { url: anime.images.jpg.large_image_url },
-          caption,
-        },
-        { quoted: msg }
-      );
-    } catch (err) {
-      console.error(err);
+      await sock.sendMessage(jid, {
+        image: { url: anime.thumbnail },
+        caption,
+      }, { quoted: msg });
 
-      await sock.sendMessage(
-        jid,
-        {
-          text: "❌ Failed to fetch anime information.",
-        },
-        { quoted: msg }
-      );
+    } catch (err) {
+      await sock.sendMessage(jid, {
+        text: "❌ Failed to fetch anime information. Try again later.",
+      }, { quoted: msg });
     }
   },
 };

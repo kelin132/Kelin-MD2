@@ -1,35 +1,65 @@
-import axios from "axios";
+// plugins/anime/animerec.js
+// Anime recommendations powered by David Cyril Trending API
+// Optionally filter by genre or keyword
+
+import { getTrendingAnime } from "../../lib/davidcyrilAPI.mjs";
 
 export default {
   name: "animerec",
   aliases: ["recommend", "anirec"],
-  description: "Get anime recommendations (optionally based on an anime you like)",
+  description: "Get anime recommendations (optionally filter by genre/keyword)",
   category: "anime",
-  usage: ".animerec [anime name]",
+  usage: ".animerec [genre or keyword]",
   cooldown: 8,
 
   async run({ sock, msg, text }) {
     const jid = msg.key.remoteJid;
-    try {
-      let url = "https://api.jikan.moe/v4/recommendations/anime";
-      if (text) {
-        const { data: search } = await axios.get(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(text)}&limit=1`);
-        if (search.data?.length) url = `https://api.jikan.moe/v4/anime/${search.data[0].mal_id}/recommendations`;
-      }
-      const { data } = await axios.get(url);
-      if (!data.data?.length) return sock.sendMessage(jid, { text: "❌ No recommendations found." }, { quoted: msg });
 
-      const limit = 5;
-      let txt = text ? `🎬 *BECAUSE YOU LIKE ${text.toUpperCase()}* 🎬\n\n` : "🎬 *ANIME RECOMMENDATIONS* 🎬\n\n";
-      data.data.slice(0, limit).forEach((item, i) => {
-        const rec = text ? item.entry : item.entry[0];
-        txt += `${i + 1}. *${rec.title}*\n`;
-        if (text && item.votes) txt += `   👍 Votes: ${item.votes}\n`;
+    try {
+      const list = await getTrendingAnime();
+
+      if (!list.length) {
+        return sock.sendMessage(jid, { text: "❌ No recommendations found. Try again later." }, { quoted: msg });
+      }
+
+      const query = text?.toLowerCase().trim();
+      const filtered = query
+        ? list.filter(a =>
+            a.title?.toLowerCase().includes(query) ||
+            a.title_english?.toLowerCase().includes(query) ||
+            a.genres?.some(g => g.toLowerCase().includes(query))
+          )
+        : list;
+
+      const picks = (filtered.length ? filtered : list).slice(0, 5);
+
+      let txt = query
+        ? `🎬 *ANIME RECS — "${text}"* 🎬\n\n`
+        : "🎬 *ANIME RECOMMENDATIONS* 🎬\n\n";
+
+      picks.forEach((a, i) => {
+        const name   = a.title_english || a.title;
+        const eps    = a.episodes ? `${a.episodes} eps` : "Ongoing";
+        const score  = a.score ? `⭐ ${a.score}` : "";
+        const genres = a.genres?.slice(0, 3).join(", ") || "";
+        txt += `${i + 1}. *${name}*\n   🎬 ${eps}${score ? "  " + score : ""}${genres ? "\n   🎭 " + genres : ""}\n\n`;
       });
-      await sock.sendMessage(jid, { text: txt.trim() }, { quoted: msg });
+
+      if (query && !filtered.length) {
+        txt += `_No exact match for "${text}" — showing top picks instead_\n`;
+      }
+
+      const cover = picks[0]?.image;
+      if (cover) {
+        await sock.sendMessage(jid, { image: { url: cover }, caption: txt.trim() }, { quoted: msg });
+      } else {
+        await sock.sendMessage(jid, { text: txt.trim() }, { quoted: msg });
+      }
+
     } catch (err) {
-      console.error(err);
-      await sock.sendMessage(jid, { text: "❌ Failed to fetch recommendations. Try again later." }, { quoted: msg });
+      await sock.sendMessage(jid, {
+        text: "❌ Failed to fetch recommendations. Try again later.",
+      }, { quoted: msg });
     }
   },
 };
