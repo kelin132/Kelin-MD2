@@ -62,7 +62,7 @@ export default {
   category: "cards",
   description: "Summon and instantly claim a card — costs coins based on tier",
   usage: ".summon [tier]  — e.g. .summon  |  .summon rare  |  .summon 5",
-  cooldown: 15,
+  cooldown: 20,
 
   async run({ sock, msg, args, sender }) {
     const jid   = msg.key.remoteJid;

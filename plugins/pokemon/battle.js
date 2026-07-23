@@ -7,7 +7,7 @@ import { getTrainer, removeItem } from "../../lib/pokemon/players.mjs";
 import { addMoney } from "../economy/database.js";
 import { updatePokemon, addPokemonXP, buildPokemon, savePokemon, getTrainerParty, getPokemonXpNeeded } from "../../lib/pokemon/pokemonDb.mjs";
 import { addToParty, addToPC, updateTrainer } from "../../lib/pokemon/players.mjs";
-import { calcDamage, tryCatch, xpReward, coinReward, getMovesForType, getLearnableMoveAtLevel, getLevelEvolution, TYPE_EMOJIS, TYPE_MOVES } from "../../lib/pokemon/gameLogic.mjs";
+import { calcDamage, tryCatch, xpReward, pvpXpReward, coinReward, getMovesForType, getLearnableMoveAtLevel, getLevelEvolution, TYPE_EMOJIS, TYPE_MOVES } from "../../lib/pokemon/gameLogic.mjs";
 import { generateBattleScene, generateCatchScene, generateBattleResult } from "../../lib/pokemon/canvas.mjs";
 import { fetchPokemon } from "../../lib/pokemon/api.mjs";
 import { setPendingLearn } from "../../lib/pokemon/moveLearnState.mjs";
@@ -212,7 +212,7 @@ async function handlePvPDefeat(sock, jid, msg, battle, loserJid) {
     : { jid: battle.opponentJid,   name: battle.opponentName,   pokemon: battle.opponentPokemon };
 
   const coins     = coinReward((winner.pokemon.level + loser.pokemon.level) / 2) * 2;
-  const xp        = xpReward(loser.pokemon);
+  const xp        = pvpXpReward(winner.pokemon, loser.pokemon);
   const winnerId  = winner.pokemon._id || winner.pokemon.id;
 
   const xpRes = await addPokemonXP(winnerId, xp);
@@ -227,7 +227,7 @@ async function handlePvPDefeat(sock, jid, msg, battle, loserJid) {
 `🏆 *${winner.name.toUpperCase()} WINS THE BATTLE!*
 
 🐉 *${winner.name}'s ${winPokeName}* defeated *${loser.name}'s ${loser.pokemon.displayName || loser.pokemon.name}*!
-✨ +${xp} XP  💰 +${coins} coins`;
+✨ +${xp} XP for defeating a Lv.${loser.pokemon.level} Pokémon  💰 +${coins} coins`;
 
   if (xpRes?.leveledUp) {
     resultText += `\n🎉 *${winPokeName} leveled up! Now Lv.${xpRes.newLevel}!*`;
