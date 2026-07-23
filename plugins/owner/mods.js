@@ -95,20 +95,16 @@ export default {
 
       const mentions = sorted.map(s => s.jid);
 
-      const rows = sorted.map(s => {
-        const userId = s.jid.split('@')[0];
+      const rows = sorted.map((s, index) => {
+        const number = s.jid.split('@')[0].split(':')[0].replace(/\D/g, '');
         const label  = LEVEL_LABEL[s.level] || 'MOD';
-        return `   │ ✦ (${label}) @${userId}`;
-      }).join('\n');
+        return `${index + 1}. 🛡️ *${s.name}*\n   Number: +${number}\n   Role: *${label}*`;
+      }).join('\n\n');
 
       const caption =
-        `┌─❖\n` +
-        `│ 「 KELIN-MD 」\n` +
-        `└┬❖ 「 *STAFF* 」\n` +
-        `   │────────────┈ ⳹\n` +
-        `   │ *「 MODS & STAFF 」*\n` +
-        `${rows}\n` +
-        `   └────────────┈ ⳹\n` +
+        `🛡️ *MODS & STAFF* (${sorted.length})\n` +
+        `${'─'.repeat(30)}\n\n` +
+        `${rows}\n\n` +
         `> *INFO:* Need help? These mods and staff will help you. Use *.rules* if you are unsure of the rules.`;
 
       return sock.sendMessage(jid, {
