@@ -6,8 +6,7 @@ import {
   addToParty, addToPC,
   removeFromParty, removeFromPC,
 } from "../../lib/pokemon/players.mjs";
-import { getTrainerParty, getPokemonById } from "../../lib/pokemon/pokemonDb.mjs";
-import { updatePokemon } from "../../lib/pokemon/pokemonDb.mjs";
+import { getTrainerParty, getPokemon, updatePokemon } from "../../lib/pokemon/pokemonDb.mjs";
 
 export default {
   name: "giftpoke",

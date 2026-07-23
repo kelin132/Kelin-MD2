@@ -1,7 +1,9 @@
 // plugins/utilities/sticker.js
 // .sticker — Convert a replied image or video to a WhatsApp sticker
 import { downloadContentFromMessage } from "@whiskeysockets/baileys";
-import { Sticker, StickerTypes } from "wa-sticker-formatter";
+import { createRequire } from "module";
+const _require = createRequire(import.meta.url);
+const { Sticker, StickerTypes } = _require("wa-sticker-formatter");
 
 export default {
   name: "sticker",
