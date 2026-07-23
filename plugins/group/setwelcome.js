@@ -2,6 +2,7 @@
  * KELIN MD — .setwelcome
  * Sets a custom welcome message for the group.
  * Supports multi-line messages (use actual line breaks or \n escape).
+ * Supports welcome card images via the David Cyril Canvas API.
  * Actual welcome sending is handled by lib/groupEventHandler.mjs
  */
 import { groupSettings } from "../../lib/groupSettings.js";
@@ -22,7 +23,7 @@ export default {
       return sock.sendMessage(jid, { text: "❌ This command only works in groups." }, { quoted: msg });
     }
 
-    // Extract full message body preserving newlines (supports paragraph spacing)
+    // Extract full message body preserving newlines
     const rawBody =
       msg.message?.conversation ||
       msg.message?.extendedTextMessage?.text ||
@@ -33,14 +34,55 @@ export default {
       ? rawBody.slice(prefixMatch[0].length).trimEnd()
       : args.join(" ").trim();
 
+    // ── .setwelcome card on|off ───────────────────────────────────────────────
+    if (/^card\s+(on|off)$/i.test(text)) {
+      const enabled = /on$/i.test(text);
+      groupSettings.set(jid, { welcomeCard: enabled });
+      return sock.sendMessage(jid, {
+        text: enabled
+          ? `🖼️ *Welcome card mode ENABLED!*\n\nNew members will be greeted with a card image that includes their profile picture.\n\nTip: set a background with *.setwelcome bg <image_url>*`
+          : `💬 *Welcome card mode DISABLED.*\n\nNew members will be greeted with a text message instead.`,
+      }, { quoted: msg });
+    }
+
+    // ── .setwelcome bg <url> ─────────────────────────────────────────────────
+    if (/^bg\s+\S+/i.test(text)) {
+      const bgUrl = text.replace(/^bg\s+/i, "").trim();
+      // Basic URL validation
+      if (!/^https?:\/\//i.test(bgUrl)) {
+        return sock.sendMessage(jid, {
+          text: "❌ Invalid URL. Please provide a valid image URL starting with http:// or https://",
+        }, { quoted: msg });
+      }
+      groupSettings.set(jid, { welcomeCardBg: bgUrl });
+      return sock.sendMessage(jid, {
+        text: `✅ *Welcome card background saved!*\n\n🖼️ Background: ${bgUrl}\n\nEnable card mode with *.setwelcome card on*`,
+      }, { quoted: msg });
+    }
+
+    // ── .setwelcome bg reset ─────────────────────────────────────────────────
+    if (/^bg\s+reset$/i.test(text)) {
+      const s = groupSettings.get(jid) || {};
+      delete s.welcomeCardBg;
+      groupSettings.set(jid, s);
+      return sock.sendMessage(jid, {
+        text: "🔄 Welcome card background removed. A default style will be used.",
+      }, { quoted: msg });
+    }
+
+    // ── No argument → show help ───────────────────────────────────────────────
     if (!text) {
-      const current = groupSettings.get(jid)?.welcome;
+      const settings = groupSettings.get(jid);
+      const current  = settings?.welcome      || "_(not set — default will be used)_";
+      const cardMode = settings?.welcomeCard  ? "✅ ON"  : "❌ OFF";
+      const cardBg   = settings?.welcomeCardBg || "_(not set — default style)_";
       return sock.sendMessage(jid, {
         text:
 `📝 *SET WELCOME MESSAGE*
 
-Usage:
-  *.setwelcome <your message>*
+*Text message settings:*
+  *.setwelcome <your message>* — set custom text
+  *.setwelcome reset*          — reset to default text
 
 Variables:
   @user  — new member's number
@@ -51,19 +93,22 @@ Paragraph spacing:
   • Send a multi-line message (press Enter between lines)
   • Or type *\\n* where you want a line break
 
-Examples:
-  .setwelcome Welcome @user to @group! 🎉
-  .setwelcome Hey @user!\\n\\nWelcome to @group 👋\\nWe have @count members!
+*Welcome card settings (image with member PFP):*
+  *.setwelcome card on*        — enable card image mode
+  *.setwelcome card off*       — disable card image mode
+  *.setwelcome bg <url>*       — set background image for card
+  *.setwelcome bg reset*       — remove background image
 
-Current message:
-${current ? current : "_(not set — default will be used)_"}
+*Current settings:*
+  Card mode : ${cardMode}
+  Card bg   : ${cardBg}
+  Message   : ${current}
 
-To reset to default: *.setwelcome reset*
-To toggle on/off:    *.welcome on* / *.welcome off*`,
+To toggle on/off: *.welcome on* / *.welcome off*`,
       }, { quoted: msg });
     }
 
-    // Reset to default
+    // ── Reset to default ─────────────────────────────────────────────────────
     if (text.toLowerCase() === "reset") {
       const s = groupSettings.get(jid) || {};
       delete s.welcome;
@@ -73,6 +118,7 @@ To toggle on/off:    *.welcome on* / *.welcome off*`,
       }, { quoted: msg });
     }
 
+    // ── Save custom text message ─────────────────────────────────────────────
     groupSettings.set(jid, { welcome: text });
 
     // Build a preview using placeholder values (also process \n escapes)
@@ -90,7 +136,9 @@ To toggle on/off:    *.welcome on* / *.welcome off*`,
 ${text}
 
 👁 Preview:
-${preview}`,
+${preview}
+
+💡 Want an image card instead? Use *.setwelcome card on*`,
     }, { quoted: msg });
   },
 };
