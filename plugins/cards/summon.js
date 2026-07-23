@@ -38,6 +38,8 @@ const RANDOM_TIER_WEIGHTS = [
   { tier: "Legendary", weight:  7 },
 ];
 const TOTAL_WEIGHT = RANDOM_TIER_WEIGHTS.reduce((s, t) => s + t.weight, 0);
+const SUMMON_COOLDOWN_MS = 20_000;
+const summonCooldowns = new Map();
 
 function rollRandomTier() {
   let r = Math.random() * TOTAL_WEIGHT;
@@ -96,6 +98,17 @@ Summon & instantly claim a card — costs coins per tier!
         );
       }
 
+      const now = Date.now();
+      const lastSummon = summonCooldowns.get(sender);
+      if (lastSummon) {
+        const elapsed = now - lastSummon;
+        if (elapsed < SUMMON_COOLDOWN_MS) {
+          const remaining = Math.ceil((SUMMON_COOLDOWN_MS - elapsed) / 1000);
+          return reply(`⏳ *Summon cooldown active!*\n\nPlease wait *${remaining}s* before summoning another card.`);
+        }
+        summonCooldowns.delete(sender);
+      }
+
       // Resolve tier
       let tierName;
       let isRandom = false;
@@ -108,6 +121,9 @@ Summon & instantly claim a card — costs coins per tier!
           return reply(`❌ Unknown tier "*${args[0]}*".\n\nValid tiers: 1-5 or Common/Uncommon/Rare/Epic/Legendary\n\nType *.summon help* for details.`);
         }
       }
+
+      // Start the cooldown only for a valid summon attempt.
+      summonCooldowns.set(sender, now);
 
       const emoji = TIER_EMOJI[tierName] || "⭐";
       const cost  = SUMMON_COST[tierName] || SUMMON_COST.Common;
