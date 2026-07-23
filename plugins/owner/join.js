@@ -13,13 +13,14 @@ const _settings = _require("../../settings.cjs");
 
 const BOT_NAME   = _settings.botName   || "KELIN MD";
 const OWNER_NAME = _settings.botOwner  || "Kelin";
+const PREFIX     = process.env.PREFIX || ".";
 
 export default {
   name:        "join",
   aliases:     ["leave"],
   category:    "owner",
-  description: "Join a group via invite link (or leave current group)",
-  usage:       ".join <invite_link>  |  .leave",
+  description: `Join a group via invite link (or leave current group) — prefix: ${PREFIX}`,
+  usage:       `${PREFIX}join <invite_link>  |  ${PREFIX}leave`,
   cooldown:    5,
   isOwner:     true,
 
@@ -49,7 +50,7 @@ export default {
 `❌ Please provide a WhatsApp group invite link.
 
 *Usage:*
-.join https://chat.whatsapp.com/XXXXXXXXXXXXXXXXXXXXXX`
+${PREFIX}join https://chat.whatsapp.com/XXXXXXXXXXXXXXXXXXXXXX`
       );
     }
 
@@ -128,11 +129,11 @@ ${BOT_NAME} is now in the group.`
 👋 Hey everyone! I'm *${BOT_NAME}*.
 
 📌 *IMPORTANT INFORMATION*
-• Use *.menu* to see all available commands
+• Use *${PREFIX}menu* to see all available commands
 • Do NOT spam commands
 • Bot DMs are disabled
 
-> Use *.mods* if you need support
+> Use *${PREFIX}mods* if you need support
 
 ╰━━━━━━━━━━━━━━━━━━━━╯`;
 
