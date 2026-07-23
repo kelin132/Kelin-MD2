@@ -12,6 +12,7 @@ export default {
   category: "pokemon",
   usage: ".spawnpokemon <name or number>",
   isMod: true,
+  isPremium : true,
   hidden: true,
 
   async run({ sock, msg, sender, args }) {
