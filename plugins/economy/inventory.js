@@ -5,7 +5,7 @@ export default {
   description: "Check your inventory",
   category: "economy",
   usage: ".inventory",
-  aliases: ["inv", "bag", "items"],
+  aliases: ["inv", "items"],
 
   async run({ sock, msg, sender }) {
     if (!await requireRegistration(sock, msg, sender)) return;
