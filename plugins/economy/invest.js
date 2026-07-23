@@ -9,7 +9,13 @@
  * Medium : 30 min → 20–50% return (or -20% loss)
  * Long   : 2 hrs  → 50–120% return (or -30% loss)
  */
-import { getUser, saveUser, requireRegistration, addHistory } from "./database.js";
+import {
+  getUser,
+  requireRegistration,
+  addHistory,
+  startInvestment,
+  collectInvestment,
+} from "./database.js";
 
 const PLANS = {
   short: {
@@ -119,11 +125,10 @@ ${matured ? "✅ Use *.invest collect* to collect your returns!" : "⏳ Come bac
         net    = profit;
       }
 
-      user.money = Math.max(0, (user.money || 0) + payout);
-      delete user.activeInvestment;
-      user.xp    = (user.xp || 0) + 20;
-
-      await saveUser(sender, user);
+      const updatedUser = await collectInvestment(sender, inv, payout);
+      if (!updatedUser) {
+        return reply("⚠️ This investment was already collected or changed. Check `.invest status` for your current investment.");
+      }
       await addHistory(sender, "invest", net, `Investment collected: ${inv.plan} plan`);
 
       return reply(
@@ -136,7 +141,7 @@ ${lost
   : `📈 *Profit!* +$${net.toLocaleString()} (${(net / inv.amount * 100).toFixed(1)}% return)`}
 
 💵 Received : $${payout.toLocaleString()}
-🏦 Balance  : $${user.money.toLocaleString()}`
+🏦 Balance  : $${updatedUser.money.toLocaleString()}`
       );
     }
 
@@ -174,10 +179,15 @@ _Only one active investment at a time._`
     if (amount < plan.minAmt)     return reply(`❌ Minimum investment for ${plan.label} is *$${plan.minAmt.toLocaleString()}*.`);
     if (amount > user.money)      return reply(`❌ You only have *$${user.money.toLocaleString()}*.`);
 
-    user.money -= amount;
-    user.activeInvestment = { plan: planKey, amount, startedAt: now };
+    const updatedUser = await startInvestment(sender, {
+      plan: planKey,
+      amount,
+      startedAt: now,
+    }, amount);
+    if (!updatedUser) {
+      return reply("⚠️ Your balance or active investment changed while starting this investment. Please try again.");
+    }
 
-    await saveUser(sender, user);
     await addHistory(sender, "invest", -amount, `Started ${planKey} investment: $${amount.toLocaleString()}`);
 
     return reply(
@@ -189,7 +199,7 @@ _Only one active investment at a time._`
 📈 Return  : ${(plan.minRet * 100).toFixed(0)}–${(plan.maxRet * 100).toFixed(0)}%
 
 Come back in *${fmtMs(plan.duration)}* and use *.invest collect*!
-🏦 Remaining balance: $${user.money.toLocaleString()}`
+🏦 Remaining balance: $${updatedUser.money.toLocaleString()}`
     );
   },
 };

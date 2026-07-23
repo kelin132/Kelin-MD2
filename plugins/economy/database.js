@@ -59,6 +59,52 @@ export async function saveUser(id, data) {
   );
 }
 
+/**
+ * Atomically start an investment.
+ * This prevents two simultaneous commands from creating an investment with
+ * stale balances or replacing each other's active investment.
+ */
+export async function startInvestment(id, investment, amount) {
+  const db = await getDb();
+  return db.collection("users").findOneAndUpdate(
+    {
+      _id: id,
+      money: { $gte: amount },
+      $or: [
+        { activeInvestment: { $exists: false } },
+        { activeInvestment: null },
+      ],
+    },
+    {
+      $inc: { money: -amount },
+      $set: { activeInvestment: investment },
+    },
+    { returnDocument: "after" }
+  );
+}
+
+/**
+ * Atomically claim a matured investment.
+ * The active investment fields are part of the filter, so only one
+ * concurrent collect can match and receive the payout.
+ */
+export async function collectInvestment(id, investment, payout) {
+  const db = await getDb();
+  return db.collection("users").findOneAndUpdate(
+    {
+      _id: id,
+      "activeInvestment.plan": investment.plan,
+      "activeInvestment.amount": investment.amount,
+      "activeInvestment.startedAt": investment.startedAt,
+    },
+    {
+      $inc: { money: payout, xp: 20 },
+      $unset: { activeInvestment: "" },
+    },
+    { returnDocument: "after" }
+  );
+}
+
 export async function getAllUsers() {
   const db = await getDb();
   return db.collection("users").find({ registered: true }).toArray();
