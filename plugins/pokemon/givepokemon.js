@@ -50,6 +50,7 @@ export default {
     const partyFull = (target.party || []).length >= 6;
     if (!partyFull) {
       await addToParty(targetJid, pokemon._id.toString());
+      await updatePokemon(pokemon._id, { inParty: true });
       pokemon.inParty = true;
     } else {
       await addToPC(targetJid, pokemon._id.toString());

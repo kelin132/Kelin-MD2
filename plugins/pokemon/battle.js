@@ -554,6 +554,7 @@ ${hasBalls ? `🎾 *POKÉBALLS* ${battle.type !== "wild" ? "_(wild battles only)
         const party = await getTrainerParty(sender);
         if (party.length < 6) {
           await addToParty(sender, built._id.toString());
+          await updatePokemon(built._id, { inParty: true });
           built.inParty = true;
         } else {
           await addToPC(sender, built._id.toString());

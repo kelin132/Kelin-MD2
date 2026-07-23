@@ -120,8 +120,10 @@ Type *.party* to see your party slots.
     const recipientPartyFull = (recipientTrainer.party || []).length >= 6;
     if (!recipientPartyFull) {
       await addToParty(targetJid, pokeId);
+      await updatePokemon(pokemonToGift._id, { inParty: true });
     } else {
       await addToPC(targetJid, pokeId);
+      await updatePokemon(pokemonToGift._id, { inParty: false });
     }
 
     const dest        = recipientPartyFull ? "📦 PC" : "🎒 Party";
