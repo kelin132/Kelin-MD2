@@ -113,8 +113,11 @@ Type *.party* to see your party slots.
     await removeFromParty(sender, pokeId);
     await removeFromPC(sender, pokeId);
 
-    // 2. Update the Pokémon's owner in DB
-    await updatePokemon(pokemonToGift._id, { owner: targetJid });
+    // 2. Update the Pokémon's owner in DB.
+    // The Pokémon queries use ownerJid; writing to `owner` leaves the
+    // document attached to the sender and makes it invisible to the
+    // recipient's party/PC views.
+    await updatePokemon(pokemonToGift._id, { ownerJid: targetJid });
 
     // 3. Add to recipient's party or PC
     const recipientPartyFull = (recipientTrainer.party || []).length >= 6;
@@ -124,6 +127,11 @@ Type *.party* to see your party slots.
     } else {
       await addToPC(targetJid, pokeId);
       await updatePokemon(pokemonToGift._id, { inParty: false });
+    }
+
+    // Do not leave the transferred Pokémon selected as the sender's lead.
+    if (senderTrainer.leadPokemonId?.toString() === pokeId) {
+      await updateTrainer(sender, { leadPokemonId: null });
     }
 
     const dest        = recipientPartyFull ? "📦 PC" : "🎒 Party";
