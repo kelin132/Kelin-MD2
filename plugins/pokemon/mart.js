@@ -135,7 +135,7 @@ ${itemData.desc}${itemKey === "keystone" ? "\n\n💎 Use *.equip <pokémon>* to 
     // ── Default: show page index ────────────────────────────────────────────
     const econUser = await getUser(sender);
     const inv      = trainer.inventory || {};
-    const ballCount = ["pokeball","greatball","ultraball","masterball","premierball","healball","duskball","netball","luxuryball","quickball"]
+    const ballCount = ["pokeball","greatball","ultraball","masterball","premierball","healball","duskball","netball","luxuryball","quickball","beastball"]
       .reduce((n, k) => n + (inv[k] || 0), 0);
 
     const pageIndex = Object.entries(PAGE_LABELS)

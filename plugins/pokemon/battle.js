@@ -7,7 +7,7 @@ import { getTrainer, removeItem } from "../../lib/pokemon/players.mjs";
 import { addMoney } from "../economy/database.js";
 import { updatePokemon, addPokemonXP, buildPokemon, savePokemon, getTrainerParty } from "../../lib/pokemon/pokemonDb.mjs";
 import { addToParty, addToPC, updateTrainer } from "../../lib/pokemon/players.mjs";
-import { calcDamage, tryCatch, xpReward, coinReward, getMovesForType, getLearnableMoveAtLevel, TYPE_EMOJIS } from "../../lib/pokemon/gameLogic.mjs";
+import { calcDamage, tryCatch, xpReward, coinReward, getMovesForType, getLearnableMoveAtLevel, getLevelEvolution, TYPE_EMOJIS, TYPE_MOVES } from "../../lib/pokemon/gameLogic.mjs";
 import { generateBattleScene, generateCatchScene, generateBattleResult } from "../../lib/pokemon/canvas.mjs";
 import { fetchPokemon } from "../../lib/pokemon/api.mjs";
 import { setPendingLearn } from "../../lib/pokemon/moveLearnState.mjs";
@@ -129,11 +129,12 @@ Reply *.learnmove cancel* to skip this move.
 }
 
 async function handleWildDefeat(sock, jid, msg, battle, trainer) {
-  const wp   = battle.opponentPokemon;
-  const xp   = xpReward(wp);
+  const wp    = battle.opponentPokemon;
+  const xp    = xpReward(wp);
   const coins = coinReward(wp.level);
+  const pokeId = battle.challengerPokemon._id || battle.challengerPokemon.id;
 
-  const xpRes = await addPokemonXP(battle.challengerPokemon._id || battle.challengerPokemon.id, xp);
+  const xpRes = await addPokemonXP(pokeId, xp);
   await addMoney(battle.challengerJid, coins);
 
   endBattle(jid);
@@ -146,10 +147,23 @@ async function handleWildDefeat(sock, jid, msg, battle, trainer) {
 `🏆 *WILD ${(wp.displayName || wp.name).toUpperCase()} DEFEATED!*
 
 🐉 *${trainerName}'s ${myPokeName}* won the battle!
-✨ +${xp} XP`;
+✨ +${xp} XP  💰 +${coins} coins`;
 
   if (xpRes?.leveledUp) {
-    resultText += `\n🎉 *${myPokeName} leveled up! Now Lv.${xpRes.newLevel}*`;
+    resultText += `\n🎉 *${myPokeName} leveled up! Now Lv.${xpRes.newLevel}!*`;
+
+    // ── Auto-evolve on level up ─────────────────────────────────────────────
+    const evoTarget = getLevelEvolution(battle.challengerPokemon.name, xpRes.newLevel);
+    if (evoTarget) {
+      try {
+        const newApiData  = await fetchPokemon(evoTarget);
+        const evolved     = await evolvePokemon(pokeId, newApiData);
+        if (evolved) {
+          const evolvedName = evolved.displayName || evolved.name;
+          resultText += `\n\n✨ *WHAT?! ${myPokeName.toUpperCase()} IS EVOLVING!*\n🌟 *${myPokeName}* → *${evolvedName}*! 🎉`;
+        }
+      } catch {}
+    }
   }
 
   try {
@@ -175,24 +189,39 @@ async function handlePvPDefeat(sock, jid, msg, battle, loserJid) {
     ? { jid: battle.challengerJid, name: battle.challengerName, pokemon: battle.challengerPokemon }
     : { jid: battle.opponentJid,   name: battle.opponentName,   pokemon: battle.opponentPokemon };
 
-  const coins = coinReward((winner.pokemon.level + loser.pokemon.level) / 2) * 2;
-  const xp    = xpReward(loser.pokemon);
+  const coins     = coinReward((winner.pokemon.level + loser.pokemon.level) / 2) * 2;
+  const xp        = xpReward(loser.pokemon);
+  const winnerId  = winner.pokemon._id || winner.pokemon.id;
 
-  const xpRes = await addPokemonXP(winner.pokemon._id || winner.pokemon.id, xp);
+  const xpRes = await addPokemonXP(winnerId, xp);
   await addMoney(winner.jid, coins);
   await updateTrainer(winner.jid, { $inc: { wins: 1 } });
   await updateTrainer(loser.jid,  { $inc: { losses: 1 } });
 
   endBattle(jid);
 
+  const winPokeName = winner.pokemon.displayName || winner.pokemon.name;
   let resultText =
 `🏆 *${winner.name.toUpperCase()} WINS THE BATTLE!*
 
-🐉 *${winner.name}'s ${winner.pokemon.displayName || winner.pokemon.name}* defeated *${loser.name}'s ${loser.pokemon.displayName || loser.pokemon.name}*!
-✨ +${xp} XP`;
+🐉 *${winner.name}'s ${winPokeName}* defeated *${loser.name}'s ${loser.pokemon.displayName || loser.pokemon.name}*!
+✨ +${xp} XP  💰 +${coins} coins`;
 
   if (xpRes?.leveledUp) {
-    resultText += `\n🎉 *${winner.pokemon.displayName || winner.pokemon.name} leveled up! Now Lv.${xpRes.newLevel}*`;
+    resultText += `\n🎉 *${winPokeName} leveled up! Now Lv.${xpRes.newLevel}!*`;
+
+    // ── Auto-evolve on level up ────────────────────────────────────────────
+    const evoTarget = getLevelEvolution(winner.pokemon.name, xpRes.newLevel);
+    if (evoTarget) {
+      try {
+        const newApiData  = await fetchPokemon(evoTarget);
+        const evolved     = await evolvePokemon(winnerId, newApiData);
+        if (evolved) {
+          const evolvedName = evolved.displayName || evolved.name;
+          resultText += `\n\n✨ *WHAT?! ${winPokeName.toUpperCase()} IS EVOLVING!*\n🌟 *${winPokeName}* → *${evolvedName}*! 🎉`;
+        }
+      } catch {}
+    }
   }
 
   try {
@@ -207,6 +236,75 @@ async function handlePvPDefeat(sock, jid, msg, battle, loserJid) {
   }
 
   await checkMoveLearn(sock, jid, msg, winner.jid, xpRes);
+}
+
+
+/**
+ * Handle a player's Pokémon fainting.
+ * If they have other alive Pokémon, keep the battle alive and prompt a switch.
+ * If they have none left, end the battle.
+ */
+async function handlePlayerFaint(sock, jid, msg, battle, trainerJid, faintedPokemon, enemyPokemon, isWild) {
+  const tr     = await getTrainer(trainerJid);
+  const trName = tr?.username || msg.pushName || "Trainer";
+  const faintedName = faintedPokemon.displayName || faintedPokemon.name;
+
+  // Persist hp = 0 to DB
+  if (faintedPokemon._id) {
+    await updatePokemon(faintedPokemon._id, { hp: 0 }).catch(() => {});
+  }
+
+  // Check for other alive Pokémon
+  const party      = await getTrainerParty(trainerJid);
+  const curId      = (faintedPokemon._id || faintedPokemon.id)?.toString();
+  const otherAlive = (party || []).filter(p => {
+    const pid = (p._id || p.id)?.toString();
+    return (p.hp || 0) > 0 && pid !== curId;
+  });
+
+  const faintText = `💀 *${trName}'s ${faintedName} has fainted!*`;
+
+  if (otherAlive.length > 0) {
+    // Keep the battle going — challenger must switch
+    const isChallenger = battle.challengerJid === trainerJid;
+    updateBattle(jid, isChallenger
+      ? { challengerPokemon: { ...faintedPokemon, hp: 0 }, turn: "challenger" }
+      : { opponentPokemon:   { ...faintedPokemon, hp: 0 }, turn: "opponent"   }
+    );
+
+    const partyList = otherAlive.map((p, i) => {
+      const emoji = TYPE_EMOJIS[p.primaryType] || "⭐";
+      return `${i + 1}. ${emoji} *${p.displayName || p.name}* Lv.${p.level} ❤️ ${p.hp}/${p.maxHp}`;
+    }).join("\n");
+
+    await sock.sendMessage(jid, {
+      text:
+`${faintText}
+
+🔄 *Send out another Pokémon to continue!*
+
+*Available Pokémon:*
+${partyList}
+
+➤ \`.battle switch <slot number>\` to keep fighting!`,
+    }, { quoted: msg });
+  } else {
+    // No more Pokémon — trainer blacks out
+    endBattle(jid);
+    if (isWild) clearWild(jid);
+
+    const caption = `${faintText}\n☠️ *${trName} has no Pokémon left! You blacked out!*\nUse *.heal* to recover your party.`;
+    try {
+      const buf = await generateBattleResult({
+        winner: { name: enemyPokemon.displayName || enemyPokemon.name, imageUrl: enemyPokemon.imageUrl },
+        loser:  { name: faintedName, imageUrl: faintedPokemon.imageUrl },
+        rewardText: `${trName} blacked out!`,
+      });
+      await sock.sendMessage(jid, { image: buf, caption }, { quoted: msg });
+    } catch {
+      await sock.sendMessage(jid, { text: caption }, { quoted: msg });
+    }
+  }
 }
 
 // ── Main handler ─────────────────────────────────────────────────────────────
@@ -274,7 +372,7 @@ export default {
         const enemyName = enemyPokemon.displayName || enemyPokemon.name;
 
         // Pokéballs
-        const ballKeys = ["pokeball","greatball","ultraball","masterball","premierball","healball","duskball","netball","luxuryball","quickball"];
+        const ballKeys = ["pokeball","greatball","ultraball","masterball","premierball","healball","duskball","netball","luxuryball","quickball","beastball"];
         const ballLines = ballKeys.filter(k => (inv[k] || 0) > 0).map(k => {
           const item = MART_ITEMS[k];
           return `  ${item?.emoji || "🎾"} *${item?.name || k}* × ${inv[k]}  — ${item?.desc || ""}\n     ➤ \`.battle pokeball ${k}\``;
@@ -403,7 +501,7 @@ ${hasBalls ? `🎾 *POKÉBALLS* ${battle.type !== "wild" ? "_(wild battles only)
         return sock.sendMessage(jid, { text: "⏳ It's not your turn!" }, { quoted: msg });
       }
 
-      const validBalls = ["pokeball","greatball","ultraball","masterball","premierball","healball","duskball","netball","luxuryball","quickball"];
+      const validBalls = ["pokeball","greatball","ultraball","masterball","premierball","healball","duskball","netball","luxuryball","quickball","beastball"];
       const rawInput   = (args[1] || "pokeball").toLowerCase().replace(/\s/g, "");
       const ball       = validBalls.find(b => b === rawInput || rawInput.includes(b.replace("ball", ""))) || "pokeball";
 
@@ -498,7 +596,10 @@ ${hasBalls ? `🎾 *POKÉBALLS* ${battle.type !== "wild" ? "_(wild battles only)
       const aliveParty = (party || []).filter(p => p.hp > 0);
 
       if (!args[1]) {
-        if (aliveParty.length <= 1) {
+        // When current Pokémon is fainted (hp=0), we only need 1 alive; when alive we need 2+
+        const myCurrentAlive = (myPokemon.hp || 0) > 0;
+        const minimumNeeded  = myCurrentAlive ? 2 : 1;
+        if (aliveParty.length < minimumNeeded) {
           return sock.sendMessage(jid, {
             text: "❌ You have no other Pokémon to switch to!\nAll others have fainted. Use *.heal* after battle.",
           }, { quoted: msg });
@@ -582,11 +683,7 @@ Reply: \`.battle switch <slot number>\``,
             : `💥 *Wild ${wildEnemyName}* dealt *${wildFinalDmg}* damage to *${newName}*!\n❤️ ${newName}: ${newPlayerHp}/${newPoke.maxHp}`;
 
           if (newPlayerHp <= 0) {
-            const tr     = await getTrainer(sender);
-            const trName = tr?.username || msg.pushName || "Trainer";
-            endBattle(jid);
-            clearWild(jid);
-            await sock.sendMessage(jid, { text: `💀 *${trName}'s ${newName} has fainted!*\nYou lost the battle. Use *.heal* to heal your party.` }, { quoted: msg });
+            await handlePlayerFaint(sock, jid, msg, { ...currentBattle, challengerJid: sender }, sender, updatedSwitched, currentBattle.opponentPokemon, true);
           } else if (stateAfterWild) {
             await sendScene(sock, jid, msg, stateAfterWild, wildSwitchDamageCaption, "player", wildFinalDmg, wildCrit);
             await sleep(DELAY);
@@ -723,21 +820,9 @@ ${formatMoveList(moves)}
             : `💥 *Wild ${eName}* dealt *${wildFinalDmg}* damage to *${myName}*!\n❤️ ${myName}: ${newPlayerHp}/${updated.challengerPokemon.maxHp}`;
 
           if (newPlayerHp <= 0) {
-            const tr     = await getTrainer(sender);
-            const trName = tr?.username || msg.pushName || "Trainer";
-            endBattle(jid);
-            clearWild(jid);
-            const faintCaption = `💀 *${trName}'s ${myName} has fainted!*\nYou lost the battle. Use *.heal* to heal your party.`;
-            try {
-              const buf = await generateBattleResult({
-                winner: { name: eName,   imageUrl: updated.opponentPokemon.imageUrl },
-                loser:  { name: myName,  imageUrl: updated.challengerPokemon.imageUrl },
-                rewardText: `${trName}'s ${myName} fainted!`,
-              });
-              await sock.sendMessage(jid, { image: buf, caption: faintCaption }, { quoted: msg });
-            } catch {
-              await sock.sendMessage(jid, { text: faintCaption }, { quoted: msg });
-            }
+            // Show the damage scene first, then handle faint
+            await sendScene(sock, jid, msg, stateAfterWild || updated, wildDamageCaption, "player", wildFinalDmg, wildCrit);
+            await handlePlayerFaint(sock, jid, msg, battle, sender, updatedPlayer, updated.opponentPokemon, true);
           } else if (stateAfterWild) {
             // Show wild counter damage scene
             await sendScene(sock, jid, msg, stateAfterWild, wildDamageCaption, "player", wildFinalDmg, wildCrit);
