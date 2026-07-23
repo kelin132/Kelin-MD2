@@ -48,11 +48,14 @@ async function sendScene(sock, jid, msg, battle, statusText, hitSide, damage, cr
   }
 }
 
-/** Show battle status in the same format as the original BATTLE STARTED message */
-async function sendBattlePrompt(sock, jid, msg, myPokemon, enemyPokemon, battleType) {
+/** Show the current battle status and whose turn it is. */
+async function sendBattlePrompt(sock, jid, msg, myPokemon, enemyPokemon, battleType, turnName = null) {
   const myName    = myPokemon.displayName    || myPokemon.name;
   const enemyName = enemyPokemon.displayName || enemyPokemon.name;
   const isWild    = battleType === "wild";
+  const heading   = !isWild && turnName
+    ? `⚔️ *${turnName}'S TURN!*`
+    : "⚔️ *BATTLE STARTED!*";
 
   const catchLine = isWild
     ? `\n🎾 \`.battle pokeball <type>\` — Throw a Pokéball`
@@ -60,7 +63,7 @@ async function sendBattlePrompt(sock, jid, msg, myPokemon, enemyPokemon, battleT
 
   await sock.sendMessage(jid, {
     text:
-`⚔️ *BATTLE STARTED!*
+`${heading}
 
 🐉 Your Pokémon: *${myName}* Lv.${myPokemon.level}
 ❤️ HP: ${myPokemon.hp}/${myPokemon.maxHp}
@@ -74,6 +77,22 @@ async function sendBattlePrompt(sock, jid, msg, myPokemon, enemyPokemon, battleT
 💊 \`.battle item <item>\` — Use a heal item
 🏃 \`.battle run\` — Flee from battle`,
   }, { quoted: msg });
+}
+
+/** Show the current PvP state from the next player's point of view. */
+async function sendNextPvPPrompt(sock, jid, msg, battle) {
+  const nextIsChallenger = battle.turn === "challenger";
+  const nextPokemon = nextIsChallenger
+    ? battle.challengerPokemon
+    : battle.opponentPokemon;
+  const nextEnemy = nextIsChallenger
+    ? battle.opponentPokemon
+    : battle.challengerPokemon;
+  const nextName = nextIsChallenger
+    ? battle.challengerName
+    : battle.opponentName;
+
+  await sendBattlePrompt(sock, jid, msg, nextPokemon, nextEnemy, "pvp", nextName);
 }
 
 /** Format the move list with descriptions and command hints for display */
@@ -458,14 +477,20 @@ ${hasBalls ? `🎾 *POKÉBALLS* ${battle.type !== "wild" ? "_(wild battles only)
           const current = myPokemon[boost.stat] || 10;
           const newVal  = Math.floor(current * boost.mult);
           const updatedPoke = { ...myPokemon, [boost.stat]: newVal };
-          updateBattle(jid, isChallenger ? { challengerPokemon: updatedPoke } : { opponentPokemon: updatedPoke });
+          updateBattle(jid, isChallenger
+            ? { challengerPokemon: updatedPoke, ...(battle.type === "pvp" ? { turn: "opponent" } : {}) }
+            : { opponentPokemon: updatedPoke, ...(battle.type === "pvp" ? { turn: "challenger" } : {}) }
+          );
           resultMsg = `${martItem?.emoji || "⚔️"} Used *${martItem?.name || itemKey}* on ${myName}!\n📈 ${boost.label}`;
         } else if (itemKey === "revive" || itemKey === "maxrevive") {
           // Revive (can't use on active Pokemon if alive, but allow for edge cases)
           const restoreHp = itemKey === "maxrevive" ? myPokemon.maxHp : Math.floor(myPokemon.maxHp / 2);
           const newHp     = restoreHp;
           const updatedPoke = { ...myPokemon, hp: newHp };
-          updateBattle(jid, isChallenger ? { challengerPokemon: updatedPoke } : { opponentPokemon: updatedPoke });
+          updateBattle(jid, isChallenger
+            ? { challengerPokemon: updatedPoke, ...(battle.type === "pvp" ? { turn: "opponent" } : {}) }
+            : { opponentPokemon: updatedPoke, ...(battle.type === "pvp" ? { turn: "challenger" } : {}) }
+          );
           if (myPokemon._id) await updatePokemon(myPokemon._id, { hp: newHp });
           resultMsg = `${martItem?.emoji || "💫"} Used *${martItem?.name || itemKey}* on ${myName}!\n❤️ HP → ${newHp}/${myPokemon.maxHp}`;
         } else {
@@ -473,7 +498,10 @@ ${hasBalls ? `🎾 *POKÉBALLS* ${battle.type !== "wild" ? "_(wild battles only)
           const newHp   = Math.min(myPokemon.maxHp, myPokemon.hp + healAmt);
           const healed  = newHp - myPokemon.hp;
           const updatedPoke = { ...myPokemon, hp: newHp };
-          updateBattle(jid, isChallenger ? { challengerPokemon: updatedPoke } : { opponentPokemon: updatedPoke });
+          updateBattle(jid, isChallenger
+            ? { challengerPokemon: updatedPoke, ...(battle.type === "pvp" ? { turn: "opponent" } : {}) }
+            : { opponentPokemon: updatedPoke, ...(battle.type === "pvp" ? { turn: "challenger" } : {}) }
+          );
           if (myPokemon._id) await updatePokemon(myPokemon._id, { hp: newHp });
           resultMsg = `${martItem?.emoji || "💊"} Used *${martItem?.name || itemKey}* on ${myName}!\n❤️ +${healed} HP → ${newHp}/${myPokemon.maxHp}`;
         }
@@ -484,9 +512,13 @@ ${hasBalls ? `🎾 *POKÉBALLS* ${battle.type !== "wild" ? "_(wild battles only)
         await sleep(DELAY);
         const freshBattle = getBattle(jid);
         if (freshBattle) {
-          const freshMy    = isChallenger ? freshBattle.challengerPokemon : freshBattle.opponentPokemon;
-          const freshEnemy = isChallenger ? freshBattle.opponentPokemon   : freshBattle.challengerPokemon;
-          await sendBattlePrompt(sock, jid, msg, freshMy, freshEnemy, battle.type);
+          if (battle.type === "pvp") {
+            await sendNextPvPPrompt(sock, jid, msg, freshBattle);
+          } else {
+            const freshMy    = isChallenger ? freshBattle.challengerPokemon : freshBattle.opponentPokemon;
+            const freshEnemy = isChallenger ? freshBattle.opponentPokemon   : freshBattle.challengerPokemon;
+            await sendBattlePrompt(sock, jid, msg, freshMy, freshEnemy, battle.type);
+          }
         }
         return;
       }
@@ -702,6 +734,12 @@ Reply: \`.battle switch <slot number>\``,
             await sendBattlePrompt(sock, jid, msg, newPoke, freshBattle.opponentPokemon, "wild");
           }
         }
+      } else if (battle.type === "pvp") {
+        await sleep(DELAY);
+        const freshBattle = getBattle(jid);
+        if (freshBattle) {
+          await sendNextPvPPrompt(sock, jid, msg, freshBattle);
+        }
       }
 
       return;
@@ -840,14 +878,11 @@ ${formatMoveList(moves)}
           }
         }
       } else if (battle.type === "pvp" && updated) {
-        // PvP — tell the other player it's their turn
+        // PvP — show the complete battle prompt for the next player.
         await sleep(DELAY);
         const freshBattle = getBattle(jid);
         if (freshBattle) {
-          const nextName  = isChallenger ? battle.opponentName : battle.challengerName;
-          await sock.sendMessage(jid, {
-            text: `⏳ *${nextName}, it's your turn!*\nType \`.battle fight\` to see your moves.`,
-          }, { quoted: msg });
+          await sendNextPvPPrompt(sock, jid, msg, freshBattle);
         }
       }
 

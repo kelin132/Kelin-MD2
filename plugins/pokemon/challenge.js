@@ -86,14 +86,16 @@ export default {
       } catch {}
 
       const caption =
-`⚔️ *PVP BATTLE STARTED!*
+`⚔️ *${challengerTrainer.username}'S TURN!*
 
 🔵 ${challengerTrainer.username}: *${challengerLead.displayName}* Lv.${challengerLead.level} ❤️${challengerLead.hp}/${challengerLead.maxHp}
 🔴 ${opponentTrainer.username || msg.pushName}: *${opponentLead.displayName}* Lv.${opponentLead.level} ❤️${opponentLead.hp}/${opponentLead.maxHp}
 
-⏳ *${challengerTrainer.username}* goes first!
-Use \`.battle fight\` to see moves, \`.battle fight <1-6>\` to attack
-Use \`.battle run\` to forfeit`;
+*Battle Commands:*
+⚔️ \`.battle fight\` — See your moves
+⚔️ \`.battle switch\` — Switch Pokémon
+💊 \`.battle item <item>\` — Use a heal item
+🏃 \`.battle run\` — Forfeit`;
 
       if (buf) {
         await sock.sendMessage(jid, { image: buf, caption }, { quoted: msg });
