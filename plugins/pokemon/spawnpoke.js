@@ -67,7 +67,12 @@ export default {
       moves: getMovesForType(apiData.primaryType, apiData.types),
     };
 
-    setWild(jid, wildPoke, sender);
+    setWild(jid, wildPoke, sender, (pokeName) => {
+      // Send "fled away" message when the 30-min timer fires
+      sock.sendMessage(jid, {
+        text: `🌿 *${pokeName}* got tired of waiting and *fled away!* 🏃\nUse *.spawnpoke* to encounter a new wild Pokémon.`,
+      }).catch(() => {});
+    });
     spawnCooldowns.set(jid, Date.now());
 
     const typeEmojis = { fire:"🔥",water:"💧",grass:"🍃",electric:"⚡",psychic:"🔮",

@@ -52,7 +52,12 @@ if (!global.__pokeAutoSpawnerRunning) {
       moves:       getMovesForType(apiData.primaryType, apiData.types),
     };
 
-    setWild(chatId, wildPoke, null); // null = no specific triggering trainer
+    setWild(chatId, wildPoke, null, (pokeName) => {
+      // Send "fled away" message when the 30-min timer fires
+      sock.sendMessage(chatId, {
+        text: `🌿 *${pokeName}* got tired of waiting and *fled away!* 🏃\nNo one caught it in time.`,
+      }).catch(() => {});
+    });
 
     const typeStr = apiData.types.map(t => `${TYPE_EMOJIS[t] || ""}${t}`).join(" / ");
 
