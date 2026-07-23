@@ -5,7 +5,7 @@ import { getBattle, updateBattle, endBattle, isMyTurn } from "../../lib/pokemon/
 import { clearWild, updateWildHp } from "../../lib/pokemon/wildState.mjs";
 import { getTrainer, removeItem } from "../../lib/pokemon/players.mjs";
 import { addMoney } from "../economy/database.js";
-import { updatePokemon, addPokemonXP, buildPokemon, savePokemon, getTrainerParty } from "../../lib/pokemon/pokemonDb.mjs";
+import { updatePokemon, addPokemonXP, buildPokemon, savePokemon, getTrainerParty, getPokemonXpNeeded } from "../../lib/pokemon/pokemonDb.mjs";
 import { addToParty, addToPC, updateTrainer } from "../../lib/pokemon/players.mjs";
 import { calcDamage, tryCatch, xpReward, coinReward, getMovesForType, getLearnableMoveAtLevel, getLevelEvolution, TYPE_EMOJIS, TYPE_MOVES } from "../../lib/pokemon/gameLogic.mjs";
 import { generateBattleScene, generateCatchScene, generateBattleResult } from "../../lib/pokemon/canvas.mjs";
@@ -60,6 +60,8 @@ async function sendBattlePrompt(sock, jid, msg, myPokemon, enemyPokemon, battleT
   const catchLine = isWild
     ? `\n🎾 \`.battle pokeball <type>\` — Throw a Pokéball`
     : "";
+  const xpNeeded = getPokemonXpNeeded(myPokemon.level);
+  const xpText = xpNeeded > 0 ? `${myPokemon.xp || 0}/${xpNeeded}` : "MAX LEVEL";
 
   await sock.sendMessage(jid, {
     text:
@@ -67,6 +69,7 @@ async function sendBattlePrompt(sock, jid, msg, myPokemon, enemyPokemon, battleT
 
 🐉 Your Pokémon: *${myName}* Lv.${myPokemon.level}
 ❤️ HP: ${myPokemon.hp}/${myPokemon.maxHp}
+✨ XP: ${xpText}
 
 🐾 ${isWild ? "Wild" : "Opponent"}: *${enemyName}* Lv.${enemyPokemon.level}
 ❤️ HP: ${enemyPokemon.hp}/${enemyPokemon.maxHp}

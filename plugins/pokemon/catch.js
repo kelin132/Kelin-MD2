@@ -3,7 +3,7 @@
 
 import { getWild, clearWild } from "../../lib/pokemon/wildState.mjs";
 import { getTrainer } from "../../lib/pokemon/players.mjs";
-import { getTrainerParty } from "../../lib/pokemon/pokemonDb.mjs";
+import { getTrainerParty, getPokemonXpNeeded } from "../../lib/pokemon/pokemonDb.mjs";
 import { pickLeadFromParty } from "../../lib/pokemon/players.mjs";
 import { startWildBattle, hasBattle } from "../../lib/pokemon/battleState.mjs";
 import { generateBattleScene } from "../../lib/pokemon/canvas.mjs";
@@ -76,6 +76,7 @@ export default {
 
 🐉 Your Pokémon: *${lead.displayName || lead.name}* Lv.${lead.level}
 ❤️ HP: ${lead.hp}/${lead.maxHp}
+✨ XP: ${lead.xp || 0}/${getPokemonXpNeeded(lead.level) || "MAX LEVEL"}
 
 🐾 Wild: *${wild.pokemon.displayName}* Lv.${wild.pokemon.level}
 ❤️ HP: ${wild.pokemon.hp}/${wild.pokemon.maxHp}

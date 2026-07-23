@@ -2,7 +2,7 @@
 // Challenge another trainer to a Pokémon battle
 
 import { getTrainer, pickLeadFromParty } from "../../lib/pokemon/players.mjs";
-import { getTrainerParty } from "../../lib/pokemon/pokemonDb.mjs";
+import { getTrainerParty, getPokemonXpNeeded } from "../../lib/pokemon/pokemonDb.mjs";
 import {
   setPendingChallenge, getIncomingChallenge,
   clearPendingChallenge, startPvPBattle, hasBattle,
@@ -89,7 +89,9 @@ export default {
 `⚔️ *${challengerTrainer.username}'S TURN!*
 
 🔵 ${challengerTrainer.username}: *${challengerLead.displayName}* Lv.${challengerLead.level} ❤️${challengerLead.hp}/${challengerLead.maxHp}
+✨ XP: ${challengerLead.xp || 0}/${getPokemonXpNeeded(challengerLead.level) || "MAX LEVEL"}
 🔴 ${opponentTrainer.username || msg.pushName}: *${opponentLead.displayName}* Lv.${opponentLead.level} ❤️${opponentLead.hp}/${opponentLead.maxHp}
+✨ XP: ${opponentLead.xp || 0}/${getPokemonXpNeeded(opponentLead.level) || "MAX LEVEL"}
 
 *Battle Commands:*
 ⚔️ \`.battle fight\` — See your moves

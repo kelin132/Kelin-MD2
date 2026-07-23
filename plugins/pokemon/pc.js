@@ -2,7 +2,7 @@
 // View PC storage (Pokémon not in party)
 
 import { getTrainer } from "../../lib/pokemon/players.mjs";
-import { getTrainerPC } from "../../lib/pokemon/pokemonDb.mjs";
+import { getTrainerPC, getPokemonXpNeeded } from "../../lib/pokemon/pokemonDb.mjs";
 
 const PAGE_SIZE = 10;
 
@@ -44,7 +44,9 @@ export default {
       const typeIcon = typeEmojis[p.primaryType] || "⭐";
       const shinyTag = p.shiny ? " ✨" : "";
       const nick = p.nickname ? ` (${p.nickname})` : "";
-      return `${idx}. ${typeIcon} *${p.displayName || p.name}${nick}${shinyTag}* Lv.${p.level} ❤️${p.hp}/${p.maxHp}`;
+      const xpNeeded = getPokemonXpNeeded(p.level);
+      const xpText = xpNeeded > 0 ? `✨XP ${p.xp}/${xpNeeded}` : "✨MAX XP";
+      return `${idx}. ${typeIcon} *${p.displayName || p.name}${nick}${shinyTag}* Lv.${p.level} ❤️${p.hp}/${p.maxHp} ${xpText}`;
     }).join("\n");
 
     await sock.sendMessage(jid, {

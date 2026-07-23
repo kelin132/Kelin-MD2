@@ -3,7 +3,7 @@
 // .party <1-6>   — show detailed stats of one Pokémon
 
 import { getTrainer }       from "../../lib/pokemon/players.mjs";
-import { getTrainerParty }  from "../../lib/pokemon/pokemonDb.mjs";
+import { getTrainerParty, getPokemonXpNeeded }  from "../../lib/pokemon/pokemonDb.mjs";
 import { generatePartyCanvas } from "../../lib/pokemon/canvas.mjs";
 
 const TYPE_EMOJIS = {
@@ -67,8 +67,10 @@ Or catch wild Pokémon with *.spawnpoke* then *.catch*!`,
       const isFainted = p.hp <= 0;
       const hpPct     = p.maxHp > 0 ? p.hp / p.maxHp : 0;
       const hpBar     = isFainted ? "💀" : hpPct > 0.5 ? "🟩🟩🟩🟩🟩" : hpPct > 0.25 ? "🟨🟨🟨🟩🟩" : "🟥🟥🟨🟩🟩";
-      const xpBar     = p.xpNeeded > 0 ? Math.round((p.xp / p.xpNeeded) * 10) : 0;
+      const xpNeeded  = getPokemonXpNeeded(p.level);
+      const xpBar     = xpNeeded > 0 ? Math.min(10, Math.round((p.xp / xpNeeded) * 10)) : 10;
       const xpFill    = "▓".repeat(xpBar) + "░".repeat(10 - xpBar);
+      const xpText    = xpNeeded > 0 ? `${p.xp}/${xpNeeded}` : "MAX LEVEL";
 
       const moveLines = (p.moves || []).map((m, i) =>
         `  *${i + 1}.* ${m.name}  *(Pwr: ${m.power || "—"})*\n       📖 ${m.desc || m.description || "No description"}`
@@ -92,7 +94,7 @@ Or catch wild Pokémon with *.spawnpoke* then *.catch*!`,
 • Attack: *${p.attack}*    Defense: *${p.defense}*
 • Speed: *${p.speed}*       Sp.Atk: *${p.spAtk || "?"}*
 • Type: ${allTypes}
-• XP: *${p.xp}/${p.xpNeeded}* [${xpFill}]
+• XP: *${xpText}* [${xpFill}]
 • Caught: ${caughtStr}
 
 ━━━━━━━━━━━━━━━━━━━━
@@ -127,7 +129,9 @@ ${moveLines || "  No moves learned yet"}
       const isLead  = (p._id || p.id)?.toString() === leadId;
       const isStart = p.isStarter;
       const tags    = [isLead ? "⚡LEAD" : "", isStart ? "🏅STARTER" : ""].filter(Boolean).join(" ");
-      return `${i + 1}. ${icon}${hpBar} *${p.displayName || p.name}${nick}${shiny}* Lv.${p.level} ❤️${p.hp}/${p.maxHp}${tags ? "  " + tags : ""}`;
+       const xpNeeded = getPokemonXpNeeded(p.level);
+       const xpText = xpNeeded > 0 ? `✨XP ${p.xp}/${xpNeeded}` : "✨MAX XP";
+       return `${i + 1}. ${icon}${hpBar} *${p.displayName || p.name}${nick}${shiny}* Lv.${p.level} ❤️${p.hp}/${p.maxHp} ${xpText}${tags ? "  " + tags : ""}`;
     });
 
     const caption =
