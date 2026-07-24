@@ -51,9 +51,26 @@ export default {
     for (const p of party) {
       idToParty[(p._id || p.id)?.toString()] = p;
     }
-    const orderedParty = partyIdArray
+    const orderedFromIds = partyIdArray
       .map(id => idToParty[id?.toString()])
       .filter(Boolean);
+
+    // FIX: Include any Pokémon that are inParty:true in the DB but missing from
+    // trainer.party array (can happen if a previous t2party had a partial failure).
+    // Append them at the end so they are still accessible via swap.
+    const orderedIds = new Set(orderedFromIds.map(p => (p._id || p.id)?.toString()));
+    const orphaned   = party.filter(p => !orderedIds.has((p._id || p.id)?.toString()));
+    const orderedParty = [...orderedFromIds, ...orphaned];
+
+    // If there are orphaned Pokémon, repair the trainer.party array silently
+    if (orphaned.length > 0) {
+      const db = await getDb();
+      const repairedIds = orderedParty.map(p => (p._id || p.id)?.toString());
+      await db.collection("pokemon_trainers").updateOne(
+        { jid: sender },
+        { $set: { party: repairedIds } }
+      ).catch(() => {});
+    }
 
     // No args — show current party and usage
     if (!args[0] || !args[1]) {
@@ -110,14 +127,15 @@ Example: *.swap 1 3* — swap slots 1 and 3
     const idx1 = slot1 - 1;
     const idx2 = slot2 - 1;
 
-    // Swap positions in the ID array
-    [partyIdArray[idx1], partyIdArray[idx2]] = [partyIdArray[idx2], partyIdArray[idx1]];
+    // Build the new ordered ID array from the already-repaired orderedParty
+    const newIdArray = orderedParty.map(p => (p._id || p.id)?.toString());
+    [newIdArray[idx1], newIdArray[idx2]] = [newIdArray[idx2], newIdArray[idx1]];
 
     // Save the new order
     const db = await getDb();
     await db.collection("pokemon_trainers").updateOne(
       { jid: sender },
-      { $set: { party: partyIdArray } }
+      { $set: { party: newIdArray } }
     );
 
     const p1 = orderedParty[idx1];

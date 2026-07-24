@@ -1,14 +1,44 @@
 /**
  * Anime reaction helper — used by all plugins/anime/*.js
  *
- * Primary:  nekos.best  (https://nekos.best/api/v2/{endpoint})
- * Fallback: waifu.pics  (https://api.waifu.pics/sfw/{type})
- *
- * nekos.best returns MP4 files — we download them as a buffer and send
- * via `video` + `gifPlayback: true` so WhatsApp auto-plays them as GIFs.
- * waifu.pics returns static image URLs — sent as `image`.
+ * Primary:   otakugifs.xyz  (https://api.otakugifs.xyz/gif?reaction={type})
+ *            Returns animated GIFs for a comprehensive set of reactions.
+ * Secondary: nekos.best     (https://nekos.best/api/v2/{endpoint})
+ *            Returns MP4 files sent as gifPlayback videos.
+ * Fallback:  waifu.pics     (https://api.waifu.pics/sfw/{type})
+ *            Returns static image URLs.
  */
 
+// Reactions available on otakugifs.xyz (from /gif/allreactions)
+const OTAKUGIFS_REACTIONS = new Set([
+  "airkiss","angrystare","bite","bleh","blush","brofist","celebrate","cheers",
+  "clap","confused","cool","cry","cuddle","dance","drool","evillaugh","facepalm",
+  "handhold","happy","headbang","hug","huh","kiss","laugh","lick","love","mad",
+  "nervous","no","nom","nosebleed","nuzzle","nyah","pat","peek","pinch","poke",
+  "pout","punch","roll","run","sad","scared","shout","shrug","shy","sigh","sing",
+  "sip","slap","sleep","slowclap","smack","smile","smug","sneeze","sorry","stare",
+  "stop","surprised","sweat","thumbsup","tickle","tired","wave","wink","woah",
+  "yawn","yay","yes",
+]);
+
+// Map bot reaction names → otakugifs reaction names where they differ
+const OTAKUGIFS_MAP = {
+  happy:    "happy",
+  nom:      "nom",
+  bite:     "bite",
+  feed:     "nom",     // "feed" → closest is "nom"
+  meow:     "nyah",    // "meow" → "nyah" (cat sound)
+  lick:     "lick",
+  yeet:     null,      // not on otakugifs — fall through to nekos.best
+  highfive: null,      // not on otakugifs — fall through to nekos.best
+  kill:     null,      // not on otakugifs — fall through to nekos.best
+  bonk:     null,      // not on otakugifs — fall through to waifu.pics
+};
+
+// Types that only waifu.pics has
+const WAIFU_ONLY = new Set(["waifu", "neko", "bonk"]);
+
+// nekos.best name overrides
 const NEKOS_NAMES = {
   lick:     "nom",
   smile:    "smile",
@@ -16,9 +46,6 @@ const NEKOS_NAMES = {
   kill:     "kill",
   handhold: "handhold",
 };
-
-// Types waifu.pics has but nekos.best doesn't
-const WAIFU_ONLY = new Set(["waifu", "neko", "bonk"]);
 
 async function timedFetch(url, ms = 12_000) {
   const ac = new AbortController();
@@ -33,6 +60,26 @@ async function timedFetch(url, ms = 12_000) {
 }
 
 /**
+ * Try otakugifs.xyz first — returns { url, isVideo: false } on success.
+ * Throws if the reaction isn't available or the request fails.
+ */
+async function fromOtakuGifs(type) {
+  // Resolve the otakugifs reaction name
+  let reaction;
+  if (type in OTAKUGIFS_MAP) {
+    reaction = OTAKUGIFS_MAP[type]; // may be null — caller handles that
+  } else {
+    reaction = OTAKUGIFS_REACTIONS.has(type) ? type : null;
+  }
+  if (!reaction) throw new Error(`${type} not on otakugifs`);
+
+  const res = await timedFetch(`https://api.otakugifs.xyz/gif?reaction=${reaction}`);
+  const j   = await res.json();
+  if (!j?.url) throw new Error("no url in otakugifs response");
+  return { url: j.url, isVideo: false };
+}
+
+/**
  * Returns { url, isVideo } — isVideo=true when the URL is an MP4 that
  * should be downloaded and sent as an animated GIF video buffer.
  */
@@ -42,7 +89,6 @@ async function fromNekosBest(type) {
   const j   = await res.json();
   const url = j?.results?.[0]?.url;
   if (!url) throw new Error("no url in nekos.best response");
-  // nekos.best always returns .mp4
   return { url, isVideo: url.endsWith(".mp4") };
 }
 
@@ -60,20 +106,35 @@ async function downloadBuffer(url) {
   return Buffer.from(ab);
 }
 
-/** Returns { url, isVideo } — tries nekos.best first, falls back to waifu.pics */
+/**
+ * Returns { url, isVideo }.
+ * Priority: otakugifs.xyz → nekos.best → waifu.pics
+ */
 export async function getAnimeGif(type) {
+  // 1️⃣ otakugifs.xyz (GIF, wide reaction set)
+  if (!WAIFU_ONLY.has(type)) {
+    try {
+      return await fromOtakuGifs(type);
+    } catch {
+      // fall through to nekos.best
+    }
+  }
+
+  // 2️⃣ nekos.best (MP4 animated)
   if (!WAIFU_ONLY.has(type)) {
     try {
       return await fromNekosBest(type);
     } catch {
-      // fall through
+      // fall through to waifu.pics
     }
   }
+
+  // 3️⃣ waifu.pics (static image, last resort)
   return fromWaifuPics(type);
 }
 
 /**
- * Send an anime reaction. Automatically handles MP4 (animated) vs static image.
+ * Send an anime reaction. Automatically handles GIF vs MP4 vs static image.
  *
  * @param {object}   o
  * @param {object}   o.sock         – Baileys socket
@@ -110,6 +171,7 @@ export async function sendReaction({ sock, msg, sender, type, soloCaption, duoCa
         mentions,
       }, { quoted: msg });
     } else {
+      // GIF or static image — send directly via URL
       await sock.sendMessage(chatId, { image: { url }, caption, mentions }, { quoted: msg });
     }
   } catch (err) {
