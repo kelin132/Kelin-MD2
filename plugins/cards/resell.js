@@ -22,7 +22,7 @@ const RESELL_BASE = {
 };
 
 const PAYOUT_RATE = 0.5; // 50 % of card's stored value
-const RESELL_COOLDOWN_MS = 13_000;
+const RESELL_COOLDOWN_MS = 10_000;
 const resellCooldowns = new Map();
 
 export default {
@@ -31,7 +31,7 @@ export default {
   category:    "cards",
   description: "Sell a card back to the bot for 50% of its value",
   usage:       ".resell <index>",
-  cooldown:    13,
+  cooldown:    10,
 
   async run({ sock, msg, args, sender }) {
     const jid   = msg.key.remoteJid;

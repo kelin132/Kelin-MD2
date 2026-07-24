@@ -62,19 +62,12 @@ export default {
           return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi) || (a.name || "").localeCompare(b.name || "");
         });
 
-        const PAGE_SIZE = 20;
-        const slice     = cards.slice(0, PAGE_SIZE);
-
         let out = `📚 *Series: ${key}*\n`;
         out    += `@${sender.split("@")[0]} — ${cards.length} card${cards.length !== 1 ? "s" : ""}\n\n`;
 
-        slice.forEach((card, i) => {
+        cards.forEach((card, i) => {
           out += `${i + 1}. ${TIER_EMOJI[card.tier] || "⭐"} *${card.name}* (${card.tier})\n`;
         });
-
-        if (cards.length > PAGE_SIZE) {
-          out += `\n_...and ${cards.length - PAGE_SIZE} more_`;
-        }
 
         out += `\n\n💡 Use *.ci <card name or index>* for card details.`;
         out += `\n💡 Use *.si <card name>* for owners and a preview.`;
