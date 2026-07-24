@@ -1,70 +1,63 @@
 /**
- * Anime reaction / image helper  —  plugins/anime/_helper.js
+ * Anime reaction helper — plugins/anime/_helper.js
  *
- * Source: nekos.best API v2  (https://nekos.best/api/v2/<endpoint>)
- *
- * Reaction endpoints return animated .gif files and are sent via Baileys as
+ * Source: otakugifs API (https://api.otakugifs.xyz)
+ * All reactions return animated .gif files and are sent via Baileys as
  * gifPlayback videos so they animate in WhatsApp.
- *
- * Image endpoints (neko, waifu, kitsune) return static .png and are sent
- * as regular images.
- *
- * Endpoints missing from nekos.best are silently remapped to the closest
- * available one so all existing plugins continue to work.
  */
 
-const BASE_URL = "https://nekos.best/api/v2";
+const BASE_URL = "https://api.otakugifs.xyz/gif";
 
-// ── Endpoint sets ──────────────────────────────────────────────────────────────
-// These are the confirmed working v2 endpoints that return animated GIFs.
-const GIF_ENDPOINTS = new Set([
-  "bite", "blush", "bonk", "cuddle", "cry", "dance",
-  "feed", "handhold", "highfive", "hug", "kiss", "pat",
-  "poke", "punch", "slap", "smile", "smug", "tickle",
-  "wave", "wink", "yeet",
+// All confirmed working reactions from the otakugifs API
+const VALID_REACTIONS = new Set([
+  "airkiss", "angrystare", "bite", "bleh", "blush", "brofist", "celebrate",
+  "cheers", "clap", "confused", "cool", "cry", "cuddle", "dance", "drool",
+  "evillaugh", "facepalm", "handhold", "happy", "headbang", "hug", "huh",
+  "kiss", "laugh", "lick", "love", "mad", "nervous", "no", "nom", "nosebleed",
+  "nuzzle", "nyah", "pat", "peek", "pinch", "poke", "pout", "punch", "roll",
+  "run", "sad", "scared", "shout", "shrug", "shy", "sigh", "sing", "sip",
+  "slap", "sleep", "slowclap", "smack", "smile", "smug", "sneeze", "sorry",
+  "stare", "stop", "surprised", "sweat", "thumbsup", "tickle", "tired",
+  "wave", "wink", "woah", "yawn", "yay", "yes",
 ]);
 
-// Confirmed working v2 endpoints that return static PNG images.
-const IMAGE_ENDPOINTS = new Set(["neko", "waifu", "kitsune"]);
-
-// ── Name map: bot type  →  nekos.best endpoint ─────────────────────────────────
-// Covers direct matches, renamed types, and fallbacks for missing endpoints.
+// Map bot command types → otakugifs reaction names
 const ENDPOINT_MAP = {
-  // ── Direct GIF reactions ───────────────────────────────────────────────────
-  bite:     "bite",
-  blush:    "blush",
-  bonk:     "bonk",
-  cuddle:   "cuddle",
-  cry:      "cry",
-  dance:    "dance",
-  feed:     "feed",
-  handhold: "handhold",
-  highfive: "highfive",
-  hug:      "hug",
-  kiss:     "kiss",
-  pat:      "pat",
-  poke:     "poke",
-  punch:    "punch",
-  slap:     "slap",
-  smile:    "smile",
-  smug:     "smug",
-  tickle:   "tickle",
-  wave:     "wave",
-  wink:     "wink",
-  yeet:     "yeet",
-  // ── Static image types ─────────────────────────────────────────────────────
-  neko:     "neko",
-  waifu:    "waifu",
-  kitsune:  "kitsune",
-  // ── Remaps (not available on nekos.best) ──────────────────────────────────
-  fox_girl: "kitsune",  // foxgirl command → kitsune (same concept)
-  lick:     "bite",     // closest physical reaction
-  meow:     "bite",     // cat-themed, bite is the nearest
-  kill:     "slap",     // most aggressive available
-  smack:    "slap",     // synonym
-  woof:     "poke",     // playful / animal reaction
-  ngif:     "neko",     // neko image (no dedicated neko GIF endpoint)
-  wallpaper: "waifu",   // fallback to waifu image
+  // ── Direct matches ─────────────────────────────────────────────────────────
+  bite:      "bite",
+  blush:     "blush",
+  cry:       "cry",
+  cuddle:    "cuddle",
+  dance:     "dance",
+  handhold:  "handhold",
+  hug:       "hug",
+  kiss:      "kiss",
+  lick:      "lick",
+  pat:       "pat",
+  poke:      "poke",
+  punch:     "punch",
+  slap:      "slap",
+  smack:     "smack",
+  smile:     "smile",
+  smug:      "smug",
+  tickle:    "tickle",
+  wave:      "wave",
+  wink:      "wink",
+  // ── Remaps ─────────────────────────────────────────────────────────────────
+  bonk:      "punch",      // no bonk → punch (most aggressive physical)
+  feed:      "nom",        // no feed → nom (closest eating reaction)
+  highfive:  "clap",       // no highfive → clap
+  yeet:      "run",        // no yeet → run (fast / launched)
+  kill:      "mad",        // dramatic fury
+  smug2:     "smug",
+  meow:      "nyah",       // cat-themed
+  woof:      "run",        // energetic / playful animal
+  fox_girl:  "nyah",       // fox girl vibe
+  neko:      "nyah",       // neko vibe
+  kitsune:   "nyah",       // kitsune / fox
+  waifu:     "love",       // affection / love
+  wallpaper: "love",       // fallback
+  ngif:      "nyah",       // neko gif
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -83,32 +76,29 @@ async function timedFetch(url, timeoutMs = 12_000) {
 // ── Public API ─────────────────────────────────────────────────────────────────
 
 /**
- * Fetch a reaction or image URL from nekos.best v2.
+ * Fetch a reaction GIF URL from the otakugifs API.
  *
- * @param {string} type  — bot reaction type (e.g. "hug", "waifu", "fox_girl")
+ * @param {string} type — bot reaction type (e.g. "hug", "waifu", "fox_girl")
  * @returns {{ url: string, isGif: boolean }}
- *   isGif=true  → send as { video: { url }, gifPlayback: true, mimetype: "image/gif" }
- *   isGif=false → send as { image: { url } }
  */
 export async function getAnimeGif(type) {
-  const endpoint = ENDPOINT_MAP[type] ?? type;
+  // Resolve through the map, then validate against known reactions, else default to "hug"
+  const reaction = ENDPOINT_MAP[type] ?? (VALID_REACTIONS.has(type) ? type : "hug");
 
-  const res = await timedFetch(`${BASE_URL}/${endpoint}`);
+  const res = await timedFetch(`${BASE_URL}?reaction=${reaction}`);
   const json = await res.json();
-  const url = json?.results?.[0]?.url;
+  const url = json?.url;
 
-  if (!url) throw new Error(`nekos.best returned no URL for endpoint "${endpoint}"`);
+  if (!url) throw new Error(`otakugifs returned no URL for reaction "${reaction}"`);
 
-  const isGif = GIF_ENDPOINTS.has(endpoint);
-  return { url, isGif };
+  return { url, isGif: true }; // Every otakugifs response is an animated GIF
 }
 
 /**
- * Send an anime reaction GIF or image to a WhatsApp chat.
+ * Send an anime reaction GIF to a WhatsApp chat.
  *
  * Automatically picks the caption based on whether someone is @mentioned.
- * GIF reactions are sent as gifPlayback videos so they animate in WhatsApp.
- * Image types are sent as regular images.
+ * All reactions are sent as gifPlayback videos so they animate in WhatsApp.
  *
  * @param {object}        o
  * @param {object}        o.sock         Baileys socket
@@ -125,8 +115,14 @@ export async function sendReaction({
 }) {
   const chatId = msg.key.remoteJid;
 
-  // Resolve mentioned user (support both @mention and reply-to)
-  const ctx = msg.message?.extendedTextMessage?.contextInfo;
+  // Resolve mentioned user — check all possible contextInfo locations
+  const ctx =
+    msg.message?.extendedTextMessage?.contextInfo ||
+    msg.message?.imageMessage?.contextInfo ||
+    msg.message?.videoMessage?.contextInfo ||
+    msg.message?.stickerMessage?.contextInfo ||
+    null;
+
   const mentioned = ctx?.mentionedJid?.[0] ?? null;
 
   const senderTag = `@${(sender ?? "").split("@")[0].split(":")[0]}`;
@@ -138,25 +134,16 @@ export async function sendReaction({
     : soloCaption;
 
   try {
-    const { url, isGif } = await getAnimeGif(type);
+    const { url } = await getAnimeGif(type);
 
-    if (isGif) {
-      // Send animated GIF via gifPlayback so it plays in WhatsApp
-      await sock.sendMessage(chatId, {
-        video:       { url },
-        caption,
-        gifPlayback: true,
-        mimetype:    "image/gif",
-        mentions,
-      }, { quoted: msg });
-    } else {
-      // Static PNG image
-      await sock.sendMessage(chatId, {
-        image: { url },
-        caption,
-        mentions,
-      }, { quoted: msg });
-    }
+    // Send as animated GIF via gifPlayback so it plays in WhatsApp
+    await sock.sendMessage(chatId, {
+      video:       { url },
+      caption,
+      gifPlayback: true,
+      mimetype:    "image/gif",
+      mentions,
+    }, { quoted: msg });
   } catch (err) {
     console.error(`[anime/${type}] ${err.message}`);
     try {
