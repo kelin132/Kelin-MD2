@@ -1,12 +1,15 @@
 // plugins/media/vv.js
 // Resend a view-once image or video as normal media.
 //
-// Usage:
-//   .vv   — reply directly to a view-once message
-//   .vv @user — reply to a view-once message and mention someone (still works)
+// IMPORTANT: This bot does NOT pre-process messages — msg.quoted is undefined.
+// All quoted-message data comes from contextInfo on the raw Baileys message,
+// exactly like _imageHelper.js, wasted.js, and utilities/sticker.js do.
 //
-// Handles Baileys v6+ viewOnceMessageV2 / viewOnceMessageV2Extension wrappers
-// and older viewOnce flag on imageMessage / videoMessage.
+// Works for:
+//   .vv          — plain reply to a view-once message
+//   .vv @user    — reply to a view-once message while mentioning someone
+
+import { downloadContentFromMessage } from "@whiskeysockets/baileys";
 
 export default {
   name: "vv",
@@ -18,83 +21,57 @@ export default {
   isOwner: false,
   isAdmin: false,
   isPremium: false,
-  version: "1.3.0",
+  version: "1.4.0",
 
-  async run({ sock, msg, text }) {
+  async run({ sock, msg }) {
     const jid = msg.key.remoteJid;
 
     try {
-      if (!msg.quoted) {
-        return await sock.sendMessage(
+      // ── Get the contextInfo from the raw message ─────────────────────────────
+      // Works for all message types that can carry a reply (text, image, etc.)
+      const ctx =
+        msg.message?.extendedTextMessage?.contextInfo ||
+        msg.message?.imageMessage?.contextInfo ||
+        msg.message?.videoMessage?.contextInfo ||
+        msg.message?.stickerMessage?.contextInfo ||
+        msg.message?.buttonsResponseMessage?.contextInfo ||
+        null;
+
+      const quotedMessage = ctx?.quotedMessage;
+
+      if (!ctx || !quotedMessage) {
+        return sock.sendMessage(
           jid,
           { text: "❌ Reply to a view-once message to reveal it." },
           { quoted: msg }
         );
       }
 
-      const quoted = msg.quoted;
+      // ── Find the viewOnce wrapper and unwrap the inner media ─────────────────
+      // Baileys v6+ uses viewOnceMessageV2 / viewOnceMessageV2Extension.
+      // Older protos embed viewOnce:true directly on imageMessage/videoMessage.
+      const voV2  = quotedMessage.viewOnceMessageV2;
+      const voV2E = quotedMessage.viewOnceMessageV2Extension;
 
-      // ── Gather the raw quoted proto message ──────────────────────────────────
-      // contextInfo.quotedMessage holds the raw proto (most reliable in Baileys v6+).
-      // Fall back to quoted.message (Baileys deserialization) when not present.
-      const ctx = (
-        msg.message?.extendedTextMessage?.contextInfo ||
-        msg.message?.imageMessage?.contextInfo ||
-        msg.message?.videoMessage?.contextInfo ||
-        msg.message?.stickerMessage?.contextInfo ||
-        msg.message?.buttonsResponseMessage?.contextInfo ||
-        msg.message?.templateButtonReplyMessage?.contextInfo ||
-        null
-      );
+      let innerMsg = null;   // the message object that holds imageMessage / videoMessage
+      let isViewOnce = false;
 
-      const rawQuotedMsg = ctx?.quotedMessage || quoted.message || {};
-
-      // One level deeper — in case the quoted message is itself a reply that
-      // carries a view-once in its own contextInfo.
-      const innerCtxQuoted =
-        rawQuotedMsg.extendedTextMessage?.contextInfo?.quotedMessage || {};
-
-      // ── Helper: locate a viewOnce wrapper in a raw proto message ─────────────
-      function extractViewOnce(raw) {
-        if (!raw || typeof raw !== "object") return null;
-
-        // Baileys v6+ explicit wrappers
-        if (raw.viewOnceMessageV2) {
-          return { wrapper: raw, inner: raw.viewOnceMessageV2.message || {} };
-        }
-        if (raw.viewOnceMessageV2Extension) {
-          return { wrapper: raw, inner: raw.viewOnceMessageV2Extension.message || {} };
-        }
-
-        // Older proto: viewOnce flag embedded in imageMessage / videoMessage
-        if (raw.imageMessage?.viewOnce || raw.videoMessage?.viewOnce) {
-          return { wrapper: raw, inner: raw };
-        }
-
-        return null;
+      if (voV2) {
+        innerMsg   = voV2.message || {};
+        isViewOnce = true;
+      } else if (voV2E) {
+        innerMsg   = voV2E.message || {};
+        isViewOnce = true;
+      } else if (quotedMessage.imageMessage?.viewOnce) {
+        innerMsg   = quotedMessage;
+        isViewOnce = true;
+      } else if (quotedMessage.videoMessage?.viewOnce) {
+        innerMsg   = quotedMessage;
+        isViewOnce = true;
       }
 
-      // ── Search each layer for a viewOnce payload ─────────────────────────────
-      let found =
-        extractViewOnce(rawQuotedMsg) ||
-        extractViewOnce(innerCtxQuoted);
-
-      // Baileys mtype / viewOnce flags set during deserialization
-      if (!found) {
-        const isVOType =
-          quoted.mtype === "viewOnceMessageV2" ||
-          quoted.mtype === "viewOnceMessageV2Extension" ||
-          quoted.viewOnce === true;
-
-        if (isVOType) {
-          found =
-            extractViewOnce(rawQuotedMsg) ||
-            { wrapper: rawQuotedMsg, inner: rawQuotedMsg };
-        }
-      }
-
-      if (!found) {
-        return await sock.sendMessage(
+      if (!isViewOnce) {
+        return sock.sendMessage(
           jid,
           {
             text:
@@ -105,62 +82,36 @@ export default {
         );
       }
 
-      const { wrapper, inner } = found;
-
-      // ── Determine media type ─────────────────────────────────────────────────
-      let mediaType = null;
+      // ── Identify media type ──────────────────────────────────────────────────
       let mediaMsg  = null;
+      let mediaType = null;
 
-      if (inner.imageMessage) {
-        mediaType = "image"; mediaMsg = inner.imageMessage;
-      } else if (inner.videoMessage) {
-        mediaType = "video"; mediaMsg = inner.videoMessage;
-      } else if (inner.audioMessage) {
-        mediaType = "audio"; mediaMsg = inner.audioMessage;
-      } else if (quoted.imageMessage || quoted.message?.imageMessage) {
+      if (innerMsg.imageMessage) {
+        mediaMsg  = innerMsg.imageMessage;
         mediaType = "image";
-        mediaMsg  = quoted.imageMessage || quoted.message.imageMessage;
-      } else if (quoted.videoMessage || quoted.message?.videoMessage) {
+      } else if (innerMsg.videoMessage) {
+        mediaMsg  = innerMsg.videoMessage;
         mediaType = "video";
-        mediaMsg  = quoted.videoMessage || quoted.message.videoMessage;
-      } else if (quoted.audioMessage || quoted.message?.audioMessage) {
+      } else if (innerMsg.audioMessage) {
+        mediaMsg  = innerMsg.audioMessage;
         mediaType = "audio";
-        mediaMsg  = quoted.audioMessage || quoted.message.audioMessage;
       }
 
-      if (!mediaType || !mediaMsg) {
-        return await sock.sendMessage(
+      if (!mediaMsg || !mediaType) {
+        return sock.sendMessage(
           jid,
           { text: "❌ Unsupported media type in this view-once message." },
           { quoted: msg }
         );
       }
 
-      // ── Build the WAMessage object downloadMediaMessage expects ──────────────
-      // It needs { key, message } where message is the raw proto containing the
-      // viewOnce wrapper. The key must match the *original* view-once message,
-      // not the .vv command message.
-      const quotedKey = quoted.key || {
-        remoteJid: jid,
-        fromMe:    false,
-        id:        ctx?.stanzaId ?? "",
-        participant: ctx?.participant ?? undefined,
-      };
-
-      const messageForDownload = wrapper;
-
-      // ── Download ─────────────────────────────────────────────────────────────
-      let buffer;
-      try {
-        buffer = await sock.downloadMediaMessage(
-          { key: quotedKey, message: messageForDownload }
-        );
-      } catch {
-        // Fallback: try the inner message directly (older Baileys serialisation)
-        buffer = await sock.downloadMediaMessage(
-          { key: quotedKey, message: inner }
-        );
-      }
+      // ── Download using downloadContentFromMessage (correct Baileys API) ──────
+      // Pass the raw inner media message directly — this is what all working
+      // download plugins (utilities/sticker.js, fun/wasted.js) use.
+      const stream = await downloadContentFromMessage(mediaMsg, mediaType);
+      const chunks = [];
+      for await (const chunk of stream) chunks.push(chunk);
+      const buffer = Buffer.concat(chunks);
 
       // ── Re-send as normal (non-view-once) media ──────────────────────────────
       if (mediaType === "image") {
@@ -178,10 +129,15 @@ export default {
       } else if (mediaType === "audio") {
         await sock.sendMessage(
           jid,
-          { audio: buffer, mimetype: mediaMsg.mimetype || "audio/ogg; codecs=opus", ptt: false },
+          {
+            audio:    buffer,
+            mimetype: mediaMsg.mimetype || "audio/ogg; codecs=opus",
+            ptt:      false,
+          },
           { quoted: msg }
         );
       }
+
     } catch (err) {
       console.error("VV Error:", err);
       await sock.sendMessage(

@@ -2,8 +2,11 @@
  * Anime reaction helper — plugins/anime/_helper.js
  *
  * Source: otakugifs API (https://api.otakugifs.xyz)
- * All reactions return animated .gif files and are sent via Baileys as
- * gifPlayback videos so they animate in WhatsApp.
+ * All reactions return animated .gif files, sent as gifPlayback videos
+ * so they animate in WhatsApp.
+ *
+ * The GIF is downloaded to a buffer before sending so Baileys does not
+ * need to make an outbound request itself (avoids silent URL failures).
  */
 
 const BASE_URL = "https://api.otakugifs.xyz/gif";
@@ -44,28 +47,30 @@ const ENDPOINT_MAP = {
   wave:      "wave",
   wink:      "wink",
   // ── Remaps ─────────────────────────────────────────────────────────────────
-  bonk:      "punch",      // no bonk → punch (most aggressive physical)
-  feed:      "nom",        // no feed → nom (closest eating reaction)
-  highfive:  "clap",       // no highfive → clap
-  yeet:      "run",        // no yeet → run (fast / launched)
-  kill:      "mad",        // dramatic fury
-  smug2:     "smug",
-  meow:      "nyah",       // cat-themed
-  woof:      "run",        // energetic / playful animal
-  fox_girl:  "nyah",       // fox girl vibe
-  neko:      "nyah",       // neko vibe
-  kitsune:   "nyah",       // kitsune / fox
-  waifu:     "love",       // affection / love
-  wallpaper: "love",       // fallback
-  ngif:      "nyah",       // neko gif
+  bonk:      "punch",
+  feed:      "nom",
+  highfive:  "clap",
+  yeet:      "run",
+  kill:      "mad",
+  meow:      "nyah",
+  woof:      "run",
+  fox_girl:  "nyah",
+  neko:      "nyah",
+  kitsune:   "nyah",
+  waifu:     "love",
+  wallpaper: "love",
+  ngif:      "nyah",
 };
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
-async function timedFetch(url, timeoutMs = 12_000) {
+// ── HTTP helper ────────────────────────────────────────────────────────────────
+async function timedFetch(url, timeoutMs = 15_000) {
   const ac = new AbortController();
   const timer = setTimeout(() => ac.abort(), timeoutMs);
   try {
-    const res = await fetch(url, { signal: ac.signal });
+    const res = await fetch(url, {
+      signal: ac.signal,
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; KelinMD/1.0)" },
+    });
     if (!res.ok) throw new Error(`HTTP ${res.status} from ${url}`);
     return res;
   } finally {
@@ -76,22 +81,25 @@ async function timedFetch(url, timeoutMs = 12_000) {
 // ── Public API ─────────────────────────────────────────────────────────────────
 
 /**
- * Fetch a reaction GIF URL from the otakugifs API.
+ * Fetch a reaction GIF from the otakugifs API and return it as a Buffer.
  *
- * @param {string} type — bot reaction type (e.g. "hug", "waifu", "fox_girl")
- * @returns {{ url: string, isGif: boolean }}
+ * @param {string} type — bot reaction type (e.g. "hug", "slap")
+ * @returns {Promise<Buffer>}
  */
 export async function getAnimeGif(type) {
-  // Resolve through the map, then validate against known reactions, else default to "hug"
+  // Resolve through the map, validate, or default to "hug"
   const reaction = ENDPOINT_MAP[type] ?? (VALID_REACTIONS.has(type) ? type : "hug");
 
-  const res = await timedFetch(`${BASE_URL}?reaction=${reaction}`);
-  const json = await res.json();
-  const url = json?.url;
+  // 1. Get the GIF URL from the API
+  const apiRes = await timedFetch(`${BASE_URL}?reaction=${reaction}`);
+  const json   = await apiRes.json();
+  const gifUrl = json?.url;
+  if (!gifUrl) throw new Error(`otakugifs returned no URL for reaction "${reaction}"`);
 
-  if (!url) throw new Error(`otakugifs returned no URL for reaction "${reaction}"`);
-
-  return { url, isGif: true }; // Every otakugifs response is an animated GIF
+  // 2. Download the GIF as a buffer (so Baileys sends the buffer, not a URL)
+  const gifRes     = await timedFetch(gifUrl);
+  const arrayBuf   = await gifRes.arrayBuffer();
+  return Buffer.from(arrayBuf);
 }
 
 /**
@@ -106,7 +114,7 @@ export async function getAnimeGif(type) {
  * @param {string}        o.sender       sender JID
  * @param {string}        o.type         reaction type (e.g. "hug", "slap")
  * @param {string}        o.soloCaption  caption when no one is mentioned
- * @param {Function|null} o.duoCaption   (fromTag, toTag) => string — caption when @mentioning
+ * @param {Function|null} o.duoCaption   (fromTag, toTag) => string
  * @param {string}        o.errorText    fallback message if the fetch fails
  */
 export async function sendReaction({
@@ -115,7 +123,7 @@ export async function sendReaction({
 }) {
   const chatId = msg.key.remoteJid;
 
-  // Resolve mentioned user — check all possible contextInfo locations
+  // Resolve mentioned user — check all contextInfo locations in the raw message
   const ctx =
     msg.message?.extendedTextMessage?.contextInfo ||
     msg.message?.imageMessage?.contextInfo ||
@@ -126,28 +134,28 @@ export async function sendReaction({
   const mentioned = ctx?.mentionedJid?.[0] ?? null;
 
   const senderTag = `@${(sender ?? "").split("@")[0].split(":")[0]}`;
-  const targetTag  = mentioned ? `@${mentioned.split("@")[0].split(":")[0]}` : null;
-  const mentions   = mentioned ? [sender, mentioned] : [sender];
+  const targetTag = mentioned ? `@${mentioned.split("@")[0].split(":")[0]}` : null;
+  const mentions  = mentioned ? [sender, mentioned] : [sender];
 
   const caption = (mentioned && duoCaption)
     ? duoCaption(senderTag, targetTag)
     : soloCaption;
 
   try {
-    const { url } = await getAnimeGif(type);
+    const buffer = await getAnimeGif(type);
 
-    // Send as animated GIF via gifPlayback so it plays in WhatsApp
     await sock.sendMessage(chatId, {
-      video:       { url },
+      video:       buffer,
       caption,
       gifPlayback: true,
       mimetype:    "image/gif",
       mentions,
     }, { quoted: msg });
+
   } catch (err) {
     console.error(`[anime/${type}] ${err.message}`);
     try {
       await sock.sendMessage(chatId, { text: errorText }, { quoted: msg });
-    } catch { /* ignore secondary socket errors */ }
+    } catch { /* ignore secondary errors */ }
   }
 }
