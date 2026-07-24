@@ -39,9 +39,16 @@ const FEATURES = [
     key:     "antilink",
     label:   "Anti-Link",
     emoji:   "🔗",
-    desc:    "Removes links sent by non-admins",
-    cmd:     ".antilink on delete | .antilink on kick | .antilink off",
-    getStatus: (settings) => settings?.antilink ? "✅ ON" : "❌ OFF",
+    desc:    "Removes links sent by non-admins (delete / kick / warn mode)",
+    cmd:     ".antilink on delete|kick|warn | .antilink setwarn <n> | .antilink off",
+    getStatus: (settings) => {
+      if (!settings?.antilink) return "❌ OFF";
+      const action   = settings.antilinkAction || "delete";
+      const maxWarns = settings.antilinkMaxWarns || 3;
+      return action === "warn"
+        ? `✅ ON (warn — max ${maxWarns})`
+        : `✅ ON (${action})`;
+    },
     toggle:  async (jid, settings, enable) => {
       settings.antilink = enable;
       if (!enable) settings.antilinkAction = null;
