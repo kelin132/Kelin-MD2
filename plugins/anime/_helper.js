@@ -2,12 +2,14 @@
  * Anime reaction helper — plugins/anime/_helper.js
  *
  * Source: otakugifs API (https://api.otakugifs.xyz)
- * All reactions return animated .gif files, sent as gifPlayback videos
- * so they animate in WhatsApp.
+ * Uses axios (already a project dependency) instead of native fetch
+ * to avoid silent failures on some hosting environments.
  *
- * The GIF is downloaded to a buffer before sending so Baileys does not
- * need to make an outbound request itself (avoids silent URL failures).
+ * GIFs are downloaded as buffers and sent as gifPlayback videos
+ * so they animate in WhatsApp.
  */
+
+import axios from "axios";
 
 const BASE_URL = "https://api.otakugifs.xyz/gif";
 
@@ -62,22 +64,6 @@ const ENDPOINT_MAP = {
   ngif:      "nyah",
 };
 
-// ── HTTP helper ────────────────────────────────────────────────────────────────
-async function timedFetch(url, timeoutMs = 15_000) {
-  const ac = new AbortController();
-  const timer = setTimeout(() => ac.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, {
-      signal: ac.signal,
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; KelinMD/1.0)" },
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status} from ${url}`);
-    return res;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
 // ── Public API ─────────────────────────────────────────────────────────────────
 
 /**
@@ -90,15 +76,22 @@ export async function getAnimeGif(type) {
   const reaction = ENDPOINT_MAP[type] ?? (VALID_REACTIONS.has(type) ? type : "hug");
 
   // 1. Get the GIF URL from the API
-  const apiRes = await timedFetch(`${BASE_URL}?reaction=${reaction}`);
-  const json   = await apiRes.json();
-  const gifUrl = json?.url;
+  const { data: apiData } = await axios.get(`${BASE_URL}?reaction=${reaction}`, {
+    timeout: 15_000,
+    headers: { "User-Agent": "Mozilla/5.0 (compatible; KelinMD/1.0)" },
+  });
+
+  const gifUrl = apiData?.url;
   if (!gifUrl) throw new Error(`otakugifs returned no URL for reaction "${reaction}"`);
 
-  // 2. Download the GIF as a buffer (Baileys sends the buffer, not a URL)
-  const gifRes   = await timedFetch(gifUrl);
-  const arrayBuf = await gifRes.arrayBuffer();
-  return Buffer.from(arrayBuf);
+  // 2. Download the GIF as a buffer
+  const { data: gifData } = await axios.get(gifUrl, {
+    responseType: "arraybuffer",
+    timeout: 20_000,
+    headers: { "User-Agent": "Mozilla/5.0 (compatible; KelinMD/1.0)" },
+  });
+
+  return Buffer.from(gifData);
 }
 
 /**
