@@ -67,6 +67,21 @@ if (!isRegistered()) {
 try {
   await connectDb();
   await initGroupSettings();   // load group settings (welcome, antilink, etc.) from MongoDB
+
+  // ── One-time migration: bump cardLimit from 100 → 250 for existing users ──
+  try {
+    const { getDb } = await import("./lib/mongo.mjs");
+    const db = await getDb();
+    const result = await db.collection("mn_users").updateMany(
+      { cardLimit: { $lt: 250 } },
+      { $set: { cardLimit: 250 } }
+    );
+    if (result.modifiedCount > 0) {
+      log("info", `[migration] Bumped cardLimit to 250 for ${result.modifiedCount} existing user(s)`);
+    }
+  } catch (migErr) {
+    log("warn", "[migration] cardLimit migration failed: " + String(migErr));
+  }
 } catch (err) {
   log("warn", "MongoDB connection failed: " + String(err));
   log("warn", "Economy/guild/staff features require MongoDB. Add MONGO_URI to your .env");
