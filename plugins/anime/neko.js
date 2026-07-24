@@ -1,4 +1,4 @@
-import axios from "axios";
+import { getAnimeGif } from "./_helper.js";
 
 export default {
   name: "neko",
@@ -11,32 +11,24 @@ export default {
     const jid = msg.key.remoteJid;
 
     try {
-      const { data } = await axios.get("https://api.waifu.pics/sfw/neko");
+      const { url } = await getAnimeGif("neko");
 
       await sock.sendMessage(
         jid,
         {
-          image: { url: data.url },
+          image: { url },
           caption:
 `🐱 *Nyan~!*
 
 Here's your random anime neko!
 
-> Powered by waifu.pics`,
+> Powered by nekos.best`,
         },
         { quoted: msg }
       );
-
     } catch (err) {
-      console.error(err);
-
-      await sock.sendMessage(
-        jid,
-        {
-          text: "❌ The neko ran away. Try again later!",
-        },
-        { quoted: msg }
-      );
+      console.error("[neko]", err.message);
+      await sock.sendMessage(jid, { text: "❌ The neko ran away. Try again later!" }, { quoted: msg });
     }
   },
 };
