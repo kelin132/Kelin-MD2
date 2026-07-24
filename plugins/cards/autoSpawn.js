@@ -11,6 +11,7 @@
 import { pickRandomCard, resolveMediaUrl, createSpawnId } from "../../lib/cardApi.mjs";
 import { getEnabledSpawnChats }            from "./db.js";
 import { log }                             from "../../lib/logger.mjs";
+import { getPrefix }                       from "../../lib/bot.mjs";
 
 const SPAWN_INTERVAL_MS  = 15 * 60 * 1000; // 15 minutes
 const EXPIRE_MS          = 10 * 60 * 1000; // 10 minutes claim window
@@ -35,7 +36,7 @@ if (!global.__cardApiSpawnerRunning) {
 🆔 ID: \`${card.cardId}\`
 🔹 Spawn ID: \`${spawnId}\`
 
-> Type *.claim ${card.cardId}* to grab it!
+> Type *${getPrefix()}claim ${card.cardId}* to grab it!
 > First come, first served — expires in 10 min~`;
 
     try {

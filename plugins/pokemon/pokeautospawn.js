@@ -8,6 +8,7 @@ import { fetchRandom }               from "../../lib/pokemon/api.mjs";
 import { getWild, setWild }          from "../../lib/pokemon/wildState.mjs";
 import { wildLevel, getMovesForType } from "../../lib/pokemon/gameLogic.mjs";
 import { getDb }                     from "../../lib/mongo.mjs";
+import { getPrefix }                 from "../../lib/bot.mjs";
 
 const SPAWN_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 const COLLECTION        = "pokemon_autospawn_chats";
@@ -72,7 +73,7 @@ if (!global.__pokeAutoSpawnerRunning) {
 📊 Level: ${level}
 ❤️ HP: ${maxHp}/${maxHp}
 
-Use *.catch* to battle this Pokémon!
+Use *${getPrefix()}catch* to battle this Pokémon!
 ⏰ It will flee in 30 minutes.`,
       });
     } catch (err) {

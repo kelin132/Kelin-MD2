@@ -68,7 +68,7 @@ export default {
       const poke   = pokeMap[u._id]  || 0;
 
       text += `${medal} *${name}*\n`;
-      text += `   💰 Money: ${u.net.toLocaleString()} Xen\n`;
+      text += `   💰 Money: $${u.net.toLocaleString()}\n`;
       text += `   🃏 Cards: ${cards}\n`;
       text += `   🎮 Pokémon: ${poke}\n\n`;
     }
