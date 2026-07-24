@@ -1,65 +1,59 @@
 /**
  * Anime reaction helper — plugins/anime/_helper.js
  *
- * Source: otakugifs API (https://api.otakugifs.xyz)
- * All reactions return animated .gif files, sent as gifPlayback videos
- * so they animate in WhatsApp.
- *
- * The GIF is downloaded to a buffer before sending so Baileys does not
- * need to make an outbound request itself (avoids silent URL failures).
+ * Source: waifu.pics API (https://api.waifu.pics/sfw/<category>)
+ * Returns static images (not GIFs), resized to ~400 px wide via
+ * images.weserv.nl so they are never sent at full/HD resolution.
  */
 
-const BASE_URL = "https://api.otakugifs.xyz/gif";
+const WAIFU_BASE  = "https://api.waifu.pics/sfw";
+const RESIZE_BASE = "https://images.weserv.nl";
 
-// All confirmed working reactions from the otakugifs API
-const VALID_REACTIONS = new Set([
-  "airkiss", "angrystare", "bite", "bleh", "blush", "brofist", "celebrate",
-  "cheers", "clap", "confused", "cool", "cry", "cuddle", "dance", "drool",
-  "evillaugh", "facepalm", "handhold", "happy", "headbang", "hug", "huh",
-  "kiss", "laugh", "lick", "love", "mad", "nervous", "no", "nom", "nosebleed",
-  "nuzzle", "nyah", "pat", "peek", "pinch", "poke", "pout", "punch", "roll",
-  "run", "sad", "scared", "shout", "shrug", "shy", "sigh", "sing", "sip",
-  "slap", "sleep", "slowclap", "smack", "smile", "smug", "sneeze", "sorry",
-  "stare", "stop", "surprised", "sweat", "thumbsup", "tickle", "tired",
-  "wave", "wink", "woah", "yawn", "yay", "yes",
+// waifu.pics SFW categories that exist on the API
+const VALID_CATEGORIES = new Set([
+  "waifu", "neko", "shinobu", "megumin", "bully", "cuddle", "cry",
+  "hug", "awoo", "kiss", "lick", "pat", "smug", "bonk", "yeet",
+  "blush", "smile", "wave", "highfive", "handhold", "nom", "bite",
+  "glomp", "slap", "kill", "kick", "happy", "wink", "poke", "dance",
+  "cringe",
 ]);
 
-// Map bot command types → otakugifs reaction names
+// Map bot command types → waifu.pics category names
 const ENDPOINT_MAP = {
   // ── Direct matches ─────────────────────────────────────────────────────────
   bite:      "bite",
   blush:     "blush",
+  bonk:      "bonk",
   cry:       "cry",
   cuddle:    "cuddle",
   dance:     "dance",
   handhold:  "handhold",
+  highfive:  "highfive",
   hug:       "hug",
   kiss:      "kiss",
   lick:      "lick",
   pat:       "pat",
   poke:      "poke",
-  punch:     "punch",
   slap:      "slap",
-  smack:     "smack",
   smile:     "smile",
   smug:      "smug",
-  tickle:    "tickle",
+  tickle:    "nom",      // no tickle → nom (closest playful touch)
   wave:      "wave",
   wink:      "wink",
+  yeet:      "yeet",
   // ── Remaps ─────────────────────────────────────────────────────────────────
-  bonk:      "punch",
+  punch:     "slap",     // closest aggressive physical
+  smack:     "slap",
+  kill:      "kill",
   feed:      "nom",
-  highfive:  "clap",
-  yeet:      "run",
-  kill:      "mad",
-  meow:      "nyah",
-  woof:      "run",
-  fox_girl:  "nyah",
-  neko:      "nyah",
-  kitsune:   "nyah",
-  waifu:     "love",
-  wallpaper: "love",
-  ngif:      "nyah",
+  meow:      "neko",
+  neko:      "neko",
+  woof:      "happy",
+  fox_girl:  "neko",
+  kitsune:   "neko",
+  waifu:     "waifu",
+  wallpaper: "waifu",
+  ngif:      "neko",
 };
 
 // ── HTTP helper ────────────────────────────────────────────────────────────────
@@ -81,32 +75,37 @@ async function timedFetch(url, timeoutMs = 15_000) {
 // ── Public API ─────────────────────────────────────────────────────────────────
 
 /**
- * Fetch a reaction GIF from the otakugifs API and return it as a Buffer.
+ * Fetch a reaction image from waifu.pics, resize it to 400 px wide at
+ * 65 % JPEG quality via images.weserv.nl, and return the result as a Buffer.
  *
  * @param {string} type — bot reaction type (e.g. "hug", "slap")
  * @returns {Promise<Buffer>}
  */
 export async function getAnimeGif(type) {
-  // Resolve through the map, validate, or default to "hug"
-  const reaction = ENDPOINT_MAP[type] ?? (VALID_REACTIONS.has(type) ? type : "hug");
+  // Resolve category
+  const category = ENDPOINT_MAP[type] ?? (VALID_CATEGORIES.has(type) ? type : "hug");
 
-  // 1. Get the GIF URL from the API
-  const apiRes = await timedFetch(`${BASE_URL}?reaction=${reaction}`);
-  const json   = await apiRes.json();
-  const gifUrl = json?.url;
-  if (!gifUrl) throw new Error(`otakugifs returned no URL for reaction "${reaction}"`);
+  // 1. Ask waifu.pics for an image URL
+  const apiRes  = await timedFetch(`${WAIFU_BASE}/${category}`);
+  const json    = await apiRes.json();
+  const imgUrl  = json?.url;
+  if (!imgUrl) throw new Error(`waifu.pics returned no URL for category "${category}"`);
 
-  // 2. Download the GIF as a buffer (so Baileys sends the buffer, not a URL)
-  const gifRes     = await timedFetch(gifUrl);
-  const arrayBuf   = await gifRes.arrayBuffer();
+  // 2. Fetch through images.weserv.nl — resize to 400 px wide, JPEG 65 % quality
+  //    This ensures the image is never sent at HD resolution.
+  const resizeUrl =
+    `${RESIZE_BASE}/?url=${encodeURIComponent(imgUrl)}&w=400&output=jpg&q=65`;
+
+  const imgRes   = await timedFetch(resizeUrl);
+  const arrayBuf = await imgRes.arrayBuffer();
   return Buffer.from(arrayBuf);
 }
 
 /**
- * Send an anime reaction GIF to a WhatsApp chat.
+ * Send an anime reaction image to a WhatsApp chat.
  *
  * Automatically picks the caption based on whether someone is @mentioned.
- * All reactions are sent as gifPlayback videos so they animate in WhatsApp.
+ * Images are sent as regular photos (not GIFs/videos).
  *
  * @param {object}        o
  * @param {object}        o.sock         Baileys socket
@@ -123,7 +122,7 @@ export async function sendReaction({
 }) {
   const chatId = msg.key.remoteJid;
 
-  // Resolve mentioned user — check all contextInfo locations in the raw message
+  // Resolve mentioned user — check contextInfo across all common message types
   const ctx =
     msg.message?.extendedTextMessage?.contextInfo ||
     msg.message?.imageMessage?.contextInfo ||
@@ -144,11 +143,10 @@ export async function sendReaction({
   try {
     const buffer = await getAnimeGif(type);
 
+    // Send as a regular image (not a GIF/video)
     await sock.sendMessage(chatId, {
-      video:       buffer,
+      image:   buffer,
       caption,
-      gifPlayback: true,
-      mimetype:    "image/gif",
       mentions,
     }, { quoted: msg });
 
