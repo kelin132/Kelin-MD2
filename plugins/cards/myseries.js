@@ -1,6 +1,8 @@
 /**
  * .myseries           — list all series you have cards from (with counts)
  * .myseries <name>    — view cards in a specific series
+ * .si <card name>     — show card owners and preview
+ * .ci <card name>     — show card details
  */
 import { findOrCreateUser } from "./db.js";
 
@@ -74,6 +76,9 @@ export default {
           out += `\n_...and ${cards.length - PAGE_SIZE} more_`;
         }
 
+        out += `\n\n💡 Use *.ci <card name or index>* for card details.`;
+        out += `\n💡 Use *.si <card name>* for owners and a preview.`;
+
         return sock.sendMessage(jid, { text: out, mentions: [sender] }, { quoted: msg });
       }
 
@@ -105,7 +110,9 @@ export default {
         out += `  📦 ${cards.length} card${cards.length !== 1 ? "s" : ""}  ${breakdown}\n\n`;
       }
 
-      out += `💡 Type *.myseries <name>* to see cards in a series.`;
+      out += `💡 Type *.myseries <name>* to see cards in a series.\n`;
+      out += `💡 Use *.si <card name>* for owners and a preview.\n`;
+      out += `💡 Use *.ci <card name or index>* for card details.`;
 
       return sock.sendMessage(jid, { text: out, mentions: [sender] }, { quoted: msg });
 

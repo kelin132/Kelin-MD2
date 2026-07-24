@@ -8,7 +8,7 @@
  * Runs independently of (and duplicates) cardSpawner.mjs if both are active;
  * the guard `global.__cardApiSpawnerRunning` prevents double-spawning.
  */
-import { pickRandomCard, resolveMediaUrl } from "../../lib/cardApi.mjs";
+import { pickRandomCard, resolveMediaUrl, createSpawnId } from "../../lib/cardApi.mjs";
 import { getEnabledSpawnChats }            from "./db.js";
 import { log }                             from "../../lib/logger.mjs";
 
@@ -23,7 +23,8 @@ if (!global.__cardApiSpawnerRunning) {
     const spawns = global.activeSpawns || (global.activeSpawns = {});
     if (spawns[chatId]) return; // don't overwrite unclaimed spawn
 
-    spawns[chatId] = { cardId: card.cardId, card };
+    const spawnId = createSpawnId();
+    spawns[chatId] = { cardId: card.cardId, spawnId, card };
 
     const caption =
 `✨ *A CARD HAS APPEARED!* ✨
@@ -32,6 +33,7 @@ if (!global.__cardApiSpawnerRunning) {
 ⭐ Tier: *${card.tier}*
 📺 Series: *${card.series}*
 🆔 ID: \`${card.cardId}\`
+🔹 Spawn ID: \`${spawnId}\`
 
 > Type *.claim ${card.cardId}* to grab it!
 > First come, first served — expires in 10 min~`;
@@ -46,7 +48,7 @@ if (!global.__cardApiSpawnerRunning) {
 
       // Auto-expire
       setTimeout(() => {
-        if (spawns[chatId]?.cardId === card.cardId) {
+        if (spawns[chatId]?.spawnId === spawnId) {
           delete spawns[chatId];
           sock.sendMessage(chatId, {
             text: `⏰ *${card.name}* was not claimed in time and vanished...`,

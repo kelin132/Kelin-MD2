@@ -15,6 +15,7 @@ import {
   TIER_EMOJI,
   TIER_NUM,
   TIER_NAME,
+  createSpawnId,
 } from "../../lib/cardApi.mjs";
 
 // ── Summon costs by tier ──────────────────────────────────────────────────────
@@ -181,6 +182,8 @@ Your wallet: *$${(ecoUser.money || 0).toLocaleString()}*
         name:       card.name,
         tier:       card.tier,
         tierNum:    card.tierNum || card.tier,
+        index:      card.index || null,
+        spawnId:    createSpawnId(),
         price:      card.price  || 0,
         series:     card.series || "Unknown",
         media:      card.media  || null,

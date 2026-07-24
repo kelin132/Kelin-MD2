@@ -46,6 +46,8 @@ Ask an admin to restart the bot, then wait for the next auto-spawn.`
         name:       card.name,
         tier:       card.tier,
         tierNum:    card.tierNum || card.tier,
+        index:      card.index || null,
+        spawnId:    spawn.spawnId || card.cardId,
         price:      card.price  || 0,
         series:     card.series || "Unknown",
         media:      card.media  || null,
