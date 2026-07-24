@@ -1,5 +1,6 @@
 // plugins/pokemon/challenge.js
-// Challenge another trainer to a Pokémon battle
+// Challenge another trainer to a Pokémon battle.
+// Target can be supplied by @mention OR by replying to their message.
 
 import { getTrainer, pickLeadFromParty } from "../../lib/pokemon/players.mjs";
 import { getTrainerParty, getPokemonXpNeeded } from "../../lib/pokemon/pokemonDb.mjs";
@@ -14,12 +15,12 @@ export default {
   aliases: ["ch", "pvp", "pokebattle"],
   description: "Challenge a user to a Pokémon battle, or accept an incoming challenge",
   category: "pokemon",
-  usage: ".ch @user  or  .ch accept",
+  usage: ".ch @user  OR  reply to their message then .ch  |  .ch accept",
 
   async run({ sock, msg, sender, args, text }) {
     const jid = msg.key.remoteJid;
 
-    // Accept incoming challenge
+    // ── Accept incoming challenge ──────────────────────────────────────────────
     if ((args[0] || "").toLowerCase() === "accept") {
       const incoming = getIncomingChallenge(sender);
       if (!incoming) {
@@ -33,13 +34,13 @@ export default {
       }
 
       const challengerTrainer = await getTrainer(incoming.challengerJid);
-      const opponentTrainer = await getTrainer(sender);
+      const opponentTrainer   = await getTrainer(sender);
       if (!challengerTrainer || !opponentTrainer) {
         return sock.sendMessage(jid, { text: "❌ One of the trainers hasn't started their journey!" }, { quoted: msg });
       }
 
       const challengerParty = await getTrainerParty(incoming.challengerJid);
-      const opponentParty = await getTrainerParty(sender);
+      const opponentParty   = await getTrainerParty(sender);
 
       const challengerLead = pickLeadFromParty(challengerTrainer, challengerParty);
       const opponentLead   = pickLeadFromParty(opponentTrainer,   opponentParty);
@@ -107,15 +108,30 @@ export default {
       return;
     }
 
-    // Send a challenge
-    const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid;
-    if (!mentioned || mentioned.length === 0) {
+    // ── Resolve opponent ───────────────────────────────────────────────────────
+    // Priority 1: @mention in the command message
+    // Priority 2: sender of the message being replied to
+    const ctx = msg.message?.extendedTextMessage?.contextInfo;
+    const mentionedJid = ctx?.mentionedJid?.[0] || null;
+    const quotedSender =
+      ctx?.participant ||                         // group quoted sender
+      (msg.quoted?.key?.participant ?? null) ||   // Baileys quoted key (group)
+      (msg.quoted?.key?.remoteJid !== jid         // DM: quoted sender ≠ group jid
+        ? msg.quoted?.key?.remoteJid
+        : null);
+
+    const targetJid = mentionedJid || quotedSender || null;
+
+    if (!targetJid) {
       return sock.sendMessage(jid, {
-        text: "Usage: *.ch @user* — mention someone to challenge them\nOr *.ch accept* — to accept a challenge",
+        text:
+          "Usage:\n" +
+          "• *.ch @user* — mention the trainer you want to challenge\n" +
+          "• Reply to their message then *.ch*\n" +
+          "• *.ch accept* — accept a challenge sent to you",
       }, { quoted: msg });
     }
 
-    const targetJid = mentioned[0];
     if (targetJid === sender) {
       return sock.sendMessage(jid, { text: "❌ You can't challenge yourself!" }, { quoted: msg });
     }
@@ -131,7 +147,7 @@ export default {
     }
 
     const party = await getTrainerParty(sender);
-    const lead = pickLeadFromParty(challenger, party);
+    const lead  = pickLeadFromParty(challenger, party);
     if (!lead || lead.hp <= 0) {
       return sock.sendMessage(jid, {
         text: "💔 All your Pokémon have fainted! Use *.heal* first.",
