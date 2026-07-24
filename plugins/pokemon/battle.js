@@ -623,17 +623,23 @@ ${hasBalls ? `🎾 *POKÉBALLS* ${battle.type !== "wild" ? "_(wild battles only)
       const wildPokemon = battle.opponentPokemon;
       const hpRatio     = wildPokemon.hp / wildPokemon.maxHp;
 
-      // Catch rate modifiers per ball type
-      const catchMods = {
-        masterball: 1000, ultraball: 2.5, greatball: 1.5,
-        netball: 3, duskball: 3.5, quickball: 5,
-        healball: 1.5, premierball: 1.5, luxuryball: 1,
-        beastball: 5, pokeball: 1,
-      };
-      const mod      = catchMods[ball] || 1;
-      const baseCatch = Math.max(0.05, (1 - hpRatio) * 0.6 + 0.1);
-      const catchRate = Math.min(0.95, baseCatch * mod);
-      const caught    = Math.random() < catchRate;
+      // Beast Ball: guaranteed 100% catch on first use — no RNG
+      let caught;
+      if (ball === "beastball") {
+        caught = true;
+      } else {
+        // Catch rate modifiers per ball type
+        const catchMods = {
+          masterball: 1000, ultraball: 2.5, greatball: 1.5,
+          netball: 3, duskball: 3.5, quickball: 5,
+          healball: 1.5, premierball: 1.5, luxuryball: 1,
+          pokeball: 1,
+        };
+        const mod       = catchMods[ball] || 1;
+        const baseCatch = Math.max(0.05, (1 - hpRatio) * 0.6 + 0.1);
+        const catchRate = Math.min(0.95, baseCatch * mod);
+        caught = Math.random() < catchRate;
+      }
 
       await removeItem(sender, ball);
       updateBattle(jid, { catchAttempts: (battle.catchAttempts || 0) + 1 });
