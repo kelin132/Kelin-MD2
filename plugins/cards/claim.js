@@ -37,8 +37,8 @@ Ask an admin to restart the bot, then wait for the next auto-spawn.`
       const user = await findOrCreateUser(sender);
       user.cards = user.cards || [];
 
-      if (user.cards.length >= (user.cardLimit || 100)) {
-        return reply(`❌ Your card collection is full! (${user.cards.length}/${user.cardLimit || 100})\n\nDelete some cards with *.delc <index>* to make room.`);
+      if (user.cards.length >= (user.cardLimit || 250)) {
+        return reply(`❌ Your card collection is full! (${user.cards.length}/${user.cardLimit || 250})\n\nDelete some cards with *.delc <index>* to make room.`);
       }
 
       user.cards.push({

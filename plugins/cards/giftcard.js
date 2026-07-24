@@ -39,7 +39,7 @@ export default {
 
       if (senderUser.cards.length === 0) return reply("❌ You have no cards to gift.");
       if (index >= senderUser.cards.length) return reply("❌ Invalid card number.");
-      if (targetUser.cards.length >= (targetUser.cardLimit || 100)) {
+      if (targetUser.cards.length >= (targetUser.cardLimit || 250)) {
         return reply("❌ That user reached their card limit.");
       }
 

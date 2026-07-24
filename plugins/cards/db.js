@@ -45,7 +45,7 @@ export async function findOrCreateUser(sender) {
       whatsappNumber: sender,
       balance:    0,
       cards:      [],
-      cardLimit:  100,
+      cardLimit:  250,
       totalCards: 0,
       username:   null,
       createdAt:  new Date(),

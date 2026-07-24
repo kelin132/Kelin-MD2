@@ -1,29 +1,37 @@
 /**
  * KELIN MD — .facebook command
- * Downloads Facebook videos using GiftedTech API with David Cyril fallback.
+ * Downloads Facebook videos using multiple API sources with auto-fallback.
  */
-
 import { get, davidGet } from "../../lib/gifted.js";
+
+// ── Pick the best video URL from an API result ────────────────────────────────
 
 function pickVideo(result) {
   if (!result) return null;
   return (
-    result.hd          ||
-    result.sd          ||
-    result.hd_url      ||
-    result.sd_url      ||
-    result.download_url||
-    result.url         ||
-    result.video       ||
+    result.hd           ||
+    result.sd           ||
+    result.hd_url       ||
+    result.sd_url       ||
+    result.download_url ||
+    result.video_url    ||
+    result.video        ||
+    result.url          ||
+    result.link         ||
     null
   );
 }
 
+// ── Multi-source fetcher with fallback ────────────────────────────────────────
+
 async function fetchFacebook(url) {
   const attempts = [
     () => get("/download/facebook",  { url }),
-    () => davidGet("/download/facebook", { url }),
     () => get("/download/fb",        { url }),
+    () => davidGet("/download/facebook", { url }),
+    () => davidGet("/download/fb",       { url }),
+    () => get("/download/facebook",  { url: url, type: "video" }),
+    () => get("/social/facebook",    { url }),
   ];
 
   for (const attempt of attempts) {
@@ -35,15 +43,17 @@ async function fetchFacebook(url) {
     } catch { /* try next */ }
   }
 
-  throw new Error("All Facebook download sources failed. Make sure the video is public.");
+  throw new Error("All Facebook download sources failed. Make sure the video is public and the URL is correct.");
 }
+
+// ── Plugin ────────────────────────────────────────────────────────────────────
 
 export default {
   name: "facebook",
   description: "Download Facebook videos",
   category: "download",
-  usage: ".facebook <facebook url>",
-  aliases: ["fb", "fbdl"],
+  usage: ".facebook <Facebook video URL>",
+  aliases: ["fb", "fbdl", "fbvid"],
   cooldown: 10,
 
   async run({ sock, msg, text }) {
@@ -51,32 +61,33 @@ export default {
 
     if (!text) {
       return sock.sendMessage(jid, {
-        text: "📥 *Facebook Downloader*\n\nUsage:\n*.facebook <facebook video url>*"
+        text: "📥 *Facebook Video Downloader*\n\nUsage:\n*.facebook <Facebook video URL>*\n\nExample:\n.facebook https://www.facebook.com/watch?v=xxxx\n.facebook https://fb.watch/xxxxx",
       }, { quoted: msg });
     }
 
+    // Validate URL
     if (!/facebook\.com|fb\.watch/i.test(text)) {
       return sock.sendMessage(jid, {
-        text: "❌ Please provide a valid Facebook video URL."
+        text: "❌ Please provide a valid Facebook video URL.\n\nExamples:\n• https://www.facebook.com/watch?v=xxxx\n• https://fb.watch/xxxxx\n• https://www.facebook.com/reel/xxxx",
       }, { quoted: msg });
     }
 
     try {
       await sock.sendMessage(jid, { text: "⏳ Downloading Facebook video..." }, { quoted: msg });
 
-      const { video, title } = await fetchFacebook(text);
+      const { video, title } = await fetchFacebook(text.trim());
 
       await sock.sendMessage(jid, {
         video:    { url: video },
         mimetype: "video/mp4",
         fileName: `${title}.mp4`,
-        caption:  `🎬 ${title}`,
+        caption:  `🎬 *${title}*\n\n✨ *KELIN MD*`,
       }, { quoted: msg });
 
     } catch (err) {
       console.error("[facebook]", err.message);
       await sock.sendMessage(jid, {
-        text: `❌ Failed to download the Facebook video.\n\n_${err.message}_`
+        text: `❌ Failed to download the Facebook video.\n\n_${err.message}_\n\n💡 Make sure:\n• The video is set to *Public*\n• The URL is correct and complete`,
       }, { quoted: msg });
     }
   },

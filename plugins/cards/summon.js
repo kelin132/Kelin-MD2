@@ -169,12 +169,12 @@ Your wallet: *$${(ecoUser.money || 0).toLocaleString()}*
       const cardUser = await findOrCreateUser(sender);
       cardUser.cards = cardUser.cards || [];
 
-      if (cardUser.cards.length >= (cardUser.cardLimit || 100)) {
+      if (cardUser.cards.length >= (cardUser.cardLimit || 250)) {
         // Refund if collection full
         ecoUser.money += cost;
         await saveUser(sender, ecoUser);
         await addHistory(sender, "summon_refund", cost, `Refund — card collection full`);
-        return reply(`❌ Your card collection is full! (${cardUser.cards.length}/${cardUser.cardLimit || 100})\n\nDelete some cards with *.delc <index>* to make room.\nYour money has been refunded.`);
+        return reply(`❌ Your card collection is full! (${cardUser.cards.length}/${cardUser.cardLimit || 250})\n\nDelete some cards with *.delc <index>* to make room.\nYour money has been refunded.`);
       }
 
       cardUser.cards.push({
