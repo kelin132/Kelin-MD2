@@ -93,23 +93,26 @@ export default {
       }
 
       const mentions = owners.map((owner) => owner.jid);
-      let text =
-`📚 *Series*
 
-${card.series || "Unknown"}
-*Owners - ${owners.length}*
+      const ownerLines = owners.length
+        ? owners.map((owner, i) =>
+            `${i + 1}. ${owner.label}${owner.spawnId ? ` · ${owner.spawnId}` : ""}`
+          ).join("\n")
+        : "  _No owners yet_";
 
-`;
+      const text =
+`╭━━━━━━━━━━━━━━━━━━━━╮
+│  📚 *Series Info*
+╰━━━━━━━━━━━━━━━━━━━━╯
 
-      if (owners.length) {
-        owners.forEach((owner, index) => {
-          text += `• ${owner.label} — #${index + 1}${owner.spawnId ? ` (${owner.spawnId})` : ""}\n`;
-        });
-      } else {
-        text += "• No owners yet\n";
-      }
+🗂️ *${card.series || "Unknown"}*
+🃏 ${card.name}
+⭐ Tier: ${card.tierNum || card.tier || "Unknown"}
 
-      text += `\n🃏 ${card.name}\n🔹 Tier: ${card.tierNum || card.tier || "Unknown"}`;
+━━━━━━━━━━━━━━━━━━━━━
+👥 *Owners (${owners.length})*
+━━━━━━━━━━━━━━━━━━━━━
+${ownerLines}`;
 
       if (card.media) {
         const imageUrl = await resolveMediaUrl(card.media);

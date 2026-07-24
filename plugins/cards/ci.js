@@ -109,20 +109,34 @@ export default {
       const collectionIndex = ownedCards.findIndex((owned) => owned === card);
       const issue = await getCardIssue(card.cardId, sender, collectionIndex);
 
-      const prefix   = collectionIndex >= 0 ? `${collectionIndex + 1}. ` : "";
+      const collNum  = collectionIndex >= 0 ? collectionIndex + 1 : null;
       const spawnId  = card.spawnId || "—";
       const indexVal = card.index != null
         ? card.index
-        : collectionIndex >= 0 ? collectionIndex + 1 : "—";
+        : collNum ?? "—";
       const issueVal = issue ? `#${issue}` : "—";
+      const tier     = card.tierNum || card.tier || "—";
+      const series   = card.series  || "—";
+
+      const tierStars =
+        typeof tier === "number" || /^\d+$/.test(String(tier))
+          ? "⭐".repeat(Math.min(Number(tier), 5))
+          : null;
 
       const text =
-`${prefix}*Name:* ${card.name || "Unknown"}
+`╭━━━━━━━━━━━━━━━━━━━━╮
+│  🃏 *Card Info*
+╰━━━━━━━━━━━━━━━━━━━━╯
 
-🔹 Tier: ${card.tierNum || card.tier || "Unknown"}
-🔹 Spawn ID: ${spawnId}
-🔹 Index: ${indexVal}
-🔹 Issue: ${issueVal}`;
+✨ *${card.name || "Unknown"}*${collNum ? `  ·  #${collNum}` : ""}
+📚 ${series}
+
+━━━━━━━━━━━━━━━━━━━━━
+⭐ *Tier:*     ${tier}${tierStars ? `  ${tierStars}` : ""}
+🏷️ *Spawn ID:* ${spawnId}
+🔢 *Index:*    ${indexVal}
+📌 *Issue:*    ${issueVal}
+━━━━━━━━━━━━━━━━━━━━━`;
 
       return reply(text);
 
