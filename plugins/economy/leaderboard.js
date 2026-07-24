@@ -1,67 +1,15 @@
 /**
  * KELIN MD — .leaderboard
- * Top players with profile block layout, including cards & Pokémon counts.
+ * Top 10 players sorted by net worth, showing money, cards & Pokémon.
  */
 import { getAllUsers } from "./database.js";
 import { getDb } from "../../lib/mongo.mjs";
 
-function xpNeeded(level) {
-  return level * 1000;
-}
-
-function formatDate(dateStr) {
-  if (!dateStr) return "Unknown";
-  const d = new Date(dateStr);
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
-
-function buildProfileBlock(user, rank, cardCount, pokeCount) {
-  const level  = user.level || 1;
-  const xp     = user.xp   || 0;
-  const money  = user.money || 0;
-  const bank   = user.bank  || 0;
-  const orbs   = user.orbs  || 0;
-  const vault  = user.vault || 0;
-  const bio    = user.bio   || "No bio set.";
-  const guild  = user.guildName || "None";
-  const streak = user.streak    || 0;
-  const name   = (user.name || "Player").toUpperCase();
-  const joined = formatDate(user.registeredAt);
-  const xpTarget = xpNeeded(level);
-
-  return (
-`┌─〔 👤 PLAYER PROFILE 〕
-├◆ 🪪 ${name} (#${rank})
-│
-├◆ 📝 Bio: ${bio}
-├◆ 🏰 Guild: ${guild}
-│
-├─〔 📊 PROGRESS 〕
-│
-├◆ 🔰 Level: ${level}
-├◆ ⭐ XP: ${xp.toLocaleString()} / ${xpTarget.toLocaleString()}
-├◆ 🔥 Streak: ${streak} day${streak !== 1 ? "s" : ""}
-│
-├─〔 💰 ECONOMY 〕
-│
-├◆ 💠 Wallet: ${money.toLocaleString()} Xen
-├◆ 🏦 Bank: ${bank.toLocaleString()} Xen
-├◆ 🌑 Nyx: ${orbs.toLocaleString()}
-├◆ 💎 Diamonds: ${vault.toLocaleString()}
-│
-├─〔 🎴 COLLECTION 〕
-│
-├◆ 🃏 Cards: ${cardCount}
-├◆ 🎮 Pokémon: ${pokeCount}
-│
-├◆ 📅 Joined: ${joined}
-└─────────────◆`
-  );
-}
+const MEDALS = ["🥇", "🥈", "🥉"];
 
 export default {
   name: "leaderboard",
-  description: "View the top players",
+  description: "View the top 10 richest players",
   category: "economy",
   usage: ".leaderboard",
   aliases: ["lb", "rich", "top"],
@@ -78,11 +26,11 @@ export default {
       }, { quoted: msg });
     }
 
-    // Sort by net worth (wallet + bank)
+    // Sort by net worth (wallet + bank), highest first — top 10
     const sorted = users
       .map(u => ({ ...u, net: (u.money || 0) + (u.bank || 0) }))
       .sort((a, b) => b.net - a.net)
-      .slice(0, 5);
+      .slice(0, 10);
 
     // ── Bulk-fetch cards & pokémon counts ─────────────────────────────────────
     const db = await getDb();
@@ -107,17 +55,24 @@ export default {
     const pokeMap = {};
     for (const doc of pokeCounts) pokeMap[doc._id] = doc.total;
 
-    // ── Build and send ─────────────────────────────────────────────────────────
-    const blocks = [];
+    // ── Build message ─────────────────────────────────────────────────────────
+    let text = "🏆 *LEADERBOARD — TOP 10*\n";
+    text += "━".repeat(28) + "\n\n";
+
     for (let i = 0; i < sorted.length; i++) {
       const u      = sorted[i];
       const userId = (u._id || "").split("@")[0].split(":")[0];
+      const medal  = MEDALS[i] || `${i + 1}.`;
+      const name   = u.name || `User_${userId.slice(-4)}`;
       const cards  = cardMap[userId] || 0;
       const poke   = pokeMap[u._id]  || 0;
-      blocks.push(buildProfileBlock(u, i + 1, cards, poke));
+
+      text += `${medal} *${name}*\n`;
+      text += `   💰 Money: ${u.net.toLocaleString()} Xen\n`;
+      text += `   🃏 Cards: ${cards}\n`;
+      text += `   🎮 Pokémon: ${poke}\n\n`;
     }
 
-    const header = `🏆 *KELIN MD — TOP LEADERBOARD*\n${"━".repeat(30)}\n\n`;
-    await sock.sendMessage(jid, { text: header + blocks.join("\n\n") }, { quoted: msg });
+    await sock.sendMessage(jid, { text: text.trim() }, { quoted: msg });
   },
 };
