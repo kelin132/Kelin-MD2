@@ -1,10 +1,11 @@
 /**
  * KELIN MD — .shop command (Anime RPG Edition)
  * Browse and purchase items using Coins 🪙, Orbs 🔮, and Diamonds 💎.
+ * Layout matches the AFK anime aesthetic: ╭━━╮ borders, ꔫ separators, Japanese text.
  */
 
 import { getUser, saveUser, requireRegistration } from "./database.js";
-import { SHOP_ITEMS as shopItems, RARITY_COLORS as rarityColors, SHOP_CATEGORIES } from "./_items.js";
+import { SHOP_ITEMS as shopItems, SHOP_CATEGORIES } from "./_items.js";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -14,194 +15,213 @@ function fmtCoins(n) {
   return `${n.toLocaleString()}`;
 }
 
-function itemCostLine(item) {
+function costLine(item) {
   const parts = [];
   if (item.price   > 0) parts.push(`🪙 ${fmtCoins(item.price)}`);
   if (item.orbCost > 0) parts.push(`🔮 ${item.orbCost}`);
   if (item.gemCost > 0) parts.push(`💎 ${item.gemCost}`);
-  return parts.join(" │ ") || "🆓 Free";
+  return parts.join("  ·  ") || "🆓 Free";
 }
 
-function rarityBadge(rarity) {
-  const map = { common: "⚪ Common", rare: "🔵 Rare", legendary: "🟡 Legendary" };
-  return map[rarity] || rarity;
+function rarityBadge(r) {
+  return { common: "⚪ Common", rare: "🔵 Rare", legendary: "🟡 Legendary" }[r] ?? r ?? "";
 }
 
-const ANIME_BORDERS = {
-  top:    "╔══════════════════════════════╗",
-  mid:    "╠══════════════════════════════╣",
-  bot:    "╚══════════════════════════════╝",
-  row:    "║",
-  div:    "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄",
-};
+const DIV = "╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌";
 
-// ─── Buy handler ──────────────────────────────────────────────────────────────
+// ─── Main menu ────────────────────────────────────────────────────────────────
 
-async function handleBuy(sock, msg, jid, sender, args) {
-  const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
+function buildMainMenu(coins, orbs, gems) {
+  const catLines = Object.entries(SHOP_CATEGORIES).map(([key, cat]) => {
+    const count = Object.values(shopItems).filter(i => i.category === key).length;
+    return `${cat.emoji} *.shop ${key}*\n┃   └ _${cat.label}_ (${count} items)`;
+  }).join("\n");
 
-  const itemNumber = Number(args[1]);
-  const orderedItems = Object.entries(shopItems);
-  const selected = Number.isInteger(itemNumber) && itemNumber >= 1
-    ? orderedItems[itemNumber - 1]
-    : null;
-
-  if (!selected) {
-    return reply(
-`❌ *Invalid item number!*
-
-Use *.shop <category>* to browse numbered items.
-Example: *.shop weapons* then *.shop buy 1*`
-    );
-  }
-
-  const [itemName, item] = selected;
-  const user = await getUser(sender);
-
-  const userCoins    = user.money    ?? 0;
-  const userOrbs     = user.orbs     ?? 0;
-  const userDiamonds = user.diamonds ?? 0;
-
-  const needCoins = item.price    ?? 0;
-  const needOrbs  = item.orbCost  ?? 0;
-  const needGems  = item.gemCost  ?? 0;
-
-  // Check funds
-  const shortCoins = Math.max(0, needCoins - userCoins);
-  const shortOrbs  = Math.max(0, needOrbs  - userOrbs);
-  const shortGems  = Math.max(0, needGems  - userDiamonds);
-
-  if (shortCoins > 0 || shortOrbs > 0 || shortGems > 0) {
-    let shortage = "";
-    if (shortCoins > 0) shortage += `\n🪙 Short: *${fmtCoins(shortCoins)} Coins*`;
-    if (shortOrbs  > 0) shortage += `\n🔮 Short: *${shortOrbs} Orbs*`;
-    if (shortGems  > 0) shortage += `\n💎 Short: *${shortGems} Diamonds*`;
-
-    return reply(
-`╔══════════════════════════════╗
-║  💸  *INSUFFICIENT FUNDS!*   ║
-╚══════════════════════════════╝
-
-${item.emoji} *${itemName.replace(/_/g, " ").toUpperCase()}*
-${ANIME_BORDERS.div}
-*Cost:*  ${itemCostLine(item)}
-*Yours:* 🪙 ${fmtCoins(userCoins)} │ 🔮 ${userOrbs} │ 💎 ${userDiamonds}
-${shortage}
-
-💡 Earn more via *.daily* *.work* *.fish* *.dig*`
-    );
-  }
-
-  // Deduct costs
-  user.money    = userCoins    - needCoins;
-  user.orbs     = userOrbs     - needOrbs;
-  user.diamonds = userDiamonds - needGems;
-  user.xp       = (user.xp || 0) + (item.xpBonus || 0);
-  user.inventory = user.inventory || [];
-  user.inventory.push(itemName);
-  await saveUser(sender, user);
-
-  return reply(
-`╔══════════════════════════════╗
-║   ✅  *PURCHASE COMPLETE!*   ║
-╚══════════════════════════════╝
-
-${item.emoji} *${itemName.replace(/_/g, " ").toUpperCase()}*
-📖 ${item.description || "Item acquired!"}
-${ANIME_BORDERS.div}
-*Paid:*    ${itemCostLine(item)}
-⭐ *XP:*   +${item.xpBonus || 0}
-${ANIME_BORDERS.div}
-*Wallet:*  🪙 ${fmtCoins(user.money)} │ 🔮 ${user.orbs} │ 💎 ${user.diamonds}
-
-Use *.inventory* to see your items!`
-  );
+  return [
+    `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮`,
+    `┃  ⚔️  *ケ リ ン  S H O P*  🏯  ┃`,
+    `┃   ✨ _Anime RPG Marketplace_ ✨  ┃`,
+    `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+    `┃`,
+    `┃  💼 *お財布 — Your Wallet*`,
+    `┃  🪙 ${fmtCoins(coins)}  ·  🔮 ${orbs}  ·  💎 ${gems}`,
+    `┃`,
+    `${DIV}`,
+    `┃  📂 *カテゴリー — Categories*`,
+    `${DIV}`,
+    catLines,
+    `${DIV}`,
+    `🛒 *.shop <category>* — Browse items`,
+    `💳 *.shop buy <number>* — Purchase`,
+    `📦 *.inventory* — Your items`,
+    `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+  ].join("\n");
 }
 
-// ─── Category list handler ────────────────────────────────────────────────────
+// ─── Category list ────────────────────────────────────────────────────────────
 
 function buildCategoryList(catKey) {
   const cat   = SHOP_CATEGORIES[catKey];
   const items = Object.entries(shopItems).filter(([, i]) => i.category === catKey);
 
   if (items.length === 0) {
-    return `❌ No items found in *${cat.label}*.`;
+    return `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮\n┃  ❌ No items in this category\n╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`;
   }
 
   const allKeys = Object.keys(shopItems);
-  const list = items.map(([name, i]) => {
+
+  const itemLines = items.map(([name, item]) => {
     const num  = allKeys.indexOf(name) + 1;
-    const desc = i.description ? `\n   📖 _${i.description}_` : "";
-    const cost = itemCostLine(i);
-    const rar  = rarityBadge(i.rarity);
-    return `*${num}.* ${i.emoji} *${name.replace(/_/g, " ")}*${desc}\n   ${cost} • ${rar}`;
-  }).join(`\n${ANIME_BORDERS.div}\n`);
+    const displayName = name.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    return [
+      `*${num}.* ${item.emoji}  *${displayName}*`,
+      item.description ? `┃    📖 _${item.description}_` : null,
+      `┃    💰 ꔫ ${costLine(item)}`,
+      `┃    ${rarityBadge(item.rarity)}  ·  ⭐ +${item.xpBonus ?? 0} XP`,
+    ].filter(Boolean).join("\n");
+  }).join(`\n${DIV}\n`);
 
-  return (
-`╔══════════════════════════════╗
-║  ${cat.emoji} *${cat.label.toUpperCase().padEnd(26)}* ║
-╚══════════════════════════════╝
+  const catTitle = cat.label.toUpperCase();
 
-${list}
+  return [
+    `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮`,
+    `┃  ${cat.emoji}  *${catTitle}*`,
+    `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+    `┃`,
+    itemLines,
+    `┃`,
+    `${DIV}`,
+    `🛒 *.shop buy <number>* to purchase~`,
+    `🔙 *.shop* to return to menu`,
+    `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+  ].join("\n");
+}
 
-${ANIME_BORDERS.div}
-🛒 Buy: *.shop buy <number>*`
+// ─── Buy handler ─────────────────────────────────────────────────────────────
+
+async function handleBuy(sock, msg, jid, sender, args) {
+  const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
+
+  const itemNumber  = Number(args[1]);
+  const orderedItems = Object.entries(shopItems);
+  const selected    = Number.isInteger(itemNumber) && itemNumber >= 1
+    ? orderedItems[itemNumber - 1]
+    : null;
+
+  if (!selected) {
+    return reply(
+      [
+        `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮`,
+        `┃  ❌ *番号が無効です！*`,
+        `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+        ``,
+        `_Invalid item number!_`,
+        `Browse a category first, then use the number shown.`,
+        ``,
+        `Example: *.shop weapons* → *.shop buy 1*`,
+        `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+      ].join("\n")
+    );
+  }
+
+  const [itemName, item] = selected;
+  const user = await getUser(sender);
+
+  const userCoins = user.money    ?? 0;
+  const userOrbs  = user.orbs     ?? 0;
+  const userGems  = user.diamonds ?? 0;
+  const needCoins = item.price    ?? 0;
+  const needOrbs  = item.orbCost  ?? 0;
+  const needGems  = item.gemCost  ?? 0;
+
+  const shortCoins = Math.max(0, needCoins - userCoins);
+  const shortOrbs  = Math.max(0, needOrbs  - userOrbs);
+  const shortGems  = Math.max(0, needGems  - userGems);
+
+  const displayName = itemName.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+  // ── Insufficient funds ───────────────────────────────────────────────────
+  if (shortCoins > 0 || shortOrbs > 0 || shortGems > 0) {
+    const shortLines = [];
+    if (shortCoins > 0) shortLines.push(`┃  🪙 _Need ${fmtCoins(shortCoins)} more Coins_`);
+    if (shortOrbs  > 0) shortLines.push(`┃  🔮 _Need ${shortOrbs} more Orbs_`);
+    if (shortGems  > 0) shortLines.push(`┃  💎 _Need ${shortGems} more Diamonds_`);
+
+    return reply(
+      [
+        `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮`,
+        `┃  💸 *残 高 不 足！* 💸`,
+        `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+        `┃`,
+        `┃  ${item.emoji}  *${displayName}*`,
+        `┃`,
+        `${DIV}`,
+        `┃  💰 Cost  ꔫ ${costLine(item)}`,
+        `┃  💳 Yours ꔫ 🪙 ${fmtCoins(userCoins)}  ·  🔮 ${userOrbs}  ·  💎 ${userGems}`,
+        `${DIV}`,
+        ...shortLines,
+        `${DIV}`,
+        `┃  💡 _.daily .work .fish .dig_`,
+        `┃     _to earn more currencies~_`,
+        `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+      ].join("\n")
+    );
+  }
+
+  // ── Purchase ──────────────────────────────────────────────────────────────
+  user.money    = userCoins - needCoins;
+  user.orbs     = userOrbs  - needOrbs;
+  user.diamonds = userGems  - needGems;
+  user.xp       = (user.xp || 0) + (item.xpBonus || 0);
+  user.inventory = user.inventory || [];
+  user.inventory.push(itemName);
+  await saveUser(sender, user);
+
+  return reply(
+    [
+      `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮`,
+      `┃  ✅ *購 入 完 了 ！* ✅   ┃`,
+      `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+      `┃`,
+      `┃  ${item.emoji}  *${displayName}*`,
+      item.description ? `┃  📖 _${item.description}_` : null,
+      `┃`,
+      `${DIV}`,
+      `┃  💰 Paid  ꔫ ${costLine(item)}`,
+      `┃  ⭐ XP    ꔫ +${item.xpBonus ?? 0}`,
+      `${DIV}`,
+      `┃  💼 Wallet ꔫ 🪙 ${fmtCoins(user.money)}  ·  🔮 ${user.orbs}  ·  💎 ${user.diamonds}`,
+      `${DIV}`,
+      `┃  📦 *.inventory* to see your items！`,
+      `┃  _やった！ Item acquired~_ 🌸`,
+      `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+    ].filter(Boolean).join("\n")
   );
 }
 
-// ─── Main menu ────────────────────────────────────────────────────────────────
-
-function buildMainMenu(userCoins, userOrbs, userDiamonds) {
-  const catList = Object.entries(SHOP_CATEGORIES).map(([key, cat]) => {
-    const count = Object.values(shopItems).filter(i => i.category === key).length;
-    return `${cat.emoji} *.shop ${key}*\n   └ ${cat.label} (${count} items)`;
-  }).join("\n\n");
-
-  return (
-`╔══════════════════════════════╗
-║  ⚔️  *KELIN MD ANIME SHOP*  🏯 ║
-║  ✨ _RPG Item Marketplace_ ✨  ║
-╚══════════════════════════════╝
-
-💼 *Your Wallet*
-🪙 ${fmtCoins(userCoins)} Coins │ 🔮 ${userOrbs} Orbs │ 💎 ${userDiamonds} Diamonds
-
-╠══════════════════════════════╣
-       📂 *SHOP CATEGORIES*
-╚══════════════════════════════╝
-
-${catList}
-
-${ANIME_BORDERS.div}
-🛒 *Browse:* *.shop <category>*
-💳 *Buy:* *.shop buy <number>*
-📦 *Inventory:* *.inventory*`
-  );
-}
-
-// ─── Export ───────────────────────────────────────────────────────────────────
+// ─── Command export ───────────────────────────────────────────────────────────
 
 export default {
-  name: "shop",
+  name:        "shop",
+  aliases:     ["store", "market", "buy"],
   description: "Browse and buy items from the Anime RPG Shop",
-  category: "economy",
-  cooldown: 6,
-  usage: ".shop [category] | .shop buy <number>",
+  category:    "economy",
+  cooldown:    6,
+  usage:       ".shop [category] | .shop buy <number>",
 
   async run({ sock, msg, sender, args }) {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const jid   = msg.key.remoteJid;
     const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
+    const sub   = (args[0] || "").toLowerCase();
 
-    const sub = (args[0] || "").toLowerCase();
-
-    // ── BUY ─────────────────────────────────────────────────────────────────
+    // ── Buy ──────────────────────────────────────────────────────────────────
     if (sub === "buy") {
       return handleBuy(sock, msg, jid, sender, args);
     }
 
-    // ── CATEGORY ALIASES ────────────────────────────────────────────────────
+    // ── Category aliases ─────────────────────────────────────────────────────
     const catAlias = {
       weapon: "weapons", sword: "weapons", combat: "weapons", fight: "weapons",
       shield: "armor",   acc: "armor",     accessory: "armor",
@@ -219,20 +239,22 @@ export default {
     const catKeys = Object.keys(SHOP_CATEGORIES);
     const catKey  = catAlias[sub] || (catKeys.includes(sub) ? sub : null);
 
-    if (catKey) {
-      return reply(buildCategoryList(catKey));
-    }
+    if (catKey) return reply(buildCategoryList(catKey));
 
-    // ── MAIN MENU ────────────────────────────────────────────────────────────
+    // ── Main menu ─────────────────────────────────────────────────────────────
     if (!sub || sub === "list" || sub === "menu" || sub === "help") {
-      const user  = await getUser(sender);
+      const user = await getUser(sender);
       return reply(buildMainMenu(user.money ?? 0, user.orbs ?? 0, user.diamonds ?? 0));
     }
 
+    // ── Unknown ───────────────────────────────────────────────────────────────
     return reply(
-`❌ *Unknown category:* _${sub}_
-
-Use *.shop* to see all categories.`
+      [
+        `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮`,
+        `┃  ❓ *Unknown:* _${sub}_`,
+        `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+        `Use *.shop* to see all categories~`,
+      ].join("\n")
     );
   },
 };
