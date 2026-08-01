@@ -24,16 +24,18 @@ import { connectDb } from "./lib/mongo.mjs";
 import { initGroupSettings } from "./lib/groupSettings.js";
 import { startCardSpawner }  from "./lib/cardSpawner.mjs";
 import { startTaxScheduler } from "./lib/taxScheduler.mjs";
+import { getRuntimeSettings } from "./lib/runtimeSettings.mjs";
 
 // settings.js is CommonJS — import via createRequire
 const _require  = createRequire(import.meta.url);
 const _settings = _require("./settings.cjs");
 
-const BOT_NAME     = process.env.BOT_NAME    || _settings.botName    || "KELIN MD";
+const RUNTIME      = getRuntimeSettings();
+const BOT_NAME     = RUNTIME.botName     || process.env.BOT_NAME    || _settings.botName    || "KELIN MD";
 const BOT_NUMBER   = process.env.BOT_NUMBER  || "";
 // OWNER_NUMBER: env var wins, then settings.js — NEVER falls back to BOT_NUMBER
-const OWNER_NUMBER = (process.env.OWNER_NUMBER || _settings.ownerNumber || "").replace(/\D/g, "");
-const PREFIX       = process.env.PREFIX      || ".";
+const OWNER_NUMBER = RUNTIME.ownerNumber || (process.env.OWNER_NUMBER || _settings.ownerNumber || "").replace(/\D/g, "");
+const PREFIX       = RUNTIME.prefix      || process.env.PREFIX      || ".";
 const BOT_VERSION = "1.0.0";
 
 // ── Banner ────────────────────────────────────────────────────────────────────

@@ -117,15 +117,19 @@ export default {
         (a, b) => b.level - a.level || a.name.localeCompare(b.name)
       );
 
-      const mentions = sorted.map(s => s.jid);
+      const mentionJids = sorted.map((s) => {
+        const storedNum = s.jid.split('@')[0].split(':')[0].replace(/\D/g, '');
+        const number = cleanNumMap[storedNum] || storedNum;
+        return `${number}@s.whatsapp.net`;
+      });
 
       const rows = sorted.map((s, index) => {
         const storedNum = s.jid.split('@')[0].split(':')[0].replace(/\D/g, '');
         const number    = cleanNumMap[storedNum] || storedNum;
         const label     = LEVEL_LABEL[s.level] || 'MOD';
         return [
-          `╭─❖ *${index + 1}. ${s.name}*`,
-          `│ 📱 Number: +${number}`,
+          `╭─❖ *${index + 1}. @${number}*`,
+          `│ 👤 Name: ${s.name}`,
           `│ 🛡️ Role: *${label}*`,
           '╰──────────────',
         ].join('\n');
@@ -141,7 +145,7 @@ export default {
 
       return sock.sendMessage(jid, {
         text:     caption,
-        mentions,
+         mentions: mentionJids,
       }, { quoted: msg });
     }
 

@@ -32,7 +32,7 @@ export default {
   description: "Configure group bot settings",
   category: "staff",
   usage: ".setgc <setting> <value>",
-  aliases: ["groupconfig", "gcset", "botconfig"],
+  aliases: ["groupconfig", "gcset"],
   isMod: true,
 
   async run({ sock, msg, args }) {

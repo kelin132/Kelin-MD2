@@ -12,18 +12,38 @@ import players       from "../../lib/dragonball/players.js";
 import enemyRoster   from "../../lib/dragonball/enemies.js";
 import techniqueLib  from "../../lib/dragonball/techniques.js";
 import { createHunt, getHunt, deleteHunt, armHuntTimer } from "../../lib/huntState.mjs";
-import { getCharacterImage } from "../../lib/dragonballAPI.mjs";
+import { getCharacterImage, getCharacterInfo } from "../../lib/dragonballAPI.mjs";
 import { generateHuntScene, generateResultScene } from "../../lib/dbzBattleCanvas.mjs";
+import { applyTransform, spendKi } from "../../lib/dbz/gameLogic.mjs";
 import {
   calculateDamage, healthBar, kiBar, chance, random,
   getAttackMessage, getTechniqueMessage, getSpawnMessage, getRankName,
 } from "../../lib/dragonball/utils.js";
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const BATTLE_MESSAGE_DELAY = 3000;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 async function resolveEnemyImage(enemy) {
   if (!enemy.apiName) return null;
   try { return await getCharacterImage(enemy.apiName); } catch { return null; }
+}
+
+async function resolvePlayerForms(playerDoc) {
+  if (Array.isArray(playerDoc.forms)) return playerDoc.forms;
+  try {
+    const character = await getCharacterInfo(playerDoc.character);
+    return (character?.transformations || []).map((form, index) => ({
+      formIndex: index + 1,
+      name: form.title || form.name || `Form ${index + 1}`,
+      imageUrl: form.image || null,
+      statMultiplier: Number((1.3 + index * 0.25).toFixed(2)),
+      auraColor: index === 0 ? "#ffdd00" : index === 1 ? "#88aaff" : "#ff6600",
+    }));
+  } catch {
+    return [];
+  }
 }
 
 /** Select a villain matching (roughly) the player's level */
@@ -65,6 +85,7 @@ function buildMenu(hunt) {
     `⚡ *${pName}, what will you do?*`,
     ``,
     `👊 *.dbzhunt attack*   — Physical Strike`,
+    `🌟 *.dbzhunt transform* — Change form (30 KI)`,
   ];
 
   p.techniques.forEach((t, i) => {
@@ -108,7 +129,7 @@ export default {
   name: "dbzhunt",
   description: "Hunt Dragon Ball villains for XP and Zeni",
   category: "dragonball",
-  usage: ".dbzhunt | attack | ki <n> | flee",
+  usage: ".dbzhunt | attack | ki <n> | transform | flee",
   aliases: ["dbzvillain", "dbzspawn"],
   cooldown: 2,
 
@@ -151,6 +172,7 @@ export default {
 
         const p = {
           username:   playerDoc.username || sender.split("@")[0],
+          character:   playerDoc.character || null,
           hp:         playerDoc.hp,
           maxHp:      playerDoc.maxHp,
           ki:         playerDoc.ki,
@@ -161,6 +183,11 @@ export default {
           techniques,
           cooldowns:  {},
           imageUrl:   playerDoc.characterImageUrl || null,
+          forms:      await resolvePlayerForms(playerDoc),
+          currentFormIndex: 0,
+          currentFormName: playerDoc.character || null,
+          transformed: false,
+          auraColor: null,
         };
 
         const hunt = createHunt(sender, { p, e: villain, round: 1 });
@@ -205,6 +232,9 @@ export default {
           if (p.cooldowns[id] <= 0) delete p.cooldowns[id];
         }
 
+        // Give the player enough time to read the attack message before
+        // rendering the next battle event.
+        await sleep(BATTLE_MESSAGE_DELAY);
         // Frame 1: player hits villain
         await sendHuntImage(sock, jid, hunt, resultText, { hitSide: "right", damage: dmg });
 
@@ -280,6 +310,7 @@ export default {
           await players.update(sender, { $inc: { zeni: -loseZeni, losses: 1 }, $set: { hp: 1 } });
           deleteHunt(sender);
 
+          await sleep(BATTLE_MESSAGE_DELAY);
           await sendHuntImage(sock, jid, hunt, enemyMsg, { hitSide: "left", damage: enemyDmg });
           return sock.sendMessage(jid, {
             text: [
@@ -291,7 +322,16 @@ export default {
           });
         }
 
+        await sleep(BATTLE_MESSAGE_DELAY);
         await sendHuntImage(sock, jid, hunt, enemyMsg, { hitSide: "left", damage: enemyDmg });
+        armHuntTimer(hunt, async () => {
+          if (!getHunt(sender)) return;
+          await sock.sendMessage(jid, {
+            text: `⏰ Hunt expired — *${e.name}* escaped while you were distracted!`,
+          });
+          deleteHunt(sender);
+        });
+        await sleep(BATTLE_MESSAGE_DELAY);
         return sock.sendMessage(jid, { text: buildMenu(hunt) });
       }
 
@@ -303,8 +343,68 @@ export default {
         return applyDamageToEnemy(dmg, txt);
       }
 
+      // ── TRANSFORM ─────────────────────────────────────────────────────────
+      if (cmd === "transform" || cmd === "form" || cmd === "powerup") {
+        if (!p.forms?.length) {
+          return sock.sendMessage(jid, {
+            text: "🌟 Your fighter has no unlocked forms yet. Choose a character with transformations first.",
+          }, { quoted: msg });
+        }
+
+        const spent = spendKi(p, 30);
+        if (!spent) {
+          return sock.sendMessage(jid, {
+            text: `❌ Not enough KI to transform! Need 30 KI, have ${Math.floor(p.ki || 0)}.`,
+          }, { quoted: msg });
+        }
+
+        const transformed = applyTransform(spent);
+        if (!transformed) {
+          return sock.sendMessage(jid, {
+            text: "❌ You are already using your strongest available form.",
+          }, { quoted: msg });
+        }
+
+        const previousName = p.currentFormName || p.character || p.username;
+        Object.assign(p, transformed);
+        await sleep(BATTLE_MESSAGE_DELAY);
+        await sendHuntImage(sock, jid, hunt, [
+          `🌟 *${previousName}* powers up into *${p.currentFormName}*!`,
+          `⚔️ Attack: *${p.attack}*  🛡️ Defense: *${p.defense}*`,
+          `💠 KI spent: *30*`,
+        ].join("\n"));
+
+        // Changing form consumes the turn, so the villain gets a response.
+        const enemyDmg = Math.max(1, calculateDamage(e, p));
+        p.hp = Math.max(0, p.hp - enemyDmg);
+        hunt.round++;
+        const enemyMsg = getAttackMessage(`*${e.name}*`, `*${pName}*`, enemyDmg, false);
+        await sleep(BATTLE_MESSAGE_DELAY);
+        await sendHuntImage(sock, jid, hunt, enemyMsg, { hitSide: "left", damage: enemyDmg });
+
+        if (p.hp <= 0) {
+          const loseZeni = Math.floor((playerDoc.zeni || 0) * 0.05);
+          await players.update(sender, { $inc: { zeni: -loseZeni, losses: 1 }, $set: { hp: 1 } });
+          deleteHunt(sender);
+          await sleep(BATTLE_MESSAGE_DELAY);
+          return sock.sendMessage(jid, {
+            text: `☠️ *${pName.toUpperCase()} WAS DEFEATED!*\n💀 *${e.name}* overwhelmed you!\n💰 Lost: *${loseZeni} Zeni*`,
+          }, { quoted: msg });
+        }
+
+        armHuntTimer(hunt, async () => {
+          if (!getHunt(sender)) return;
+          await sock.sendMessage(jid, {
+            text: `⏰ Hunt expired — *${e.name}* escaped while you were distracted!`,
+          });
+          deleteHunt(sender);
+        });
+        await sleep(BATTLE_MESSAGE_DELAY);
+        return sock.sendMessage(jid, { text: buildMenu(hunt) });
+      }
+
       // ── KI TECHNIQUE ─────────────────────────────────────────────────────
-      if (cmd === "ki") {
+      if (cmd === "ki" || cmd === "technique" || cmd === "power") {
         const idx = parseInt(args?.[1], 10) - 1;
         if (isNaN(idx) || !p.techniques[idx]) {
           return sock.sendMessage(jid, { text: buildMenu(hunt) }, { quoted: msg });
@@ -334,6 +434,7 @@ export default {
             `🔵 *${pName}* generates a Ki barrier — defense boosted 30%!`,
           ].join("\n"));
 
+          await sleep(BATTLE_MESSAGE_DELAY);
           let enemyDmg = Math.max(1, calculateDamage(e, p));
           const isCrit  = chance(10);
           let enemyMsg  = getAttackMessage(`*${e.name}*`, `*${pName}*`, enemyDmg, isCrit);
@@ -345,13 +446,23 @@ export default {
             const loseZeni = Math.floor((playerDoc.zeni || 0) * 0.05);
             await players.update(sender, { $inc: { zeni: -loseZeni, losses: 1 }, $set: { hp: 1 } });
             deleteHunt(sender);
+            await sleep(BATTLE_MESSAGE_DELAY);
             await sendHuntImage(sock, jid, hunt, enemyMsg, { hitSide: "left", damage: enemyDmg });
             return sock.sendMessage(jid, {
               text: `☠️ *${pName.toUpperCase()} WAS DEFEATED!*\n💀 *${e.name}* overwhelmed you!\n💰 Lost: *${loseZeni} Zeni*\n❤️ HP restored to 1.`,
             });
           }
 
+          await sleep(BATTLE_MESSAGE_DELAY);
           await sendHuntImage(sock, jid, hunt, enemyMsg, { hitSide: "left", damage: enemyDmg });
+          armHuntTimer(hunt, async () => {
+            if (!getHunt(sender)) return;
+            await sock.sendMessage(jid, {
+              text: `⏰ Hunt expired — *${e.name}* escaped while you were distracted!`,
+            });
+            deleteHunt(sender);
+          });
+          await sleep(BATTLE_MESSAGE_DELAY);
           return sock.sendMessage(jid, { text: buildMenu(hunt) });
         }
 
