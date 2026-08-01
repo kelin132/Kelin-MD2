@@ -9,7 +9,7 @@ import { afkUsers } from "../../lib/pluginManager.mjs";
 export default {
   name: "afk",
   aliases: ["away"],
-  category: "economy",
+  category: "group",
   cooldown: 6,
   description: "Go AFK — bot will notify others and track your time away.",
   usage: ".afk [reason]",
