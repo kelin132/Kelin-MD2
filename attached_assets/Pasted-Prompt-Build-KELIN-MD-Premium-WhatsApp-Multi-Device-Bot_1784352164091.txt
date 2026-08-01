@@ -1,0 +1,204 @@
+Prompt: Build KELIN MD – Premium WhatsApp Multi-Device Bot
+
+Create a production-ready WhatsApp Multi-Device (MD) bot called KELIN MD using Node.js, the latest @whiskeysockets/baileys, and the WhatsApp Multi-Device protocol. The project must be modern, fast, secure, scalable, and easy to deploy on VPS, Railway, Render, Pterodactyl panels, and Termux.
+
+Branding
+
+- Bot Name: KELIN MD
+- Developer: Kelin
+- Footer: © KELIN MD
+- Theme: Dark, futuristic blue/purple neon with glassmorphism UI
+- Logo Placeholder: KELIN MD
+- Package Name: "kelin-md"
+
+Core Requirements
+
+- Built with Node.js (ES Modules)
+- Latest Baileys library
+- Express backend
+- Modern web dashboard
+- JSON database with optional MongoDB support
+- Plugin-based architecture
+- Auto reconnect
+- Error handling
+- Anti-crash protection
+- Hot plugin reloading
+- Clean, production-ready folder structure
+
+WhatsApp Pairing System
+
+Instead of QR login, KELIN MD must use WhatsApp Pairing Code.
+
+Features:
+
+- User enters their phone number in the dashboard.
+- Backend generates a pairing code using Baileys.
+- Pairing code is displayed instantly on the panel.
+- User enters the code in WhatsApp.
+- Bot connects automatically.
+- Session is saved securely.
+- Auto reconnect after restart.
+- Logout and session management.
+
+Dashboard
+
+Create a premium responsive dashboard with:
+
+- Home
+- Pairing Code
+- Console Logs
+- Plugins
+- Commands
+- Statistics
+- Sessions
+- File Manager
+- API Status
+- Restart Bot
+- Shutdown Bot
+- Update Bot
+- Settings
+- Backup & Restore
+
+Display:
+
+- Bot Status
+- Connected Number
+- Uptime
+- RAM Usage
+- CPU Usage
+- Total Users
+- Total Groups
+- Total Commands
+- Plugin Count
+
+Use Tailwind CSS, Framer Motion, Lucide Icons, and glassmorphism with smooth animations.
+
+Commands
+
+Implement 200+ commands, including:
+
+- Main (menu, help, ping, alive, owner, info, runtime, uptime)
+- Group Management
+- Admin Tools
+- Owner Commands
+- Downloads (YouTube, TikTok, Instagram, Facebook, Spotify, MediaFire, GitHub)
+- AI (ChatGPT, Gemini, DeepSeek, Claude, code generation, translation)
+- Search (Google, Wikipedia, News, Weather, Dictionary, GitHub, NPM)
+- Media (stickers, image editing, QR, remove background, HD enhancer)
+- Fun (memes, jokes, truth, dare, games)
+- Economy
+- Casino
+- Anime
+- Utilities
+- Moderation
+- Logging
+- Premium Features
+
+Plugin System
+
+Every command must be stored as an individual plugin.
+
+Folders:
+
+- plugins/main
+- plugins/group
+- plugins/admin
+- plugins/owner
+- plugins/download
+- plugins/ai
+- plugins/anime
+- plugins/fun
+- plugins/games
+- plugins/media
+- plugins/search
+- plugins/utilities
+
+Plugins must automatically load and reload without restarting the bot.
+
+Events
+
+Include:
+
+- Welcome Messages
+- Goodbye Messages
+- Anti Delete
+- Anti Link
+- Anti Spam
+- Anti Call
+- Auto React
+- Auto Read
+- Auto Typing
+- Auto Recording
+- AFK System
+- XP & Level System
+- Economy System
+- Command Logging
+- Error Logging
+
+Security
+
+- Rate limiting
+- Session encryption
+- API key protection
+- Owner-only commands
+- Admin permissions
+- Premium user system
+- Spam protection
+- Input validation
+
+Configuration
+
+Provide a single configuration file where users can edit:
+
+- Owner Name
+- Owner Number
+- Bot Name (default: KELIN MD)
+- Prefix
+- Theme Emoji
+- Footer
+- API Keys
+- MongoDB URI
+- Session Folder
+- Premium Users
+- Admin Numbers
+
+Folder Structure
+
+src/
+plugins/
+events/
+database/
+sessions/
+config/
+dashboard/
+routes/
+middlewares/
+lib/
+public/
+assets/
+logs/
+temp/
+
+Deployment
+
+Make KELIN MD deployable on:
+
+- Pterodactyl Panels
+- Railway
+- Render
+- VPS
+- Termux
+- Docker
+
+Provide:
+
+- README.md
+- Installation Guide
+- Deployment Guide
+- Environment Variables
+- Sample Config
+- Example Plugins
+
+Final Goal
+
+KELIN MD should feel like a premium, professional WhatsApp bot with a beautiful dashboard, fast performance, a powerful plugin system, secure pairing-code login, and hundreds of commands. The codebase must be clean, well-documented, easy to extend, and ready for production use.
