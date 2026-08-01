@@ -13,10 +13,17 @@
  * The actual enforcement happens in lib/pluginManager.mjs.
  */
 import { groupSettings } from "../../lib/groupSettings.js";
-import { getPlugins } from "../../lib/pluginManager.mjs";
 
 // Categories that can never be disabled (essential bot functions)
 const PROTECTED_CATS = new Set(["main", "staff", "owner", "group"]);
+
+// All known categories — no circular import needed
+const ALL_CATS = [
+  "main", "economy", "company", "guild", "pets", "cards",
+  "naruto", "pokemon", "dragonball", "games", "fun", "ai",
+  "search", "media", "image", "utilities", "download",
+  "group", "anime", "staff", "owner",
+];
 
 const categoryEmojis = {
   main:       "🏡",
@@ -30,7 +37,7 @@ const categoryEmojis = {
   anime:      "🍡",
   staff:      "🛡️",
   company:    "🏢",
-  games:      "🎮",
+  games:      "🎲",
   fun:        "🎀",
   ai:         "🪄",
   search:     "🔎",
@@ -38,6 +45,7 @@ const categoryEmojis = {
   utilities:  "🔧",
   download:   "📥",
   group:      "🌸",
+  owner:      "👑",
 };
 
 function getEmoji(cat) {
@@ -65,16 +73,13 @@ export default {
     const settings = groupSettings.get(jid) || {};
     const disabled  = new Set(settings.disabledCategories || []);
 
-    // Collect all known categories from loaded plugins
-    const allCats = [...new Set(getPlugins().map(p => p.category || "other"))].sort();
-
     // ── No args: show status list ─────────────────────────────────────────
     if (!args[0]) {
-      const lines = allCats.map(cat => {
-        const emoji     = getEmoji(cat);
-        const isDisabled = disabled.has(cat);
+      const lines = ALL_CATS.map(cat => {
+        const emoji       = getEmoji(cat);
         const isProtected = PROTECTED_CATS.has(cat);
-        const statusIcon = isProtected ? "🔒 Protected" : isDisabled ? "❌ Disabled" : "✅ Enabled";
+        const isDisabled  = disabled.has(cat);
+        const statusIcon  = isProtected ? "🔒 Protected" : isDisabled ? "❌ Disabled" : "✅ Enabled";
         return `│ ${emoji} *${cat}* — ${statusIcon}`;
       });
 
@@ -90,17 +95,17 @@ ${lines.join("\n")}
       }, { quoted: msg });
     }
 
-    const target  = args[0].toLowerCase();
-    const enable  = cmd === "enablecat";
+    const target = args[0].toLowerCase();
+    const enable = cmd === "enablecat";
 
     // Validate category exists
-    if (!allCats.includes(target)) {
+    if (!ALL_CATS.includes(target)) {
       return sock.sendMessage(jid, {
         text:
 `╭─❌「 *UNKNOWN CATEGORY* 」─╮
 │ Category *${target}* not found.
 │
-│ Available: ${allCats.join(", ")}
+│ Available: ${ALL_CATS.filter(c => !PROTECTED_CATS.has(c)).join(", ")}
 ╰─────────────────────────────❀`,
       }, { quoted: msg });
     }
@@ -127,18 +132,16 @@ ${lines.join("\n")}
 
     const emoji      = getEmoji(target);
     const statusIcon = enable ? "✅ *ENABLED*" : "❌ *DISABLED*";
-    const cmdCount   = getPlugins().filter(p => (p.category || "other") === target).length;
 
     await sock.sendMessage(jid, {
       text:
 `╭─${emoji}「 *CATEGORY UPDATED* 」─╮
-│ Category  :: *${target}*
-│ Status    :: ${statusIcon}
-│ Commands  :: *${cmdCount} command${cmdCount !== 1 ? "s" : ""}*
+│ Category :: *${target}*
+│ Status   :: ${statusIcon}
 │
 │ ${enable
   ? `Users can now use *${target}* commands.`
-  : `*${target}* commands are now blocked in this group.\nStaff and owner still have full access.`}
+  : `*${target}* commands are now blocked.\nStaff and owner still have full access.`}
 ╰─────────────────────────────❀`,
     }, { quoted: msg });
   },
