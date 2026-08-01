@@ -54,7 +54,8 @@ export default {
   description: "Change owner, bot identity, prefix, image, and menu layout",
   category: "owner",
   usage: ".botconfig <owner|name|image|prefix|layout> <value>",
-  isOwner: true,
+  isOwner: false,
+  isStaff:true,
   cooldown: 3,
 
   async run({ sock, msg, args, cmd, prefix, isOwner }) {
