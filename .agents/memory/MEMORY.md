@@ -1,0 +1,1 @@
+- [Native canvas dependency](native-canvas.md) — the bot’s canvas renderer needs a successful native `canvas` build; syntax and plugin loading can still pass while renderer plugins warn.
