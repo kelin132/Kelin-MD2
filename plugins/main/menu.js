@@ -116,7 +116,7 @@ export default {
       text +=
 `\n╭─${emoji}「 *${title}*${disabledTag} 」
 │ ${cmds.map(c => `\`${prefix}${c}\``).join(" • ")}
-╰────────────────`;
+╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
     }
 
     // ── Disabled-category notice for regular users ────────────────────────
@@ -127,7 +127,7 @@ export default {
 ╭─🔒「 *Disabled in this group* 」
 │ ${disabledList}
 │ _Ask a staff member to enable them._
-╰────────────────`;
+╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
     }
 
     text += `\n\n> © AKIRA`;
