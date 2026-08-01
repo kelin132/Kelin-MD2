@@ -1,20 +1,20 @@
-// plugins/dragonball/dtrain.js
+// plugins/dragonball/dbztrain.js
 // Power up your Dragon Ball fighter through training sessions
-// Usage: .dtrain [attack|defense|speed|ki] or .dtrain to see options
+// Usage: .dbztrain [attack|defense|speed|ki|hp]
 
 import players from "../../lib/dragonball/players.js";
 import { getRankName } from "../../lib/dragonball/utils.js";
 
-const TRAIN_COST_ZENI = 100;
-const TRAIN_COOLDOWNS = new Map(); // sender → lastTrainedAt
+const TRAIN_COST_ZENI  = 100;
+const TRAIN_COOLDOWNS  = new Map(); // sender → lastTrainedAt
 const TRAIN_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes between sessions
 
 const TRAIN_SESSIONS = {
-  attack:  { stat: "attack",  emoji: "⚔️",  gain: 2, label: "Attack" },
-  defense: { stat: "defense", emoji: "🛡️",  gain: 2, label: "Defense" },
-  speed:   { stat: "speed",   emoji: "💨",  gain: 2, label: "Speed" },
-  ki:      { stat: "maxKi",   emoji: "💠",  gain: 15, label: "Max KI" },
-  hp:      { stat: "maxHp",   emoji: "❤️",  gain: 20, label: "Max HP" },
+  attack:  { stat: "attack",  emoji: "⚔️",  gain: 2,  label: "Attack"  },
+  defense: { stat: "defense", emoji: "🛡️",  gain: 2,  label: "Defense" },
+  speed:   { stat: "speed",   emoji: "💨",  gain: 2,  label: "Speed"   },
+  ki:      { stat: "maxKi",   emoji: "💠",  gain: 15, label: "Max KI"  },
+  hp:      { stat: "maxHp",   emoji: "❤️",  gain: 20, label: "Max HP"  },
 };
 
 const TRAIN_MESSAGES = {
@@ -33,12 +33,12 @@ const TRAIN_MESSAGES = {
     "⚡ Instant Transmission training — your speed skyrockets!",
     "🌀 Dodging energy blasts all day — reflexes sharpen!",
   ],
-  ki:    [
+  ki: [
     "💠 Meditating on the Lookout — KI reserves expand!",
     "🌟 Focusing your energy to the limit — KI grows stronger!",
     "🐉 Spirit energy flows through you — maximum KI rises!",
   ],
-  hp:    [
+  hp: [
     "❤️ Zenkai boost from near-death training — health soars!",
     "💪 Surviving brutal punishment — body grows tougher!",
     "🏔️ High-gravity training complete — HP increases!",
@@ -48,11 +48,11 @@ const TRAIN_MESSAGES = {
 function random(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 export default {
-  name: "dtrain",
+  name: "dbztrain",
   description: "Train to increase your Dragon Ball fighter stats",
   category: "dragonball",
-  usage: ".dtrain [attack|defense|speed|ki|hp]",
-  aliases: ["dbztrain", "dpower", "dpowerup"],
+  usage: ".dbztrain [attack|defense|speed|ki|hp]",
+  aliases: ["dbzpower", "dbzpowerup"],
   cooldown: 3,
 
   async run({ sock, msg, text, sender }) {
@@ -78,13 +78,13 @@ export default {
             `💰 Your Zeni: *${player.zeni}*`,
             "",
             "Choose what to train:",
-            "  ⚔️  *.dtrain attack*   — +2 ATK",
-            "  🛡️  *.dtrain defense*  — +2 DEF",
-            "  💨  *.dtrain speed*    — +2 SPD",
-            "  💠  *.dtrain ki*       — +15 Max KI",
-            "  ❤️  *.dtrain hp*       — +20 Max HP",
+            "  ⚔️  *.dbztrain attack*   — +2 ATK",
+            "  🛡️  *.dbztrain defense*  — +2 DEF",
+            "  💨  *.dbztrain speed*    — +2 SPD",
+            "  💠  *.dbztrain ki*       — +15 Max KI",
+            "  ❤️  *.dbztrain hp*       — +20 Max HP",
             "",
-            `⏳ Cooldown: 5 minutes between sessions`,
+            "⏳ Cooldown: 5 minutes between sessions",
           ].join("\n"),
         }, { quoted: msg });
       }
@@ -92,7 +92,7 @@ export default {
       const session = TRAIN_SESSIONS[cmd];
       if (!session) {
         return sock.sendMessage(jid, {
-          text: `❌ Unknown training type!\n\nOptions: *attack*, *defense*, *speed*, *ki*, *hp*`,
+          text: "❌ Unknown training type!\n\nOptions: *attack*, *defense*, *speed*, *ki*, *hp*",
         }, { quoted: msg });
       }
 
@@ -108,26 +108,25 @@ export default {
       // Zeni check
       if (player.zeni < TRAIN_COST_ZENI) {
         return sock.sendMessage(jid, {
-          text: `❌ Not enough Zeni!\n\nYou need *${TRAIN_COST_ZENI}* Zeni but only have *${player.zeni}*.`,
+          text: `❌ Not enough Zeni!\n\nYou need *${TRAIN_COST_ZENI}* but only have *${player.zeni}*.`,
         }, { quoted: msg });
       }
 
       // Apply stat change
-      player.zeni -= TRAIN_COST_ZENI;
-      player[session.stat] = (player[session.stat] || 0) + session.gain;
-      // If training max HP/KI, also restore to new max
+      player.zeni              -= TRAIN_COST_ZENI;
+      player[session.stat]      = (player[session.stat] || 0) + session.gain;
       if (session.stat === "maxHp") player.hp = Math.min(player.hp + session.gain, player.maxHp);
       if (session.stat === "maxKi") player.ki = Math.min(player.ki + session.gain, player.maxKi);
 
       await player.save();
       TRAIN_COOLDOWNS.set(sender, Date.now());
 
-      const rank = getRankName(player.level);
-      const msg2 = random(TRAIN_MESSAGES[cmd]);
+      const rank  = getRankName(player.level);
+      const msg2  = random(TRAIN_MESSAGES[cmd]);
 
       return sock.sendMessage(jid, {
         text: [
-          `💪 *TRAINING COMPLETE!*`,
+          "💪 *TRAINING COMPLETE!*",
           "",
           msg2,
           "",
@@ -144,7 +143,7 @@ export default {
       }, { quoted: msg });
 
     } catch (err) {
-      console.error("DTRAIN ERROR:", err);
+      console.error("DBZTRAIN ERROR:", err);
       return sock.sendMessage(jid, { text: "❌ Training failed — try again." }, { quoted: msg });
     }
   },

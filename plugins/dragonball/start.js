@@ -97,10 +97,10 @@ async function finishCreation(sock, jid, msg, sender, username, session) {
     `💰 Starting Zeni: 500`,
     ``,
     `*Get started:*`,
-    `• *.dtrain* — Power up your fighter`,
-    `• *.dhunt* — Hunt villains for XP`,
-    `• *.dbattle @user* — Challenge another fighter`,
-    `• *.dprofile* — View your stats`,
+    `• *.dbztrain* — Power up your fighter`,
+    `• *.dbzhunt* — Hunt villains for XP`,
+    `• *.dbzchallenge @user* — Challenge another fighter`,
+    `• *.dbzprofile* — View your stats`,
   ].join("\n");
 
   let buf = null;
@@ -117,7 +117,7 @@ export default {
   description: "Create your Dragon Ball Z fighter",
   category: "dragonball",
   usage: ".dbzstart",
-  aliases: ["dbzbegin", "startdbz", "dstart"],
+  aliases: ["dbzselect", "dbzbegin", "dbzroster"],
   cooldown: 3,
 
   async run({ sock, msg, text, sender }) {
@@ -134,7 +134,7 @@ export default {
             `🌍 Race: *${existing.race}*`,
             `⭐ Level: *${existing.level}*`,
             "",
-            "Use *.dprofile* to view your stats.",
+            "Use *.dbzprofile* to view your stats.",
           ].join("\n"),
         }, { quoted: msg });
       }

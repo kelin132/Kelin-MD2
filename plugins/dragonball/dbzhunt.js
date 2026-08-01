@@ -1,12 +1,12 @@
-// plugins/dragonball/dhunt.js
+// plugins/dragonball/dbzhunt.js
 // PvE villain hunt — villains spawn from the Dragon Ball villain roster
-// Turn flow mirrors dbattle.js: each hit gets its own canvas frame.
+// Turn flow mirrors dbzbattle: each hit gets its own canvas frame.
 //
 // Commands:
-//   .dhunt              — spawn a villain and start the battle
-//   .dhunt attack       — basic physical attack
-//   .dhunt ki <1-N>     — use a learned technique
-//   .dhunt flee         — escape (penalty)
+//   .dbzhunt              — spawn a villain and start the battle
+//   .dbzhunt attack       — basic physical attack
+//   .dbzhunt ki <1-N>     — use a learned technique
+//   .dbzhunt flee         — escape (penalty)
 
 import players       from "../../lib/dragonball/players.js";
 import enemyRoster   from "../../lib/dragonball/enemies.js";
@@ -33,10 +33,10 @@ function pickVillain(playerLevel) {
     return diff >= -8 && diff <= 12;
   });
   const pool = eligible.length ? eligible : enemyRoster;
-  return { ...random(pool) };   // clone so we don't mutate the roster
+  return { ...random(pool) };
 }
 
-/** Pokémon-style status block — shows player's name, not "You". */
+/** Pokémon-style status block — shows the player's name. */
 function statusBlock(p, e) {
   const pName = p.username || "You";
   const php = Math.max(0, p.hp), pki = Math.max(0, p.ki);
@@ -51,7 +51,7 @@ function statusBlock(p, e) {
   ].join("\n");
 }
 
-/** Build the Pokémon-style action menu */
+/** Build the action menu */
 function buildMenu(hunt) {
   const { p, e, round } = hunt;
   const pName = p.username || "You";
@@ -64,32 +64,28 @@ function buildMenu(hunt) {
     `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
     `⚡ *${pName}, what will you do?*`,
     ``,
-    `👊 *.dhunt attack*   — Physical Strike`,
+    `👊 *.dbzhunt attack*   — Physical Strike`,
   ];
 
   p.techniques.forEach((t, i) => {
     const cd   = p.cooldowns[t.id] || 0;
     const noKi = p.ki < t.ki;
     if (cd > 0) {
-      lines.push(`🔒 *.dhunt ki ${i + 1}*  — ${t.name} ❌ cooldown: ${cd} turn(s)`);
+      lines.push(`🔒 *.dbzhunt ki ${i + 1}*  — ${t.name} ❌ cooldown: ${cd} turn(s)`);
     } else if (noKi) {
-      lines.push(`⚠️ *.dhunt ki ${i + 1}*  — ${t.name} ❌ need ${t.ki} KI`);
+      lines.push(`⚠️ *.dbzhunt ki ${i + 1}*  — ${t.name} ❌ need ${t.ki} KI`);
     } else if (t.damage === 0) {
-      lines.push(`✨ *.dhunt ki ${i + 1}*  — ${t.name} (support · ${t.ki} KI)`);
+      lines.push(`✨ *.dbzhunt ki ${i + 1}*  — ${t.name} (support · ${t.ki} KI)`);
     } else {
-      lines.push(`🌀 *.dhunt ki ${i + 1}*  — ${t.name} (${t.damage} dmg · ${t.ki} KI)`);
+      lines.push(`🌀 *.dbzhunt ki ${i + 1}*  — ${t.name} (${t.damage} dmg · ${t.ki} KI)`);
     }
   });
 
-  lines.push(`🏃 *.dhunt flee*    — Escape (5% Zeni penalty)`);
+  lines.push(`🏃 *.dbzhunt flee*    — Escape (5% Zeni penalty)`);
   lines.push(`⏳ _3 minutes to act or hunt auto-cancels._`);
   return lines.join("\n");
 }
 
-/**
- * Send a hunt canvas image.  caption is shown under / beside the image.
- * Falls back to plain text if canvas generation fails.
- */
 async function sendHuntImage(sock, jid, hunt, caption, opts = {}) {
   try {
     const buffer = await generateHuntScene({
@@ -101,7 +97,7 @@ async function sendHuntImage(sock, jid, hunt, caption, opts = {}) {
     });
     return sock.sendMessage(jid, { image: buffer, caption });
   } catch (err) {
-    console.error("DHUNT CANVAS ERROR:", err);
+    console.error("DBZHUNT CANVAS ERROR:", err);
     return sock.sendMessage(jid, { text: caption });
   }
 }
@@ -109,11 +105,11 @@ async function sendHuntImage(sock, jid, hunt, caption, opts = {}) {
 // ─── Plugin export ────────────────────────────────────────────────────────────
 
 export default {
-  name: "dhunt",
+  name: "dbzhunt",
   description: "Hunt Dragon Ball villains for XP and Zeni",
   category: "dragonball",
-  usage: ".dhunt | attack | ki <n> | flee",
-  aliases: ["dvillain", "dspawn", "dbzhunt"],
+  usage: ".dbzhunt | attack | ki <n> | flee",
+  aliases: ["dbzvillain", "dbzspawn"],
   cooldown: 2,
 
   async run({ sock, msg, text, sender, args }) {
@@ -139,7 +135,7 @@ export default {
 
         if (playerDoc.hp <= 0) {
           return sock.sendMessage(jid, {
-            text: "❤️ You're too injured to hunt!\nUse *.dheal* or wait for HP to restore.",
+            text: "❤️ You're too injured to hunt!\nUse *.dbzheal* or wait for HP to restore.",
           }, { quoted: msg });
         }
 
@@ -178,16 +174,14 @@ export default {
         });
 
         const spawnMsg = getSpawnMessage(villain.name, villain.level);
-        return sendHuntImage(sock, jid, hunt,
-          `${spawnMsg}\n\n${buildMenu(hunt)}`
-        );
+        return sendHuntImage(sock, jid, hunt, `${spawnMsg}\n\n${buildMenu(hunt)}`);
       }
 
       // ── In-battle commands ─────────────────────────────────────────────────
       const hunt = getHunt(sender);
       if (!hunt) {
         return sock.sendMessage(jid, {
-          text: "❌ No active hunt!\nUse *.dhunt* to find a villain.",
+          text: "❌ No active hunt!\nUse *.dbzhunt* to find a villain.",
         }, { quoted: msg });
       }
 
@@ -198,25 +192,24 @@ export default {
       p.ki = Math.min(p.maxKi, p.ki + Math.floor(p.maxKi * 0.1));
 
       /**
-       * Called after the player lands a hit.
-       * PvP-style: sends the player's attack as its own canvas frame,
-       * then sends the enemy's counterattack as a second canvas frame,
-       * then sends the action menu as a plain text message.
+       * PvP-style flow:
+       * Frame 1 — player's hit lands on villain  (hitSide: "right")
+       * Frame 2 — villain counterattacks player  (hitSide: "left")
+       * Then  — action menu as plain text
        */
       async function applyDamageToEnemy(dmg, resultText) {
         e.hp = Math.max(0, e.hp - dmg);
 
-        // Tick player cooldowns
         for (const id of Object.keys(p.cooldowns)) {
           p.cooldowns[id]--;
           if (p.cooldowns[id] <= 0) delete p.cooldowns[id];
         }
 
-        // ── Frame 1: player's hit ────────────────────────────────────────────
+        // Frame 1: player hits villain
         await sendHuntImage(sock, jid, hunt, resultText, { hitSide: "right", damage: dmg });
 
         if (e.hp <= 0) {
-          // ── Victory! ──────────────────────────────────────────────────────
+          // ── Victory ──────────────────────────────────────────────────────
           const xpGain   = e.xpReward;
           const zeniGain = e.zeniReward;
 
@@ -257,9 +250,8 @@ export default {
           return sock.sendMessage(jid, { text: caption });
         }
 
-        // ── Enemy counterattack ──────────────────────────────────────────────
-        let enemyDmg;
-        let enemyMsg;
+        // ── Enemy counterattack ───────────────────────────────────────────
+        let enemyDmg, enemyMsg;
         const useTech = e.techniques?.length && chance(30);
 
         if (useTech) {
@@ -282,9 +274,8 @@ export default {
         p.hp = Math.max(0, p.hp - enemyDmg);
         hunt.round++;
 
-        // ── Frame 2: enemy's counterattack ───────────────────────────────────
+        // Frame 2: villain counterattacks
         if (p.hp <= 0) {
-          // Player defeated
           const loseZeni = Math.floor((playerDoc.zeni || 0) * 0.05);
           await players.update(sender, { $inc: { zeni: -loseZeni, losses: 1 }, $set: { hp: 1 } });
           deleteHunt(sender);
@@ -300,7 +291,6 @@ export default {
           });
         }
 
-        // Both alive — enemy frame then action menu
         await sendHuntImage(sock, jid, hunt, enemyMsg, { hitSide: "left", damage: enemyDmg });
         return sock.sendMessage(jid, { text: buildMenu(hunt) });
       }
@@ -329,14 +319,11 @@ export default {
         p.ki -= tech.ki;
         if (tech.cooldown > 0) p.cooldowns[tech.id] = tech.cooldown;
 
-        // Support techniques (apply to self, still trigger enemy counterattack)
+        // Support technique (still triggers enemy counterattack)
         if (tech.effect === "defense_up") {
           p.defense = Math.floor(p.defense * 1.3);
-
-          // Regen enemy turn
           e.ki = Math.min(e.maxKi || 200, (e.ki || 0) + Math.floor((e.maxKi || 200) * 0.08));
 
-          // Tick cooldowns
           for (const id of Object.keys(p.cooldowns)) {
             p.cooldowns[id]--;
             if (p.cooldowns[id] <= 0) delete p.cooldowns[id];
@@ -347,7 +334,6 @@ export default {
             `🔵 *${pName}* generates a Ki barrier — defense boosted 30%!`,
           ].join("\n"));
 
-          // Enemy still attacks back
           let enemyDmg = Math.max(1, calculateDamage(e, p));
           const isCrit  = chance(10);
           let enemyMsg  = getAttackMessage(`*${e.name}*`, `*${pName}*`, enemyDmg, isCrit);
@@ -388,7 +374,7 @@ export default {
             `🏃 *${pName} fled from ${e.name}!*`,
             `💰 Penalty: *-${penalty} Zeni* (5%)`,
             ``,
-            `Use *.dhunt* to find another villain.`,
+            `Use *.dbzhunt* to find another villain.`,
           ].join("\n"),
         }, { quoted: msg });
       }
@@ -397,7 +383,7 @@ export default {
       return sock.sendMessage(jid, { text: buildMenu(hunt) }, { quoted: msg });
 
     } catch (err) {
-      console.error("DHUNT ERROR:", err);
+      console.error("DBZHUNT ERROR:", err);
       return sock.sendMessage(jid, { text: "❌ Hunt failed — try again." }, { quoted: msg });
     }
   },
