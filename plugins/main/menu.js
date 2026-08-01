@@ -1,4 +1,5 @@
 import { getPlugins } from "../../lib/pluginManager.mjs";
+import { groupSettings } from "../../lib/groupSettings.js";
 
 // Zero-width spaces — forces WhatsApp to collapse the message with a "read more" button
 const READMORE = "\u200B".repeat(4000);
@@ -12,15 +13,14 @@ const categoryEmojis = {
   pokemon:    "🎮",
   cards:      "🃏",
   pets:       "🐾",
-  anime:      "🍡", 
+  anime:      "🍡",
   staff:      "🛡️",
   company:    "🏢",
-  games:      "🎮",
+  games:      "🎲",
   fun:        "🎀",
   ai:         "🪄",
   search:     "🔎",
-  image:     "🎨",
-  media:      "🖼️",
+  image:      "🎨",
   utilities:  "🔧",
   download:   "📥",
   group:      "🌸",
@@ -31,7 +31,8 @@ const categoryEmojis = {
 // Categories shown to everyone — staff/owner see all
 const PUBLIC_CATS = new Set([
   "main", "economy", "company", "guild", "games", "fun", "ai",
-  "search", "media", "utilities", "download", "group", "anime", "cards", "staff", "naruto", "pokemon", "pets","image", "dragonball",
+  "search", "media", "utilities", "download", "group", "anime",
+  "cards", "staff", "naruto", "pokemon", "pets", "image", "dragonball",
 ]);
 
 export default {
@@ -43,12 +44,17 @@ export default {
   cooldown: 10,
 
   async run({ sock, msg, prefix, isOwner, isStaff, isMod, sender }) {
-    const jid      = msg.key.remoteJid;
+    const jid        = msg.key.remoteJid;
     const allPlugins = getPlugins();
+    const isGroup    = jid?.endsWith("@g.us");
 
-    // Sender phone number for mention (strip @s.whatsapp.net / device suffix)
+    // Sender phone number for mention
     const senderNum = sender.split("@")[0].split(":")[0];
     const mention   = `@${senderNum}`;
+
+    // Per-group disabled categories
+    const gs              = isGroup ? (groupSettings.get(jid) || {}) : {};
+    const disabledCats    = new Set(gs.disabledCategories || []);
 
     // Group by category
     const map = new Map();
@@ -64,8 +70,10 @@ export default {
 
     // Ordered list
     const order = [
-      "main", "economy", "company", "guild", "pets", "cards","naruto","pokemon","dragonball","games", "fun", "ai",
-      "search", "media", "image","utilities", "download", "group", "admin", "anime", 
+      "main", "economy", "company", "guild", "pets", "cards",
+      "naruto", "pokemon", "dragonball", "games", "fun", "ai",
+      "search", "media", "image", "utilities", "download",
+      "group", "admin", "anime",
       ...(showStaff ? ["staff"] : []),
       ...(showOwner ? ["owner"] : []),
     ];
@@ -78,33 +86,55 @@ export default {
     const date = new Date().toLocaleString("en-US", {
       timeZone: "Africa/Lagos",
       weekday: "short", month: "short", day: "numeric",
-      hour: "2-digit", minute: "2-digit"
+      hour: "2-digit", minute: "2-digit",
     });
 
-    // ── Greeting shown before the "read more" collapse ──────────────────────
-    let text = `*Hello* senpai ${mention},I am Akira👋
-╭━━━━━━━━━━━━━━━━━━━━╮
-|ꕥ ${prefix}*reg* to use economy cmds
-|ꕥ ${prefix}*rules* to see bot rules 
-|ꕥ ${prefix}*support* for official group
-|ꕥ ${prefix}*reqbot* for adding in your group 
-╰━━━━━━━━━━━━━━━━━━━━╯
+    // ── Header — shown before the "read more" collapse ──────────────────────
+    let text =
+`╭─❀「 🤖 *𝐊𝐄𝐋𝐈𝐍 𝐌𝐃* 」❀─╮
+│ 👋 Hello senpai ${mention}
+│ 📅 ${date}
+│
+│ꕥ ${prefix}*reg*     — join the economy
+│ꕥ ${prefix}*rules*   — read bot rules
+│ꕥ ${prefix}*support* — official group
+│ꕥ ${prefix}*reqbot*  — add bot to your group
+╰────────────────────────❀
+
 \n${READMORE}\n`;
 
-// ── Command list ─────────────────────────────────────────────────────────
-for (const cat of sortedCats) {
-  const cmds = map.get(cat).sort();
-  const emoji = categoryEmojis[cat] || "📌";
-  const title = cat.charAt(0).toUpperCase() + cat.slice(1);
+    // ── Command list ──────────────────────────────────────────────────────
+    for (const cat of sortedCats) {
+      const emoji = categoryEmojis[cat] || "📌";
+      const title = cat.charAt(0).toUpperCase() + cat.slice(1);
+      const cmds  = map.get(cat).sort();
 
-  text += `\n╭─${emoji} *${title}* (${cmds.length})\n`;
-  text += `│ ${cmds.map(cmd => `\`${prefix}${cmd}\``).join(" • ")}\n`;
-  text += "╰────────────────";
-}
+      // For group chats: mark disabled categories (staff still see them)
+      const isCatDisabled = isGroup && disabledCats.has(cat) && !showStaff;
 
-    text += `
+      if (isCatDisabled) continue; // hide disabled cats from regular users
 
-> © AKIRA`;
+      const disabledTag = (isGroup && disabledCats.has(cat) && showStaff)
+        ? " _(disabled)_" : "";
+
+      text +=
+`\n╭─${emoji}「 *${title}*${disabledTag} 」
+│ ${cmds.map(c => `\`${prefix}${c}\``).join(" • ")}
+╰────────────────`;
+    }
+
+    // ── Disabled-category notice for regular users ────────────────────────
+    if (isGroup && !showStaff && disabledCats.size > 0) {
+      const disabledList = [...disabledCats].join(", ");
+      text +=
+`\n
+╭─🔒「 *Disabled in this group* 」
+│ ${disabledList}
+│ _Ask a staff member to enable them._
+╰────────────────`;
+    }
+
+    text += `\n\n> © AKIRA`;
 
     await sock.sendMessage(
       jid,
@@ -115,5 +145,5 @@ for (const cat of sortedCats) {
       },
       { quoted: msg }
     );
-  }
+  },
 };
