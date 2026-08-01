@@ -90,17 +90,13 @@ export default {
     });
 
     // ── Header — shown before the "read more" collapse ──────────────────────
-    let text =
-`╭─❀「 🤖 *𝐊𝐄𝐋𝐈𝐍 𝐌𝐃* 」❀─╮
-│ 👋 Hello senpai ${mention}
-│ 📅 ${date}
-│
-│ꕥ ${prefix}*reg*     — join the economy
-│ꕥ ${prefix}*rules*   — read bot rules
-│ꕥ ${prefix}*support* — official group
-│ꕥ ${prefix}*reqbot*  — add bot to your group
-╰────────────────────────❀
-
+    let text = `*Hello* senpai ${mention},I am Akira👋
+╭━━━━━━━━━━━━━━━━━━━━╮
+|ꕥ ${prefix}*reg* to use economy cmds
+|ꕥ ${prefix}*rules* to see bot rules 
+|ꕥ ${prefix}*support* for official group
+|ꕥ ${prefix}*reqbot* for adding in your group 
+╰━━━━━━━━━━━━━━━━━━━━╯
 \n${READMORE}\n`;
 
     // ── Command list ──────────────────────────────────────────────────────
