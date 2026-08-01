@@ -14,12 +14,12 @@ export default {
   category:    "dbz",
   usage:       ".dbzsync",
 
-  async run({ sock, msg, sender, isOwner }) {
+  async run({ sock, msg, sender, isOwner, staffLevel }) {
     const jid = msg.key.remoteJid;
 
-    if (!isOwner) {
+    if (!isOwner && Number(staffLevel) < 3) {
       return sock.sendMessage(jid, {
-        text: "❌ Only the bot owner can sync the DBZ roster.",
+        text: "❌ Only the bot owner or staff level 3+ can sync the DBZ roster.",
       }, { quoted: msg });
     }
 

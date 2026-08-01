@@ -58,11 +58,11 @@ export default {
   isStaff:true,
   cooldown: 3,
 
-  async run({ sock, msg, args, cmd, prefix, isOwner }) {
+  async run({ sock, msg, args, cmd, prefix, isOwner, staffLevel }) {
     const jid = msg.key.remoteJid;
-    if (!isOwner) {
+    if (!isOwner && Number(staffLevel) < 3) {
       return sock.sendMessage(jid, {
-        text: "❌ Only the bot owner can change runtime bot settings.",
+        text: "❌ Only the bot owner or staff level 3+ can change runtime bot settings.",
       }, { quoted: msg });
     }
     const settings = getRuntimeSettings();
