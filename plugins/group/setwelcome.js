@@ -88,6 +88,8 @@ Variables:
   @user  — new member's number
   @group — group name
   @count — total member count
+  @pp    — sends new member's profile picture as the welcome image
+  @gp    — sends the group's profile picture as the welcome image
 
 Paragraph spacing:
   • Send a multi-line message (press Enter between lines)
