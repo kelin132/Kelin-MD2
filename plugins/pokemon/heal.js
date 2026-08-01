@@ -55,7 +55,7 @@ export default {
     const healed = party.map(p => {
       const icon = typeEmojis[p.primaryType] || "⭐";
       const name = (p.displayName || p.name || "???").padEnd(10);
-      return `${icon} ${name} ┃ ❤️ FULL`;
+      return `${icon} ${name} `;
     }).join("\n");
 
     await sock.sendMessage(jid, {
@@ -66,7 +66,7 @@ export default {
 
 ${healed}
 
-💚 *FREE HEAL*
+💚 *ALL POKEMON HAVE BEEN HEALED*
 ⏳ Next heal: *150s*
 
 ╰━━━━━━━━━━━━━━━━━━╯`,
