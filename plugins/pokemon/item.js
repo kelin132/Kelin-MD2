@@ -99,7 +99,7 @@ export default {
 
     if (itemKey === "rarecandy") {
       // ── Daily limit: 5 uses per day ──────────────────────────────────────
-      const DAILY_LIMIT = 100;
+      const DAILY_LIMIT = 150;
       const today      = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
       const lastDate   = trainer.rareCandyLastDate || "";
       const usesToday  = lastDate === today ? (trainer.rareCandyUsesToday || 0) : 0;
