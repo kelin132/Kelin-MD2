@@ -23,7 +23,11 @@ import {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+/** Mention tag — used only for WhatsApp @mentions, not for display text. */
 const tag = (jid) => `@${jid.split("@")[0]}`;
+
+/** Display name — shows username if available, otherwise falls back to the mention tag. */
+const name = (c) => c.username || tag(c.jid);
 
 async function snap(doc) {
   const techniques = (doc.techniques || [])
@@ -81,12 +85,12 @@ async function sendResultImage(sock, gid, { winner, loser, rewardText, outcome, 
   }
 }
 
-/** Pokémon-style HP/KI status line */
+/** Pokémon-style HP/KI status line — shows the fighter's name, not their phone number. */
 function statusLine(c) {
   const hp = Math.max(0, c.hp);
   const ki = Math.max(0, c.ki);
   return [
-    `⚡ *${tag(c.jid)}*`,
+    `⚡ *${name(c)}*`,
     `  ❤️ HP: ${hp}/${c.maxHp} ${healthBar(hp, c.maxHp, 10)}`,
     `  💠 KI: ${ki}/${c.maxKi} ${kiBar(ki, c.maxKi, 8)}`,
   ].join("\n");
@@ -111,7 +115,7 @@ function buildPrompt(battle, mover) {
     statusLine(other),
     ``,
     `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-    `⚡ *${tag(mover.jid)}, what will you do?*`,
+    `⚡ *${name(mover)}, what will you do?*`,
     ``,
     `👊 *.dbattle attack*   — Physical Strike`,
   ];
@@ -152,7 +156,7 @@ export default {
       return sock.sendMessage(gid, { text: "⚔️ Dragon Ball battles can only be fought in group chats!" }, { quoted: msg });
     }
 
-    const cmd     = (args?.[0] || "").toLowerCase();
+    const cmd       = (args?.[0] || "").toLowerCase();
     const mentioned = (msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || []);
 
     // ── CHALLENGE ─────────────────────────────────────────────────────────────
@@ -179,8 +183,14 @@ export default {
         return sock.sendMessage(gid, { text: "🐉 You don't have a fighter!\nUse *.dbzstart* to create one." }, { quoted: msg });
       }
       if (!opponentDoc) {
-        return sock.sendMessage(gid, { text: `❌ ${tag(opponentJid)} doesn't have a fighter yet!`, mentions: [opponentJid] }, { quoted: msg });
+        return sock.sendMessage(gid, {
+          text: `❌ ${opponentDoc?.username || tag(opponentJid)} doesn't have a fighter yet!`,
+          mentions: [opponentJid],
+        }, { quoted: msg });
       }
+
+      const cName = challengerDoc.username || tag(sender);
+      const oName = opponentDoc.username   || tag(opponentJid);
 
       const [challengerSnap, opponentSnap] = await Promise.all([snap(challengerDoc), snap(opponentDoc)]);
       const battle = createBattle(gid, challengerSnap, opponentSnap);
@@ -190,9 +200,9 @@ export default {
         [
           `🐉 *BATTLE CHALLENGE!*`,
           ``,
-          `⚡ *${tag(sender)}* (${challengerDoc.character || challengerDoc.race}) challenges *${tag(opponentJid)}* (${opponentDoc.character || opponentDoc.race})!`,
+          `⚡ *${cName}* (${challengerDoc.character || challengerDoc.race}) challenges *${oName}* (${opponentDoc.character || opponentDoc.race})!`,
           ``,
-          `${tag(opponentJid)}, do you accept?`,
+          `*${oName}*, do you accept?`,
           `👊 Type *.dbattle accept* to fight!`,
           `⏰ 2 minutes to accept or the challenge expires.`,
         ].join("\n"),
@@ -217,7 +227,7 @@ export default {
         if (!getBattle(gid)) return;
         const cur = battle[battle.turn];
         await sock.sendMessage(gid, {
-          text: `⏰ *${tag(cur.jid)} took too long — battle cancelled!*`,
+          text: `⏰ *${name(cur)} took too long — battle cancelled!*`,
           mentions: [cur.jid],
         });
         deleteBattle(gid);
@@ -227,7 +237,7 @@ export default {
         [
           `🔥 *BATTLE BEGINS!*`,
           ``,
-          `⚡ *${tag(battle.challenger.jid)}* (${battle.challenger.character || "?"}) VS *${tag(battle.opponent.jid)}* (${battle.opponent.character || "?"})`,
+          `⚡ *${name(battle.challenger)}* (${battle.challenger.character || "?"}) VS *${name(battle.opponent)}* (${battle.opponent.character || "?"})`,
           ``,
           buildPrompt(battle, battle.challenger),
         ].join("\n"),
@@ -247,7 +257,10 @@ export default {
     const target    = battle[targetKey];
 
     if (mover.jid !== sender) {
-      return sock.sendMessage(gid, { text: `⏳ It's *${tag(mover.jid)}'s* turn — wait your turn!`, mentions: [mover.jid] }, { quoted: msg });
+      return sock.sendMessage(gid, {
+        text: `⏳ It's *${name(mover)}'s* turn — wait your turn!`,
+        mentions: [mover.jid],
+      }, { quoted: msg });
     }
 
     // KI regeneration each turn
@@ -259,10 +272,10 @@ export default {
 
       const isBattleOver = target.hp <= 0;
 
-      // Send the attack result
+      // Send the attack result canvas
       await sendBattleImage(sock, gid, battle, resultText, {
-        hitSide: targetKey === "challenger" ? "left" : "right",
-        damage: dmg,
+        hitSide:  targetKey === "challenger" ? "left" : "right",
+        damage:   dmg,
         mentions: [mover.jid, target.jid],
       });
 
@@ -273,7 +286,7 @@ export default {
         armTimer(battle, async () => {
           if (!getBattle(gid)) return;
           await sock.sendMessage(gid, {
-            text: `⏰ *${tag(next.jid)} took too long — battle cancelled!*`,
+            text: `⏰ *${name(next)} took too long — battle cancelled!*`,
             mentions: [next.jid],
           });
           deleteBattle(gid);
@@ -286,7 +299,7 @@ export default {
 
       // ── Battle over ──
       const winner = mover, loser = target;
-      const xpGain  = 80 + loser.level * 4 || 100;
+      const xpGain   = 80 + (loser.level || 1) * 4;
       const zeniGain = 150 + (loser.level || 1) * 8;
 
       const [winDoc, loseDoc] = await Promise.all([
@@ -299,14 +312,14 @@ export default {
       deleteBattle(gid);
 
       return sendResultImage(sock, gid, {
-        winner: { username: winner.username, imageUrl: winner.imageUrl },
-        loser:  { username: loser.username,  imageUrl: loser.imageUrl  },
+        winner: { username: name(winner), imageUrl: winner.imageUrl },
+        loser:  { username: name(loser),  imageUrl: loser.imageUrl  },
         rewardText: `🏆 +${zeniGain} Zeni  |  ✨ +${xpGain} XP`,
         outcome: "win",
         caption: [
-          `🏆 *${tag(winner.jid)} WINS!*`,
+          `🏆 *${name(winner)} WINS!*`,
           ``,
-          `💀 *${tag(loser.jid)}* has been defeated!`,
+          `💀 *${name(loser)}* has been defeated!`,
           ``,
           `💰 Reward: *+${zeniGain} Zeni* | ✨ *+${xpGain} XP*`,
         ].join("\n"),
@@ -318,7 +331,7 @@ export default {
     if (cmd === "attack") {
       const isCrit = chance(12);
       const dmg    = calculateDamage(mover, target);
-      const txt    = getAttackMessage(tag(mover.jid), tag(target.jid), dmg, isCrit);
+      const txt    = getAttackMessage(name(mover), name(target), dmg, isCrit);
       return afterDamage(txt, dmg, isCrit);
     }
 
@@ -360,7 +373,7 @@ export default {
         return sock.sendMessage(gid, {
           text: [
             `🛡️ *ENERGY SHIELD!*`,
-            `🔵 *${tag(mover.jid)}* generates a Ki barrier — defense boosted by 30% this round!`,
+            `🔵 *${name(mover)}* generates a Ki barrier — defense boosted by 30% this round!`,
             ``,
             buildPrompt(battle, target),
           ].join("\n"),
@@ -376,7 +389,7 @@ export default {
         return sock.sendMessage(gid, {
           text: [
             `☀️ *SOLAR FLARE!*`,
-            `😵 *${tag(target.jid)}* is temporarily blinded — speed reduced!`,
+            `😵 *${name(target)}* is temporarily blinded — speed reduced!`,
             ``,
             buildPrompt(battle, target),
           ].join("\n"),
@@ -386,7 +399,7 @@ export default {
 
       // Damage technique
       const isCrit = chance(12);
-      let dmg = calculateDamage(mover, target, tech);
+      const dmg    = calculateDamage(mover, target, tech);
 
       // Self-destruct: damage attacker too
       if (tech.selfDamage) {
@@ -394,15 +407,12 @@ export default {
         mover.hp = Math.max(0, mover.hp - selfDmg);
       }
 
-      const txt = getTechniqueMessage(tag(mover.jid), tech.name, tag(target.jid), dmg, isCrit);
+      const txt = getTechniqueMessage(name(mover), tech.name, name(target), dmg, isCrit);
       return afterDamage(txt, dmg, isCrit);
     }
 
     // ── FLEE ─────────────────────────────────────────────────────────────────
     if (cmd === "flee") {
-      const xpPenalty   = 20;
-      const zeniPenalty = 100;
-
       const [winDoc, loseDoc] = await Promise.all([
         players.get(target.jid), players.get(sender),
       ]);
@@ -411,13 +421,13 @@ export default {
       if (loseDoc) { loseDoc.losses = (loseDoc.losses || 0) + 1; await loseDoc.save(); }
 
       await sendResultImage(sock, gid, {
-        winner: { username: target.username, imageUrl: target.imageUrl },
-        loser:  { username: mover.username,  imageUrl: mover.imageUrl  },
+        winner: { username: name(target), imageUrl: target.imageUrl },
+        loser:  { username: name(mover),  imageUrl: mover.imageUrl  },
         rewardText: "🏃 Fled the battle!",
         outcome: "flee",
         caption: [
-          `🏃 *${tag(mover.jid)} has fled the battle!*`,
-          `🏆 *${tag(target.jid)}* wins by default!`,
+          `🏃 *${name(mover)} has fled the battle!*`,
+          `🏆 *${name(target)}* wins by default!`,
         ].join("\n"),
         mentions: [mover.jid, target.jid],
       });
