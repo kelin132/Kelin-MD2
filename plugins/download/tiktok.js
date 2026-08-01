@@ -74,13 +74,13 @@ export default {
       await sock.sendMessage(jid, {
         video:    { url: dl },
         mimetype: "video/mp4",
-        caption:  `🎵 *${title}*\n\n✨ Downloaded by *KELIN MD*`,
+        caption:  `🎵 *${title}*\n\n✨ Downloaded by *AKIRA*`,
       }, { quoted: msg });
 
     } catch (err) {
       console.error("[tiktok]", err.message);
       await sock.sendMessage(jid, {
-        text: `❌ *TikTok download failed.*\n\n_${err.message}_\n\n💡 Tips:\n• Make sure the video is *public*\n• Copy the link directly from TikTok\n• Try the share → copy link option`,
+        text: `❌ *TikTok download failed.`,
       }, { quoted: msg });
     }
   },
