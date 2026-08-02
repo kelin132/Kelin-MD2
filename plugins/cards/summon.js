@@ -11,7 +11,7 @@ import { findOrCreateUser } from "./db.js";
 import { getUser, saveUser, requireRegistration, addHistory } from "../economy/database.js";
 import {
   getCardsByTier,
-  resolveMediaUrl,
+  sendCardMedia,
   TIER_EMOJI,
   TIER_NUM,
   TIER_NAME,
@@ -222,7 +222,7 @@ export default {
         price:      card.price  || 0,
         series:     card.series || "Unknown",
         media:      card.media  || null,
-        mediaType:  "image",
+        mediaType:  (card.tierNum === "6" || card.tierNum === "S") ? "gif" : "image",
         obtainedAt: new Date(),
       });
 
@@ -248,12 +248,13 @@ export default {
 
       if (card.media) {
         try {
-          const imgUrl = await resolveMediaUrl(card.media);
-          return sock.sendMessage(jid, {
-            image:    { url: imgUrl },
-            caption:  claimText,
-            mentions: [sender],
-          }, { quoted: msg });
+          return await sendCardMedia(
+            sock,
+            jid,
+            card,
+            claimText,
+            { quoted: msg, mentions: [sender] },
+          );
         } catch { /* fall through to text */ }
       }
 
