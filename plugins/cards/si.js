@@ -1,5 +1,5 @@
 import { findOrCreateUser, Col, uid } from "./db.js";
-import { fetchAllCards, getCard, resolveMediaUrl } from "../../lib/cardApi.mjs";
+import { fetchAllCards, getCard, sendCardMedia } from "../../lib/cardApi.mjs";
 
 function normaliseQuery(value) {
   return String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -115,12 +115,7 @@ export default {
 ${ownerLines}`;
 
       if (card.media) {
-        const imageUrl = await resolveMediaUrl(card.media);
-        return sock.sendMessage(jid, {
-          image: { url: imageUrl },
-          caption: text,
-          mentions,
-        }, { quoted: msg });
+        return sendCardMedia(sock, jid, card, text, { quoted: msg, mentions });
       }
 
       return sock.sendMessage(jid, { text, mentions }, { quoted: msg });

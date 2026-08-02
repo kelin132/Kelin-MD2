@@ -1,5 +1,5 @@
 import { findOrCreateUser } from "./db.js";
-import { resolveMediaUrl } from "../../lib/cardApi.mjs";
+import { sendCardMedia } from "../../lib/cardApi.mjs";
 
 const activeSpawns = global.activeSpawns || (global.activeSpawns = {});
 
@@ -49,7 +49,7 @@ Ask an admin to restart the bot, then wait for the next auto-spawn.`
         price:      card.price  || 0,
         series:     card.series || "Unknown",
         media:      card.media  || null,
-        mediaType:  "image",
+        mediaType:  (card.tierNum === "6" || card.tierNum === "S") ? "gif" : "image",
         obtainedAt: new Date(),
       });
 
@@ -75,12 +75,7 @@ Ask an admin to restart the bot, then wait for the next auto-spawn.`
 
       if (card.media) {
         try {
-          const imgUrl = await resolveMediaUrl(card.media);
-          return sock.sendMessage(jid, {
-            image:    { url: imgUrl },
-            caption:  claimText,
-            mentions: [sender],
-          }, { quoted: msg });
+          return sendCardMedia(sock, jid, card, claimText, { quoted: msg, mentions: [sender] });
         } catch { /* fall through */ }
       }
 

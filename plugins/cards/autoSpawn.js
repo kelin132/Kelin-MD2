@@ -42,12 +42,7 @@ if (!global.__cardApiSpawnerRunning) {
 > First come, first served — expires in 10 min~`;
 
     try {
-      const imgUrl = card.media ? await resolveMediaUrl(card.media) : null;
-      if (imgUrl) {
-        await sock.sendMessage(chatId, { image: { url: imgUrl }, caption });
-      } else {
-        await sock.sendMessage(chatId, { text: caption });
-      }
+      await sendCardMedia(sock, chatId, card, caption);
 
       // Auto-expire
       setTimeout(() => {

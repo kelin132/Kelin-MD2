@@ -1,5 +1,5 @@
 import { findOrCreateUser } from "./db.js";
-import { resolveMediaUrl, TIER_EMOJI } from "../../lib/cardApi.mjs";
+import { sendCardMedia, TIER_EMOJI } from "../../lib/cardApi.mjs";
 
 export default {
   name: "card",
@@ -66,11 +66,7 @@ export default {
 
       if (card.media) {
         try {
-          const imgUrl = await resolveMediaUrl(card.media);
-          return await sock.sendMessage(jid, {
-            image:   { url: imgUrl },
-            caption,
-          }, { quoted: msg });
+          return await sendCardMedia(sock, jid, card, caption, { quoted: msg });
         } catch { /* fall through to text */ }
       }
 
