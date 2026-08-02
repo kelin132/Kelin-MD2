@@ -5,8 +5,8 @@
  * Auto-removal happens in bot.mjs when the user sends any message.
  * The user does NOT need to type .afk again to come back — it clears automatically.
  */
-import { getUser, saveUser, requireRegistration } from "../economy/database.js";
-import { afkUsers } from "../../lib/pluginManager.mjs";
+import { getUser, saveUser } from "../economy/database.js";
+import { getAfkUser, setAfkUser } from "../../lib/pluginManager.mjs";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -26,8 +26,6 @@ export default {
   usage: ".afk [reason]",
 
   async run({ sock, msg, sender, text: rawText }) {
-    if (!await requireRegistration(sock, msg, sender)) return;
-
     const jid   = msg.key.remoteJid;
     const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
     const user  = await getUser(sender);
@@ -36,7 +34,7 @@ export default {
     const name   = user.name || tag;
 
     // ── Already AFK — just let them know auto-clear handles it ───────────────
-    if (user.afk?.active) {
+    if (user.afk?.active || getAfkUser(sender)) {
       return reply(
 `┌──────────────────────────┐
 │  💤 *Already AFK, ${name}~* │
@@ -54,7 +52,7 @@ _No need to type .afk again!_ 🌸`
     user.afk = { active: true, message: reason, since };
     await saveUser(sender, user);
 
-    afkUsers.set(sender, {
+    setAfkUser(sender, {
       reason,
       time:     since,
       username: name,

@@ -2,7 +2,7 @@ import { findOrCreateUser } from "./db.js";
 
 const TIER_MAP = {
   Common: "1", Uncommon: "2", Rare: "3",
-  Epic: "4", Legendary: "5", Mythic: "S",
+  Epic: "4", Legendary: "5", Mythical: "6", Mythic: "6", Secret: "S",
 };
 
 export default {
@@ -10,7 +10,7 @@ export default {
   aliases: ["mytiers"],
   category: "cards",
   description: "View your cards grouped by tier",
-  usage: ".tier [1-5 or S]",
+   usage: ".tier [1-6 or S]",
 
   async run({ sock, msg, args, sender }) {
     const jid   = msg.key.remoteJid;
@@ -23,11 +23,11 @@ export default {
         return reply("❌ You don't have any cards.");
       }
 
-      const validTiers  = ["1", "2", "3", "4", "5", "S"];
+      const validTiers  = ["1", "2", "3", "4", "5", "6", "S"];
       const filterTier  = args[0];
 
       if (filterTier && !validTiers.includes(filterTier)) {
-        return reply("❌ Invalid tier. Use 1,2,3,4,5,S");
+        return reply("❌ Invalid tier. Use 1,2,3,4,5,6,S");
       }
 
       const ReadMore = "\u200e".repeat(4000);
@@ -53,7 +53,7 @@ ${ReadMore}
       } else {
         const grouped = { "1": [], "2": [], "3": [], "4": [], "5": [], "S": [] };
         for (const card of filtered) {
-          const t = TIER_MAP[card.tier] || "?";
+          const t = card.tierNum || TIER_MAP[card.tier] || "?";
           if (grouped[t]) grouped[t].push(card.name);
         }
 

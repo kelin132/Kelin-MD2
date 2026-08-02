@@ -30,7 +30,8 @@ export default {
 
     const loot = rollLoot(DIG_LOOT);
     user.lastDig = now;
-    const diamondReward = maybeAwardDiamonds(user, 0.005, 1, 2);
+    const hasDiamondShovel = (user.inventory || []).includes("diamond_shovel");
+    const diamondReward = maybeAwardDiamonds(user, hasDiamondShovel ? 0.01 : 0.005, 1, 2);
 
     let resultLine = "";
 
@@ -61,10 +62,18 @@ export default {
     await saveUser(sender, user);
 
     const digMessages = [
-      "⛏️ You dig deep into the earth...",
-      "⛏️ You strike something with your pickaxe...",
-      "⛏️ The ground gives way beneath your feet...",
-      "⛏️ You tunnel through layers of soil...",
+      hasDiamondShovel
+        ? "🪏 Your Diamond Shovel glints as you dig deep into the earth..."
+        : "⛏️ You dig deep into the earth...",
+      hasDiamondShovel
+        ? "🪏 Your lucky shovel sweeps through the soil..."
+        : "⛏️ You strike something with your pickaxe...",
+      hasDiamondShovel
+        ? "🪏 The Diamond Shovel points toward a promising glimmer..."
+        : "⛏️ The ground gives way beneath your feet...",
+      hasDiamondShovel
+        ? "🪏 You sift the earth carefully with your Diamond Shovel..."
+        : "⛏️ You tunnel through layers of soil...",
     ];
     const intro = digMessages[Math.floor(Math.random() * digMessages.length)];
 

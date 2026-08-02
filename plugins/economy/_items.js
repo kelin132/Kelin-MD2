@@ -191,6 +191,12 @@ export const SHOP_ITEMS = {
     description: "Unlocks the mineral cave to mine ores and gems.",
     useEffect: "xp+25",
   },
+  diamond_shovel: {
+    price: 75_000,  orbCost: 75,  gemCost: 5,
+    emoji: "🪏",   rarity: "rare",      xpBonus: 100, sellPct: 0.4,
+    category: "tools",
+    description: "A lucky shovel that doubles your chance of finding Diamonds while digging.",
+  },
   treasure_radar: {
     price: 15_000,  orbCost: 15,  gemCost: 1,
     emoji: "📡",   rarity: "rare",      xpBonus: 50,  sellPct: 0.4,

@@ -2,6 +2,7 @@ import { findOrCreateUser } from "./db.js";
 
 const TIER_EMOJI = {
   Common: "⚪", Uncommon: "🟢", Rare: "🔵", Epic: "🟣", Legendary: "🟡",
+  Mythical: "🔴", Secret: "🌟",
 };
 
 export default {

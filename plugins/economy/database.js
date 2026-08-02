@@ -235,7 +235,7 @@ export async function registerUser(id, name) {
   await db.collection("users").updateOne(
     { _id: id },
     {
-      $setOnInsert: { ...insertDefaults, money: 1000 },
+      $setOnInsert: { ...insertDefaults, money: 100_000 },
       $set: { name: name || "User", registered: true, registeredAt: new Date().toISOString() },
     },
     { upsert: true }
