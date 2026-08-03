@@ -8,51 +8,120 @@ import { get, searchGet, davidGet } from "../../lib/gifted.js";
 
 // ─── Image search helpers ─────────────────────────────────────────────────────
 
+const IMAGE_HEADERS = {
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    + "(KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+  Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+  Referer: "https://www.pinterest.com/",
+};
+
+function resultItems(data) {
+  const containers = [
+    data?.results,
+    data?.data,
+    data?.images,
+    data?.result,
+    Array.isArray(data) ? data : null,
+  ];
+
+  return containers
+    .flatMap((value) => Array.isArray(value) ? value : value ? [value] : [])
+    .flatMap((item) => Array.isArray(item) ? item : [item]);
+}
+
+function imageUrlFrom(item) {
+  if (typeof item === "string") return item;
+  if (!item || typeof item !== "object") return null;
+
+  const nested =
+    item.images?.orig?.url ||
+    item.images?.original?.url ||
+    item.image?.url ||
+    item.image?.src ||
+    item.original?.url;
+
+  return nested ||
+    item.url ||
+    item.image ||
+    item.image_url ||
+    item.thumbnail ||
+    item.src ||
+    item.media_url ||
+    item.download_url ||
+    null;
+}
+
 async function searchPinterestImages(query) {
   const attempts = [
-    () => searchGet("pinterest",  { query }),
+    () => searchGet("googleimage", { query: `pinterest ${query}` }),
+    () => searchGet("pinterest",   { query }),
     () => get("/search/pinterest", { query }),
     () => searchGet("images",      { query: `${query} pinterest` }),
     () => get("/search/images",    { query: `${query} pinterest` }),
     () => davidGet("/search/pinterest", { query }),
   ];
 
+  const seen = new Set();
+  const urls = [];
+
   for (const attempt of attempts) {
     try {
       const data = await attempt();
-      // Normalise different response shapes
-      const results =
-        data?.results  ||
-        data?.data      ||
-        data?.images    ||
-        (Array.isArray(data) ? data : null);
-
-      if (Array.isArray(results) && results.length > 0) {
-        // Pick a random result for variety
-        const pick = results[Math.floor(Math.random() * Math.min(results.length, 10))];
-        const url  =
-          pick?.url        ||
-          pick?.image      ||
-          pick?.image_url  ||
-          pick?.thumbnail  ||
-          pick?.src        ||
-          null;
-        if (url) return url;
+      for (const item of resultItems(data)) {
+        const url = imageUrlFrom(item);
+        if (!url || !/^https?:\/\//i.test(url) || seen.has(url)) continue;
+        seen.add(url);
+        urls.push(url);
       }
 
-      // Some APIs return a single image URL directly
-      const direct =
-        data?.url       ||
-        data?.image     ||
-        data?.image_url ||
-        null;
-      if (direct) return direct;
+      const direct = imageUrlFrom(data);
+      if (direct && /^https?:\/\//i.test(direct) && !seen.has(direct)) {
+        seen.add(direct);
+        urls.push(direct);
+      }
+
+      if (urls.length >= 8) break;
     } catch { /* try next */ }
   }
 
-  throw new Error(
-    "Couldn't find images for that keyword. Try different words!"
-  );
+  if (!urls.length) throw new Error("No Pinterest results found.");
+  return urls.slice(0, 12);
+}
+
+async function downloadImage(url) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15_000);
+
+  try {
+    const response = await fetch(url, {
+      headers: IMAGE_HEADERS,
+      redirect: "follow",
+      signal: controller.signal,
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const contentType = (response.headers.get("content-type") || "").toLowerCase();
+    const declaredSize = Number(response.headers.get("content-length") || 0);
+    if (declaredSize > 15 * 1024 * 1024) throw new Error("image too large");
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+    if (!buffer.length || buffer.length > 15 * 1024 * 1024) {
+      throw new Error("invalid image size");
+    }
+
+    const isImage = contentType.startsWith("image/")
+      || buffer.subarray(0, 8).toString("hex") === "89504e470d0a1a0a" // PNG
+      || buffer.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff])) // JPEG
+      || buffer.subarray(0, 6).toString() === "GIF89a"
+      || buffer.subarray(0, 6).toString() === "GIF87a"
+      || buffer.subarray(0, 4).toString() === "RIFF"; // WebP
+    if (!isImage) throw new Error("not an image");
+
+    return buffer;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // ─── Command ──────────────────────────────────────────────────────────────────
@@ -87,12 +156,28 @@ Examples:
         text: `🔍 Searching Pinterest for *"${text}"*...`,
       }, { quoted: msg });
 
-      const imageUrl = await searchPinterestImages(text);
+      const imageUrls = await searchPinterestImages(text);
+      let sent = 0;
 
-      await sock.sendMessage(jid, {
-        image:   { url: imageUrl },
-        caption: `📌 *${text}*`,
-      }, { quoted: msg });
+      for (const imageUrl of imageUrls) {
+        if (sent >= 3) break;
+        try {
+          const image = await downloadImage(imageUrl);
+          await sock.sendMessage(jid, {
+            image,
+            caption: `📌 *Pinterest* — ${text}\n\n_Daratech_ ⚡`,
+          }, { quoted: msg });
+          sent++;
+        } catch (error) {
+          console.warn(`[pinterest] skipped image: ${error.message}`);
+        }
+      }
+
+      if (!sent) {
+        await sock.sendMessage(jid, {
+          text: "❌ Found results but could not load any images.",
+        }, { quoted: msg });
+      }
 
     } catch (err) {
       await sock.sendMessage(jid, {
