@@ -33,17 +33,37 @@ export default {
     const tag    = sender.split("@")[0].split(":")[0];
     const name   = user.name || tag;
 
-    // ── Already AFK — just let them know auto-clear handles it ───────────────
-    if (user.afk?.active || getAfkUser(sender)) {
+    const existingAfk = user.afk?.active
+      ? {
+          reason: user.afk.message || user.afk.reason || "No reason given",
+          time: user.afk.since || Date.now(),
+        }
+      : getAfkUser(sender);
+
+    // ── Already AFK — update the reason and reset the timer ─────────────────
+    if (existingAfk) {
+      const since = Date.now();
+      user.afk = { active: true, message: reason, since };
+      await saveUser(sender, user);
+
+      setAfkUser(sender, {
+        reason,
+        time:     since,
+        username: name,
+      });
+
       return reply(
-`┌──────────────────────────┐
-│  💤 *Already AFK, ${name}~* │
-└──────────────────────────┘
-
-あなたはもうAFKです！
-Just send any message and I'll automatically mark you as back online~
-
-_No need to type .afk again!_ 🌸`
+`╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮
+┃  💤 *AFK Updated, ${name}~*  ┃
+╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯
+🌸 *@${tag}* is still away~
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+📝 *New reason* ꔫ ${reason}
+⏰ *Timer reset* ꔫ ${formatTime(since)}
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+📌 _Tag them & I'll let you know!_
+╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+        { mentions: [sender] }
       );
     }
 
