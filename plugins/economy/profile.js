@@ -1,6 +1,5 @@
 import { getUser, requireRegistration } from "./database.js";
-import { getProfilePic, resolveRole } from "../../lib/profileGen.mjs";
-import { generateWhatsappProfileCard } from "../../lib/whatsappProfileCard.mjs";
+import { generateProfileImage, getProfilePic, resolveRole } from "../../lib/profileGen.mjs";
 import { getLevelRole, getAllEarnedRoles, getLevelRoleLabel } from "../../lib/levelRoles.mjs";
 
 const xpForLevel = (level) => level * 100;
@@ -60,32 +59,43 @@ export default {
       : 0;
     const caption =
 `╭─❀「 ✨ *PROFILE* 」❀─╮
-│ 👤 *${user.name || "User"}*
-│ 🎭 ${role}  •  ${roleLabel}
-│ 💰 Wallet: $${(user.money ?? 0).toLocaleString()}
-│ 🏦 Bank: $${(user.bank ?? 0).toLocaleString()}
-│ 💎 Diamonds: ${(user.diamonds ?? 0).toLocaleString()}
+│ 👤 *Profile : @${tag}*
+│ 🎭 *Role :* ${role} • ${roleLabel}
+│
+│ 🏅 *Achievements* 🏅
+│ 🌟 Days Active : ${daysActive}
+│ 🃏 Cards       : ${user.totalCards ?? user.cards?.length ?? 0}
+│ 🎮 Games       : ${user.gamesPlayed ?? user.games ?? 0}
+│ 💸 Casino      : ${user.casinoGames ?? user.casino ?? 0}
+│
+│ ⭐ Level : ${level}
+│ 📚 XP    : ${xp.toLocaleString()} / ${xpForLevel(level).toLocaleString()}
+│
+│ 💰 Wallet   : $${(user.money ?? 0).toLocaleString()}
+│ 🏦 Bank     : $${(user.bank ?? 0).toLocaleString()}
+│ 💎 Diamonds : ${(user.diamonds ?? 0).toLocaleString()}
+│ 🎒 Items    : ${user.inventory?.length ?? 0}
+│
+│ 📝 *Bio:* ${user.bio || "No bio set."}
+│ ⚜️ Clan : ${user.guild || "None"}
+│ 📅 Joined : ${fmtDate(user.registeredAt)}
 ╰───────────────❀`;
 
     try {
-      const imgBuffer = await generateWhatsappProfileCard({
+      const imgBuffer = await generateProfileImage({
         username:     user.name || tag,
         tag,
         role,
-         roleLabel,
         level,
         xp,
         xpTarget:     xpForLevel(level),
         wallet:       user.money    ?? 0,
         bank:         user.bank     ?? 0,
-         diamonds:     user.diamonds ?? 0,
         bio:          user.bio      || "No bio set.",
         guild:        user.guild    || null,
         joined:       fmtDate(user.registeredAt),
         streak,
         items:        user.inventory?.length ?? 0,
-         daysActive,
-         cards:        user.cards?.length ?? 0,
         transactions: user.history?.length   ?? 0,
         profileImage: profilePic,
         levelRole,
