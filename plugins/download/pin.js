@@ -160,12 +160,11 @@ Examples:
       let sent = 0;
 
       for (const imageUrl of imageUrls) {
-        if (sent >= 3) break;
+        if (sent >= 10) break;
         try {
           const image = await downloadImage(imageUrl);
           await sock.sendMessage(jid, {
             image,
-            caption: `📌 *Pinterest* — ${text}\n\n_Daratech_ ⚡`,
           }, { quoted: msg });
           sent++;
         } catch (error) {
