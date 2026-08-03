@@ -46,14 +46,40 @@ async function resolvePlayerForms(playerDoc) {
   }
 }
 
-/** Select a villain matching (roughly) the player's level */
+/** Select a villain matching (roughly) the player's level. */
 function pickVillain(playerLevel) {
+  const level = Math.max(1, Math.floor(Number(playerLevel) || 1));
+  // Keep new fighters in the Earthling/Z-Fighter part of the roster.
+  // The old +12 ceiling could put a level-1 player against Nappa or Dodoria.
+  const beginner = level <= 5;
+  const minLevel = beginner ? 1 : Math.max(1, level - 8);
+  const maxLevel = level + (beginner ? 2 : 12);
   const eligible = enemyRoster.filter((e) => {
-    const diff = e.level - playerLevel;
-    return diff >= -8 && diff <= 12;
+    return e.level >= minLevel && e.level <= maxLevel;
   });
-  const pool = eligible.length ? eligible : enemyRoster;
+  const pool = eligible.length
+    ? eligible
+    : enemyRoster.filter((e) => e.level <= maxLevel);
   return { ...random(pool) };
+}
+
+/** Make the first few hunts forgiving without weakening later encounters. */
+function tuneBeginnerVillain(villain, playerLevel) {
+  if (playerLevel > 5) return villain;
+
+  const statScale = 0.85;
+  return {
+    ...villain,
+    hp:      Math.max(30, Math.floor(villain.hp * statScale)),
+    maxHp:   Math.max(30, Math.floor(villain.maxHp * statScale)),
+    attack:  Math.max(5, Math.floor(villain.attack * statScale)),
+    defense: Math.max(3, Math.floor(villain.defense * statScale)),
+  };
+}
+
+function beginnerEnemyDamage(damage, playerLevel) {
+  if (playerLevel > 5) return damage;
+  return Math.max(1, Math.floor(damage * 0.65));
 }
 
 /** Pokémon-style status block — shows the player's name. */
@@ -160,7 +186,10 @@ export default {
           }, { quoted: msg });
         }
 
-        const villain = pickVillain(playerDoc.level);
+        const villain = tuneBeginnerVillain(
+          pickVillain(playerDoc.level),
+          Math.max(1, Number(playerDoc.level) || 1)
+        );
         villain.imageUrl = await resolveEnemyImage(villain);
 
         const techniques = (playerDoc.techniques || [])
@@ -173,6 +202,7 @@ export default {
         const p = {
           username:   playerDoc.username || sender.split("@")[0],
           character:   playerDoc.character || null,
+          level:      playerDoc.level || 1,
           hp:         playerDoc.hp,
           maxHp:      playerDoc.maxHp,
           ki:         playerDoc.ki,
@@ -289,13 +319,19 @@ export default {
           const eTech  = techniqueLib.find((t) => t.id === techId);
           if (eTech && e.ki >= eTech.ki) {
             e.ki     = Math.max(0, (e.ki || 0) - eTech.ki);
-            enemyDmg = Math.max(1, Math.floor(calculateDamage(e, p, eTech) * 0.9));
+            enemyDmg = beginnerEnemyDamage(
+              Math.max(1, Math.floor(calculateDamage(e, p, eTech) * 0.9)),
+              p.level
+            );
             enemyMsg = getTechniqueMessage(`*${e.name}*`, eTech.name, `*${pName}*`, enemyDmg);
           }
         }
 
         if (!enemyDmg) {
-          enemyDmg = Math.max(1, calculateDamage(e, p));
+          enemyDmg = beginnerEnemyDamage(
+            Math.max(1, calculateDamage(e, p)),
+            p.level
+          );
           const isCrit = chance(10);
           enemyMsg = getAttackMessage(`*${e.name}*`, `*${pName}*`, enemyDmg, isCrit);
           if (isCrit) enemyDmg = Math.floor(enemyDmg * 1.6);
@@ -375,7 +411,10 @@ export default {
         ].join("\n"));
 
         // Changing form consumes the turn, so the villain gets a response.
-        const enemyDmg = Math.max(1, calculateDamage(e, p));
+        const enemyDmg = beginnerEnemyDamage(
+          Math.max(1, calculateDamage(e, p)),
+          p.level
+        );
         p.hp = Math.max(0, p.hp - enemyDmg);
         hunt.round++;
         const enemyMsg = getAttackMessage(`*${e.name}*`, `*${pName}*`, enemyDmg, false);
@@ -435,7 +474,10 @@ export default {
           ].join("\n"));
 
           await sleep(BATTLE_MESSAGE_DELAY);
-          let enemyDmg = Math.max(1, calculateDamage(e, p));
+          let enemyDmg = beginnerEnemyDamage(
+            Math.max(1, calculateDamage(e, p)),
+            p.level
+          );
           const isCrit  = chance(10);
           let enemyMsg  = getAttackMessage(`*${e.name}*`, `*${pName}*`, enemyDmg, isCrit);
           if (isCrit) enemyDmg = Math.floor(enemyDmg * 1.6);
