@@ -1,6 +1,7 @@
 import { getUser, requireRegistration } from "./database.js";
 import { generateProfileImage, getProfilePic, resolveRole } from "../../lib/profileGen.mjs";
 import { getLevelRole, getAllEarnedRoles, getLevelRoleLabel } from "../../lib/levelRoles.mjs";
+import { getUser as getCardUser } from "../cards/db.js";
 
 const xpForLevel = (level) => level * 100;
 
@@ -29,14 +30,24 @@ export default {
 
     if (target === sender && !await requireRegistration(sock, msg, sender)) return;
 
-    const [user, profilePic] = await Promise.all([
+    const [user, profilePic, cardUser] = await Promise.all([
       getUser(target),
       getProfilePic(sock, target),
+      getCardUser(target),
     ]);
 
     const tag   = target.split("@")[0].split(":")[0];
     const level = user.level ?? 1;
     const xp    = user.xp    ?? 0;
+    const registeredName = String(user.name || "User").trim() || "User";
+    const cardsOwned = Array.isArray(cardUser?.cards)
+      ? cardUser.cards.length
+      : (cardUser?.totalCards ?? 0);
+    const history = Array.isArray(user.history) ? user.history : [];
+    const gameTypes = new Set(["bet", "coinflip", "slots", "roulette", "scratch", "gamble"]);
+    const casinoTypes = new Set(["slots", "roulette", "scratch", "gamble"]);
+    const gamesPlayed = history.filter((entry) => gameTypes.has(entry.type)).length;
+    const casinoGames = history.filter((entry) => casinoTypes.has(entry.type)).length;
 
     const role = resolveRole({
       isOwner:    target === sender ? isOwner  : false,
@@ -59,14 +70,14 @@ export default {
       : 0;
     const caption =
 `╭─❀「 ✨ *PROFILE* 」❀─╮
-│ 👤 *Profile : @${tag}*
+│ 👤 *Profile : ${registeredName}*
 │ 🎭 *Role :* ${role} • ${roleLabel}
 │
 │ 🏅 *Achievements* 🏅
 │ 🌟 Days Active : ${daysActive}
-│ 🃏 Cards       : ${user.totalCards ?? user.cards?.length ?? 0}
-│ 🎮 Games       : ${user.gamesPlayed ?? user.games ?? 0}
-│ 💸 Casino      : ${user.casinoGames ?? user.casino ?? 0}
+│ 🃏 Cards       : ${cardsOwned}
+│ 🎮 Games       : ${gamesPlayed}
+│ 💸 Casino      : ${casinoGames}
 │
 │ ⭐ Level : ${level}
 │ 📚 XP    : ${xp.toLocaleString()} / ${xpForLevel(level).toLocaleString()}
@@ -83,7 +94,7 @@ export default {
 
     try {
       const imgBuffer = await generateProfileImage({
-        username:     user.name || tag,
+        username:     registeredName,
         tag,
         role,
         level,
