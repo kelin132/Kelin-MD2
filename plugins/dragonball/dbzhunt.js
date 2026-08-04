@@ -261,7 +261,7 @@ export default {
             (async () => {
               const fresh = await players.get(sender);
               if (fresh) {
-                fresh.hp = p.hp; fresh.ki = p.ki;
+                fresh.hp = fresh.maxHp; fresh.ki = fresh.maxKi;
                 fresh.missionsCompleted = (fresh.missionsCompleted || 0) + 1;
                 await fresh.save();
               }
@@ -285,7 +285,7 @@ export default {
             `💀 *${e.name}* has been eliminated!`,
             ``,
             `💰 Reward: *+${zeniGain} Zeni* | ✨ *+${xpGain} XP*`,
-            `❤️ HP remaining: ${p.hp}/${p.maxHp}`,
+            `❤️ HP restored to full!`,
           ].join("\n");
 
           if (resultBuf) return sock.sendMessage(jid, { image: resultBuf, caption });
