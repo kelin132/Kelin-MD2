@@ -1,5 +1,5 @@
-import { findOrCreateUser, Col, uid } from "./db.js";
-import { fetchAllCards, getCard, sendCardMedia } from "../../lib/cardApi.mjs";
+import { fetchAllCards, getCard, sendCardMedia, TIER_NAME, TIER_EMOJI } from "../../lib/cardApi.mjs";
+import { Col, uid } from "./db.js";
 
 function normaliseQuery(value) {
   return String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -35,33 +35,95 @@ function findClosest(cards, query) {
     .sort((a, b) => a.score - b.score)[0];
 }
 
-async function resolveCard(query, ownedCards) {
+/**
+ * Parse the user input into a card-name query and an optional tier number.
+ * "roronoa zoro 6"  → { nameQuery: "roronoa zoro", tier: "6" }
+ * "roronoa zoro"    → { nameQuery: "roronoa zoro", tier: null }
+ */
+function parseInput(raw) {
+  const tokens = raw.trim().split(/\s+/);
+  const last = tokens[tokens.length - 1];
+
+  const tierMap = {
+    "1": "1", "2": "2", "3": "3", "4": "4", "5": "5", "6": "6", "s": "S",
+    "t1": "1", "t2": "2", "t3": "3", "t4": "4", "t5": "5", "t6": "6", "ts": "S",
+    "common": "1", "uncommon": "2", "rare": "3", "epic": "4",
+    "legendary": "5", "mythical": "6", "secret": "S",
+  };
+
+  const tierKey = last.toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (tierMap[tierKey]) {
+    return { nameQuery: tokens.slice(0, -1).join(" "), tier: tierMap[tierKey] };
+  }
+
+  if (tokens.length >= 2) {
+    const lastTwo = tokens.slice(-2).join(" ").toLowerCase();
+    const tierFromTwo = tierMap[lastTwo.replace(/[^a-z0-9]/g, "")];
+    if (tierFromTwo) {
+      return { nameQuery: tokens.slice(0, -2).join(" "), tier: tierFromTwo };
+    }
+  }
+
+  return { nameQuery: raw, tier: null };
+}
+
+/**
+ * Find all cards matching a name query across all tiers.
+ */
+async function resolveCardsByName(query) {
+  const all = await fetchAllCards();
   const needle = normaliseQuery(query);
-  const owned = ownedCards.find((card) =>
-    normaliseQuery(card.cardId) === needle ||
-    normaliseQuery(card.name).includes(needle)
-  );
-  if (owned) return owned;
 
-  const apiCard = await getCard(query);
-  if (apiCard) return apiCard;
+  const exact = all.filter((c) => normaliseQuery(c.name) === needle);
+  if (exact.length) return exact;
 
-  const closest = findClosest(await fetchAllCards(), query);
-  return closest && closest.score <= Math.max(2, Math.floor(needle.length * 0.4))
-    ? closest.card
-    : null;
+  const partial = all.filter((c) => normaliseQuery(c.name).includes(needle));
+  if (partial.length) return partial;
+
+  const closest = findClosest(all, query);
+  if (closest && closest.score <= Math.max(2, Math.floor(needle.length * 0.4))) {
+    return all.filter((c) => c.name === closest.card.name);
+  }
+
+  return [];
 }
 
 function ownerJid(user) {
   return user.whatsappNumber || `${user.userId}@s.whatsapp.net`;
 }
 
+async function getOwners(cardId) {
+  const users = await (await Col.users()).find(
+    { "cards.cardId": cardId },
+    { projection: { userId: 1, whatsappNumber: 1, username: 1, cards: 1 } }
+  ).toArray();
+
+  const owners = [];
+  for (const user of users) {
+    (user.cards || []).forEach((owned) => {
+      if (owned.cardId !== cardId) return;
+      owners.push({
+        jid: ownerJid(user),
+        label: user.username || `@${uid(ownerJid(user))}`,
+        spawnId: owned.spawnId || null,
+      });
+    });
+  }
+  return owners;
+}
+
+function tierLabel(tierNum) {
+  const name = TIER_NAME[tierNum] || "Unknown";
+  const emoji = TIER_EMOJI[name] || "";
+  return `${emoji} T${tierNum} ${name}`;
+}
+
 export default {
   name: "si",
   aliases: ["seriesinfo"],
   category: "cards",
-  description: "Show card owners and preview a series card",
-  usage: ".si <card name or ID>",
+  description: "Show card owners and preview a series card (optionally by tier)",
+  usage: ".si <card name> [tier]",
 
   async run({ sock, msg, args, sender }) {
     const jid = msg.key.remoteJid;
@@ -69,56 +131,107 @@ export default {
 
     try {
       const input = args.join(" ").trim();
-      if (!input) return reply("❌ Usage: .si <card name or ID>");
+      if (!input) return reply("❌ Usage: .si <card name> [tier]\n\nExample: .si roronoa zoro 6");
 
-      const currentUser = await findOrCreateUser(sender);
-      const card = await resolveCard(input, Array.isArray(currentUser.cards) ? currentUser.cards : []);
-      if (!card) return reply(`❌ No card found matching "${input}".`);
+      const { nameQuery, tier } = parseInput(input);
+      if (!nameQuery) return reply("❌ Usage: .si <card name> [tier]\n\nExample: .si roronoa zoro 6");
 
-      const users = await (await Col.users()).find(
-        { "cards.cardId": card.cardId },
-        { projection: { userId: 1, whatsappNumber: 1, username: 1, cards: 1 } }
-      ).toArray();
-
-      const owners = [];
-      for (const user of users) {
-        (user.cards || []).forEach((owned, index) => {
-          if (owned.cardId !== card.cardId) return;
-          owners.push({
-            jid: ownerJid(user),
-            label: user.username || `@${uid(ownerJid(user))}`,
-            spawnId: owned.spawnId || null,
-          });
-        });
+      const matches = await resolveCardsByName(nameQuery);
+      if (matches.length === 0) {
+        return reply(`❌ No card found matching "${nameQuery}".`);
       }
 
-      const mentions = owners.map((owner) => owner.jid);
+      const byTier = new Map();
+      for (const card of matches) {
+        if (!byTier.has(card.tierNum)) byTier.set(card.tierNum, []);
+        byTier.get(card.tierNum).push(card);
+      }
 
-      const ownerLines = owners.length
-        ? owners.map((owner, i) =>
-            `${i + 1}. ${owner.label}${owner.spawnId ? ` · ${owner.spawnId}` : ""}`
-          ).join("\n")
-        : "  _No owners yet_";
+      const tierOrder = ["1", "2", "3", "4", "5", "6", "S"];
+      const sortedTiers = [...byTier.keys()].sort(
+        (a, b) => tierOrder.indexOf(a) - tierOrder.indexOf(b)
+      );
+
+      // ── Tier specified: show that specific tier ────────────────────────────
+      if (tier) {
+        const tierCards = byTier.get(tier);
+        if (!tierCards || tierCards.length === 0) {
+          const available = sortedTiers.map((t) => `T${t}`).join(", ");
+          return reply(
+            `❌ No *${tierLabel(tier)}* version of "${matches[0].name}" found.\n\nAvailable tiers: ${available}``
+          );
+        }
+
+        const card = tierCards[0];
+        const owners = await getOwners(card.cardId);
+        const mentions = owners.map((o) => o.jid);
+
+        const ownerLines = owners.length
+          ? owners.map((owner, i) =>
+              `${i + 1}. ${owner.label}${owner.spawnId ? ` · ${owner.spawnId}` : ""}`
+            ).join("\n")
+          : "  _No owners yet_";
+
+        const text =
+`╭━━━━━━━━━━━━━━━━━━━━╮\n│  📚 *Series Info*\n╰━━━━━━━━━━━━━━━━━━━━╯\n\n🗂️ *${card.series || "Unknown"}*\n🃏 ${card.name}\n⭐ ${tierLabel(card.tierNum)}\n\n━━━━━━━━━━━━━━━━━━━━━\n👥 *Owners (${owners.length})*\n━━━━━━━━━━━━━━━━━━━━━\n${ownerLines}\n\n━━━━━━━━━━━━━━━━━━━━━\n💡 _Other tiers: .si ${card.name} <tier>_\nAvailable: ${sortedTiers.map((t) => `T${t}`).join(", ")}``;
+
+        if (card.media) {
+          return sendCardMedia(sock, jid, card, text, { quoted: msg, mentions });
+        }
+        return sock.sendMessage(jid, { text, mentions }, { quoted: msg });
+      }
+
+      // ── No tier specified ───────────────────────────────────────────────────
+      if (sortedTiers.length === 1) {
+        const card = byTier.get(sortedTiers[0])[0];
+        const owners = await getOwners(card.cardId);
+        const mentions = owners.map((o) => o.jid);
+
+        const ownerLines = owners.length
+          ? owners.map((owner, i) =>
+              `${i + 1}. ${owner.label}${owner.spawnId ? ` · ${owner.spawnId}` : ""}`
+            ).join("\n")
+          : "  _No owners yet_";
+
+        const text =
+`╭━━━━━━━━━━━━━━━━━━━━╮\n│  📚 *Series Info*\n╰━━━━━━━━━━━━━━━━━━━━╯\n\n🗂️ *${card.series || "Unknown"}*\n🃏 ${card.name}\n⭐ ${tierLabel(card.tierNum)}\n\n━━━━━━━━━━━━━━━━━━━━━\n👥 *Owners (${owners.length})*\n━━━━━━━━━━━━━━━━━━━━━\n${ownerLines}`;
+
+        if (card.media) {
+          return sendCardMedia(sock, jid, card, text, { quoted: msg, mentions });
+        }
+        return sock.sendMessage(jid, { text, mentions }, { quoted: msg });
+      }
+
+      // Multiple tiers — show a summary of all tiers with owner counts
+      const tierSummaries = [];
+      let totalOwners = 0;
+      let mentions = [];
+
+      for (const t of sortedTiers) {
+        const card = byTier.get(t)[0];
+        const owners = await getOwners(card.cardId);
+        totalOwners += owners.length;
+        mentions.push(...owners.map((o) => o.jid));
+
+        const ownerPreview = owners.length
+          ? owners.slice(0, 5).map((o, i) => `   ${i + 1}. ${o.label}`).join("\n") +
+            (owners.length > 5 ? `\n   _...and ${owners.length - 5} more_` : "")
+          : "   _No owners yet_";
+
+        tierSummaries.push(
+`┃  ${tierLabel(t)} — ${owners.length} owner${owners.length !== 1 ? "s" : ""}\n${ownerPreview}\n┃  💡 _.si ${card.name} ${t}_ for details`
+        );
+      }
 
       const text =
-`╭━━━━━━━━━━━━━━━━━━━━╮
-│  📚 *Series Info*
-╰━━━━━━━━━━━━━━━━━━━━╯
+`╭━━━━━━━━━━━━━━━━━━━━╮\n│  📚 *Series Info*\n╰━━━━━━━━━━━━━━━━━━━━╯\n\n🗂️ *${matches[0].series || "Unknown"}*\n🃏 ${matches[0].name}\n\n━━━━━━━━━━━━━━━━━━━━━\n📊 *All Tiers — ${totalOwners} total owners*\n━━━━━━━━━━━━━━━━━━━━━\n${tierSummaries.join("\n┃\n")}\n\n━━━━━━━━━━━━━━━━━━━━━\n💡 _.si <name> <tier>_ for a specific tier`;
 
-🗂️ *${card.series || "Unknown"}*
-🃏 ${card.name}
-⭐ Tier: ${card.tierNum || card.tier || "Unknown"}
-
-━━━━━━━━━━━━━━━━━━━━━
-👥 *Owners (${owners.length})*
-━━━━━━━━━━━━━━━━━━━━━
-${ownerLines}`;
-
-      if (card.media) {
-        return sendCardMedia(sock, jid, card, text, { quoted: msg, mentions });
+      const previewCard = byTier.get(sortedTiers[0])[0];
+      if (previewCard.media) {
+        return sendCardMedia(sock, jid, previewCard, text, { quoted: msg, mentions });
       }
-
       return sock.sendMessage(jid, { text, mentions }, { quoted: msg });
+
     } catch (err) {
       console.error("SI ERROR:", err);
       return reply("❌ Failed to load series card info.");
