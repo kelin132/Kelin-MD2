@@ -143,8 +143,9 @@ export default {
 
       const byTier = new Map();
       for (const card of matches) {
-        if (!byTier.has(card.tierNum)) byTier.set(card.tierNum, []);
-        byTier.get(card.tierNum).push(card);
+        const key = String(card.tierNum); // normalize to string so "6" === "6" always
+        if (!byTier.has(key)) byTier.set(key, []);
+        byTier.get(key).push(card);
       }
 
       const tierOrder = ["1", "2", "3", "4", "5", "6", "S"];
@@ -158,7 +159,7 @@ export default {
         if (!tierCards || tierCards.length === 0) {
           const available = sortedTiers.map((t) => `T${t}`).join(", ");
           return reply(
-            `❌ No *${tierLabel(tier)}* version of "${matches[0].name}" found.\n\nAvailable tiers: ${available}``
+            `❌ No *${tierLabel(tier)}* version of "${matches[0].name}" found.\n\nAvailable tiers: ${available}`
           );
         }
 
@@ -173,7 +174,7 @@ export default {
           : "  _No owners yet_";
 
         const text =
-`╭━━━━━━━━━━━━━━━━━━━━╮\n│  📚 *Series Info*\n╰━━━━━━━━━━━━━━━━━━━━╯\n\n🗂️ *${card.series || "Unknown"}*\n🃏 ${card.name}\n⭐ ${tierLabel(card.tierNum)}\n\n━━━━━━━━━━━━━━━━━━━━━\n👥 *Owners (${owners.length})*\n━━━━━━━━━━━━━━━━━━━━━\n${ownerLines}\n\n━━━━━━━━━━━━━━━━━━━━━\n💡 _Other tiers: .si ${card.name} <tier>_\nAvailable: ${sortedTiers.map((t) => `T${t}`).join(", ")}``;
+`╭━━━━━━━━━━━━━━━━━━━━╮\n│  📚 *Series Info*\n╰━━━━━━━━━━━━━━━━━━━━╯\n\n🗂️ *${card.series || "Unknown"}*\n🃏 ${card.name}\n⭐ ${tierLabel(card.tierNum)}\n\n━━━━━━━━━━━━━━━━━━━━━\n👥 *Owners (${owners.length})*\n━━━━━━━━━━━━━━━━━━━━━\n${ownerLines}\n\n━━━━━━━━━━━━━━━━━━━━━\n💡 _Other tiers: .si ${card.name} <tier>_\nAvailable: ${sortedTiers.map((t) => `T${t}`).join(", ")}`;
 
         if (card.media) {
           return sendCardMedia(sock, jid, card, text, { quoted: msg, mentions });
