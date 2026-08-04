@@ -67,19 +67,19 @@ function pickVillain(playerLevel) {
 function tuneBeginnerVillain(villain, playerLevel) {
   if (playerLevel > 5) return villain;
 
-  const statScale = 0.85;
+  const statScale = 0.65;
   return {
     ...villain,
-    hp:      Math.max(30, Math.floor(villain.hp * statScale)),
-    maxHp:   Math.max(30, Math.floor(villain.maxHp * statScale)),
-    attack:  Math.max(5, Math.floor(villain.attack * statScale)),
-    defense: Math.max(3, Math.floor(villain.defense * statScale)),
+    hp:      Math.max(20, Math.floor(villain.hp * statScale)),
+    maxHp:   Math.max(20, Math.floor(villain.maxHp * statScale)),
+    attack:  Math.max(3, Math.floor(villain.attack * 0.6)),
+    defense: Math.max(2, Math.floor(villain.defense * 0.6)),
   };
 }
 
 function beginnerEnemyDamage(damage, playerLevel) {
   if (playerLevel > 5) return damage;
-  return Math.max(1, Math.floor(damage * 0.65));
+  return Math.max(1, Math.floor(damage * 0.5));
 }
 
 /** Pokémon-style status block — shows the player's name. */
