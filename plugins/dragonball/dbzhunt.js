@@ -49,24 +49,17 @@ async function resolvePlayerForms(playerDoc) {
 /** Select a villain matching (roughly) the player's level. */
 function pickVillain(playerLevel) {
   const level = Math.max(1, Math.floor(Number(playerLevel) || 1));
-  // Keep new fighters in the Earthling/Z-Fighter part of the roster.
-  // The old +12 ceiling could put a level-1 player against Nappa or Dodoria.
   const beginner = level <= 5;
   const minLevel = beginner ? 1 : Math.max(1, level - 8);
   const maxLevel = level + (beginner ? 2 : 12);
-  const eligible = enemyRoster.filter((e) => {
-    return e.level >= minLevel && e.level <= maxLevel;
-  });
-  const pool = eligible.length
-    ? eligible
-    : enemyRoster.filter((e) => e.level <= maxLevel);
+  const eligible = enemyRoster.filter((e) => e.level >= minLevel && e.level <= maxLevel);
+  const pool = eligible.length ? eligible : enemyRoster.filter((e) => e.level <= maxLevel);
   return { ...random(pool) };
 }
 
 /** Make the first few hunts forgiving without weakening later encounters. */
 function tuneBeginnerVillain(villain, playerLevel) {
   if (playerLevel > 5) return villain;
-
   const statScale = 0.65;
   return {
     ...villain,
@@ -245,15 +238,8 @@ export default {
       const { p, e } = hunt;
       const pName = p.username || playerDoc.username || "You";
 
-      // KI regeneration each turn
       p.ki = Math.min(p.maxKi, p.ki + Math.floor(p.maxKi * 0.1));
 
-      /**
-       * PvP-style flow:
-       * Frame 1 — player's hit lands on villain  (hitSide: "right")
-       * Frame 2 — villain counterattacks player  (hitSide: "left")
-       * Then  — action menu as plain text
-       */
       async function applyDamageToEnemy(dmg, resultText) {
         e.hp = Math.max(0, e.hp - dmg);
 
@@ -262,14 +248,10 @@ export default {
           if (p.cooldowns[id] <= 0) delete p.cooldowns[id];
         }
 
-        // Give the player enough time to read the attack message before
-        // rendering the next battle event.
         await sleep(BATTLE_MESSAGE_DELAY);
-        // Frame 1: player hits villain
         await sendHuntImage(sock, jid, hunt, resultText, { hitSide: "right", damage: dmg });
 
         if (e.hp <= 0) {
-          // ── Victory ──────────────────────────────────────────────────────
           const xpGain   = e.xpReward;
           const zeniGain = e.zeniReward;
 
@@ -340,10 +322,9 @@ export default {
         p.hp = Math.max(0, p.hp - enemyDmg);
         hunt.round++;
 
-        // Frame 2: villain counterattacks
         if (p.hp <= 0) {
           const loseZeni = Math.floor((playerDoc.zeni || 0) * 0.05);
-          await players.update(sender, { $inc: { zeni: -loseZeni, losses: 1 }, $set: { hp: 1 } });
+          await players.update(sender, { $inc: { zeni: -loseZeni, losses: 1 }, $set: { hp: playerDoc.maxHp, ki: playerDoc.maxKi } });
           deleteHunt(sender);
 
           await sleep(BATTLE_MESSAGE_DELAY);
@@ -353,7 +334,7 @@ export default {
               `☠️ *${pName.toUpperCase()} WAS DEFEATED!*`,
               `💀 *${e.name}* overwhelmed you!`,
               `💰 Lost: *${loseZeni} Zeni* (5% penalty)`,
-              `❤️ HP restored to 1 — heal up before hunting again.`,
+              `❤️ HP restored to full — rest up before hunting again.`,
             ].join("\n"),
           });
         }
@@ -410,7 +391,6 @@ export default {
           `💠 KI spent: *30*`,
         ].join("\n"));
 
-        // Changing form consumes the turn, so the villain gets a response.
         const enemyDmg = beginnerEnemyDamage(
           Math.max(1, calculateDamage(e, p)),
           p.level
@@ -423,11 +403,11 @@ export default {
 
         if (p.hp <= 0) {
           const loseZeni = Math.floor((playerDoc.zeni || 0) * 0.05);
-          await players.update(sender, { $inc: { zeni: -loseZeni, losses: 1 }, $set: { hp: 1 } });
+          await players.update(sender, { $inc: { zeni: -loseZeni, losses: 1 }, $set: { hp: playerDoc.maxHp, ki: playerDoc.maxKi } });
           deleteHunt(sender);
           await sleep(BATTLE_MESSAGE_DELAY);
           return sock.sendMessage(jid, {
-            text: `☠️ *${pName.toUpperCase()} WAS DEFEATED!*\n💀 *${e.name}* overwhelmed you!\n💰 Lost: *${loseZeni} Zeni*`,
+            text: `☠️ *${pName.toUpperCase()} WAS DEFEATED!*\n💀 *${e.name}* overwhelmed you!\n💰 Lost: *${loseZeni} Zeni*\n❤️ HP restored to full.`,
           }, { quoted: msg });
         }
 
@@ -458,7 +438,6 @@ export default {
         p.ki -= tech.ki;
         if (tech.cooldown > 0) p.cooldowns[tech.id] = tech.cooldown;
 
-        // Support technique (still triggers enemy counterattack)
         if (tech.effect === "defense_up") {
           p.defense = Math.floor(p.defense * 1.3);
           e.ki = Math.min(e.maxKi || 200, (e.ki || 0) + Math.floor((e.maxKi || 200) * 0.08));
@@ -486,12 +465,12 @@ export default {
 
           if (p.hp <= 0) {
             const loseZeni = Math.floor((playerDoc.zeni || 0) * 0.05);
-            await players.update(sender, { $inc: { zeni: -loseZeni, losses: 1 }, $set: { hp: 1 } });
+            await players.update(sender, { $inc: { zeni: -loseZeni, losses: 1 }, $set: { hp: playerDoc.maxHp, ki: playerDoc.maxKi } });
             deleteHunt(sender);
             await sleep(BATTLE_MESSAGE_DELAY);
             await sendHuntImage(sock, jid, hunt, enemyMsg, { hitSide: "left", damage: enemyDmg });
             return sock.sendMessage(jid, {
-              text: `☠️ *${pName.toUpperCase()} WAS DEFEATED!*\n💀 *${e.name}* overwhelmed you!\n💰 Lost: *${loseZeni} Zeni*\n❤️ HP restored to 1.`,
+              text: `☠️ *${pName.toUpperCase()} WAS DEFEATED!*\n💀 *${e.name}* overwhelmed you!\n💰 Lost: *${loseZeni} Zeni*\n❤️ HP restored to full.`,
             });
           }
 
@@ -532,7 +511,6 @@ export default {
         }, { quoted: msg });
       }
 
-      // Fallback
       return sock.sendMessage(jid, { text: buildMenu(hunt) }, { quoted: msg });
 
     } catch (err) {
