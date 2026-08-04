@@ -4,7 +4,7 @@
  * autospawn is enabled via .pokespawn on/off
  */
 
-import { fetchRandom }               from "../../lib/pokemon/api.mjs";
+import { fetchRandom, getImageMessage } from "../../lib/pokemon/api.mjs";
 import { getWild, setWild }          from "../../lib/pokemon/wildState.mjs";
 import { wildLevel, getMovesForType } from "../../lib/pokemon/gameLogic.mjs";
 import { getDb }                     from "../../lib/mongo.mjs";
@@ -78,10 +78,12 @@ Use *${getPrefix()}catch* to battle this Pokémon!
 ⏰ It will flee in 30 minutes.`;
 
     // Try with image; if URL is missing or CDN fails, send text-only so the spawn isn't lost
+    // Use local sprite file when available (no CDN); falls back to URL, then text-only
+    const imgMsg = await getImageMessage(apiData);
     let sent = false;
-    if (apiData.imageUrl) {
+    if (imgMsg) {
       try {
-        await sock.sendMessage(chatId, { image: { url: apiData.imageUrl }, caption: autoCaption });
+        await sock.sendMessage(chatId, { ...imgMsg, caption: autoCaption });
         sent = true;
       } catch (err) {
         console.error(`[pokeautospawn] Image send failed for ${chatId}, falling back to text:`, err?.message);

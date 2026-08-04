@@ -1,7 +1,7 @@
 // plugins/pokemon/spawnpoke.js
 // Spawn a random wild Pokémon in the group
 
-import { fetchRandom } from "../../lib/pokemon/api.mjs";
+import { fetchRandom, getImageMessage } from "../../lib/pokemon/api.mjs";
 import { getWild, setWild } from "../../lib/pokemon/wildState.mjs";
 import { getTrainer } from "../../lib/pokemon/players.mjs";
 import { wildLevel, getMovesForType } from "../../lib/pokemon/gameLogic.mjs";
@@ -99,12 +99,13 @@ export default {
 Use *.catch* to battle this Pokémon!
 ⏰ It will flee in 30 minutes.`;
 
-    // Try with image first; fall back to text-only if the URL is missing or fails
-    if (apiData.imageUrl) {
+    // Use local sprite file when available (no CDN); falls back to URL, then text-only
+    const imgMsg = await getImageMessage(apiData);
+    if (imgMsg) {
       try {
-        await sock.sendMessage(jid, { image: { url: apiData.imageUrl }, caption: spawnCaption }, { quoted: msg });
+        await sock.sendMessage(jid, { ...imgMsg, caption: spawnCaption }, { quoted: msg });
         return;
-      } catch { /* fall through */ }
+      } catch { /* fall through to text */ }
     }
     await sock.sendMessage(jid, { text: spawnCaption }, { quoted: msg });
   },

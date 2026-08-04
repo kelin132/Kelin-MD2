@@ -1,7 +1,7 @@
 // plugins/pokemon/pokeinfo.js
 // Look up info about any Pokémon
 
-import { fetchPokemon } from "../../lib/pokemon/api.mjs";
+import { fetchPokemon, getImageMessage } from "../../lib/pokemon/api.mjs";
 import { getEvolutionByStone, STONE_EVOLUTIONS } from "../../lib/pokemon/gameLogic.mjs";
 
 export default {
@@ -65,11 +65,13 @@ export default {
 _Stats scale with level when caught._`;
 
     // Try with image first; fall back to text-only if the URL is missing or fails
-    if (apiData.imageUrl) {
+    // Use local sprite file when available (no CDN); falls back to URL, then text-only
+    const imgMsg = await getImageMessage(apiData);
+    if (imgMsg) {
       try {
-        await sock.sendMessage(jid, { image: { url: apiData.imageUrl }, caption: dexCaption }, { quoted: msg });
+        await sock.sendMessage(jid, { ...imgMsg, caption: dexCaption }, { quoted: msg });
         return;
-      } catch { /* fall through */ }
+      } catch { /* fall through to text */ }
     }
     await sock.sendMessage(jid, { text: dexCaption }, { quoted: msg });
   },
