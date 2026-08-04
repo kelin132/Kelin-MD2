@@ -66,10 +66,7 @@ if (!global.__pokeAutoSpawnerRunning) {
 
     const typeStr = apiData.types.map(t => `${TYPE_EMOJIS[t] || ""}${t}`).join(" / ");
 
-    try {
-      await sock.sendMessage(chatId, {
-        image:   { url: apiData.imageUrl },
-        caption:
+    const autoCaption =
 `🌿 *A WILD POKÉMON APPEARED!*
 
 🐾 Name: *${wildPoke.displayName}*
@@ -78,10 +75,24 @@ if (!global.__pokeAutoSpawnerRunning) {
 ❤️ HP: ${maxHp}/${maxHp}
 
 Use *${getPrefix()}catch* to battle this Pokémon!
-⏰ It will flee in 30 minutes.`,
-      });
-    } catch (err) {
-      console.error(`[pokeautospawn] Failed to send to ${chatId}:`, err?.message);
+⏰ It will flee in 30 minutes.`;
+
+    // Try with image; if URL is missing or CDN fails, send text-only so the spawn isn't lost
+    let sent = false;
+    if (apiData.imageUrl) {
+      try {
+        await sock.sendMessage(chatId, { image: { url: apiData.imageUrl }, caption: autoCaption });
+        sent = true;
+      } catch (err) {
+        console.error(`[pokeautospawn] Image send failed for ${chatId}, falling back to text:`, err?.message);
+      }
+    }
+    if (!sent) {
+      try {
+        await sock.sendMessage(chatId, { text: autoCaption });
+      } catch (err) {
+        console.error(`[pokeautospawn] Text fallback also failed for ${chatId}:`, err?.message);
+      }
     }
   }
 

@@ -88,9 +88,7 @@ export default {
       ice:"❄️",fighting:"🥊",ghost:"👻",dragon:"🐉",dark:"🌑",steel:"⚙️",fairy:"🌸" };
     const typeStr = apiData.types.map(t => `${typeEmojis[t]||""}${t}`).join(" / ");
 
-    await sock.sendMessage(jid, {
-      image: { url: apiData.imageUrl },
-      caption:
+    const spawnCaption =
 `🌿 *A WILD POKÉMON APPEARED!*
 
 🐾 Name: *${wildPoke.displayName}*
@@ -99,7 +97,15 @@ export default {
 ❤️ HP: ${maxHp}/${maxHp}
 
 Use *.catch* to battle this Pokémon!
-⏰ It will flee in 30 minutes.`,
-    }, { quoted: msg });
+⏰ It will flee in 30 minutes.`;
+
+    // Try with image first; fall back to text-only if the URL is missing or fails
+    if (apiData.imageUrl) {
+      try {
+        await sock.sendMessage(jid, { image: { url: apiData.imageUrl }, caption: spawnCaption }, { quoted: msg });
+        return;
+      } catch { /* fall through */ }
+    }
+    await sock.sendMessage(jid, { text: spawnCaption }, { quoted: msg });
   },
 };

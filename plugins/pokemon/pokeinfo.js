@@ -47,9 +47,7 @@ export default {
       }
     }
 
-    await sock.sendMessage(jid, {
-      image: { url: apiData.imageUrl },
-      caption:
+    const dexCaption =
 `📖 *POKÉDEX — #${apiData.pokedexId}*
 
 🐾 *${apiData.displayName}*
@@ -64,7 +62,15 @@ export default {
 📏 Height: ${(apiData.height / 10).toFixed(1)}m
 ⚖️ Weight: ${(apiData.weight / 10).toFixed(1)}kg${evoText}
 
-_Stats scale with level when caught._`,
-    }, { quoted: msg });
+_Stats scale with level when caught._`;
+
+    // Try with image first; fall back to text-only if the URL is missing or fails
+    if (apiData.imageUrl) {
+      try {
+        await sock.sendMessage(jid, { image: { url: apiData.imageUrl }, caption: dexCaption }, { quoted: msg });
+        return;
+      } catch { /* fall through */ }
+    }
+    await sock.sendMessage(jid, { text: dexCaption }, { quoted: msg });
   },
 };
