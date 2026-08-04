@@ -265,6 +265,21 @@ export default {
 
     } catch (err) {
       console.error("SUMMON ERROR:", err);
+
+      // Card API is completely down — give users a clear message instead of a generic error
+      if (err.code === "CARD_API_DOWN") {
+        return reply(
+`╭━━━〔 🌐 𝑪𝑨𝑹𝑫 𝑨𝑷𝑰 𝑫𝑶𝑾𝑵 〕━━━╮
+┃ ✦ The card server is temporarily offline!
+┃
+┃ 🔧 This is not your fault.
+┃ ⏳ Please wait a few minutes and try again.
+┃
+┃ 💡 Your coins were NOT deducted.
+╰━━━━━━━━━━━━━━━━━━━━━━━━╯`
+        );
+      }
+
       return reply(
 `╭━━━〔 ❌ 𝑬𝑹𝑹𝑶𝑹 〕━━━╮
 ┃ ✦ Summon failed!
