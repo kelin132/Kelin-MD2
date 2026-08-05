@@ -1,73 +1,62 @@
 import {
-  formatDuration,
   isBotOnline,
   listRegisteredBots,
+  markBotSessionDeleted,
 } from "../../lib/botRegistry.mjs";
 
 export default {
   name: "bots",
-  description: "Show paired bots and their online status and uptime",
+  description: "Show paired bots and their online status",
   category: "main",
   usage: ".bots",
   aliases: ["botlist", "botstatus"],
   cooldown: 10,
 
-  async run({ sock, msg }) {
+  async run({ sock, msg, sender, isOwner }) {
     const jid = msg.key.remoteJid;
+
+    // ── Owner sub-command: .bots delete <number> ──────────────────────────────
+    const raw = (msg.message?.conversation ||
+                 msg.message?.extendedTextMessage?.text || "").trim();
+    const parts = raw.split(/\s+/);
+    if (isOwner && parts[1]?.toLowerCase() === "delete" && parts[2]) {
+      const num = parts[2].replace(/\D/g, "");
+      await markBotSessionDeleted(num);
+      return sock.sendMessage(jid, {
+        text: `✅ Bot *${num}* has been removed from the list.`,
+      }, { quoted: msg });
+    }
 
     let bots;
     try {
       bots = await listRegisteredBots();
-    } catch (err) {
-      console.error("[bots] Failed to read bot registry:", err.message);
+    } catch {
       return sock.sendMessage(jid, {
-        text: "❌ I couldn't read the bot registry right now. MongoDB may be unavailable.",
+        text: "❌ I couldn't read the bot registry right now.",
       }, { quoted: msg });
     }
 
     const now = Date.now();
-    const onlineBots = bots.filter((bot) => isBotOnline(bot, now));
+    const onlineBots = bots.filter((b) => isBotOnline(b, now));
+
     const lines = bots.length
-      ? bots.map((bot, index) => {
-        const online = isBotOnline(bot, now);
-        const name = bot.botName || "Unnamed Bot";
-        const number = bot.number ? `+${bot.number}` : "Unknown number";
-
-        if (online) {
-          const startedAt = new Date(bot.startedAt).getTime();
-          const uptime = Number.isFinite(startedAt)
-            ? formatDuration(now - startedAt)
-            : "Unknown";
-          return [
-            `╭─❖ *${index + 1}. ${name}*`,
-            `│ 🟢 Status: *ONLINE*`,
-            `│ 📱 Number: ${number}`,
-            `│ ⏱️ Uptime: *${uptime}*`,
-            "╰──────────────",
-          ].join("\n");
-        }
-
-        const lastSeenAt = bot.lastSeenAt ? new Date(bot.lastSeenAt) : null;
-        const lastSeen = lastSeenAt && !Number.isNaN(lastSeenAt.getTime())
-          ? lastSeenAt.toLocaleString()
-          : "Unknown";
-        return [
-          `╭─❖ *${index + 1}. ${name}*`,
-          `│ 🔴 Status: *OFFLINE*`,
-          `│ 📱 Number: ${number}`,
-          `│ 🕘 Last seen: *${lastSeen}*`,
-          "╰──────────────",
-        ].join("\n");
-      }).join("\n\n")
-      : "No paired bots have registered yet.";
+      ? bots.map((bot) => {
+          const online = isBotOnline(bot, now);
+          const name   = bot.botName || "Unnamed Bot";
+          const emoji  = online ? "🟢" : "🔴";
+          // Offline: show only name + offline indicator
+          return `${emoji} *${name}*`;
+        }).join("\n")
+      : "No paired bots registered yet.";
 
     const text =
 `╭━━━〔 🌸 *AKIRA BOTS* 🌸 〕━━━╮
-│ 🟢 Online: *${onlineBots.length}*
-│ 🌸 Registered: *${bots.length}*
+│ 🟢 Online: *${onlineBots.length}*  /  🌸 Total: *${bots.length}*
 ╰━━━━━━━━━━━━━━━━━━━━━━╯
 
-${lines}`;
+${lines}
+
+_Owners: .bots delete <number> to hide a bot_`;
 
     await sock.sendMessage(jid, { text }, { quoted: msg });
   },
