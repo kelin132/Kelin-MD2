@@ -44,7 +44,7 @@ function fmt(n) { return `$${n.toLocaleString()}`; }
 function buildBoard() {
   const reg  = Object.entries(jobs).filter(([, v]) => v.tier === "Regular");
   const elit = Object.entries(jobs).filter(([, v]) => v.tier === "Elite");
-  const line = ([n, j]) => `│  ${j.emoji} *${n}* :: _$${j.pay.toLocaleString()} (+${j.xp} xp)_`;
+  const line = ([n, j]) => `│  ${j.emoji} *${n}* :: $${j.pay.toLocaleString()} (+${j.xp} xp)`;
 
   return (
 `╭─❀「 💼 *𝐉𝐎𝐁𝐒 𝐁𝐎𝐀𝐑𝐃* 」❀─╮
@@ -127,7 +127,6 @@ export default {
         text:
 `╭─❀「 💼 *𝐖𝐎𝐑𝐊* 」❀─╮
 │ ✅ *Result*  :: *HIRED 🟢*
-│ 🍃 *Flavour* :: _ようこそ！新しい仕事へ！_
 │
 │ ${j.emoji} *Position* :: *${jobKey}*
 │ 💰 *Base Pay* :: *$${j.pay.toLocaleString()} / shift*
@@ -144,8 +143,7 @@ export default {
       return sock.sendMessage(jid, {
         text:
 `╭─❀「 💼 *𝐖𝐎𝐑𝐊* 」❀─╮
-│ 🌙 *Result*  :: *${user.fired ? "FIRED 🔴" : "NO JOB 🔴"}*
-│ 🍃 *Flavour* :: _${user.fired ? "クビになった...新しい仕事を探せ！" : "まだ仕事がない！求人板を見ろ！"}_
+│ 🌙 *Result*  :: *${user.fired ? "NO JOB 🔴" : "NO JOB 🔴"}*
 │
 │ 📋 Use *.work jobs* to see all positions
 │ 📝 Use *.work <jobname>* to apply
@@ -164,7 +162,6 @@ ${buildBoard()}`
         text:
 `╭─❀「 💼 *𝐖𝐎𝐑𝐊* 」❀─╮
 │ ⏳ *Result*  :: *SHIFT NOT READY 🔴*
-│ 🍃 *Flavour* :: _休んで、次のシフトを待て！_
 │
 │ ${j.emoji} *Job*    :: *${user.job}*
 │ 🕒 *Next*   :: *${fmtTime(remaining)}*
@@ -194,7 +191,6 @@ ${buildBoard()}`
       const caption =
 `╭─❀「 💼 *𝐖𝐎𝐑𝐊* 」❀─╮
 │ 🌙 *Result*     :: *FIRED 🔴*
-│ 🍃 *Flavour*    :: _クビになった…残念！_
 │
 │ ${j.emoji} *Role*      :: *${jobKey}*
 │ 💸 *Severance*  :: *${fmt(severance)}*
@@ -230,7 +226,6 @@ ${buildBoard()}`
     const caption =
 `╭─❀「 💼 *𝐖𝐎𝐑𝐊* 」❀─╮
 │ 🌙 *Result*  :: *PAYDAY 🟢*
-│ 🍃 *Flavour* :: _お疲れ様！よくやった！_
 │
 │ ${j.emoji} *Job*     :: *${jobKey}*
 │ 💰 *Earned*  :: *+${fmt(total)}*${bonus > 0 ? `  _(+${fmt(bonus)} bonus!)_` : ""}
