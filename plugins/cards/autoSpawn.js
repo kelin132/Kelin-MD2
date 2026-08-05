@@ -8,7 +8,8 @@
  * Runs independently of (and duplicates) cardSpawner.mjs if both are active;
  * the guard `global.__cardApiSpawnerRunning` prevents double-spawning.
  */
-import { pickRandomCard, resolveMediaUrl, createSpawnId } from "../../lib/cardApi.mjs";
+import { pickRandomCard, resolveMediaUrl, createSpawnId, sendCardMedia } from "../../lib/cardApi.mjs";
+import { getSeries } from "../../lib/seriesEnrich.mjs";
 import { getEnabledSpawnChats }            from "./db.js";
 import { log }                             from "../../lib/logger.mjs";
 import { getPrefix }                       from "../../lib/bot.mjs";
@@ -25,6 +26,11 @@ if (!global.__cardApiSpawnerRunning) {
   async function spawnCardInChat(sock, chatId, card) {
     const spawns = global.activeSpawns || (global.activeSpawns = {});
     if (spawns[chatId]) return; // don't overwrite unclaimed spawn
+
+    // Enrich series from AniList before displaying (4 s timeout)
+    if (!card.series || card.series === "Unknown") {
+      card.series = await getSeries(card.name, { timeout: 4000 });
+    }
 
     const spawnId = createSpawnId();
     spawns[chatId] = { cardId: card.cardId, spawnId, card };

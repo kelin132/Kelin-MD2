@@ -1,5 +1,6 @@
 import { fetchAllCards, getCard, sendCardMedia, TIER_NAME, TIER_EMOJI } from "../../lib/cardApi.mjs";
 import { Col, uid } from "./db.js";
+import { getSeries } from "../../lib/seriesEnrich.mjs";
 
 function normaliseQuery(value) {
   return String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -164,6 +165,11 @@ export default {
         }
 
         const card = tierCards[0];
+        // Enrich series if still unknown (AniList, 4 s timeout)
+        if (!card.series || card.series === "Unknown") {
+          card.series = await getSeries(card.name, { timeout: 4000 });
+        }
+
         const owners = await getOwners(card.cardId);
         const mentions = owners.map((o) => o.jid);
 
@@ -185,6 +191,10 @@ export default {
       // ── No tier specified ───────────────────────────────────────────────────
       if (sortedTiers.length === 1) {
         const card = byTier.get(sortedTiers[0])[0];
+        // Enrich series if still unknown
+        if (!card.series || card.series === "Unknown") {
+          card.series = await getSeries(card.name, { timeout: 4000 });
+        }
         const owners = await getOwners(card.cardId);
         const mentions = owners.map((o) => o.jid);
 
@@ -208,6 +218,14 @@ export default {
       let totalOwners = 0;
       let mentions = [];
 
+      // Enrich series on the representative card (same character, so one lookup suffices)
+      const repCard = byTier.get(sortedTiers[0])[0];
+      if (!repCard.series || repCard.series === "Unknown") {
+        repCard.series = await getSeries(repCard.name, { timeout: 4000 });
+        // Propagate to all tiers since it's the same character
+        for (const t of sortedTiers) { byTier.get(t)[0].series = repCard.series; }
+      }
+
       for (const t of sortedTiers) {
         const card = byTier.get(t)[0];
         const owners = await getOwners(card.cardId);
@@ -225,7 +243,7 @@ export default {
       }
 
       const text =
-`╭━━━━━━━━━━━━━━━━━━━━╮\n│  📚 *Series Info*\n╰━━━━━━━━━━━━━━━━━━━━╯\n\n🗂️ *${matches[0].series || "Unknown"}*\n🃏 ${matches[0].name}\n\n━━━━━━━━━━━━━━━━━━━━━\n📊 *All Tiers — ${totalOwners} total owners*\n━━━━━━━━━━━━━━━━━━━━━\n${tierSummaries.join("\n┃\n")}\n\n━━━━━━━━━━━━━━━━━━━━━\n💡 _.si <name> <tier>_ for a specific tier`;
+`╭━━━━━━━━━━━━━━━━━━━━╮\n│  📚 *Series Info*\n╰━━━━━━━━━━━━━━━━━━━━╯\n\n🗂️ *${repCard.series || matches[0].series || "Unknown"}*\n🃏 ${matches[0].name}\n\n━━━━━━━━━━━━━━━━━━━━━\n📊 *All Tiers — ${totalOwners} total owners*\n━━━━━━━━━━━━━━━━━━━━━\n${tierSummaries.join("\n┃\n")}\n\n━━━━━━━━━━━━━━━━━━━━━\n💡 _.si <name> <tier>_ for a specific tier`;
 
       const previewCard = byTier.get(sortedTiers[0])[0];
       if (previewCard.media) {
