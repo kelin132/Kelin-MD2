@@ -15,18 +15,46 @@ export default {
   async run({ sock, msg, sender, isOwner }) {
     const jid = msg.key.remoteJid;
 
-    // ── Owner sub-command: .bots delete <number> ──────────────────────────────
-    const raw = (msg.message?.conversation ||
-                 msg.message?.extendedTextMessage?.text || "").trim();
+    const raw   = (
+      msg.message?.conversation ||
+      msg.message?.extendedTextMessage?.text || ""
+    ).trim();
     const parts = raw.split(/\s+/);
+
+    // ── Owner sub-command: .bots delete <position-number> ────────────────────
+    // e.g. ".bots delete 2"  →  removes the 2nd bot from the sorted list
     if (isOwner && parts[1]?.toLowerCase() === "delete" && parts[2]) {
-      const num = parts[2].replace(/\D/g, "");
-      await markBotSessionDeleted(num);
+      const pos = parseInt(parts[2], 10);
+      if (isNaN(pos) || pos < 1) {
+        return sock.sendMessage(jid, {
+          text: "❌ Give a valid bot number, e.g. *.bots delete 2*",
+        }, { quoted: msg });
+      }
+
+      let bots;
+      try {
+        bots = await listRegisteredBots();
+      } catch {
+        return sock.sendMessage(jid, {
+          text: "❌ Couldn't read the bot registry.",
+        }, { quoted: msg });
+      }
+
+      if (pos > bots.length) {
+        return sock.sendMessage(jid, {
+          text: `❌ No bot #${pos}. Only *${bots.length}* bot(s) in the list.`,
+        }, { quoted: msg });
+      }
+
+      const target = bots[pos - 1]; // list is 1-indexed for the user
+      await markBotSessionDeleted(target.number || target._id?.replace("bot:", ""));
+      const name = target.botName || `Bot #${pos}`;
       return sock.sendMessage(jid, {
-        text: `✅ Bot *${num}* has been removed from the list.`,
+        text: `✅ *${name}* has been removed from the bot list.`,
       }, { quoted: msg });
     }
 
+    // ── Normal list view ──────────────────────────────────────────────────────
     let bots;
     try {
       bots = await listRegisteredBots();
@@ -36,27 +64,28 @@ export default {
       }, { quoted: msg });
     }
 
-    const now = Date.now();
+    const now        = Date.now();
     const onlineBots = bots.filter((b) => isBotOnline(b, now));
 
     const lines = bots.length
-      ? bots.map((bot) => {
+      ? bots.map((bot, i) => {
           const online = isBotOnline(bot, now);
           const name   = bot.botName || "Unnamed Bot";
           const emoji  = online ? "🟢" : "🔴";
-          // Offline: show only name + offline indicator
-          return `${emoji} *${name}*`;
+          return `${i + 1}. ${emoji} *${name}*`;
         }).join("\n")
       : "No paired bots registered yet.";
+
+    const deleteHint = isOwner && bots.length
+      ? `\n_Owner: .bots delete <number> to hide a bot_`
+      : "";
 
     const text =
 `╭━━━〔 🌸 *AKIRA BOTS* 🌸 〕━━━╮
 │ 🟢 Online: *${onlineBots.length}*  /  🌸 Total: *${bots.length}*
 ╰━━━━━━━━━━━━━━━━━━━━━━╯
 
-${lines}
-
-_Owners: .bots delete <number> to hide a bot_`;
+${lines}${deleteHint}`;
 
     await sock.sendMessage(jid, { text }, { quoted: msg });
   },
