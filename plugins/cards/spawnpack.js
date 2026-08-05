@@ -22,7 +22,7 @@ import {
   createSpawnId,
 } from "../../lib/cardApi.mjs";
 
-const PACK_COST = 2_000_000;
+const PACK_COST = 20_000_000;
 
 const PACK_CONTENTS = [
   { tierName: "Mythical",  count: 2 },
