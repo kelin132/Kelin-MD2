@@ -141,11 +141,17 @@ export default {
 
     // ── No job / fired ────────────────────────────────────────────────────────
     if (!user.job || user.fired) {
-      const status = user.fired
-        ? "🚨 You were fired! Pick a new job below."
-        : "😶 No job yet! Pick one below.";
       return sock.sendMessage(jid, {
-        text: `${status}\n\n${buildBoard()}`
+        text:
+`╭─❀「 💼 *𝐖𝐎𝐑𝐊* 」❀─╮
+│ 🌙 *Result*  :: *${user.fired ? "FIRED 🔴" : "NO JOB 🔴"}*
+│ 🍃 *Flavour* :: _${user.fired ? "クビになった...新しい仕事を探せ！" : "まだ仕事がない！求人板を見ろ！"}_
+│
+│ 📋 Use *.work jobs* to see all positions
+│ 📝 Use *.work <jobname>* to apply
+╰───────────────❀
+
+${buildBoard()}`
       }, { quoted: msg });
     }
 
