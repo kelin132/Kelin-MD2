@@ -1,22 +1,15 @@
 import { guildSystem } from "../../lib/guildSystem.js";
-import { isStaff } from "../economy/database.js";
 
 export default {
   name: "resetguilds",
   description: "Wipe all guilds from the database (staff only)",
   category: "staff",
   usage: ".resetguilds confirm",
+  isStaff: true,
   cooldown: 10,
 
-  async run({ sock, msg, sender, args }) {
+  async run({ sock, msg, args }) {
     const jid = msg.key.remoteJid;
-
-    // Staff check
-    if (!await isStaff(sender)) {
-      return sock.sendMessage(jid, {
-        text: "❌ This command is for staff only."
-      }, { quoted: msg });
-    }
 
     // Require explicit confirmation to avoid accidents
     if ((args[0] || "").toLowerCase() !== "confirm") {
@@ -36,7 +29,7 @@ export default {
 
     const count = await guildSystem.clearAllGuilds();
 
-    await sock.sendMessage(jid, {
+    return sock.sendMessage(jid, {
       text:
 `╭─❀「 🗑️ *𝐑𝐄𝐒𝐄𝐓 𝐆𝐔𝐈𝐋𝐃𝐒* 」❀─╮
 │ 🌙 *Result*  :: *DONE 🟢*
