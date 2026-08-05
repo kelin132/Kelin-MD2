@@ -15,6 +15,13 @@ const SUCCESS_RATE   = 0.55;       // 55% success
 
 const activeHeists = new Map();    // jid → { starter, stake, members, timeout }
 
+function fmt(n) {
+  if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `$${(n/1e3).toFixed(1)}K`;
+  return `$${n.toLocaleString()}`;
+}
+
 export default {
   name: "heist",
   aliases: ["robgroup", "crew"],
@@ -31,35 +38,50 @@ export default {
     const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
     const sub   = (args[0] || "").toLowerCase();
 
-    if (!jid.endsWith("@g.us")) return reply("❌ Heist only works in groups!");
+    if (!jid.endsWith("@g.us")) return reply(
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ ❌ *Result*  :: *GROUP ONLY 🔴*
+│
+│ ⚠️ *Heist only works in group chats!*
+╰───────────────❀`
+    );
 
-    // ── STATUS ────────────────────────────────────────────────────────────────
+    // ── STATUS ─────────────────────────────────────────────────────────────────
     if (sub === "status") {
       const heist = activeHeists.get(jid);
-      if (!heist) return reply("ℹ️ No active heist in this group.\n\nStart one with *.heist <amount>*");
-      const names = heist.members.map(m => `• @${m.id.split("@")[0]}`).join("\n");
+      if (!heist) return reply(
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ ℹ️  *Status*  :: *NO ACTIVE HEIST*
+│
+│ 💡 Start one with *.heist <amount>*
+╰───────────────❀`
+      );
+      const names = heist.members.map(m => `│   • @${m.id.split("@")[0]}`).join("\n");
       return await sock.sendMessage(jid, {
         text:
-`🦹 *ACTIVE HEIST*
-
-💰 Stake per person : $${heist.stake.toLocaleString()}
-👥 Crew             : ${heist.members.length}/${MIN_MEMBERS} minimum
-⏳ Auto-executes in : ${Math.max(0, Math.ceil((heist.startsAt - Date.now()) / 1000))}s
-
-*Crew:*\n${names}\n\nJoin with *.heist join*`,
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ 🌙 *Status*  :: *ACTIVE 🟢*
+│
+│ 💰 *Stake*   :: *${fmt(heist.stake)} per person*
+│ 👥 *Crew*    :: *${heist.members.length}/${MIN_MEMBERS} minimum*
+│ ⏳ *Starts*  :: *${Math.max(0, Math.ceil((heist.startsAt - Date.now()) / 1000))}s*
+│
+│ 🦹 *Crew Members:*
+${names}
+│
+│ 💡 Join with *.heist join*
+╰───────────────❀`,
         mentions: heist.members.map(m => m.id),
       }, { quoted: msg });
     }
 
-    // ── CANCEL ────────────────────────────────────────────────────────────────
+    // ── CANCEL ─────────────────────────────────────────────────────────────────
     if (sub === "cancel") {
       const heist = activeHeists.get(jid);
-      if (!heist)               return reply("❌ No active heist to cancel.");
+      if (!heist) return reply("❌ No active heist to cancel.");
       if (heist.starter !== sender) return reply("❌ Only the heist starter can cancel it.");
 
       clearTimeout(heist.timeout);
-
-      // Refund all stakes
       for (const m of heist.members) {
         const u = await getUser(m.id);
         u.money = (u.money || 0) + m.stake;
@@ -68,20 +90,38 @@ export default {
       activeHeists.delete(jid);
 
       return await sock.sendMessage(jid, {
-        text: "❌ *Heist cancelled!*\n\nAll stakes have been refunded.",
+        text:
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ 🌙 *Result*  :: *CANCELLED 🔴*
+│
+│ 💵 All stakes have been *refunded*
+╰───────────────❀`,
         mentions: heist.members.map(m => m.id),
       }, { quoted: msg });
     }
 
-    // ── JOIN ──────────────────────────────────────────────────────────────────
+    // ── JOIN ───────────────────────────────────────────────────────────────────
     if (sub === "join") {
       const heist = activeHeists.get(jid);
-      if (!heist) return reply("❌ No active heist. Start one with *.heist <amount>*");
+      if (!heist) return reply(
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ ❌ *Result*  :: *NO HEIST 🔴*
+│
+│ 💡 Start one with *.heist <amount>*
+╰───────────────❀`
+      );
       if (heist.members.find(m => m.id === sender)) return reply("❌ You're already in this heist.");
 
       const user = await getUser(sender);
       if (user.money < heist.stake) {
-        return reply(`❌ You need *$${heist.stake.toLocaleString()}* to join. You only have $${user.money.toLocaleString()}.`);
+        return reply(
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ ❌ *Result*  :: *NOT ENOUGH 🔴*
+│
+│ 💰 *Need*    :: *${fmt(heist.stake)}*
+│ 💵 *Have*    :: *${fmt(user.money)}*
+╰───────────────❀`
+        );
       }
 
       user.money -= heist.stake;
@@ -90,28 +130,39 @@ export default {
 
       return await sock.sendMessage(jid, {
         text:
-`✅ *@${sender.split("@")[0]} joined the heist!*
-
-💰 Stake : $${heist.stake.toLocaleString()}
-👥 Crew  : ${heist.members.length} member(s)
-
-Still time to join with *.heist join*!`,
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ 🌙 *Result*  :: *JOINED 🟢*
+│ 🍃 *Flavour* :: _仲間に加わった！_
+│
+│ 👤 *Member*  :: *@${sender.split("@")[0]}*
+│ 💰 *Stake*   :: *${fmt(heist.stake)}*
+│ 👥 *Crew*    :: *${heist.members.length} member(s)*
+│
+│ 💡 Still time to join with *.heist join*!
+╰───────────────❀`,
         mentions: [sender],
       }, { quoted: msg });
     }
 
-    // ── START HEIST ───────────────────────────────────────────────────────────
+    // ── START HEIST ────────────────────────────────────────────────────────────
     if (activeHeists.has(jid)) {
-      return reply("❌ There's already an active heist in this group.\n\nUse *.heist join* to join it.");
+      return reply("❌ There's already an active heist.\n\nUse *.heist join* to join it.");
     }
 
     const stake = parseInt(args[0]);
-    if (isNaN(stake) || stake < MIN_STAKE) return reply(`❌ Minimum stake is $${MIN_STAKE.toLocaleString()}.`);
-    if (stake > MAX_STAKE)                  return reply(`❌ Maximum stake is $${MAX_STAKE.toLocaleString()}.`);
+    if (isNaN(stake) || stake < MIN_STAKE) return reply(`❌ Minimum stake is *${fmt(MIN_STAKE)}*.`);
+    if (stake > MAX_STAKE)                  return reply(`❌ Maximum stake is *${fmt(MAX_STAKE)}*.`);
 
     const user = await getUser(sender);
     if (user.money < stake) {
-      return reply(`❌ You need *$${stake.toLocaleString()}* to start a heist.\nYou only have $${user.money.toLocaleString()}.`);
+      return reply(
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ ❌ *Result*  :: *NOT ENOUGH 🔴*
+│
+│ 💰 *Need*    :: *${fmt(stake)}*
+│ 💵 *Have*    :: *${fmt(user.money)}*
+╰───────────────❀`
+      );
     }
 
     user.money -= stake;
@@ -125,7 +176,6 @@ Still time to join with *.heist join*!`,
       timeout:  null,
     };
 
-    // Auto-execute after JOIN_WINDOW
     heist.timeout = setTimeout(async () => {
       const h = activeHeists.get(jid);
       if (!h) return;
@@ -137,14 +187,17 @@ Still time to join with *.heist join*!`,
 
     await sock.sendMessage(jid, {
       text:
-`🦹 *HEIST STARTED!*
-
-💰 Stake per person : $${stake.toLocaleString()}
-⏳ Join window      : 60 seconds
-👥 Min crew         : ${MIN_MEMBERS} people
-
-@${sender.split("@")[0]} is the starter!
-Type *.heist join* to join the crew!`,
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ 🌙 *Result*  :: *STARTED 🟢*
+│ 🍃 *Flavour* :: _強盗開始！仲間を集めろ！_
+│
+│ 💰 *Stake*   :: *${fmt(stake)} per person*
+│ ⏳ *Window*  :: *60 seconds to join*
+│ 👥 *Min*     :: *${MIN_MEMBERS} crew members*
+│
+│ 👤 Starter: *@${sender.split("@")[0]}*
+│ 💡 Type *.heist join* to join the crew!
+╰───────────────❀`,
       mentions: [sender],
     }, { quoted: msg });
   },
@@ -156,30 +209,37 @@ async function executeHeist(sock, jid, heist) {
   const mentions = heist.members.map(m => m.id);
   const tags     = heist.members.map(m => `@${m.id.split("@")[0]}`).join(" ");
 
+  function fmt(n) {
+    if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
+    if (n >= 1e3) return `$${(n/1e3).toFixed(1)}K`;
+    return `$${n.toLocaleString()}`;
+  }
+
   if (won) {
     const payout = Math.floor((totalPot * WIN_MULTIPLIER) / heist.members.length);
     for (const m of heist.members) {
       const u = await getUser(m.id);
       u.money = (u.money || 0) + payout;
       await saveUser(m.id, u);
-      await addHistory(m.id, "rob", payout - m.stake, `Heist payout $${payout.toLocaleString()}`);
+      await addHistory(m.id, "rob", payout - m.stake, `Heist payout ${fmt(payout)}`);
     }
 
     await sock.sendMessage(jid, {
       text:
-`🎉 *HEIST SUCCESSFUL!*
-
-💰 Total stolen : $${(totalPot * WIN_MULTIPLIER).toLocaleString()}
-💵 Each payout  : $${payout.toLocaleString()}
-
-Crew: ${tags}
-
-The security guards never saw it coming! 🦹💨`,
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ 🌙 *Result*   :: *SUCCESS 🟢*
+│ 🍃 *Flavour*  :: _完璧な強盗！誰も見てない！_
+│
+│ 💰 *Total*    :: *${fmt(totalPot * WIN_MULTIPLIER)}*
+│ 💵 *Per Head* :: *+${fmt(payout)}*
+│
+│ 🦹 *The security never saw it coming!*
+│ ${tags}
+╰───────────────❀`,
       mentions,
     });
   } else {
     if (heist.members.length < MIN_MEMBERS) {
-      // Not enough crew — refund everyone
       for (const m of heist.members) {
         const u = await getUser(m.id);
         u.money = (u.money || 0) + m.stake;
@@ -188,24 +248,28 @@ The security guards never saw it coming! 🦹💨`,
 
       return sock.sendMessage(jid, {
         text:
-`❌ *HEIST ABORTED!*
-
-Not enough crew members (need ${MIN_MEMBERS}).
-All stakes have been refunded.`,
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ 🌙 *Result*  :: *ABORTED 🔴*
+│ 🍃 *Flavour* :: _人数不足！作戦中止！_
+│
+│ 👥 *Need*    :: *${MIN_MEMBERS} members*
+│ 💵 *Stakes*  :: *Fully refunded*
+╰───────────────❀`,
         mentions,
       });
     }
 
     await sock.sendMessage(jid, {
       text:
-`🚨 *HEIST FAILED!*
-
-The police arrived before you could escape!
-💸 Total lost : $${totalPot.toLocaleString()}
-
-Everyone lost their stake. Better luck next time! 😭
-
-Crew: ${tags}`,
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ 🌙 *Result*  :: *FAILED 🔴*
+│ 🍃 *Flavour* :: _警察が来た！全員逃げろ！_
+│
+│ 💸 *Lost*    :: *${fmt(totalPot)} (all stakes)*
+│
+│ 🚨 *Everyone lost their stake. 悔しい！*
+│ ${tags}
+╰───────────────❀`,
       mentions,
     });
   }

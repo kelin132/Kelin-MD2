@@ -11,16 +11,21 @@ const COOLDOWN = 20 * 1000; // 20 seconds
 
 const RED_NUMBERS = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
 
-function spinWheel() {
-  return randomInt(0, 36); // 0-36
-}
-
+function spinWheel() { return randomInt(0, 36); }
 function getColor(n) {
   if (n === 0) return "green";
   return RED_NUMBERS.has(n) ? "red" : "black";
 }
 
 const COLOR_EMOJI = { red: "🔴", black: "⚫", green: "🟢" };
+
+function fmt(n) {
+  if (n >= 1e12) return `$${(n/1e12).toFixed(1)}T`;
+  if (n >= 1e9)  return `$${(n/1e9).toFixed(1)}B`;
+  if (n >= 1e6)  return `$${(n/1e6).toFixed(1)}M`;
+  if (n >= 1e3)  return `$${(n/1e3).toFixed(1)}K`;
+  return `$${n.toLocaleString()}`;
+}
 
 export default {
   name: "roulette",
@@ -39,28 +44,35 @@ export default {
     const now   = Date.now();
     const user  = await getUser(sender);
 
-    // ── Cooldown ──────────────────────────────────────────────────────────
+    // ── Cooldown ─────────────────────────────────────────────────────────────
     if (now - (user.lastRoulette || 0) < COOLDOWN) {
       const secs = Math.ceil((COOLDOWN - (now - user.lastRoulette)) / 1000);
-      return reply(`🎡 The wheel is still spinning! Try again in *${secs}s*.`);
+      return reply(
+`╭─❀「 🎡 *𝐑𝐎𝐔𝐋𝐄𝐓𝐓𝐄* 」❀─╮
+│ ⏳ *Result*  :: *SPINNING 🔴*
+│ 🍃 *Flavour* :: _まだ回ってる！待って！_
+│
+│ 🕐 *Next*    :: *${secs}s remaining*
+╰───────────────❀`
+      );
     }
 
     if (!args[0]) {
       return reply(
-`🎡 *ROULETTE*
-
-Usage: *.roulette <bet_type> <amount>*
-
-Bet Types & Payouts:
-  🔴 *red*    — ×2  (numbers 1,3,5...36)
-  ⚫ *black*  — ×2  (numbers 2,4,6...35)
-  *even*   — ×2  (2,4,6...36)
-  *odd*    — ×2  (1,3,5...35)
-  *0-36*   — ×36 (exact number)
-
-Example: .roulette red 500  or  .roulette red 5m
-Example: .roulette 7 1000  or  .roulette 7 1b
-✦ Shorthand: *k* = thousand | *m* = million | *b* = billion`
+`╭─❀「 🎡 *𝐑𝐎𝐔𝐋𝐄𝐓𝐓𝐄* 」❀─╮
+│ 📖 *Usage*   :: *.roulette <bet> <amount>*
+│
+│ 🎯 *Bet Types & Payouts:*
+│   🔴 *red*   — ×2  (1,3,5...36)
+│   ⚫ *black* — ×2  (2,4,6...35)
+│   *even*  — ×2  (2,4,6...36)
+│   *odd*   — ×2  (1,3,5...35)
+│   *0-36*  — ×36 (exact number)
+│
+│ 💡 Example: *.roulette red 500*
+│ 💡 Example: *.roulette 7 1000*
+│ 💵 *Wallet*  :: *${fmt(user.money)}*
+╰───────────────❀`
       );
     }
 
@@ -71,9 +83,8 @@ Example: .roulette 7 1000  or  .roulette 7 1b
 
     let amount = parseAmount(rawAmt, user.money);
     if (!amount || isNaN(amount) || amount < 50) return reply("❌ Minimum bet is *$50*.");
-    if (amount > user.money) return reply(`❌ You only have *$${user.money.toLocaleString()}*.`);
+    if (amount > user.money) return reply(`❌ You only have *${fmt(user.money)}*.`);
 
-    // Validate bet type
     const validSimple = ["red", "black", "even", "odd"];
     const numBet      = parseInt(betType, 10);
     const isNumBet    = !isNaN(numBet) && numBet >= 0 && numBet <= 36;
@@ -82,7 +93,7 @@ Example: .roulette 7 1000  or  .roulette 7 1b
       return reply("❌ Invalid bet type.\n\nChoose: *red*, *black*, *even*, *odd*, or a number *0-36*.");
     }
 
-    // ── Spin! ─────────────────────────────────────────────────────────────
+    // ── Spin! ─────────────────────────────────────────────────────────────────
     user.lastRoulette = now;
     const result      = spinWheel();
     const color       = getColor(result);
@@ -93,23 +104,17 @@ Example: .roulette 7 1000  or  .roulette 7 1b
     let multiplier = 0;
 
     if (isNumBet) {
-      won = result === numBet;
-      multiplier = 36;
+      won = result === numBet; multiplier = 36;
     } else if (betType === "red") {
-      won = color === "red";
-      multiplier = 2;
+      won = color === "red"; multiplier = 2;
     } else if (betType === "black") {
-      won = color === "black";
-      multiplier = 2;
+      won = color === "black"; multiplier = 2;
     } else if (betType === "even") {
-      won = isEven;
-      multiplier = 2;
+      won = isEven; multiplier = 2;
     } else if (betType === "odd") {
-      won = result !== 0 && !isEven;
-      multiplier = 2;
+      won = result !== 0 && !isEven; multiplier = 2;
     }
 
-    // 0 always loses on non-zero bets
     if (result === 0 && !isNumBet) won = false;
 
     const winnings = won ? amount * multiplier : 0;
@@ -121,18 +126,20 @@ Example: .roulette 7 1000  or  .roulette 7 1b
     await saveUser(sender, user);
     await addHistory(sender, "roulette", net, `Roulette: ${betType} $${amount.toLocaleString()}`);
 
+    const ballLine = `${result} ${emoji} — ${color === "green" ? "Green" : color === "red" ? "Red" : "Black"} | ${result === 0 ? "Zero" : isEven ? "Even" : "Odd"}`;
+
     return reply(
-`🎡 *ROULETTE WHEEL*
-
-The ball lands on... *${result}* ${emoji}
-${result === 0 ? "🟢 Green — House wins!" : `${color === "red" ? "🔴 Red" : "⚫ Black"} | ${isEven ? "Even" : "Odd"}`}
-
-🎯 Your bet: *${betType}* × $${amount.toLocaleString()}
-${won
-  ? `🏆 *WIN!* ×${multiplier} = +$${winnings.toLocaleString()}`
-  : `💀 *LOSE!* -$${amount.toLocaleString()}`}
-
-💰 Balance: $${user.money.toLocaleString()}${diamondReward ? `\n💎 Rare find: +${diamondReward} Diamond${diamondReward === 1 ? "" : "s"}` : ""}`
+`╭─❀「 🎡 *𝐑𝐎𝐔𝐋𝐄𝐓𝐓𝐄* 」❀─╮
+│ 🌙 *Result*  :: *${won ? "WIN" : "LOSE"} ${won ? "🟢" : "🔴"}*
+│ 🍃 *Flavour* :: _${won ? "ルーレット勝利！運命！" : "惜しかった...次は勝てる！"}_
+│
+│ 🎡 *Ball*    :: *${ballLine}*
+│ 🎯 *Bet*     :: *${betType}* × *${fmt(amount)}*
+│ ${won ? `💰 *Won*     :: *+${fmt(winnings)}* (×${multiplier})` : `💸 *Lost*    :: *-${fmt(amount)}*`}
+│ 💵 *Wallet*  :: *${fmt(user.money)}*${diamondReward ? `\n│ 💎 *Bonus*   :: *+${diamondReward} Gem${diamondReward === 1 ? "" : "s"}*` : ""}
+│
+│ ${won && multiplier >= 36 ? "🎉 *JACKPOT NUMBER!* おめでとう！" : won ? "✨ *YOU WON!* おめでとう！" : "💀 *Better luck next time!*"}
+╰───────────────❀`
     );
   },
 };

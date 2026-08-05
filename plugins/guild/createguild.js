@@ -17,7 +17,13 @@ export default {
 
     if (!text) {
       return sock.sendMessage(jid, {
-        text: "❌ Usage: *.createguild <guild_name>*\n\nExample: .createguild Warriors"
+        text:
+`╭─〔 🏰 *𝐂𝐑𝐄𝐀𝐓𝐄 𝐆𝐔𝐈𝐋𝐃* 〕
+│ 📖 *Usage* :: *.createguild <name>*
+│ 💡 *Example* :: *.createguild Warriors*
+│
+│ ⚠️ Name must be *3–30 characters*
+└───────────────◆`
       }, { quoted: msg });
     }
 
@@ -36,6 +42,14 @@ export default {
       }, { quoted: msg });
     }
 
+    // Check if user already owns a guild
+    const userGuilds = await guildSystem.getUserGuilds(sender);
+    if (userGuilds.some(g => g.owner === sender)) {
+      return sock.sendMessage(jid, {
+        text: "❌ You already own a guild! Use *.setguildname* to rename it."
+      }, { quoted: msg });
+    }
+
     const guild = await guildSystem.createGuild(guildName, sender);
 
     if (!guild) {
@@ -48,32 +62,26 @@ export default {
     const ownerName = getContactName(sock, sender);
 
     const caption =
-`✅ *Guild Created!*
-
-⚔️ Name     : ${guildName}
-👑 Owner    : ${ownerName}
-👥 Members  : 1
-💰 Treasury : $0
-⭐ Level    : 1
-
-Use *.guildhelp* to see all guild commands.`;
+`╭─〔 🏰 *𝐆𝐔𝐈𝐋𝐃 𝐂𝐑𝐄𝐀𝐓𝐄𝐃* 〕
+├◆ *Name*     :: *${guildName}*
+├◆ *Owner*    :: *${ownerName}*
+├◆ *Members*  :: *1*
+├◆ *Level*    :: *1*
+├◆ *Treasury* :: *$0*
+│
+├◆ Use *.setguilddesc* to add a description
+├◆ Use *.setguildicon* to set a banner
+├◆ Use *.addmember @user* to invite members
+└───────────────◆`;
 
     try {
       const imgBuffer = await generateGuildProfile(
-        { name: guildName, icon: ownerPic },
+        { name: guildName, icon: null },
         { name: ownerName, profilePic: ownerPic }
       );
-
-      await sock.sendMessage(jid, {
-        image: imgBuffer,
-        caption,
-      }, { quoted: msg });
+      await sock.sendMessage(jid, { image: imgBuffer, caption }, { quoted: msg });
     } catch {
-      // Canvas failed — fall back to text only
-      await sock.sendMessage(jid, {
-        text: caption,
-        mentions: [sender]
-      }, { quoted: msg });
+      await sock.sendMessage(jid, { text: caption, mentions: [sender] }, { quoted: msg });
     }
   }
 };

@@ -18,14 +18,21 @@ const SUCCESS_MSGS = [
 ];
 
 const FAIL_MSGS = [
-  `😤 Nobody gave you anything. Maybe try looking less suspicious.`,
-  `🙄 People walked past like you were invisible. Rough day.`,
-  `🚔 Security escorted you off the premises. Zero earned.`,
-  `😂 Someone laughed at you and kept walking. Embarrassing.`,
-  `🤷 The crowd ignored you completely. Not your day.`,
-  `💸 Someone dropped a coin… then picked it back up. Brutal.`,
-  `😒 You got lectured about "getting a real job" instead of money.`,
+  `Nobody gave you anything. Maybe try looking less suspicious.`,
+  `People walked past like you were invisible. Rough day.`,
+  `Security escorted you off the premises. Zero earned.`,
+  `Someone laughed at you and kept walking. Embarrassing.`,
+  `The crowd ignored you completely. Not your day.`,
+  `Someone dropped a coin… then picked it back up. Brutal.`,
+  `You got lectured about "getting a real job" instead of money.`,
 ];
+
+function fmt(n) {
+  if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `$${(n/1e3).toFixed(1)}K`;
+  return `$${n.toLocaleString()}`;
+}
 
 export default {
   name: "beg",
@@ -50,7 +57,16 @@ export default {
       const left = Math.ceil((COOLDOWN - (now - lastBeg)) / 1000);
       const m    = Math.floor(left / 60);
       const s    = left % 60;
-      return reply(`⏰ *Cooldown!* You're still embarrassed from last time.\n\nWait *${m}m ${s}s* before begging again.`);
+      return reply(
+`╭─❀「 🤲 *𝐁𝐄𝐆* 」❀─╮
+│ ⏳ *Result*  :: *COOLDOWN 🔴*
+│ 🍃 *Flavour* :: _まだ恥ずかしい..._
+│
+│ 🕐 *Next*    :: *${m}m ${s}s*
+│
+│ 😤 *You're still embarrassed from last time!*
+╰───────────────❀`
+      );
     }
 
     // 35% chance of failure — people aren't always generous
@@ -59,29 +75,40 @@ export default {
     if (failed) {
       user.lastBeg = now;
       await saveUser(sender, user);
-      const msg_ = FAIL_MSGS[Math.floor(Math.random() * FAIL_MSGS.length)];
-      return reply(`🤲 *BEGGING FAILED*\n\n${msg_}\n\n💰 Earned: *$0*`);
+      const flavour = FAIL_MSGS[Math.floor(Math.random() * FAIL_MSGS.length)];
+      return reply(
+`╭─❀「 🤲 *𝐁𝐄𝐆* 」❀─╮
+│ 🌙 *Result*  :: *FAILED 🔴*
+│ 🍃 *Flavour* :: _${flavour}_
+│
+│ 💰 *Earned*  :: *$0*
+│ 💵 *Wallet*  :: *${fmt(user.money)}*
+│
+│ 😤 *Better luck next time!*
+╰───────────────❀`
+      );
     }
 
     // Success — small amount, it's begging after all ($50–$400)
-    const amount   = 50 + Math.floor(Math.random() * 351);
-    user.money     = (user.money || 0) + amount;
-    user.lastBeg   = now;
-    user.xp        = (user.xp || 0) + 5;
+    const amount        = 50 + Math.floor(Math.random() * 351);
+    user.money          = (user.money || 0) + amount;
+    user.lastBeg        = now;
+    user.xp             = (user.xp || 0) + 5;
     const diamondReward = maybeAwardDiamonds(user, 0.005, 1, 2);
     await saveUser(sender, user);
     await addHistory(sender, "beg", amount, "Begged for money");
 
     const pick = SUCCESS_MSGS[Math.floor(Math.random() * SUCCESS_MSGS.length)];
     return reply(
-`🤲 *BEGGING SUCCESS*
-
-${pick(sender.split("@")[0], amount.toLocaleString())}
-
-💰 Earned   : *$${amount.toLocaleString()}*
-💵 Wallet   : *$${user.money.toLocaleString()}*${diamondReward ? `\n💎 Rare find: *+${diamondReward} Diamond${diamondReward === 1 ? "" : "s"}*` : ""}
-
-_⏰ Cooldown: 3 minutes_`
+`╭─❀「 🤲 *𝐁𝐄𝐆* 」❀─╮
+│ 🌙 *Result*  :: *SUCCESS 🟢*
+│ 🍃 *Flavour* :: _${pick(sender.split("@")[0], amount.toLocaleString())}_
+│
+│ 💰 *Earned*  :: *+${fmt(amount)}*
+│ 💵 *Wallet*  :: *${fmt(user.money)}*${diamondReward ? `\n│ 💎 *Bonus*   :: *+${diamondReward} Gem${diamondReward === 1 ? "" : "s"}*` : ""}
+│
+│ 🙏 *ありがとう！* Keep grinding!
+╰───────────────❀`
     );
   },
 };

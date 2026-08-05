@@ -8,6 +8,13 @@ const crimes = [
   { name: "hacking",         emoji: "💻", reward: [1500, 4000] },
 ];
 
+function fmt(n) {
+  if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `$${(n/1e3).toFixed(1)}K`;
+  return `$${n.toLocaleString()}`;
+}
+
 export default {
   name: "crime",
   description: "Commit a crime — high risk, high reward (20-min cooldown)",
@@ -22,12 +29,21 @@ export default {
     const user     = await getUser(sender);
     const now      = Date.now();
     const cooldown = 20 * 60 * 1000;
+    const jid      = msg.key.remoteJid;
 
     if (now - (user.lastCrime || 0) < cooldown) {
       const remaining = cooldown - (now - user.lastCrime);
       const minutes   = Math.floor(remaining / (60 * 1000));
-      return sock.sendMessage(msg.key.remoteJid, {
-        text: `🚨 *Police Alert!*\n\nLay low for *${minutes}m* more.`
+      return sock.sendMessage(jid, {
+        text:
+`╭─❀「 🗡️ *𝐂𝐑𝐈𝐌𝐄* 」❀─╮
+│ ⏳ *Result*  :: *LAYING LOW 🔴*
+│ 🍃 *Flavour* :: _まだ警察に追われている..._
+│
+│ 🕐 *Next*    :: *${minutes}m remaining*
+│
+│ 🚨 *Stay hidden! Police are watching.*
+╰───────────────❀`
       }, { quoted: msg });
     }
 
@@ -43,44 +59,39 @@ export default {
       user.xp     = (user.xp || 0) + 30;
       await saveUser(sender, user);
       await addHistory(sender, "crime", reward, `Crime: ${crime.name}`);
-      await sock.sendMessage(msg.key.remoteJid, {
+      await sock.sendMessage(jid, {
         text:
-`꧁━━〔 ${crime.emoji} *C R I M E  S U C C E S S!* 〕━━꧂
-
-  「 *${crime.name} executed flawlessly!* 」
-
-  ━━━━━━━━━━━━━━━━━━━━━━━
-  💰 *Gained*    *$${reward.toLocaleString()}*
-  🔮 *XP*        *+30*
-  💵 *Balance*   *$${user.money.toLocaleString()}*
-  ━━━━━━━━━━━━━━━━━━━━━━━
-
-  🗡️ *Another phantom strike done...* 🌙
-
-꧂━━━━━━━━━━━━━━━━━━━━━━━━━━꧁`
+`╭─❀「 🗡️ *𝐂𝐑𝐈𝐌𝐄* 」❀─╮
+│ 🌙 *Result*  :: *SUCCESS 🟢*
+│ 🍃 *Flavour* :: _完璧な犯行だ！_
+│
+│ ${crime.emoji} *Crime*    :: *${crime.name}*
+│ 💰 *Gained*  :: *+${fmt(reward)}*
+│ 🔮 *XP*      :: *+30*
+│ 💵 *Wallet*  :: *${fmt(user.money)}*
+│
+│ 🗡️ *Another phantom strike done...* 🌙
+╰───────────────❀`
       }, { quoted: msg });
     } else {
       const fine  = Math.floor(reward * 0.5);
       user.money  = Math.max(0, user.money - fine);
       await saveUser(sender, user);
-      // Jail for 10 minutes on crime fail
       await jailUser(sender, 10 * 60 * 1000);
       await addHistory(sender, "crime", -fine, `Crime caught: ${crime.name} — fined & jailed 10m`);
-      await sock.sendMessage(msg.key.remoteJid, {
+      await sock.sendMessage(jid, {
         text:
-`꧁━━〔 🚔 *B U S T E D!* 〕━━꧂
-
-  「 *${crime.name} went wrong...* 」
-
-  ━━━━━━━━━━━━━━━━━━━━━━━
-  💸 *Fine*      *$${fine.toLocaleString()}*
-  🔒 *Jailed*    *10 minutes*
-  💵 *Balance*   *$${user.money.toLocaleString()}*
-  ━━━━━━━━━━━━━━━━━━━━━━━
-
-  😤 *Sit tight... 10 min cooldown.*
-
-꧂━━━━━━━━━━━━━━━━━━━━━━꧁`
+`╭─❀「 🗡️ *𝐂𝐑𝐈𝐌𝐄* 」❀─╮
+│ 🌙 *Result*  :: *BUSTED 🔴*
+│ 🍃 *Flavour* :: _計画が失敗した...捕まった！_
+│
+│ ${crime.emoji} *Crime*    :: *${crime.name}*
+│ 💸 *Fine*    :: *-${fmt(fine)}*
+│ 🔒 *Jailed*  :: *10 minutes*
+│ 💵 *Wallet*  :: *${fmt(user.money)}*
+│
+│ 😤 *Sit tight... 10 min cooldown.*
+╰───────────────❀`
       }, { quoted: msg });
     }
   }

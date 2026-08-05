@@ -23,6 +23,13 @@ function handValue(hand) {
   return value;
 }
 
+function fmt(n) {
+  if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `$${(n/1e3).toFixed(1)}K`;
+  return `$${n.toLocaleString()}`;
+}
+
 const deal = () => randomChoice(DECK);
 
 export default {
@@ -36,9 +43,23 @@ export default {
   async run({ sock, msg, sender, args }) {
     if (!await requireRegistration(sock, msg, sender)) return;
 
+    const jid = msg.key.remoteJid;
+
     if (!args[0]) {
-      return sock.sendMessage(msg.key.remoteJid, {
-        text: `🎰 *Blackjack*\n\nUsage: *.blackjack <amount>*  — e.g. .blackjack 10k\nMin bet: $100\n✦ Shorthand: k = thousand | m = million | b = billion\n\nRules: Get 21 or closer than dealer. Over 21 = bust.`
+      const user = await getUser(sender);
+      return sock.sendMessage(jid, {
+        text:
+`╭─❀「 🃏 *𝐁𝐋𝐀𝐂𝐊𝐉𝐀𝐂𝐊* 」❀─╮
+│ 📖 *Usage*   :: *.blackjack <amount>*
+│ 💴 *Min Bet* :: *$100*
+│
+│ 🃏 *Rules:*
+│   Get 21 or closer than dealer
+│   Over 21 = BUST
+│   Ace = 11 or 1
+│
+│ 💵 *Wallet*  :: *${fmt(user.money)}*
+╰───────────────❀`
       }, { quoted: msg });
     }
 
@@ -46,12 +67,25 @@ export default {
     const bet  = parseAmount(args[0].toLowerCase(), user.money);
 
     if (isNaN(bet) || bet < 100) {
-      return sock.sendMessage(msg.key.remoteJid, { text: "❌ Minimum bet is $100." }, { quoted: msg });
+      return sock.sendMessage(jid, {
+        text:
+`╭─❀「 🃏 *𝐁𝐋𝐀𝐂𝐊𝐉𝐀𝐂𝐊* 」❀─╮
+│ ❌ *Result*  :: *INVALID BET 🔴*
+│
+│ 💴 *Min Bet* :: *$100*
+╰───────────────❀`
+      }, { quoted: msg });
     }
 
     if (user.money < bet) {
-      return sock.sendMessage(msg.key.remoteJid, {
-        text: `❌ *Not enough money!*\n\nBet: $${bet.toLocaleString()}\nBalance: $${user.money.toLocaleString()}`
+      return sock.sendMessage(jid, {
+        text:
+`╭─❀「 🃏 *𝐁𝐋𝐀𝐂𝐊𝐉𝐀𝐂𝐊* 」❀─╮
+│ ❌ *Result*  :: *NOT ENOUGH 🔴*
+│
+│ 💴 *Bet*     :: *${fmt(bet)}*
+│ 💵 *Wallet*  :: *${fmt(user.money)}*
+╰───────────────❀`
       }, { quoted: msg });
     }
 
@@ -60,17 +94,50 @@ export default {
     const pv     = handValue(player);
     const dv     = handValue(dealer);
 
-    let result = "";
-    if (pv > 21)      { result = "❌ *BUST!* You went over 21!"; user.money -= bet; }
-    else if (dv > 21) { result = "✅ *Dealer BUSTED!* You WIN!"; user.money += bet; }
-    else if (pv > dv) { result = "✅ *You WIN!*";               user.money += bet; }
-    else if (pv < dv) { result = "❌ *Dealer wins!*";            user.money -= bet; }
-    else              { result = "🤝 *PUSH!* It's a draw!"; }
+    let resultMsg  = "";
+    let resultLine = "";
+    let won        = false;
+
+    if (pv > 21) {
+      resultMsg  = "BUST 🔴";
+      resultLine = "💀 *You went over 21! BUST!*";
+      user.money -= bet;
+    } else if (dv > 21) {
+      resultMsg  = "WIN 🟢";
+      resultLine = "✨ *Dealer BUSTED! YOU WIN!* おめでとう！";
+      user.money += bet;
+      won = true;
+    } else if (pv > dv) {
+      resultMsg  = "WIN 🟢";
+      resultLine = "✨ *YOU WIN!* おめでとう！";
+      user.money += bet;
+      won = true;
+    } else if (pv < dv) {
+      resultMsg  = "LOSE 🔴";
+      resultLine = "💀 *Dealer wins! 残念...*";
+      user.money -= bet;
+    } else {
+      resultMsg  = "PUSH 🟡";
+      resultLine = "🤝 *PUSH — It's a draw! Bet returned.*";
+    }
 
     const diamondReward = maybeAwardDiamonds(user, pv === 21 ? 0.005 : 0.002, 1, 2);
     await saveUser(sender, user);
-    await sock.sendMessage(msg.key.remoteJid, {
-      text: `🎰 *BLACKJACK*\n\n🃏 Your hand : ${player.join(", ")} = ${pv}\n🎴 Dealer   : ${dealer.join(", ")} = ${dv}\n\n${result}\n\n💵 Bet     : $${bet.toLocaleString()}\n💰 Balance : $${user.money.toLocaleString()}${diamondReward ? `\n💎 Rare find: +${diamondReward} Diamond${diamondReward === 1 ? "" : "s"}` : ""}`
+
+    await sock.sendMessage(jid, {
+      text:
+`╭─❀「 🃏 *𝐁𝐋𝐀𝐂𝐊𝐉𝐀𝐂𝐊* 」❀─╮
+│ 🌙 *Result*  :: *${resultMsg}*
+│ 🍃 *Flavour* :: _${won ? "完璧なゲーム！" : pv > 21 ? "バスト！やってしまった..." : "惜しかった..."}_
+│
+│ 🃏 *Your Hand* :: *${player.join(" ")}* = ${pv}
+│ 🎴 *Dealer*    :: *${dealer.join(" ")}* = ${dv}
+│
+│ 💴 *Bet*     :: *${fmt(bet)}*
+│ 💵 *Wallet*  :: *${fmt(user.money)}*${diamondReward ? `\n│ 💎 *Bonus*   :: *+${diamondReward} Gem${diamondReward === 1 ? "" : "s"}*` : ""}
+│
+│ ${resultLine}
+╰───────────────❀`
     }, { quoted: msg });
   }
 };

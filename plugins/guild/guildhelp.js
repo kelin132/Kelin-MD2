@@ -6,30 +6,35 @@ export default {
   aliases: ["ghelp"],
   cooldown: 5,
 
-  async run({ sock, msg, prefix }) {
-    const p = prefix || ".";
+  async run({ sock, msg }) {
     await sock.sendMessage(msg.key.remoteJid, {
       text:
-`╭━━━〔 ⚔️ GUILD COMMANDS 〕━━━╮
+`┌─〔 🏰 *𝐆𝐔𝐈𝐋𝐃 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒* 〕
+├◆ !addmember   | !createguild  | !guildcomp
+├◆ !guildlist   | !guildrank    | !joinguild
+├◆ !leaveguild  | !myguild      | !removemember
+├◆ !setguilddesc | !setguildicon | !setguildname
+└───────────────◆
 
-📋 *GENERAL:*
-  ${p}createguild <name>    — Create a guild
-  ${p}myguilds              — Your guilds
-  ${p}allguilds             — All guilds
-  ${p}guildinfo <name>      — Guild details
+📋 *DETAILS:*
 
-👥 *MANAGEMENT:*
-  ${p}guildinvite <g> @user — Invite member
-  ${p}guildkick <g> @user   — Remove member
+🏰 *Guild Management*
+  !createguild <name>    — Create a new guild
+  !setguildname <name>   — Rename your guild
+  !setguilddesc <text>   — Set guild description
+  !setguildicon <url>    — Set guild banner image
 
-💰 *TREASURY:*
-  ${p}guildtax <g> <amount> — Donate to treasury
-  ${p}guildupgrade <name>   — Upgrade guild level
+👥 *Membership*
+  !addmember @user       — Add a member (owner only)
+  !removemember @user    — Remove a member (owner only)
+  !joinguild <name>      — Join an existing guild
+  !leaveguild            — Leave your current guild
 
-📊 *LEVELING:*
-  Each level costs (level × $5,000) from treasury.
-
-╰━━━━━━━━━━━━━━━━━━━━━╯`
+📊 *Info & Rankings*
+  !myguild               — View your guild profile
+  !guildlist             — Browse all guilds
+  !guildrank             — Guild leaderboard (top 10)
+  !guildcomp G1 | G2     — Compare two guilds head-to-head`
     }, { quoted: msg });
   }
 };

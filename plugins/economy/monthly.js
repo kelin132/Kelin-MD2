@@ -1,5 +1,12 @@
 import { getUser, saveUser, requireRegistration, addHistory, checkLevelUp } from "./database.js";
 
+function fmt(n) {
+  if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `$${(n/1e3).toFixed(1)}K`;
+  return `$${n.toLocaleString()}`;
+}
+
 export default {
   name: "monthly",
   description: "Claim your monthly reward (30-day cooldown)",
@@ -14,18 +21,27 @@ export default {
     const user     = await getUser(sender);
     const now      = Date.now();
     const cooldown = 30 * 24 * 60 * 60 * 1000;
+    const jid      = msg.key.remoteJid;
 
     if (now - (user.lastMonthly || 0) < cooldown) {
       const remaining = cooldown - (now - user.lastMonthly);
-      const days    = Math.floor(remaining / (24 * 60 * 60 * 1000));
-      const hours   = Math.floor((remaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+      const days  = Math.floor(remaining / (24 * 60 * 60 * 1000));
+      const hours = Math.floor((remaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
 
-      return sock.sendMessage(msg.key.remoteJid, {
-        text: `⏰ *Monthly Cooldown Active*\n\nYou can claim your monthly reward in:\n⏳ *${days}d ${hours}h*`
+      return sock.sendMessage(jid, {
+        text:
+`╭─❀「 📅 *𝐌𝐎𝐍𝐓𝐇𝐋𝐘* 」❀─╮
+│ 🌙 *Result*  :: *ALREADY CLAIMED 🔴*
+│ 🍃 *Flavour* :: _来月また会いましょう！_
+│
+│ ⏳ *Next*    :: *${days}d ${hours}h*
+│
+│ 🔥 *Come back next month!*
+╰───────────────❀`
       }, { quoted: msg });
     }
 
-    const baseReward  = 25000 + Math.floor(Math.random() * 25000); // $25k–$50k
+    const baseReward  = 25000 + Math.floor(Math.random() * 25000);
     const premiumMult = user.isPremium ? 2 : 1;
     const reward      = Math.floor(baseReward * premiumMult);
     const xpReward    = 1000;
@@ -39,24 +55,25 @@ export default {
     await saveUser(sender, user);
     await addHistory(sender, "monthly", reward, `Monthly reward claimed`);
 
-    let text =
-      `📅 *Monthly Reward Claimed!*\n\n` +
-      `💰 Received  : $${reward.toLocaleString()}` +
-      (user.isPremium ? ` _(×2 premium bonus)_` : ``) +
-      `\n🔮 XP Gained : +${xpReward}\n` +
-      `💵 Balance   : $${user.money.toLocaleString()}\n\n` +
-      `_Come back next month for your next reward!_`;
-
-    if (leveled) text += `\n\n🎉 *LEVEL UP!* You are now Level ${user.level}!`;
-
     // Extra: bonus item for premium
     if (user.isPremium) {
-      text += `\n🎁 *Premium Bonus:* +1 Mystery Box added to inventory!`;
       user.inventory = user.inventory || [];
       user.inventory.push({ item: "Mystery Box", quantity: 1, ts: now });
       await saveUser(sender, user);
     }
 
-    await sock.sendMessage(msg.key.remoteJid, { text }, { quoted: msg });
+    await sock.sendMessage(jid, {
+      text:
+`╭─❀「 📅 *𝐌𝐎𝐍𝐓𝐇𝐋𝐘* 」❀─╮
+│ 🌙 *Result*  :: *CLAIMED 🟢*
+│ 🍃 *Flavour* :: _今月もありがとう！_
+│
+│ 💰 *Reward*  :: *+${fmt(reward)}*${user.isPremium ? ` _(×2 premium)_` : ""}
+│ 🔮 *XP*      :: *+${xpReward}*
+│ 💵 *Wallet*  :: *${fmt(user.money)}*${user.isPremium ? `\n│ 🎁 *Bonus*   :: *+1 Mystery Box*` : ""}
+│
+│ ⭐ *Level ${user.level}*  📅 *See you next month!*${leveled ? `\n│\n│ 🎉 *LEVEL UP!* — Now Level ${user.level}` : ""}
+╰───────────────❀`
+    }, { quoted: msg });
   }
 };

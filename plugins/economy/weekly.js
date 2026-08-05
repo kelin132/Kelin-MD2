@@ -1,5 +1,12 @@
 import { getUser, saveUser, requireRegistration, addHistory, checkLevelUp } from "./database.js";
 
+function fmt(n) {
+  if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `$${(n/1e3).toFixed(1)}K`;
+  return `$${n.toLocaleString()}`;
+}
+
 export default {
   name: "weekly",
   description: "Claim your weekly reward (7-day cooldown)",
@@ -14,6 +21,7 @@ export default {
     const user     = await getUser(sender);
     const now      = Date.now();
     const cooldown = 7 * 24 * 60 * 60 * 1000;
+    const jid      = msg.key.remoteJid;
 
     if (now - (user.lastWeekly || 0) < cooldown) {
       const remaining = cooldown - (now - user.lastWeekly);
@@ -21,13 +29,20 @@ export default {
       const hours   = Math.floor((remaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
       const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
 
-      return sock.sendMessage(msg.key.remoteJid, {
-        text: `⏰ *Weekly Cooldown Active*\n\nYou can claim your weekly reward in:\n⏳ *${days}d ${hours}h ${minutes}m*`
+      return sock.sendMessage(jid, {
+        text:
+`╭─❀「 🗓️ *𝐖𝐄𝐄𝐊𝐋𝐘* 」❀─╮
+│ 🌙 *Result*  :: *ALREADY CLAIMED 🔴*
+│ 🍃 *Flavour* :: _また来週！気長に待って！_
+│
+│ ⏳ *Next*    :: *${days}d ${hours}h ${minutes}m*
+│
+│ 🔥 *Come back in a week!*
+╰───────────────❀`
       }, { quoted: msg });
     }
 
-    const baseReward  = 5000 + Math.floor(Math.random() * 5000); // $5,000–$10,000
-    // Premium bonus
+    const baseReward  = 5000 + Math.floor(Math.random() * 5000);
     const premiumMult = user.isPremium ? 1.5 : 1;
     const reward      = Math.floor(baseReward * premiumMult);
     const xpReward    = 250;
@@ -41,16 +56,18 @@ export default {
     await saveUser(sender, user);
     await addHistory(sender, "weekly", reward, `Weekly reward claimed`);
 
-    let text =
-      `🗓️ *Weekly Reward Claimed!*\n\n` +
-      `💰 Received  : $${reward.toLocaleString()}` +
-      (user.isPremium ? ` _(+50% premium bonus)_` : ``) +
-      `\n🔮 XP Gained : +${xpReward}\n` +
-      `💵 Balance   : $${user.money.toLocaleString()}\n\n` +
-      `_Come back in 7 days for your next reward!_`;
-
-    if (leveled) text += `\n\n🎉 *LEVEL UP!* You are now Level ${user.level}!`;
-
-    await sock.sendMessage(msg.key.remoteJid, { text }, { quoted: msg });
+    await sock.sendMessage(jid, {
+      text:
+`╭─❀「 🗓️ *𝐖𝐄𝐄𝐊𝐋𝐘* 」❀─╮
+│ 🌙 *Result*  :: *CLAIMED 🟢*
+│ 🍃 *Flavour* :: _今週もお疲れ様！_
+│
+│ 💰 *Reward*  :: *+${fmt(reward)}*${user.isPremium ? ` _(+50% premium)_` : ""}
+│ 🔮 *XP*      :: *+${xpReward}*
+│ 💵 *Wallet*  :: *${fmt(user.money)}*
+│
+│ ⭐ *Level ${user.level}*  📅 *Come back in 7 days!*${leveled ? `\n│\n│ 🎉 *LEVEL UP!* — Now Level ${user.level}` : ""}
+╰───────────────❀`
+    }, { quoted: msg });
   }
 };
