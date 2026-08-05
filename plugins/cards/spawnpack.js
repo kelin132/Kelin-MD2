@@ -168,7 +168,7 @@ export default {
       }).join("\n");
 
       const successMsg =
-`╭━━━〔 📦 𝑺𝑷𝑨𝑾𝑵 𝑷𝑨𝑪𝑲 𝑶𝑷𝑬𝑵𝑬𝑫! ✨ 〕━━━╮
+`╭━━〔 📦 𝑺𝑷𝑨𝑾𝑵 𝑷𝑨𝑪𝑲 𝑶𝑷𝑬𝑵𝑬𝑫! ✨ 〕━━╮
 ┃ ✦ You received *${allCards.length} cards*!
 ┃
 ${tierLines}
