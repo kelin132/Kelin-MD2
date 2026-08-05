@@ -132,6 +132,7 @@ ${tierList}
   *.company employees*          — List your staff
     *.company work*               — Work a shift as an employee
   *.company sell*               — Sell company (40% back, employees released automatically)
+  *.company leave*              — Leave a company you work at
   *.company leaderboard*        — Top 5 companies
 
 🕐 Salaries are paid automatically every 24 hours!`
@@ -541,6 +542,35 @@ _Top 5 by total salary paid_
 ${rows}
 
 > Your company's ranking is based on how much you've paid your employees total.`
+      );
+    }
+
+    // ── LEAVE ─────────────────────────────────────────────────────────────────
+    if (sub === "leave") {
+      const company = await getCompanyForEmployee(sender);
+      if (!company) {
+        return reply(
+          "❌ You are not employed at any company.\n\n" +
+          "Get hired with *.company hire @you <salary>* from a company owner."
+        );
+      }
+
+      const idx = (company.employees || []).findIndex(e => e.jid === sender);
+      if (idx === -1) return reply("❌ You are not listed as an employee of that company.");
+
+      const emp = company.employees[idx];
+      const employeeName = await getEmployeeName(emp);
+      company.employees.splice(idx, 1);
+      await saveCompany(company);
+
+      return reply(
+`🚪 *You have left ${company.name}!*
+
+👤 Employee : *${employeeName}*
+🏢 Company  : ${company.name}
+👥 Staff    : ${company.employees.length}/${MAX_EMPLOYEES}
+
+You are now free to join another company.`
       );
     }
 

@@ -1,11 +1,14 @@
 /**
- * KELIN MD — DBZ Fighter Profile (plugins/dbz/dbzprofile.js)
+ * KELIN MD — DBZ Fighter Profile (plugins/dragonball/dbzprofile.js)
  * .dbzprofile — show your fighter's stats
  * .dbzprofile @user — view someone else's fighter
+ *
+ * Reads from dbz_players (same collection used by dbztrain / dbzhunt)
+ * so level-ups and zeni earned through training/hunting are always current.
  */
 
-import { getFighter } from "../../lib/dbz/dbzDb.mjs";
-import { getXpNeeded } from "../../lib/dbz/gameLogic.mjs";
+import players from "../../lib/dragonball/players.js";
+import { xpNeeded } from "../../lib/dragonball/utils.js";
 
 export default {
   name:        "dbzprofile",
@@ -23,17 +26,20 @@ export default {
     const targetJid     = mentionedJid || sender;
     const isSelf        = targetJid === sender;
 
-    const fighter = await getFighter(targetJid);
+    // Read from dbz_players — same collection that dbztrain and dbzhunt update
+    const fighter = await players.get(targetJid);
     if (!fighter) {
       const who = isSelf ? "You haven't" : "That user hasn't";
       return sock.sendMessage(jid, {
-        text: `❌ ${who} chosen a DBZ fighter yet!\nUse *.dbzselect* to pick a character.`,
+        text: `❌ ${who} started a DBZ journey yet!\nUse *.dbzstart* to create a fighter.`,
       }, { quoted: msg });
     }
 
-    const hpBar  = buildBar(fighter.hp,    fighter.maxHp,   24, "🟥", "⬛");
-    const xpBar  = buildBar(fighter.xp,    fighter.xpNeeded || getXpNeeded(fighter.level), 20, "🟨", "⬛");
-    const kiBar  = buildBar(fighter.ki || 0, fighter.maxKi || 300, 20, "🟦", "⬛");
+    const currentXpNeeded = fighter.xpNeeded || xpNeeded(fighter.level);
+
+    const hpBar = buildBar(fighter.hp,         fighter.maxHp,       24, "🟥", "⬛");
+    const xpBar = buildBar(fighter.xp,         currentXpNeeded,     20, "🟨", "⬛");
+    const kiBar = buildBar(fighter.ki || 0,    fighter.maxKi || 80, 20, "🟦", "⬛");
 
     const forms = (fighter.forms || []).length > 0
       ? fighter.forms.map((f, i) => `  *${i + 1}.* ${f.name} (×${f.statMultiplier})`).join("\n")
@@ -43,30 +49,31 @@ export default {
 `🐉 *DBZ FIGHTER PROFILE*
 
 👤 Owner: ${isSelf ? "You" : "@" + targetJid.split("@")[0]}
-⚡ Fighter: *${fighter.name}*
+⚡ Fighter: *${fighter.character || fighter.name || "Unknown"}*
 🌍 Race: ${fighter.race || "Unknown"}
 📊 Level: *${fighter.level}*
 
 ❤️ HP:  ${hpBar}  ${fighter.hp}/${fighter.maxHp}
-💠 Ki:  ${kiBar}  ${Math.floor(fighter.ki || 0)}/${fighter.maxKi || 300}
-✨ XP:  ${xpBar}  ${fighter.xp}/${fighter.xpNeeded || getXpNeeded(fighter.level)}
+💠 Ki:  ${kiBar}  ${Math.floor(fighter.ki || 0)}/${fighter.maxKi || 80}
+✨ XP:  ${xpBar}  ${fighter.xp}/${currentXpNeeded}
 
 ━━━━━━━━━━━━━━━━━━━━
 ⚔️ Attack:  ${fighter.attack}
 🛡️ Defense: ${fighter.defense}
 💨 Speed:   ${fighter.speed}
-${fighter.transformed ? `🌟 Form: *${fighter.currentFormName}*` : ""}
 
 ━━━━━━━━━━━━━━━━━━━━
+💰 Coins:  ${(fighter.zeni || 0).toLocaleString()}
 🏆 Wins:   ${fighter.wins || 0}
 💀 Losses: ${fighter.losses || 0}
+🎯 Missions: ${fighter.missionsCompleted || 0}
 
 🌟 *Transformations:*
 ${forms}`;
 
     try {
       await sock.sendMessage(jid, {
-        image: { url: fighter.imageUrl },
+        image: { url: fighter.characterImageUrl },
         caption,
         mentions: isSelf ? [] : [targetJid],
       }, { quoted: msg });

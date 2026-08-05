@@ -1,6 +1,6 @@
 /**
  * KELIN MD — .dbzshop command (Dragon Ball Z Edition)
- * Browse and purchase items using Zeni.
+ * Browse and purchase items using coins.
  * Layout mirrors the economy shop: ╭━━╮ borders, ꔫ separators, themed text.
  */
 
@@ -8,14 +8,14 @@ import players from "../../lib/dragonball/players.js";
 import { DBZ_SHOP_ITEMS, DBZ_SHOP_CATEGORIES } from "../../lib/dragonball/shopItems.js";
 import { getRankName } from "../../lib/dragonball/utils.js";
 
-function fmtZeni(n) {
+function fmtCoins(n) {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000)     return `${(n / 1_000).toFixed(1)}K`;
   return `${n.toLocaleString()}`;
 }
 
 function costLine(item) {
-  return `💰 ${fmtZeni(item.price)} Zeni`;
+  return `💰 ${fmtCoins(item.price)} coins`;
 }
 
 function rarityBadge(r) {
@@ -24,7 +24,7 @@ function rarityBadge(r) {
 
 const DIV = "╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌";
 
-function buildMainMenu(zeni, hp, maxHp, ki, maxKi, level, rank) {
+function buildMainMenu(coins, hp, maxHp, ki, maxKi, level, rank) {
   const catLines = Object.entries(DBZ_SHOP_CATEGORIES).map(([key, cat]) => {
     const count = Object.entries(DBZ_SHOP_ITEMS).filter(([, i]) => i.category === key).length;
     return `${cat.emoji} *.dbzshop ${key}*\n┃   └ _${cat.label}_ (${count} items)`;
@@ -33,18 +33,18 @@ function buildMainMenu(zeni, hp, maxHp, ki, maxKi, level, rank) {
   return [
     `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮`,
     `┃  🐉  *D B Z   S H O P*  🐉  ┃`,
-    `┃   ⚡ _Zeni Marketplace_ ⚡  ┃`,
+    `┃   ⚡ _Coins Marketplace_ ⚡  ┃`,
     `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
     `┃`,
-    `┃  💰 *お財布 — Your Wallet*`,
-    `┃  💰 Zeni: ${fmtZeni(zeni)}`,
+    `┃  💰 *Your Coins*`,
+    `┃  💰 Coins: ${fmtCoins(coins)}`,
     `┃`,
     `┃  📊 *Fighter Status*`,
     `┃  ⭐ Lv ${level}  ·  ${rank}`,
     `┃  ❤️ ${hp}/${maxHp}  ·  💠 ${ki}/${maxKi}`,
     `┃`,
     `${DIV}`,
-    `┃  📂 *カテゴリー — Categories*`,
+    `┃  📂 *Categories*`,
     `${DIV}`,
     catLines,
     `${DIV}`,
@@ -158,19 +158,19 @@ async function handleBuy(sock, msg, jid, sender, args) {
     return reply(
       [
         `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮`,
-        `┃  💸 *Not enough Zeni!* 💸`,
+        `┃  💸 *Not enough coins!* 💸`,
         `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
         `┃`,
         `┃  ${item.emoji}  *${displayName}*`,
         `┃`,
         `${DIV}`,
         `┃  💰 Cost  ꔫ ${costLine(item)}`,
-        `┃  💳 Yours ꔫ 💰 ${fmtZeni(player.zeni || 0)}`,
+        `┃  💳 Yours ꔫ 💰 ${fmtCoins(player.zeni || 0)} coins`,
         `${DIV}`,
-        `┃  ❌ _Need ${fmtZeni(short)} more Zeni_`,
+        `┃  ❌ _Need ${fmtCoins(short)} more coins_`,
         `${DIV}`,
         `┃  💡 _.dbztrain .dbzhunt .dbzchallenge_`,
-        `┃     _to earn more Zeni~_`,
+        `┃     _to earn more coins~_`,
         `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
       ].join("\n")
     );
@@ -196,7 +196,7 @@ async function handleBuy(sock, msg, jid, sender, args) {
       `┃`,
       `${DIV}`,
       `┃  💰 Paid  ꔫ ${costLine(item)}`,
-      `┃  💳 Wallet ꔫ 💰 ${fmtZeni(updated.zeni)}`,
+      `┃  💳 Wallet ꔫ 💰 ${fmtCoins(updated.zeni)} coins`,
       `${DIV}`,
       `┃  📦 *.dbzinventory* to see your items`,
       `┃  ✨ _.dbzuse <name>_ to use items!`,

@@ -94,7 +94,7 @@ async function finishCreation(sock, jid, msg, sender, username, session) {
     ``,
     `❤️ HP: ${player.maxHp}  |  💠 KI: ${player.maxKi}`,
     `⚔️ ATK: ${player.attack}  |  🛡️ DEF: ${player.defense}  |  💨 SPD: ${player.speed}`,
-    `💰 Starting Zeni: 500`,
+    `💰 Starting Coins: 500`,
     ``,
     `*Get started:*`,
     `• *.dbztrain* — Power up your fighter`,

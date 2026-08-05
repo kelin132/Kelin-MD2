@@ -5,8 +5,8 @@
 import players from "../../lib/dragonball/players.js";
 import { getRankName } from "../../lib/dragonball/utils.js";
 
-const TRAIN_COST_ZENI  = 100;
-const TRAIN_COOLDOWNS  = new Map(); // sender → lastTrainedAt
+const TRAIN_COST_COINS  = 100;
+const TRAIN_COOLDOWNS   = new Map(); // sender → lastTrainedAt
 const TRAIN_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes between sessions
 
 const TRAIN_SESSIONS = {
@@ -74,8 +74,8 @@ export default {
           text: [
             "🐉 *TRAINING GROUNDS*",
             "━━━━━━━━━━━━━━━━━━━━━━━━",
-            `💰 Cost: *${TRAIN_COST_ZENI} Zeni* per session`,
-            `💰 Your Zeni: *${player.zeni}*`,
+            `💰 Cost: *${TRAIN_COST_COINS} coins* per session`,
+            `💰 Your coins: *${player.zeni}*`,
             "",
             "Choose what to train:",
             "  ⚔️  *.dbztrain attack*   — +2 ATK",
@@ -105,15 +105,15 @@ export default {
         }, { quoted: msg });
       }
 
-      // Zeni check
-      if (player.zeni < TRAIN_COST_ZENI) {
+      // Coins check
+      if ((player.zeni || 0) < TRAIN_COST_COINS) {
         return sock.sendMessage(jid, {
-          text: `❌ Not enough Zeni!\n\nYou need *${TRAIN_COST_ZENI}* but only have *${player.zeni}*.`,
+          text: `❌ Not enough coins!\n\nYou need *${TRAIN_COST_COINS}* but only have *${player.zeni || 0}*.`,
         }, { quoted: msg });
       }
 
       // Apply stat change
-      player.zeni              -= TRAIN_COST_ZENI;
+      player.zeni              = (player.zeni || 0) - TRAIN_COST_COINS;
       player[session.stat]      = (player[session.stat] || 0) + session.gain;
       if (session.stat === "maxHp") player.hp = Math.min(player.hp + session.gain, player.maxHp);
       if (session.stat === "maxKi") player.ki = Math.min(player.ki + session.gain, player.maxKi);
@@ -131,7 +131,7 @@ export default {
           msg2,
           "",
           `${session.emoji} *${session.label}* increased by *+${session.gain}*!`,
-          `💰 Zeni spent: *${TRAIN_COST_ZENI}*  |  Remaining: *${player.zeni}*`,
+          `💰 Coins spent: *${TRAIN_COST_COINS}*  |  Remaining: *${player.zeni}*`,
           "",
           `⭐ Level: ${player.level} (${rank})`,
           `❤️ HP: ${player.hp}/${player.maxHp}`,

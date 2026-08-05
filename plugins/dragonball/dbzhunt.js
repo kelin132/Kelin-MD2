@@ -121,7 +121,7 @@ function buildMenu(hunt) {
     }
   });
 
-  lines.push(`🏃 *.dbzhunt flee*    — Escape (5% Zeni penalty)`);
+  lines.push(`🏃 *.dbzhunt flee*    — Escape (5% coins penalty)`);
   lines.push(`⏳ _3 minutes to act or hunt auto-cancels._`);
   return lines.join("\n");
 }
@@ -146,7 +146,7 @@ async function sendHuntImage(sock, jid, hunt, caption, opts = {}) {
 
 export default {
   name: "dbzhunt",
-  description: "Hunt Dragon Ball villains for XP and Zeni",
+  description: "Hunt Dragon Ball villains for XP and coins",
   category: "dragonball",
   usage: ".dbzhunt | attack | ki <n> | transform | flee",
   aliases: ["dbzvillain", "dbzspawn"],
@@ -252,21 +252,22 @@ export default {
         await sendHuntImage(sock, jid, hunt, resultText, { hitSide: "right", damage: dmg });
 
         if (e.hp <= 0) {
-          const xpGain   = e.xpReward;
-          const zeniGain = e.zeniReward;
+          const xpGain    = e.xpReward;
+          const coinsGain = e.zeniReward;
 
-          await Promise.all([
-            players.addXp(sender, xpGain),
-            players.addZeni(sender, zeniGain),
-            (async () => {
-              const fresh = await players.get(sender);
-              if (fresh) {
-                fresh.hp = fresh.maxHp; fresh.ki = fresh.maxKi;
-                fresh.missionsCompleted = (fresh.missionsCompleted || 0) + 1;
-                await fresh.save();
-              }
-            })(),
-          ]);
+          // Run sequentially to avoid race condition where addXp's $set
+          // overwrites the zeni increment from addZeni.
+          await players.addXp(sender, xpGain);
+          await players.addZeni(sender, coinsGain);
+
+          // Refresh HP/Ki and increment missions
+          const fresh = await players.get(sender);
+          if (fresh) {
+            fresh.hp = fresh.maxHp;
+            fresh.ki = fresh.maxKi;
+            fresh.missionsCompleted = (fresh.missionsCompleted || 0) + 1;
+            await fresh.save();
+          }
 
           deleteHunt(sender);
 
@@ -275,7 +276,7 @@ export default {
             resultBuf = await generateResultScene({
               winner: { username: pName,  imageUrl: p.imageUrl  },
               loser:  { username: e.name, imageUrl: e.imageUrl  },
-              rewardText: `💰 +${zeniGain} Zeni  |  ✨ +${xpGain} XP`,
+              rewardText: `💰 +${coinsGain} coins  |  ✨ +${xpGain} XP`,
               outcome: "win",
             });
           } catch { /**/ }
@@ -284,7 +285,7 @@ export default {
             `🏆 *VILLAIN DEFEATED!*`,
             `💀 *${e.name}* has been eliminated!`,
             ``,
-            `💰 Reward: *+${zeniGain} Zeni* | ✨ *+${xpGain} XP*`,
+            `💰 Reward: *+${coinsGain} coins* | ✨ *+${xpGain} XP*`,
             `❤️ HP restored to full!`,
           ].join("\n");
 
@@ -323,8 +324,8 @@ export default {
         hunt.round++;
 
         if (p.hp <= 0) {
-          const loseZeni = Math.floor((playerDoc.zeni || 0) * 0.05);
-          await players.update(sender, { $inc: { zeni: -loseZeni, losses: 1 }, $set: { hp: playerDoc.maxHp, ki: playerDoc.maxKi } });
+          const loseCoins = Math.floor((playerDoc.zeni || 0) * 0.05);
+          await players.update(sender, { $inc: { zeni: -loseCoins, losses: 1 }, $set: { hp: playerDoc.maxHp, ki: playerDoc.maxKi } });
           deleteHunt(sender);
 
           await sleep(BATTLE_MESSAGE_DELAY);
@@ -333,7 +334,7 @@ export default {
             text: [
               `☠️ *${pName.toUpperCase()} WAS DEFEATED!*`,
               `💀 *${e.name}* overwhelmed you!`,
-              `💰 Lost: *${loseZeni} Zeni* (5% penalty)`,
+              `💰 Lost: *${loseCoins} coins* (5% penalty)`,
               `❤️ HP restored to full — rest up before hunting again.`,
             ].join("\n"),
           });
@@ -402,12 +403,12 @@ export default {
         await sendHuntImage(sock, jid, hunt, enemyMsg, { hitSide: "left", damage: enemyDmg });
 
         if (p.hp <= 0) {
-          const loseZeni = Math.floor((playerDoc.zeni || 0) * 0.05);
-          await players.update(sender, { $inc: { zeni: -loseZeni, losses: 1 }, $set: { hp: playerDoc.maxHp, ki: playerDoc.maxKi } });
+          const loseCoins = Math.floor((playerDoc.zeni || 0) * 0.05);
+          await players.update(sender, { $inc: { zeni: -loseCoins, losses: 1 }, $set: { hp: playerDoc.maxHp, ki: playerDoc.maxKi } });
           deleteHunt(sender);
           await sleep(BATTLE_MESSAGE_DELAY);
           return sock.sendMessage(jid, {
-            text: `☠️ *${pName.toUpperCase()} WAS DEFEATED!*\n💀 *${e.name}* overwhelmed you!\n💰 Lost: *${loseZeni} Zeni*\n❤️ HP restored to full.`,
+            text: `☠️ *${pName.toUpperCase()} WAS DEFEATED!*\n💀 *${e.name}* overwhelmed you!\n💰 Lost: *${loseCoins} coins*\n❤️ HP restored to full.`,
           }, { quoted: msg });
         }
 
@@ -464,13 +465,13 @@ export default {
           hunt.round++;
 
           if (p.hp <= 0) {
-            const loseZeni = Math.floor((playerDoc.zeni || 0) * 0.05);
-            await players.update(sender, { $inc: { zeni: -loseZeni, losses: 1 }, $set: { hp: playerDoc.maxHp, ki: playerDoc.maxKi } });
+            const loseCoins = Math.floor((playerDoc.zeni || 0) * 0.05);
+            await players.update(sender, { $inc: { zeni: -loseCoins, losses: 1 }, $set: { hp: playerDoc.maxHp, ki: playerDoc.maxKi } });
             deleteHunt(sender);
             await sleep(BATTLE_MESSAGE_DELAY);
             await sendHuntImage(sock, jid, hunt, enemyMsg, { hitSide: "left", damage: enemyDmg });
             return sock.sendMessage(jid, {
-              text: `☠️ *${pName.toUpperCase()} WAS DEFEATED!*\n💀 *${e.name}* overwhelmed you!\n💰 Lost: *${loseZeni} Zeni*\n❤️ HP restored to full.`,
+              text: `☠️ *${pName.toUpperCase()} WAS DEFEATED!*\n💀 *${e.name}* overwhelmed you!\n💰 Lost: *${loseCoins} coins*\n❤️ HP restored to full.`,
             });
           }
 
@@ -504,7 +505,7 @@ export default {
         return sock.sendMessage(jid, {
           text: [
             `🏃 *${pName} fled from ${e.name}!*`,
-            `💰 Penalty: *-${penalty} Zeni* (5%)`,
+            `💰 Penalty: *-${penalty} coins* (5%)`,
             ``,
             `Use *.dbzhunt* to find another villain.`,
           ].join("\n"),
