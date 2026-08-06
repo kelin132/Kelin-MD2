@@ -1,1 +1,264 @@
-LyoqCiAqIEtFTElOIE1EIOKAlCAuZGJ6c2hvcCBjb21tYW5kIChEcmFnb24gQmFsbCBaIEVkaXRpb24pCiAqIEJyb3dzZSBhbmQgcHVyY2hhc2UgaXRlbXMgdXNpbmcgY29pbnMuCiAqIExheW91dCBtaXJyb3JzIHRoZSBlY29ub215IHNob3A6IOKVreKUgeKUgeKVriBib3JkZXJzLCDqlKsgc2VwYXJhdG9ycywgdGhlbWVkIHRleHQuCiAqLwoKaW1wb3J0IHBsYXllcnMgZnJvbSAiLi4vLi4vbGliL2RyYWdvbmJhbGwvcGxheWVycy5qcyI7CmltcG9ydCB7IERCWl9TSE9QX0lURU1TLCBEQlpfU0hPUF9DQVRFR09SSUVTIH0gZnJvbSAiLi4vLi4vbGliL2RyYWdvbmJhbGwvc2hvcEl0ZW1zLmpzIjsKaW1wb3J0IHsgZ2V0UmFua05hbWUgfSBmcm9tICIuLi8uLi9saWIvZHJhZ29uYmFsbC91dGlscy5qcyI7CgpmdW5jdGlvbiBmbXRDb2lucyhuKSB7CiAgaWYgKG4gPj0gMV8wMDBfMDAwKSByZXR1cm4gYCR7KG4gLyAxXzAwMF8wMDApLnRvRml4ZWQoMSl9TWA7CiAgaWYgKG4gPj0gMV8wMDApICAgICByZXR1cm4gYCR7KG4gLyAxXzAwMCkudG9GaXhlZCgxKX1LYDsKICByZXR1cm4gYCR7bi50b0xvY2FsZVN0cmluZygpfWA7Cn0KCmZ1bmN0aW9uIGNvc3RMaW5lKGl0ZW0pIHsKICByZXR1cm4gYPCfqpkgJHtmbXRDb2lucyhpdGVtLnByaWNlKX0gY29pbnNgOwp9CgpmdW5jdGlvbiByYXJpdHlCYWRnZShyKSB7CiAgcmV0dXJuIHsgY29tbW9uOiAi4pqqIENvbW1vbiIsIHJhcmU6ICLwn5S1IFJhcmUiLCBsZWdlbmRhcnk6ICLwn5+hIExlZ2VuZGFyeSIgfVtyXSA/PyByID8/ICIiOwp9Cgpjb25zdCBESVYgPSAi4pWM4pWM4pWM4pWM4pWM4pWM4pWM4pWM4pWM4pWM4pWM4pWM4pWM4pWM4pWM4pWM4pWM4pWM4pWM4pWM4pWM4pWM4pWM4pWM4pWM4pWMIjsKCmZ1bmN0aW9uIGJ1aWxkTWFpbk1lbnUoY29pbnMsIGhwLCBtYXhIcCwga2ksIG1heEtpLCBsZXZlbCwgcmFuaykgewogIGNvbnN0IGNhdExpbmVzID0gT2JqZWN0LmVudHJpZXMoREJaX1NIT1BfQ0FURUdPUklFUykubWFwKChba2V5LCBjYXRdKSA9PiB7CiAgICBjb25zdCBjb3VudCA9IE9iamVjdC5lbnRyaWVzKERCWl9TSE9QX0lURU1TKS5maWx0ZXIoKFssIGldKSA9PiBpLmNhdGVnb3J5ID09PSBrZXkpLmxlbmd0aDsKICAgIHJldHVybiBgJHtjYXQuZW1vaml9ICouZGJ6c2hvcCAke2tleX0qXG7ilIMgICDilJQgXyR7Y2F0LmxhYmVsfV8gKCR7Y291bnR9IGl0ZW1zKWA7CiAgfSkuam9pbigiXG4iKTsKCiAgcmV0dXJuIFsKICAgIGDila3ilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHila5gLAogICAgYOKUgyAg8J+QiSAgKkQgQiBaICAgUyBIIE8gUCogIPCfkIkgIOKUg2AsCiAgICBg4pSDICAg4pqhIF9Db2lucyBNYXJrZXRwbGFjZV8g4pqhICDilINgLAogICAgYOKVsOKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKVr2AsCiAgICBg4pSDYCwKICAgIGDilIMgIPCfqpkgKllvdXIgQ29pbnMqYCwKICAgIGDilIMgIPCfqpkgQ29pbnM6ICR7Zm10Q29pbnMoY29pbnMpfWAsCiAgICBg4pSDYCwKICAgIGDilIMgIPCfk4ogKkZpZ2h0ZXIgU3RhdHVzKmAsCiAgICBg4pSDICDirZAgTHYgJHtsZXZlbH0gIMK3ICAke3Jhbmt9YCwKICAgIGDilIMgIOKdpO+4jyAke2hwfS8ke21heEhwfSAgwrcgIPCfkqAgJHtraX0vJHttYXhLaX1gLAogICAgYOKUg2AsCiAgICBgJHtESVZ9YCwKICAgIGDilIMgIPCfk4IgKkNhdGVnb3JpZXMqYCwKICAgIGAke0RJVn1gLAogICAgY2F0TGluZXMsCiAgICBgJHtESVZ9YCwKICAgIGDwn5uSICouZGJ6c2hvcCA8Y2F0ZWdvcnk+KiDigJQgQnJvd3NlIGl0ZW1zYCwKICAgIGDwn5KzICouZGJ6c2hvcCBidXkgPG51bWJlcj4qIOKAlCBQdXJjaGFzZWAsCiAgICBg8J+TpiAqLmRiemludmVudG9yeSog4oCUIFlvdXIgaXRlbXNgLAogICAgYOKVsOKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKVr2AsCiAgXS5qb2luKCJcbiIpOwp9CgpmdW5jdGlvbiBidWlsZENhdGVnb3J5TGlzdChjYXRLZXkpIHsKICBjb25zdCBjYXQgICA9IERCWl9TSE9QX0NBVEVHT1JJRVNbY2F0S2V5XTsKICBjb25zdCBpdGVtcyA9IE9iamVjdC5lbnRyaWVzKERCWl9TSE9QX0lURU1TKS5maWx0ZXIoKFssIGldKSA9PiBpLmNhdGVnb3J5ID09PSBjYXRLZXkpOwoKICBpZiAoaXRlbXMubGVuZ3RoID09PSAwKSB7CiAgICByZXR1cm4gYOKVreKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKVrlxu4pSDICDinYwgTm8gaXRlbXMgaW4gdGhpcyBjYXRlZ29yeVxu4pWw4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pWvYDsKICB9CgogIGNvbnN0IGFsbEtleXMgPSBPYmplY3Qua2V5cyhEQlpfU0hPUF9JVEVNUyk7CgogIGNvbnN0IGl0ZW1MaW5lcyA9IGl0ZW1zLm1hcCgoW25hbWUsIGl0ZW1dKSA9PiB7CiAgICBjb25zdCBudW0gID0gYWxsS2V5cy5pbmRleE9mKG5hbWUpICsgMTsKICAgIGNvbnN0IGRpc3BsYXlOYW1lID0gbmFtZS5yZXBsYWNlKC9fL2csICIgIikucmVwbGFjZSgvXGJcdy9nLCBjID0+IGMudG9VcHBlckNhc2UoKSk7CiAgICByZXR1cm4gWwogICAgICBgKiR7bnVtfS4qICR7aXRlbS5lbW9qaX0gICoke2Rpc3BsYXlOYW1lfSpgLAogICAgICBpdGVtLmRlc2NyaXB0aW9uID8gYOKUgyAgICDwn5OWIF8ke2l0ZW0uZGVzY3JpcHRpb259X2AgOiBudWxsLAogICAgICBg4pSDICAgIPCfqpkg6pSrICR7Y29zdExpbmUoaXRlbSl9YCwKICAgICAgYOKUgyAgICAke3Jhcml0eUJhZGdlKGl0ZW0ucmFyaXR5KX1gLAogICAgXS5maWx0ZXIoQm9vbGVhbikuam9pbigiXG4iKTsKICB9KS5qb2luKGBcbiR7RElWfVxuYCk7CgogIGNvbnN0IGNhdFRpdGxlID0gY2F0LmxhYmVsLnRvVXBwZXJDYXNlKCk7CgogIHJldHVybiBbCiAgICBg4pWt4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pWuYCwKICAgIGDilIMgICR7Y2F0LmVtb2ppfSAgKiR7Y2F0VGl0bGV9KmAsCiAgICBg4pWw4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pWvYCwKICAgIGDilINgLAogICAgaXRlbUxpbmVzLAogICAgYOKUg2AsCiAgICBgJHtESVZ9YCwKICAgIGDwn5uSICouZGJ6c2hvcCBidXkgPG51bWJlcj4qIHRvIHB1cmNoYXNlfmAsCiAgICBg8J+UmSAqLmRienNob3AqIHRvIHJldHVybiB0byBtZW51YCwKICAgIGDilbDilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHila9gLAogIF0uam9pbigiXG4iKTsKfQoKYXN5bmMgZnVuY3Rpb24gaGFuZGxlQnV5KHNvY2ssIG1zZywgamlkLCBzZW5kZXIsIGFyZ3MpIHsKICBjb25zdCByZXBseSA9ICh0KSA9PiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgeyB0ZXh0OiB0IH0sIHsgcXVvdGVkOiBtc2cgfSk7CgogIGNvbnN0IGl0ZW1OdW1iZXIgID0gTnVtYmVyKGFyZ3NbMV0pOwogIGNvbnN0IG9yZGVyZWRJdGVtcyA9IE9iamVjdC5lbnRyaWVzKERCWl9TSE9QX0lURU1TKTsKICBjb25zdCBzZWxlY3RlZCAgICA9IE51bWJlci5pc0ludGVnZXIoaXRlbU51bWJlcikgJiYgaXRlbU51bWJlciA+PSAxCiAgICA/IG9yZGVyZWRJdGVtc1tpdGVtTnVtYmVyIC0gMV0KICAgIDogbnVsbDsKCiAgaWYgKCFzZWxlY3RlZCkgewogICAgcmV0dXJuIHJlcGx5KAogICAgICBbCiAgICAgICAgYOKVreKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKVrmAsCiAgICAgICAgYOKUgyAg4p2MICpJbnZhbGlkIGl0ZW0gbnVtYmVyISpgLAogICAgICAgIGDilbDilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHila9gLAogICAgICAgIGBgLAogICAgICAgIGBCcm93c2UgYSBjYXRlZ29yeSBmaXJzdCwgdGhlbiB1c2UgdGhlIG51bWJlciBzaG93bi5gLAogICAgICAgIGBgLAogICAgICAgIGBFeGFtcGxlOiAqLmRienNob3AgYmVhbnMqIOKGkiAqLmRienNob3AgYnV5IDEqYCwKICAgICAgXS5qb2luKCJcbiIpCiAgICApOwogIH0KCiAgY29uc3QgW2l0ZW1LZXksIGl0ZW1dID0gc2VsZWN0ZWQ7CiAgY29uc3QgcGxheWVyID0gYXdhaXQgcGxheWVycy5nZXQoc2VuZGVyKTsKCiAgaWYgKCFwbGF5ZXIpIHsKICAgIHJldHVybiByZXBseSgi8J+QiSBZb3UgZG9uJ3QgaGF2ZSBhIGZpZ2h0ZXIgeWV0IVxuVXNlICouZGJ6c3RhcnQqIHRvIGNyZWF0ZSBvbmUuIik7CiAgfQoKICBjb25zdCBkaXNwbGF5TmFtZSA9IGl0ZW1LZXkucmVwbGFjZSgvXy9nLCAiICIpLnJlcGxhY2UoL1xiXHcvZywgYyA9PiBjLnRvVXBwZXJDYXNlKCkpOwoKICBpZiAoaXRlbS51c2VFZmZlY3Q/LnN0YXJ0c1dpdGgoImxlYXJuOiIpKSB7CiAgICBjb25zdCB0ZWNoSWQgPSBpdGVtLnVzZUVmZmVjdC5zcGxpdCgiOiIpWzFdOwogICAgaWYgKChwbGF5ZXIudGVjaG5pcXVlcyB8fCBbXSkuaW5jbHVkZXModGVjaElkKSkgewogICAgICByZXR1cm4gcmVwbHkoCiAgICAgICAgWwogICAgICAgICAgYOKVreKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKVrmAsCiAgICAgICAgICBg4pSDICDimqDvuI8gICpBbHJlYWR5IGxlYXJuZWQhKmAsCiAgICAgICAgICBg4pWw4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pWvYCwKICAgICAgICAgIGDilINgLAogICAgICAgICAgYOKUgyAgJHtpdGVtLmVtb2ppfSAgKiR7ZGlzcGxheU5hbWV9KmAsCiAgICAgICAgICBg4pSDICBZb3UgYWxyZWFkeSBrbm93IHRoaXMgdGVjaG5pcXVlIWAsCiAgICAgICAgXS5qb2luKCJcbiIpCiAgICAgICk7CiAgICB9CiAgfQoKICBpZiAoaXRlbS5jYXRlZ29yeSA9PT0gImdlYXIiICYmIChwbGF5ZXIuaW52ZW50b3J5IHx8IFtdKS5pbmNsdWRlcyhpdGVtS2V5KSkgewogICAgcmV0dXJuIHJlcGx5KAogICAgICBbCiAgICAgICAgYOKVreKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKVrmAsCiAgICAgICAgYOKUgyAg4pqg77iPICAqQWxyZWFkeSBvd25lZCEqYCwKICAgICAgICBg4pWw4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pWvYCwKICAgICAgICAgIGDilINgLAogICAgICAgICAgYOKUgyAgJHtpdGVtLmVtb2ppfSAgKiR7ZGlzcGxheU5hbWV9KmAsCiAgICAgICAgICBg4pSDICBZb3UgYWxyZWFkeSBoYXZlIHRoaXMgZ2VhciBlcXVpcHBlZCFgLAogICAgICBdLmpvaW4oIlxuIikKICAgICk7CiAgfQoKICBpZiAoKHBsYXllci56ZW5pIHx8IDApIDwgaXRlbS5wcmljZSkgewogICAgY29uc3Qgc2hvcnQgPSBpdGVtLnByaWNlIC0gKHBsYXllci56ZW5pIHx8IDApOwogICAgcmV0dXJuIHJlcGx5KAogICAgICBbCiAgICAgICAgYOKVreKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKVrmAsCiAgICAgICAgYOKUgyAg8J+SuCAqTm90IGVub3VnaCBjb2lucyEqIPCfkrhgLAogICAgICAgIGDilbDilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHila9gLAogICAgICAgIGDilINgLAogICAgICAgIGDilIMgICR7aXRlbS5lbW9qaX0gICoke2Rpc3BsYXlOYW1lfSpgLAogICAgICAgIGDilINgLAogICAgICAgIGAke0RJVn1gLAogICAgICAgIGDilIMgIPCfqpkgQ29zdCAg6pSrICR7Y29zdExpbmUoaXRlbSl9YCwKICAgICAgICBg4pSDICDwn5KzIFlvdXJzIOqUqyDwn6qZICR7Zm10Q29pbnMocGxheWVyLnplbmkgfHwgMCl9IGNvaW5zYCwKICAgICAgICBgJHtESVZ9YCwKICAgICAgICBg4pSDICDinYwgX05lZWQgJHtmbXRDb2lucyhzaG9ydCl9IG1vcmUgY29pbnNfYCwKICAgICAgICBgJHtESVZ9YCwKICAgICAgICBg4pSDICDwn5KhIF8uZGJ6dHJhaW4gLmRiemh1bnQgLmRiemNoYWxsZW5nZV9gLAogICAgICAgIGDilIMgICAgIF90byBlYXJuIG1vcmUgY29pbnN+X2AsCiAgICAgICAgYOKVsOKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKVr2AsCiAgICAgIF0uam9pbigiXG4iKQogICAgKTsKICB9CgogIGNvbnN0IHVwZGF0ZWQgPSBhd2FpdCBwbGF5ZXJzLnNwZW5kWmVuaShzZW5kZXIsIGl0ZW0ucHJpY2UpOwogIGlmICghdXBkYXRlZCkgewogICAgcmV0dXJuIHJlcGx5KCLinYwgUHVyY2hhc2UgZmFpbGVkIOKAlCBwbGVhc2UgdHJ5IGFnYWluLiIpOwogIH0KCiAgY29uc3QgaW52ZW50b3J5ID0gcGxheWVyLmludmVudG9yeSB8fCBbXTsKICBpbnZlbnRvcnkucHVzaChpdGVtS2V5KTsKICBhd2FpdCBwbGF5ZXJzLnVwZGF0ZShzZW5kZXIsIHsgJHNldDogeyBpbnZlbnRvcnkgfSB9KTsKCiAgcmV0dXJuIHJlcGx5KAogICAgWwogICAgICBg4pWt4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pWuYCwKICAgICAgYOKUgyAg4pyFICpQdXJjaGFzZSBDb21wbGV0ZSEqIOKchSAgIOKUg2AsCiAgICAgIGDilbDilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHila9gLAogICAgICBg4pSDYCwKICAgICAgYOKUgyAgJHtpdGVtLmVtb2ppfSAgKiR7ZGlzcGxheU5hbWV9KmAsCiAgICAgIGl0ZW0uZGVzY3JpcHRpb24gPyBg4pSDICDwn5OWIF8ke2l0ZW0uZGVzY3JpcHRpb259X2AgOiBudWxsLAogICAgICBg4pSDYCwKICAgICAgYCR7RElWfWAsCiAgICAgIGDilIMgIPCfqpkgUGFpZCAg6pSrICR7Y29zdExpbmUoaXRlbSl9YCwKICAgICAgYOKUgyAg8J+SsyBXYWxsZXQg6pSrIPCfqpkgJHtmbXRDb2lucyh1cGRhdGVkLnplbmkpfSBjb2luc2AsCiAgICAgIGAke0RJVn1gLAogICAgICBg4pSDICDwn5OmICouZGJ6aW52ZW50b3J5KiB0byBzZWUgeW91ciBpdGVtc2AsCiAgICAgIGDilIMgIOKcqCBfLmRienVzZSA8bmFtZT5fIHRvIHVzZSBpdGVtcyFgLAogICAgICBg4pWw4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pWvYCwKICAgIF0uZmlsdGVyKEJvb2xlYW4pLmpvaW4oIlxuIikKICApOwp9CgpleHBvcnQgZGVmYXVsdCB7CiAgbmFtZTogICAgICAgICJkYnpzaG9wIiwKICBhbGlhc2VzOiAgICAgWyJkYnpzdG9yZSIsICJkYnptYXJrZXQiLCAiZGJ6YnV5Il0sCiAgZGVzY3JpcHRpb246ICJCcm93c2UgYW5kIGJ1eSBpdGVtcyBmcm9tIHRoZSBEQlogU2hvcCIsCiAgY2F0ZWdvcnk6ICAgICJkcmFnb25iYWxsIiwKICBjb29sZG93bjogICAgNCwKICB1c2FnZTogICAgICAgIi5kYnpzaG9wIFtjYXRlZ29yeV0gfCAuZGJ6c2hvcCBidXkgPG51bWJlcj4iLAoKICBhc3luYyBydW4oeyBzb2NrLCBtc2csIHNlbmRlciwgYXJncyB9KSB7CiAgICBjb25zdCBqaWQgICA9IG1zZy5rZXkucmVtb3RlSmlkOwogICAgY29uc3QgcmVwbHkgPSAodCkgPT4gc29jay5zZW5kTWVzc2FnZShqaWQsIHsgdGV4dDogdCB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgY29uc3Qgc3ViICAgPSAoYXJnc1swXSB8fCAiIikudG9Mb3dlckNhc2UoKTsKCiAgICBjb25zdCBwbGF5ZXIgPSBhd2FpdCBwbGF5ZXJzLmdldChzZW5kZXIpOwogICAgaWYgKCFwbGF5ZXIpIHsKICAgICAgcmV0dXJuIHJlcGx5KCLwn5CJIFlvdSBkb24ndCBoYXZlIGEgZmlnaHRlciB5ZXQhXG5Vc2UgKi5kYnpzdGFydCogdG8gY3JlYXRlIG9uZS4iKTsKICAgIH0KCiAgICBpZiAoc3ViID09PSAiYnV5IikgewogICAgICByZXR1cm4gaGFuZGxlQnV5KHNvY2ssIG1zZywgamlkLCBzZW5kZXIsIGFyZ3MpOwogICAgfQoKICAgIGNvbnN0IGNhdEFsaWFzID0gewogICAgICBwb3Rpb246ICJwb3Rpb25zIiwgaGVhbDogInBvdGlvbnMiLCByZWNvdmVyeTogInBvdGlvbnMiLAogICAgICBzY3JvbGw6ICJzY3JvbGxzIiwgc2tpbGw6ICJzY3JvbGxzIiwgbGVhcm46ICJzY3JvbGxzIiwgdGVjaG5pcXVlOiAic2Nyb2xscyIsCiAgICAgIGdlYXI6ICJnZWFyIiwgd2VhcG9uOiAiZ2VhciIsIGVxdWlwbWVudDogImdlYXIiLCBhcm1vcjogImdlYXIiLAogICAgICBib29zdDogImJvb3N0cyIsIHBvd2VyOiAiYm9vc3RzIiwgYnVmZjogImJvb3N0cyIsCiAgICAgIGJlYW46ICJiZWFucyIsIHNlbnp1OiAiYmVhbnMiLCBmb29kOiAiYmVhbnMiLAogICAgfTsKCiAgICBjb25zdCBjYXRLZXlzID0gT2JqZWN0LmtleXMoREJaX1NIT1BfQ0FURUdPUklFUyk7CiAgICBjb25zdCBjYXRLZXkgID0gY2F0QWxpYXNbc3ViXSB8fCAoY2F0S2V5cy5pbmNsdWRlcyhzdWIpID8gc3ViIDogbnVsbCk7CgogICAgaWYgKGNhdEtleSkgcmV0dXJuIHJlcGx5KGJ1aWxkQ2F0ZWdvcnlMaXN0KGNhdEtleSkpOwoKICAgIGlmICghc3ViIHx8IHN1YiA9PT0gImxpc3QiIHx8IHN1YiA9PT0gIm1lbnUiIHx8IHN1YiA9PT0gImhlbHAiKSB7CiAgICAgIHJldHVybiByZXBseShidWlsZE1haW5NZW51KAogICAgICAgIHBsYXllci56ZW5pIHx8IDAsCiAgICAgICAgcGxheWVyLmhwIHx8IDAsCiAgICAgICAgcGxheWVyLm1heEhwIHx8IDEwMCwKICAgICAgICBwbGF5ZXIua2kgfHwgMCwKICAgICAgICBwbGF5ZXIubWF4S2kgfHwgODAsCiAgICAgICAgcGxheWVyLmxldmVsIHx8IDEsCiAgICAgICAgZ2V0UmFua05hbWUocGxheWVyLmxldmVsIHx8IDEpCiAgICAgICkpOwogICAgfQoKICAgIHJldHVybiByZXBseSgKICAgICAgWwogICAgICAgIGDila3ilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHila5gLAogICAgICAgIGDilIMgIOKdkyAqVW5rbm93bjoqIF8ke3N1Yn1fYCwKICAgICAgICBg4pWw4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pWvYCwKICAgICAgICBgVXNlICouZGJ6c2hvcCogdG8gc2VlIGFsbCBjYXRlZ29yaWVzfmAsCiAgICAgIF0uam9pbigiXG4iKQogICAgKTsKICB9LAp9Owo=
+/**
+ * KELIN MD — .dbzshop command (Dragon Ball Z Edition)
+ * Browse and purchase items using coins.
+ * Layout mirrors the economy shop: ╭━━╮ borders, ꔫ separators, themed text.
+ */
+
+import players from "../../lib/dragonball/players.js";
+import { DBZ_SHOP_ITEMS, DBZ_SHOP_CATEGORIES } from "../../lib/dragonball/shopItems.js";
+import { getRankName } from "../../lib/dragonball/utils.js";
+
+function fmtCoins(n) {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000)     return `${(n / 1_000).toFixed(1)}K`;
+  return `${n.toLocaleString()}`;
+}
+
+function costLine(item) {
+  return `$${fmtCoins(item.price)} coins`;
+}
+
+function rarityBadge(r) {
+  return { common: "⚪ Common", rare: "🔵 Rare", legendary: "🟡 Legendary" }[r] ?? r ?? "";
+}
+
+const DIV = "╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌";
+
+function buildMainMenu(coins, hp, maxHp, ki, maxKi, level, rank) {
+  const catLines = Object.entries(DBZ_SHOP_CATEGORIES).map(([key, cat]) => {
+    const count = Object.entries(DBZ_SHOP_ITEMS).filter(([, i]) => i.category === key).length;
+    return `${cat.emoji} *.dbzshop ${key}*\n┃   └ _${cat.label}_ (${count} items)`;
+  }).join("\n");
+
+  return [
+    `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮`,
+    `┃  🐉  *D B Z   S H O P*  🐉  ┃`,
+    `┃   ⚡ _Coins Marketplace_ ⚡  ┃`,
+    `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+    `┃`,
+    `┃  💰 *Your Coins*`,
+    `┃  💰 Coins: ${fmtCoins(coins)}`,
+    `┃`,
+    `┃  📊 *Fighter Status*`,
+    `┃  ⭐ Lv ${level}  ·  ${rank}`,
+    `┃  ❤️ ${hp}/${maxHp}  ·  💠 ${ki}/${maxKi}`,
+    `┃`,
+    `${DIV}`,
+    `┃  📂 *Categories*`,
+    `${DIV}`,
+    catLines,
+    `${DIV}`,
+    `🛒 *.dbzshop <category>* — Browse items`,
+    `💳 *.dbzshop buy <number>* — Purchase`,
+    `📦 *.dbzinventory* — Your items`,
+    `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+  ].join("\n");
+}
+
+function buildCategoryList(catKey) {
+  const cat   = DBZ_SHOP_CATEGORIES[catKey];
+  const items = Object.entries(DBZ_SHOP_ITEMS).filter(([, i]) => i.category === catKey);
+
+  if (items.length === 0) {
+    return `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮\n┃  ❌ No items in this category\n╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`;
+  }
+
+  const allKeys = Object.keys(DBZ_SHOP_ITEMS);
+
+  const itemLines = items.map(([name, item]) => {
+    const num  = allKeys.indexOf(name) + 1;
+    const displayName = name.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    return [
+      `*${num}.* ${item.emoji}  *${displayName}*`,
+      item.description ? `┃    📖 _${item.description}_` : null,
+      `┃    💰 ꔫ ${costLine(item)}`,
+      `┃    ${rarityBadge(item.rarity)}`,
+    ].filter(Boolean).join("\n");
+  }).join(`\n${DIV}\n`);
+
+  const catTitle = cat.label.toUpperCase();
+
+  return [
+    `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮`,
+    `┃  ${cat.emoji}  *${catTitle}*`,
+    `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+    `┃`,
+    itemLines,
+    `┃`,
+    `${DIV}`,
+    `🛒 *.dbzshop buy <number>* to purchase~`,
+    `🔙 *.dbzshop* to return to menu`,
+    `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+  ].join("\n");
+}
+
+async function handleBuy(sock, msg, jid, sender, args) {
+  const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
+
+  const itemNumber  = Number(args[1]);
+  const orderedItems = Object.entries(DBZ_SHOP_ITEMS);
+  const selected    = Number.isInteger(itemNumber) && itemNumber >= 1
+    ? orderedItems[itemNumber - 1]
+    : null;
+
+  if (!selected) {
+    return reply(
+      [
+        `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮`,
+        `┃  ❌ *Invalid item number!*`,
+        `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+        ``,
+        `Browse a category first, then use the number shown.`,
+        ``,
+        `Example: *.dbzshop beans* → *.dbzshop buy 1*`,
+      ].join("\n")
+    );
+  }
+
+  const [itemKey, item] = selected;
+  const player = await players.get(sender);
+
+  if (!player) {
+    return reply("🐉 You don't have a fighter yet!\nUse *.dbzstart* to create one.");
+  }
+
+  const displayName = itemKey.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+  if (item.useEffect?.startsWith("learn:")) {
+    const techId = item.useEffect.split(":")[1];
+    if ((player.techniques || []).includes(techId)) {
+      return reply(
+        [
+          `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮`,
+          `┃  ⚠️  *Already learned!*`,
+          `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+          `┃`,
+          `┃  ${item.emoji}  *${displayName}*`,
+          `┃  You already know this technique!`,
+        ].join("\n")
+      );
+    }
+  }
+
+  if (item.category === "gear" && (player.inventory || []).includes(itemKey)) {
+    return reply(
+      [
+        `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮`,
+        `┃  ⚠️  *Already owned!*`,
+        `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+          `┃`,
+          `┃  ${item.emoji}  *${displayName}*`,
+          `┃  You already have this gear equipped!`,
+      ].join("\n")
+    );
+  }
+
+  if ((player.zeni || 0) < item.price) {
+    const short = item.price - (player.zeni || 0);
+    return reply(
+      [
+        `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮`,
+        `┃  💸 *Not enough coins!* 💸`,
+        `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+        `┃`,
+        `┃  ${item.emoji}  *${displayName}*`,
+        `┃`,
+        `${DIV}`,
+        `┃  💰 Cost  ꔫ ${costLine(item)}`,
+        `┃  💳 Yours ꔫ $${fmtCoins(player.zeni || 0)} coins`,
+        `${DIV}`,
+        `┃  ❌ _Need ${fmtCoins(short)} more coins_`,
+        `${DIV}`,
+        `┃  💡 _.dbztrain .dbzhunt .dbzchallenge_`,
+        `┃     _to earn more coins~_`,
+        `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+      ].join("\n")
+    );
+  }
+
+  const updated = await players.spendZeni(sender, item.price);
+  if (!updated) {
+    return reply("❌ Purchase failed — please try again.");
+  }
+
+  const inventory = player.inventory || [];
+  inventory.push(itemKey);
+  await players.update(sender, { $set: { inventory } });
+
+  return reply(
+    [
+      `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮`,
+      `┃  ✅ *Purchase Complete!* ✅   ┃`,
+      `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+      `┃`,
+      `┃  ${item.emoji}  *${displayName}*`,
+      item.description ? `┃  📖 _${item.description}_` : null,
+      `┃`,
+      `${DIV}`,
+      `┃  💰 Paid  ꔫ ${costLine(item)}`,
+      `┃  💳 Wallet ꔫ $${fmtCoins(updated.zeni)} coins`,
+      `${DIV}`,
+      `┃  📦 *.dbzinventory* to see your items`,
+      `┃  ✨ _.dbzuse <name>_ to use items!`,
+      `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+    ].filter(Boolean).join("\n")
+  );
+}
+
+export default {
+  name:        "dbzshop",
+  aliases:     ["dbzstore", "dbzmarket", "dbzbuy"],
+  description: "Browse and buy items from the DBZ Shop",
+  category:    "dragonball",
+  cooldown:    4,
+  usage:       ".dbzshop [category] | .dbzshop buy <number>",
+
+  async run({ sock, msg, sender, args }) {
+    const jid   = msg.key.remoteJid;
+    const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
+    const sub   = (args[0] || "").toLowerCase();
+
+    const player = await players.get(sender);
+    if (!player) {
+      return reply("🐉 You don't have a fighter yet!\nUse *.dbzstart* to create one.");
+    }
+
+    if (sub === "buy") {
+      return handleBuy(sock, msg, jid, sender, args);
+    }
+
+    const catAlias = {
+      potion: "potions", heal: "potions", recovery: "potions",
+      scroll: "scrolls", skill: "scrolls", learn: "scrolls", technique: "scrolls",
+      gear: "gear", weapon: "gear", equipment: "gear", armor: "gear",
+      boost: "boosts", power: "boosts", buff: "boosts",
+      bean: "beans", senzu: "beans", food: "beans",
+    };
+
+    const catKeys = Object.keys(DBZ_SHOP_CATEGORIES);
+    const catKey  = catAlias[sub] || (catKeys.includes(sub) ? sub : null);
+
+    if (catKey) return reply(buildCategoryList(catKey));
+
+    if (!sub || sub === "list" || sub === "menu" || sub === "help") {
+      return reply(buildMainMenu(
+        player.zeni || 0,
+        player.hp || 0,
+        player.maxHp || 100,
+        player.ki || 0,
+        player.maxKi || 80,
+        player.level || 1,
+        getRankName(player.level || 1)
+      ));
+    }
+
+    return reply(
+      [
+        `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮`,
+        `┃  ❓ *Unknown:* _${sub}_`,
+        `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+        `Use *.dbzshop* to see all categories~`,
+      ].join("\n")
+    );
+  },
+};

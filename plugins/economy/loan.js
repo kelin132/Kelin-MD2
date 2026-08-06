@@ -1,1 +1,162 @@
-LyoqCiAqIC5sb2FuIDxhbW91bnQ+ICAg4oCUIHRha2UgYSBsZXZlbC1iYXNlZCBiYW5rIGxvYW4KICogLmxvYW4gcGF5ICAgICAgICDigJQgcmVwYXkgeW91ciBhY3RpdmUgbG9hbgogKiAubG9hbiBpbmZvICAgICAgIOKAlCBjaGVjayB5b3VyIGxvYW4gc3RhdHVzCiAqIC5sb2FuIHRpZXJzICAgICAg4oCUIHZpZXcgYXZhaWxhYmxlIGxvYW4gdGllcnMKICovCmltcG9ydCB7IGdldFVzZXIsIHNhdmVVc2VyLCByZXF1aXJlUmVnaXN0cmF0aW9uLCBhZGRIaXN0b3J5IH0gZnJvbSAiLi9kYXRhYmFzZS5qcyI7CmltcG9ydCB7IHBhcnNlQW1vdW50IH0gZnJvbSAiLi9wYXJzZUFtb3VudC5qcyI7CgpleHBvcnQgY29uc3QgTE9BTl9USUVSUyA9IFsKICB7IGtleTogInN0YXJ0ZXIiLCBsZXZlbDogMSwgIG5hbWU6ICJTdGFydGVyIiwgIG1heDogNV8wMDAsICAgICAgIGludGVyZXN0OiAwLjA4LCBkdWVEYXlzOiA3ICB9LAogIHsga2V5OiAiYnJvbnplIiwgIGxldmVsOiA1LCAgbmFtZTogIkJyb256ZSIsICAgbWF4OiAyNV8wMDAsICAgICAgaW50ZXJlc3Q6IDAuMDcsIGR1ZURheXM6IDEwIH0sCiAgeyBrZXk6ICJzaWx2ZXIiLCAgbGV2ZWw6IDEwLCBuYW1lOiAiU2lsdmVyIiwgICBtYXg6IDEwMF8wMDAsICAgICBpbnRlcmVzdDogMC4wNiwgZHVlRGF5czogMTQgfSwKICB7IGtleTogImdvbGQiLCAgICBsZXZlbDogMjAsIG5hbWU6ICJHb2xkIiwgICAgIG1heDogNTAwXzAwMCwgICAgIGludGVyZXN0OiAwLjA1LCBkdWVEYXlzOiAyMSB9LAogIHsga2V5OiAiZGlhbW9uZCIsIGxldmVsOiAzNSwgbmFtZTogIkRpYW1vbmQiLCAgbWF4OiAyXzUwMF8wMDAsICAgaW50ZXJlc3Q6IDAuMDQsIGR1ZURheXM6IDMwIH0sCiAgeyBrZXk6ICJlbGl0ZSIsICAgbGV2ZWw6IDUwLCBuYW1lOiAiRWxpdGUiLCAgICBtYXg6IDEwXzAwMF8wMDAsICBpbnRlcmVzdDogMC4wMywgZHVlRGF5czogNDUgfSwKXTsKCmZ1bmN0aW9uIGdldExvYW5UaWVyKGxldmVsID0gMSkgewogIHJldHVybiBbLi4uTE9BTl9USUVSU10ucmV2ZXJzZSgpLmZpbmQoKHRpZXIpID0+IGxldmVsID49IHRpZXIubGV2ZWwpIHx8IExPQU5fVElFUlNbMF07Cn0KCmZ1bmN0aW9uIGxvYW5UaWVyTGluZXMobGV2ZWwpIHsKICByZXR1cm4gTE9BTl9USUVSUy5tYXAoKHRpZXIpID0+CiAgICBgJHtsZXZlbCA+PSB0aWVyLmxldmVsID8gIuKchSIgOiAi8J+UkiJ9ICoke3RpZXIubmFtZX0qIOKAlCBMZXZlbCAke3RpZXIubGV2ZWx9KyB8IG1heCDwn6qZICR7dGllci5tYXgudG9Mb2NhbGVTdHJpbmcoKX0gfCAke3RpZXIuaW50ZXJlc3QgKiAxMDB9JS9kYXlgCiAgKS5qb2luKCJcbiIpOwp9CgpleHBvcnQgZGVmYXVsdCB7CiAgbmFtZTogImxvYW4iLAogIGFsaWFzZXM6IFsiYm9ycm93Il0sCiAgY2F0ZWdvcnk6ICJlY29ub215IiwKICBjb29sZG93bjogNiwKICBkZXNjcmlwdGlvbjogIkJvcnJvdyBtb3JlIG1vbmV5IGFzIHlvdXIgbGV2ZWwgaW5jcmVhc2VzIiwKICB1c2FnZTogIi5sb2FuIDxhbW91bnQ+IHwgLmxvYW4gcGF5IHwgLmxvYW4gaW5mbyB8IC5sb2FuIHRpZXJzIiwKICBjaGVja0phaWw6IHRydWUsCgogIGFzeW5jIHJ1bih7IHNvY2ssIG1zZywgc2VuZGVyLCBhcmdzIH0pIHsKICAgIGlmICghYXdhaXQgcmVxdWlyZVJlZ2lzdHJhdGlvbihzb2NrLCBtc2csIHNlbmRlcikpIHJldHVybjsKCiAgICBjb25zdCBqaWQgICA9IG1zZy5rZXkucmVtb3RlSmlkOwogICAgY29uc3QgcmVwbHkgPSAodCkgPT4gc29jay5zZW5kTWVzc2FnZShqaWQsIHsgdGV4dDogdCB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgY29uc3Qgc3ViICAgPSAoYXJnc1swXSB8fCAiaW5mbyIpLnRvTG93ZXJDYXNlKCk7CiAgICBjb25zdCBub3cgICA9IERhdGUubm93KCk7CgogICAgY29uc3QgdXNlciA9IGF3YWl0IGdldFVzZXIoc2VuZGVyKTsKICAgIGNvbnN0IHRpZXIgPSBnZXRMb2FuVGllcih1c2VyLmxldmVsIHx8IDEpOwoKICAgIGlmIChzdWIgPT09ICJ0aWVycyIgfHwgc3ViID09PSAidGllciIpIHsKICAgICAgcmV0dXJuIHJlcGx5KApg8J+PpiAqQkFOSyBMT0FOIFRJRVJTKgoKWW91ciBsZXZlbDogKiR7dXNlci5sZXZlbCB8fCAxfSoKSGlnaGVyIGxldmVscyB1bmxvY2sgbGFyZ2VyIGxvYW5zIGFuZCBiZXR0ZXIgcmF0ZXMuCgoke2xvYW5UaWVyTGluZXModXNlci5sZXZlbCB8fCAxKX0KClVzZSAqLmxvYW4gPGFtb3VudD4qIHRvIGJvcnJvdyB3aXRoaW4geW91ciB1bmxvY2tlZCB0aWVyLmAKICAgICAgKTsKICAgIH0KCiAgICAvLyDilIDilIAgSU5GTyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKICAgIGlmIChzdWIgPT09ICJpbmZvIikgewogICAgICBpZiAoIXVzZXIubG9hbj8uYWN0aXZlKSByZXR1cm4gcmVwbHkoYPCfkrMgWW91IGhhdmUgbm8gYWN0aXZlIGxvYW4uXG5cblVzZSAqLmxvYW4gPGFtb3VudD4qIHRvIGJvcnJvdyB1cCB0byDwn6qZICR7dGllci5tYXgudG9Mb2NhbGVTdHJpbmcoKX0uXG5Vc2UgKi5sb2FuIHRpZXJzKiB0byBzZWUgdGhlIGJhbmsgdGllcnMuYCk7CgogICAgICBjb25zdCBkYXlzICAgID0gTWF0aC5tYXgoMCwgTWF0aC5jZWlsKCh1c2VyLmxvYW4uZHVlIC0gbm93KSAvIDg2XzQwMF8wMDApKTsKICAgICAgY29uc3Qgb3ZlcmR1ZSA9IG5vdyA+IHVzZXIubG9hbi5kdWU7CiAgICAgIGNvbnN0IGFjdGl2ZVRpZXIgPSBMT0FOX1RJRVJTLmZpbmQoKGVudHJ5KSA9PiBlbnRyeS5rZXkgPT09IHVzZXIubG9hbi50aWVyKSB8fAogICAgICAgIHsgLi4uTE9BTl9USUVSU1swXSwgaW50ZXJlc3Q6IHVzZXIubG9hbi5pbnRlcmVzdCA/PyBMT0FOX1RJRVJTWzBdLmludGVyZXN0IH07CiAgICAgIGNvbnN0IGRheXNVc2VkID0gTWF0aC5tYXgoMSwgTWF0aC5jZWlsKChub3cgLSB1c2VyLmxvYW4uaXNzdWVkQXQpIC8gODZfNDAwXzAwMCkpOwogICAgICBjb25zdCByZXBheVRvdGFsID0gdXNlci5sb2FuLmFtb3VudCArIE1hdGgucm91bmQodXNlci5sb2FuLmFtb3VudCAqIGFjdGl2ZVRpZXIuaW50ZXJlc3QgKiBkYXlzVXNlZCk7CgogICAgICByZXR1cm4gcmVwbHkoCmDwn5KzICpZT1VSIExPQU4qCgrwn4+377iPIFRpZXIgICAgICA6ICR7YWN0aXZlVGllci5uYW1lfQrwn5K4IFByaW5jaXBhbCA6IPCfqpkgJHt1c2VyLmxvYW4uYW1vdW50LnRvTG9jYWxlU3RyaW5nKCl9CvCfkrkgSW50ZXJlc3QgIDogJHthY3RpdmVUaWVyLmludGVyZXN0ICogMTAwfSUvZGF5CvCfk4UgRHVlICAgICAgIDogJHtuZXcgRGF0ZSh1c2VyLmxvYW4uZHVlKS50b0RhdGVTdHJpbmcoKX0KJHtvdmVyZHVlID8gIuKaoO+4jyAqT1ZFUkRVRSEgUGF5IG5vdyB0byBhdm9pZCBqYWlsLioiIDogYOKPsyBEdWUgaW4gICA6ICR7ZGF5c30gZGF5KHMpYH0KClJlcGF5IHRvdGFsIDogfvCfqpkgJHtyZXBheVRvdGFsLnRvTG9jYWxlU3RyaW5nKCl9ClVzZSAqLmxvYW4gcGF5KiB0byByZXBheS5gCiAgICAgICk7CiAgICB9CgogICAgLy8g4pSA4pSAIFBBWSDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKICAgIGlmIChzdWIgPT09ICJwYXkiKSB7CiAgICAgIGlmICghdXNlci5sb2FuPy5hY3RpdmUpIHJldHVybiByZXBseSgi4p2MIFlvdSBkb24ndCBoYXZlIGFuIGFjdGl2ZSBsb2FuLiIpOwoKICAgICAgY29uc3QgYWN0aXZlVGllciA9IExPQU5fVElFUlMuZmluZCgoZW50cnkpID0+IGVudHJ5LmtleSA9PT0gdXNlci5sb2FuLnRpZXIpIHx8CiAgICAgICAgeyAuLi5MT0FOX1RJRVJTWzBdLCBpbnRlcmVzdDogdXNlci5sb2FuLmludGVyZXN0ID8/IExPQU5fVElFUlNbMF0uaW50ZXJlc3QgfTsKICAgICAgY29uc3QgZGF5c1VzZWQgPSBNYXRoLm1heCgxLCBNYXRoLmNlaWwoKG5vdyAtIHVzZXIubG9hbi5pc3N1ZWRBdCkgLyA4Nl80MDBfMDAwKSk7CiAgICAgIGNvbnN0IGludGVyZXN0ID0gTWF0aC5yb3VuZCh1c2VyLmxvYW4uYW1vdW50ICogYWN0aXZlVGllci5pbnRlcmVzdCAqIGRheXNVc2VkKTsKICAgICAgY29uc3QgdG90YWwgICAgPSB1c2VyLmxvYW4uYW1vdW50ICsgaW50ZXJlc3Q7CiAgICAgIGNvbnN0IHByaW5jaXBhbCA9IHVzZXIubG9hbi5hbW91bnQ7CgogICAgICBpZiAodXNlci5tb25leSA8IHRvdGFsKSB7CiAgICAgICAgcmV0dXJuIHJlcGx5KApg4p2MICpOb3QgZW5vdWdoIGNhc2ghKgoK8J+SuCBMb2FuICsgaW50ZXJlc3QgOiDwn6qZICR7dG90YWwudG9Mb2NhbGVTdHJpbmcoKX0K8J+qmSBZb3VyIHdhbGxldCAgICAgOiDwn6qZICR7dXNlci5tb25leS50b0xvY2FsZVN0cmluZygpfQrwn5OJIFNob3J0ICAgICAgICAgICA6IPCfqpkgJHsodG90YWwgLSB1c2VyLm1vbmV5KS50b0xvY2FsZVN0cmluZygpfQoKRWFybiBtb3JlIHdpdGggKi5kYWlseSosICoud29yayosICouZGlnKiBvciAqLmZpc2gqLmAKICAgICAgICApOwogICAgICB9CgogICAgICB1c2VyLm1vbmV5ICAgLT0gdG90YWw7CiAgICAgIHVzZXIubG9hbiAgICAgPSBudWxsOwogICAgICBhd2FpdCBzYXZlVXNlcihzZW5kZXIsIHVzZXIpOwogICAgICBhd2FpdCBhZGRIaXN0b3J5KHNlbmRlciwgIndpdGhkcmF3IiwgLXRvdGFsLCBgUmVwYWlkIGxvYW4gKPCfqpkgJHtwcmluY2lwYWx9ICsg8J+qmSAke2ludGVyZXN0fSBpbnRlcmVzdClgKTsKCiAgICAgIHJldHVybiByZXBseSgKYOKchSAqTG9hbiBSZXBhaWQhKgoK8J+SuCBSZXBhaWQgIDog8J+qmSAke3RvdGFsLnRvTG9jYWxlU3RyaW5nKCl9CiAgKHByaW5jaXBhbCArIPCfqpkgJHtpbnRlcmVzdC50b0xvY2FsZVN0cmluZygpfSBpbnRlcmVzdCkK8J+qmSBCYWxhbmNlIDog8J+qmSAke3VzZXIubW9uZXkudG9Mb2NhbGVTdHJpbmcoKX0KCllvdSdyZSBkZWJ0IGZyZWUhIPCfjolgCiAgICAgICk7CiAgICB9CgogICAgLy8g4pSA4pSAIFRBS0UgTE9BTiDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKICAgIGlmICh1c2VyLmxvYW4/LmFjdGl2ZSkgewogICAgICByZXR1cm4gcmVwbHkoIuKdjCBZb3UgYWxyZWFkeSBoYXZlIGFuIGFjdGl2ZSBsb2FuLlxuXG5Vc2UgKi5sb2FuIHBheSogdG8gcmVwYXkgaXQgZmlyc3QuIik7CiAgICB9CgogICAgY29uc3QgYW1vdW50ID0gcGFyc2VBbW91bnQoc3ViLCAwKTsKICAgIGlmIChpc05hTihhbW91bnQpIHx8IGFtb3VudCA8PSAwKSByZXR1cm4gcmVwbHkoYOKdjCBVc2FnZTogLmxvYW4gPGFtb3VudD5cblxuWW91ciAke3RpZXIubmFtZX0gdGllciBtYXhpbXVtIGlzIPCfqpkgJHt0aWVyLm1heC50b0xvY2FsZVN0cmluZygpfS5cblVzZSAqLmxvYW4gdGllcnMqIHRvIHZpZXcgdW5sb2Nrcy5gKTsKICAgIGlmIChhbW91bnQgPiB0aWVyLm1heCkgICAgICAgICAgICByZXR1cm4gcmVwbHkoYOKdjCBZb3VyICR7dGllci5uYW1lfSB0aWVyIG1heGltdW0gaXMg8J+qmSAke3RpZXIubWF4LnRvTG9jYWxlU3RyaW5nKCl9LlxuUmVhY2ggTGV2ZWwgJHtMT0FOX1RJRVJTLmZpbmQoKGVudHJ5KSA9PiBlbnRyeS5tYXggPiB0aWVyLm1heCk/LmxldmVsIHx8ICJoaWdoZXIifSB0byB1bmxvY2sgbW9yZS5gKTsKICAgIGlmIChhbW91bnQgPCAxMDApICAgICAgICAgICAgICAgICByZXR1cm4gcmVwbHkoIuKdjCBNaW5pbXVtIGxvYW4gaXMg8J+qmSAxMDAuIik7CgogICAgdXNlci5tb25leSArPSBhbW91bnQ7CiAgICB1c2VyLmxvYW4gICA9IHsKICAgICAgYWN0aXZlOiAgIHRydWUsCiAgICAgIGFtb3VudCwKICAgICAgdGllcjogdGllci5rZXksCiAgICAgIGlzc3VlZEF0OiBub3csCiAgICAgIGR1ZTogICAgICBub3cgKyB0aWVyLmR1ZURheXMgKiA4Nl80MDBfMDAwLAogICAgICBpbnRlcmVzdDogdGllci5pbnRlcmVzdCwKICAgIH07CgogICAgYXdhaXQgc2F2ZVVzZXIoc2VuZGVyLCB1c2VyKTsKICAgIGF3YWl0IGFkZEhpc3Rvcnkoc2VuZGVyLCAidHJhbnNmZXJfaW4iLCBhbW91bnQsIGBUb29rIGxvYW4gb2Yg8J+qmSAke2Ftb3VudC50b0xvY2FsZVN0cmluZygpfWApOwoKICAgIHJldHVybiByZXBseSgKYPCfkrMgKkxPQU4gQVBQUk9WRUQhKgoK8J+qmSBSZWNlaXZlZCA6IPCfqpkgJHthbW91bnQudG9Mb2NhbGVTdHJpbmcoKX0K8J+Pt++4jyBUaWVyICAgICAgOiAke3RpZXIubmFtZX0K8J+ThSBEdWUgRGF0ZSA6ICR7bmV3IERhdGUodXNlci5sb2FuLmR1ZSkudG9EYXRlU3RyaW5nKCl9CvCfkrkgSW50ZXJlc3QgOiAke3RpZXIuaW50ZXJlc3QgKiAxMDB9JSBwZXIgZGF5CgrimqDvuI8gUmVwYXkgb24gdGltZSB3aXRoICoubG9hbiBwYXkqCk92ZXJkdWUgbG9hbnMgcmVzdWx0IGluICpqYWlsKiEK8J+qmSBOZXcgQmFsYW5jZTog8J+qmSAke3VzZXIubW9uZXkudG9Mb2NhbGVTdHJpbmcoKX1gCiAgICApOwogIH0sCn07Cg==
+/**
+ * .loan <amount>   — take a level-based bank loan
+ * .loan pay        — repay your active loan
+ * .loan info       — check your loan status
+ * .loan tiers      — view available loan tiers
+ */
+import { getUser, saveUser, requireRegistration, addHistory } from "./database.js";
+import { parseAmount } from "./parseAmount.js";
+
+export const LOAN_TIERS = [
+  { key: "starter", level: 1,  name: "Starter",  max: 5_000,       interest: 0.08, dueDays: 7  },
+  { key: "bronze",  level: 5,  name: "Bronze",   max: 25_000,      interest: 0.07, dueDays: 10 },
+  { key: "silver",  level: 10, name: "Silver",   max: 100_000,     interest: 0.06, dueDays: 14 },
+  { key: "gold",    level: 20, name: "Gold",     max: 500_000,     interest: 0.05, dueDays: 21 },
+  { key: "diamond", level: 35, name: "Diamond",  max: 2_500_000,   interest: 0.04, dueDays: 30 },
+  { key: "elite",   level: 50, name: "Elite",    max: 10_000_000,  interest: 0.03, dueDays: 45 },
+];
+
+function getLoanTier(level = 1) {
+  return [...LOAN_TIERS].reverse().find((tier) => level >= tier.level) || LOAN_TIERS[0];
+}
+
+function loanTierLines(level) {
+  return LOAN_TIERS.map((tier) =>
+    `${level >= tier.level ? "✅" : "🔒"} *${tier.name}* — Level ${tier.level}+ | max $${tier.max.toLocaleString()} | ${tier.interest * 100}%/day`
+  ).join("\n");
+}
+
+export default {
+  name: "loan",
+  aliases: ["borrow"],
+  category: "economy",
+  cooldown: 6,
+  description: "Borrow more money as your level increases",
+  usage: ".loan <amount> | .loan pay | .loan info | .loan tiers",
+  checkJail: true,
+
+  async run({ sock, msg, sender, args }) {
+    if (!await requireRegistration(sock, msg, sender)) return;
+
+    const jid   = msg.key.remoteJid;
+    const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
+    const sub   = (args[0] || "info").toLowerCase();
+    const now   = Date.now();
+
+    const user = await getUser(sender);
+    const tier = getLoanTier(user.level || 1);
+
+    if (sub === "tiers" || sub === "tier") {
+      return reply(
+`🏦 *BANK LOAN TIERS*
+
+Your level: *${user.level || 1}*
+Higher levels unlock larger loans and better rates.
+
+${loanTierLines(user.level || 1)}
+
+Use *.loan <amount>* to borrow within your unlocked tier.`
+      );
+    }
+
+    // ── INFO ─────────────────────────────────────────────────────────────────
+    if (sub === "info") {
+      if (!user.loan?.active) return reply(`💳 You have no active loan.\n\nUse *.loan <amount>* to borrow up to $${tier.max.toLocaleString()}.\nUse *.loan tiers* to see the bank tiers.`);
+
+      const days    = Math.max(0, Math.ceil((user.loan.due - now) / 86_400_000));
+      const overdue = now > user.loan.due;
+      const activeTier = LOAN_TIERS.find((entry) => entry.key === user.loan.tier) ||
+        { ...LOAN_TIERS[0], interest: user.loan.interest ?? LOAN_TIERS[0].interest };
+      const daysUsed = Math.max(1, Math.ceil((now - user.loan.issuedAt) / 86_400_000));
+      const repayTotal = user.loan.amount + Math.round(user.loan.amount * activeTier.interest * daysUsed);
+
+      return reply(
+`💳 *YOUR LOAN*
+
+🏷️ Tier      : ${activeTier.name}
+💸 Principal : $${user.loan.amount.toLocaleString()}
+💹 Interest  : ${activeTier.interest * 100}%/day
+📅 Due       : ${new Date(user.loan.due).toDateString()}
+${overdue ? "⚠️ *OVERDUE! Pay now to avoid jail.*" : `⏳ Due in   : ${days} day(s)`}
+
+Repay total : ~$${repayTotal.toLocaleString()}
+Use *.loan pay* to repay.`
+      );
+    }
+
+    // ── PAY ──────────────────────────────────────────────────────────────────
+    if (sub === "pay") {
+      if (!user.loan?.active) return reply("❌ You don't have an active loan.");
+
+      const activeTier = LOAN_TIERS.find((entry) => entry.key === user.loan.tier) ||
+        { ...LOAN_TIERS[0], interest: user.loan.interest ?? LOAN_TIERS[0].interest };
+      const daysUsed = Math.max(1, Math.ceil((now - user.loan.issuedAt) / 86_400_000));
+      const interest = Math.round(user.loan.amount * activeTier.interest * daysUsed);
+      const total    = user.loan.amount + interest;
+      const principal = user.loan.amount;
+
+      if (user.money < total) {
+        return reply(
+`❌ *Not enough cash!*
+
+💸 Loan + interest : $${total.toLocaleString()}
+💰 Your wallet     : $${user.money.toLocaleString()}
+📉 Short           : $${(total - user.money).toLocaleString()}
+
+Earn more with *.daily*, *.work*, *.dig* or *.fish*.`
+        );
+      }
+
+      user.money   -= total;
+      user.loan     = null;
+      await saveUser(sender, user);
+      await addHistory(sender, "withdraw", -total, `Repaid loan ($${principal} + $${interest} interest)`);
+
+      return reply(
+`✅ *Loan Repaid!*
+
+💸 Repaid  : $${total.toLocaleString()}
+  (principal + $${interest.toLocaleString()} interest)
+💰 Balance : $${user.money.toLocaleString()}
+
+You're debt free! 🎉`
+      );
+    }
+
+    // ── TAKE LOAN ─────────────────────────────────────────────────────────────
+    if (user.loan?.active) {
+      return reply("❌ You already have an active loan.\n\nUse *.loan pay* to repay it first.");
+    }
+
+    const amount = parseAmount(sub, 0);
+    if (isNaN(amount) || amount <= 0) return reply(`❌ Usage: .loan <amount>\n\nYour ${tier.name} tier maximum is $${tier.max.toLocaleString()}.\nUse *.loan tiers* to view unlocks.`);
+    if (amount > tier.max)            return reply(`❌ Your ${tier.name} tier maximum is $${tier.max.toLocaleString()}.\nReach Level ${LOAN_TIERS.find((entry) => entry.max > tier.max)?.level || "higher"} to unlock more.`);
+    if (amount < 100)                 return reply("❌ Minimum loan is $100.");
+
+    user.money += amount;
+    user.loan   = {
+      active:   true,
+      amount,
+      tier: tier.key,
+      issuedAt: now,
+      due:      now + tier.dueDays * 86_400_000,
+      interest: tier.interest,
+    };
+
+    await saveUser(sender, user);
+    await addHistory(sender, "transfer_in", amount, `Took loan of $${amount.toLocaleString()}`);
+
+    return reply(
+`💳 *LOAN APPROVED!*
+
+💰 Received : $${amount.toLocaleString()}
+🏷️ Tier      : ${tier.name}
+📅 Due Date : ${new Date(user.loan.due).toDateString()}
+💹 Interest : ${tier.interest * 100}% per day
+
+⚠️ Repay on time with *.loan pay*
+Overdue loans result in *jail*!
+💰 New Balance: $${user.money.toLocaleString()}`
+    );
+  },
+};

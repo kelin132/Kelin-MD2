@@ -1,1 +1,116 @@
-aW1wb3J0IHsgZ2V0VXNlciwgc2F2ZVVzZXIsIHJlcXVpcmVSZWdpc3RyYXRpb24sIGFkZEhpc3RvcnksIG1heWJlQXdhcmREaWFtb25kcywgY2hlY2tMZXZlbFVwIH0gZnJvbSAiLi9kYXRhYmFzZS5qcyI7CmltcG9ydCB7IHJhbmRvbUNob2ljZSwgcmFuZG9tQ2hhbmNlIH0gZnJvbSAiLi4vLi4vbGliL2dhbWJsaW5nLm1qcyI7CmltcG9ydCB7IHBhcnNlQW1vdW50IH0gZnJvbSAiLi9wYXJzZUFtb3VudC5qcyI7CmltcG9ydCB7IGdldE5ld2x5VW5sb2NrZWRSb2xlLCBidWlsZExldmVsVXBNc2cgfSBmcm9tICIuLi8uLi9saWIvbGV2ZWxSb2xlcy5tanMiOwoKY29uc3QgQ09PTERPV04gPSA1ICogNjAgKiAxMDAwOwpjb25zdCBNQVhfQkVUICA9IDEwXzAwMDsKCmZ1bmN0aW9uIGZtdChuKSB7CiAgaWYgKG4gPj0gMWUxMikgcmV0dXJuIGDwn6qZICR7KG4vMWUxMikudG9GaXhlZCgxKX1UYDsKICBpZiAobiA+PSAxZTkpICByZXR1cm4gYPCfqpkgJHsobi8xZTkpLnRvRml4ZWQoMSl9QmA7CiAgaWYgKG4gPj0gMWU2KSAgcmV0dXJuIGDwn6qZICR7KG4vMWU2KS50b0ZpeGVkKDEpfU1gOwogIGlmIChuID49IDFlMykgIHJldHVybiBg8J+qmSAkeyhuLzFlMykudG9GaXhlZCgxKX1LYDsKICByZXR1cm4gYPCfqpkgJHtuLnRvTG9jYWxlU3RyaW5nKCl9YDsKfQoKZXhwb3J0IGRlZmF1bHQgewogIG5hbWU6ICJnYW1ibGUiLAogIGFsaWFzZXM6IFsiYmV0MiIsICJnYmwiXSwKICBjYXRlZ29yeTogImVjb25vbXkiLAogIGNvb2xkb3duOiA2LAogIGRlc2NyaXB0aW9uOiAiR2FtYmxlIHlvdXIgY2FzaCDigJQgNTUlIGNoYW5jZSB0byBkb3VibGUgaXQgKDUgbWluIGNvb2xkb3duLCBtYXgg8J+qmSAxMGspIiwKICB1c2FnZTogIi5nYW1ibGUgPGFtb3VudHxhbGx8aGFsZj4iLAogIGNoZWNrSmFpbDogdHJ1ZSwKCiAgYXN5bmMgcnVuKHsgc29jaywgbXNnLCBzZW5kZXIsIGFyZ3MgfSkgewogICAgaWYgKCFhd2FpdCByZXF1aXJlUmVnaXN0cmF0aW9uKHNvY2ssIG1zZywgc2VuZGVyKSkgcmV0dXJuOwoKICAgIGNvbnN0IGppZCAgID0gbXNnLmtleS5yZW1vdGVKaWQ7CiAgICBjb25zdCByZXBseSA9ICh0KSA9PiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgeyB0ZXh0OiB0IH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICBjb25zdCBub3cgICA9IERhdGUubm93KCk7CiAgICBjb25zdCB1c2VyICA9IGF3YWl0IGdldFVzZXIoc2VuZGVyKTsKCiAgICBpZiAobm93IC0gKHVzZXIubGFzdEdhbWJsZSB8fCAwKSA8IENPT0xET1dOKSB7CiAgICAgIGNvbnN0IHJlbSAgPSBDT09MRE9XTiAtIChub3cgLSB1c2VyLmxhc3RHYW1ibGUpOwogICAgICBjb25zdCBtaW5zID0gTWF0aC5mbG9vcihyZW0gLyA2MDAwMCk7CiAgICAgIGNvbnN0IHNlY3MgPSBNYXRoLmZsb29yKChyZW0gJSA2MDAwMCkgLyAxMDAwKTsKICAgICAgcmV0dXJuIHJlcGx5KApg4pWt4pSA4p2A44CMIPCfjrAgKvCdkIbwnZCA8J2QjPCdkIHwnZCL8J2QhCog44CN4p2A4pSA4pWuCuKUgiDij7MgKkNvb2xkb3duISoK4pSCIFRyeSBhZ2FpbiBpbiAqJHttaW5zfW0gJHtzZWNzfXMqLgrilbDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDinYBgCiAgICAgICk7CiAgICB9CgogICAgaWYgKCFhcmdzWzBdKSByZXR1cm4gcmVwbHkoCmDila3ilIDinYDjgIwg8J+OsCAq8J2QhvCdkIDwnZCM8J2QgfCdkIvwnZCEKiDjgI3inYDilIDila4K4pSCIFVzYWdlOiAqLmdhbWJsZSA8YW1vdW50fGFsbHxoYWxmPioK4pSCIE1heCBiZXQ6ICrwn6qZIDEwLDAwMCoK4pSCIFdpbiByYXRlOiAqNTUlKiAg4pSCICBSZXdhcmQ6ICrDlzIqCuKUggrilIIg8J+qmSAqV2FsbGV0KiA6OiAqJHtmbXQodXNlci5tb25leSl9KgrilbDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDinYBgCiAgICApOwoKICAgIGNvbnN0IGlucHV0ICA9IGFyZ3NbMF0udG9Mb3dlckNhc2UoKTsKICAgIGxldCAgIGFtb3VudCA9IHBhcnNlQW1vdW50KGlucHV0LCB1c2VyLm1vbmV5KTsKCiAgICBpZiAoaXNOYU4oYW1vdW50KSB8fCBhbW91bnQgPD0gMCkgcmV0dXJuIHJlcGx5KCLinYwgRW50ZXIgYSB2YWxpZCBhbW91bnQuIik7CiAgICBpZiAoYW1vdW50ID4gTUFYX0JFVCkgICAgICAgICAgICAgYW1vdW50ID0gTUFYX0JFVDsKICAgIGlmIChhbW91bnQgPiB1c2VyLm1vbmV5KSAgICAgICAgICByZXR1cm4gcmVwbHkoYOKdjCBZb3Ugb25seSBoYXZlICoke2ZtdCh1c2VyLm1vbmV5KX0qIGluIHlvdXIgd2FsbGV0LmApOwogICAgaWYgKGFtb3VudCA8IDEwKSAgICAgICAgICAgICAgICAgIHJldHVybiByZXBseSgi4p2MIE1pbmltdW0gYmV0IGlzIPCfqpkgMTAuIik7CgogICAgdXNlci5sYXN0R2FtYmxlID0gbm93OwoKICAgIGNvbnN0IHdvbiA9IHJhbmRvbUNoYW5jZSgwLjU1KTsKICAgIGNvbnN0IGRpYW1vbmRSZXdhcmQgPSBtYXliZUF3YXJkRGlhbW9uZHModXNlciwgd29uID8gMC4wMDMgOiAwLjAwMSwgMSwgMik7CgogICAgY29uc3QgRkFDRVMgPSBbIvCfjrAg8J+NkiDwn42LIPCfko4iLCAi8J+OsCDwn5KOIPCfko4g8J+NkiIsICLwn46wIPCfjYAg8J+NiyDwn42LIiwKICAgICAgICAgICAgICAgICAgICLwn46wIPCfjq8g8J+OryDwn5KlIiwgIvCfjrAg8J+SgCDwn42SIPCfjYAiLCAi8J+OsCA377iP4oOjICA377iP4oOjICDwn42LIl07CiAgICBjb25zdCBzcGluICA9IHJhbmRvbUNob2ljZShGQUNFUyk7CiAgICBjb25zdCB0YWcgICA9IHVzZXIubmFtZSB8fCBzZW5kZXIuc3BsaXQoIkAiKVswXS5zcGxpdCgiOiIpWzBdOwoKICAgIGlmICh3b24pIHsKICAgICAgdXNlci5tb25leSA9ICh1c2VyLm1vbmV5IHx8IDApICsgYW1vdW50OwogICAgICB1c2VyLnhwICAgID0gKHVzZXIueHAgfHwgMCkgKyAxMjsKCiAgICAgIGNvbnN0IHsgbGV2ZWxlZCwgc3RhcnRMZXZlbCwgbmV3TGV2ZWwgfSA9IGNoZWNrTGV2ZWxVcCh1c2VyKTsKICAgICAgYXdhaXQgc2F2ZVVzZXIoc2VuZGVyLCB1c2VyKTsKICAgICAgYXdhaXQgYWRkSGlzdG9yeShzZW5kZXIsICJzbG90cyIsIGFtb3VudCwgYEdhbWJsZSB3aW4gK/CfqpkgJHthbW91bnQudG9Mb2NhbGVTdHJpbmcoKX1gKTsKCiAgICAgIGF3YWl0IHJlcGx5KApg4pWt4pSA4p2A44CMIPCfjrAgKvCdkIbwnZCA8J2QjPCdkIHwnZCL8J2QhCog44CN4p2A4pSA4pWuCuKUgiDwn46yICpTcGluKiAgICA6OiAke3NwaW59CuKUggrilIIg8J+qmSAqQmV0KiAgICAgOjogKiR7Zm10KGFtb3VudCl9KgrilIIg8J+qmSAqV29uKiAgICAgOjogKiske2ZtdChhbW91bnQpfSoK4pSCIPCfqpkgKkJhbGFuY2UqIDo6ICoke2ZtdCh1c2VyLm1vbmV5KX0qJHtkaWFtb25kUmV3YXJkID8gYFxu4pSCIPCfko4gKkJvbnVzKiAgIDo6ICorJHtkaWFtb25kUmV3YXJkfSBHZW0ke2RpYW1vbmRSZXdhcmQgPT09IDEgPyAiIiA6ICJzIn0qYCA6ICIifQrilIIK4pSCIOKcqCAqWU9VIFdPTiEqIOOBiuOCgeOBp+OBqOOBhu+8gfCfjokK4pWw4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4p2AYAogICAgICApOwoKICAgICAgaWYgKGxldmVsZWQpIHsKICAgICAgICBjb25zdCBuZXdSb2xlID0gZ2V0TmV3bHlVbmxvY2tlZFJvbGUoc3RhcnRMZXZlbCwgbmV3TGV2ZWwpOwogICAgICAgIGF3YWl0IHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7IHRleHQ6IGJ1aWxkTGV2ZWxVcE1zZyh0YWcsIHN0YXJ0TGV2ZWwsIG5ld0xldmVsLCBuZXdSb2xlKSB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgICB9CiAgICB9IGVsc2UgewogICAgICB1c2VyLm1vbmV5ID0gTWF0aC5tYXgoMCwgKHVzZXIubW9uZXkgfHwgMCkgLSBhbW91bnQpOwogICAgICBhd2FpdCBzYXZlVXNlcihzZW5kZXIsIHVzZXIpOwogICAgICBhd2FpdCBhZGRIaXN0b3J5KHNlbmRlciwgInNsb3RzIiwgLWFtb3VudCwgYEdhbWJsZSBsb3NzIC3wn6qZICR7YW1vdW50LnRvTG9jYWxlU3RyaW5nKCl9YCk7CgogICAgICBhd2FpdCByZXBseSgKYOKVreKUgOKdgOOAjCDwn46wICrwnZCG8J2QgPCdkIzwnZCB8J2Qi/CdkIQqIOOAjeKdgOKUgOKVrgrilIIg8J+OsiAqU3BpbiogICAgOjogJHtzcGlufQrilIIK4pSCIPCfqpkgKkJldCogICAgIDo6ICoke2ZtdChhbW91bnQpfSoK4pSCIPCfkrggKkxvc3QqICAgIDo6ICotJHtmbXQoYW1vdW50KX0qCuKUgiDwn6qZICpCYWxhbmNlKiA6OiAqJHtmbXQodXNlci5tb25leSl9KiR7ZGlhbW9uZFJld2FyZCA/IGBcbuKUgiDwn5KOICpCb251cyogICA6OiAqKyR7ZGlhbW9uZFJld2FyZH0gR2VtJHtkaWFtb25kUmV3YXJkID09PSAxID8gIiIgOiAicyJ9KmAgOiAiIn0K4pSCCuKUgiDwn5KAICpZT1UgTE9TVCEqIOaui+W/tS4uLiDpoJHlvLXjgozvvIEK4pWw4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4p2AYAogICAgICApOwogICAgfQogIH0sCn07Cg==
+import { getUser, saveUser, requireRegistration, addHistory, maybeAwardDiamonds, checkLevelUp } from "./database.js";
+import { randomChoice, randomChance } from "../../lib/gambling.mjs";
+import { parseAmount } from "./parseAmount.js";
+import { getNewlyUnlockedRole, buildLevelUpMsg } from "../../lib/levelRoles.mjs";
+
+const COOLDOWN = 5 * 60 * 1000;
+const MAX_BET  = 10_000;
+
+function fmt(n) {
+  if (n >= 1e12) return `$${(n/1e12).toFixed(1)}T`;
+  if (n >= 1e9)  return `$${(n/1e9).toFixed(1)}B`;
+  if (n >= 1e6)  return `$${(n/1e6).toFixed(1)}M`;
+  if (n >= 1e3)  return `$${(n/1e3).toFixed(1)}K`;
+  return `$${n.toLocaleString()}`;
+}
+
+export default {
+  name: "gamble",
+  aliases: ["bet2", "gbl"],
+  category: "economy",
+  cooldown: 6,
+  description: "Gamble your cash — 55% chance to double it (5 min cooldown, max $10k)",
+  usage: ".gamble <amount|all|half>",
+  checkJail: true,
+
+  async run({ sock, msg, sender, args }) {
+    if (!await requireRegistration(sock, msg, sender)) return;
+
+    const jid   = msg.key.remoteJid;
+    const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
+    const now   = Date.now();
+    const user  = await getUser(sender);
+
+    if (now - (user.lastGamble || 0) < COOLDOWN) {
+      const rem  = COOLDOWN - (now - user.lastGamble);
+      const mins = Math.floor(rem / 60000);
+      const secs = Math.floor((rem % 60000) / 1000);
+      return reply(
+`╭─❀「 🎰 *𝐆𝐀𝐌𝐁𝐋𝐄* 」❀─╮
+│ ⏳ *Cooldown!*
+│ Try again in *${mins}m ${secs}s*.
+╰───────────────❀`
+      );
+    }
+
+    if (!args[0]) return reply(
+`╭─❀「 🎰 *𝐆𝐀𝐌𝐁𝐋𝐄* 」❀─╮
+│ Usage: *.gamble <amount|all|half>*
+│ Max bet: *$10,000*
+│ Win rate: *55%*  │  Reward: *×2*
+│
+│ 💰 *Wallet* :: *${fmt(user.money)}*
+╰───────────────❀`
+    );
+
+    const input  = args[0].toLowerCase();
+    let   amount = parseAmount(input, user.money);
+
+    if (isNaN(amount) || amount <= 0) return reply("❌ Enter a valid amount.");
+    if (amount > MAX_BET)             amount = MAX_BET;
+    if (amount > user.money)          return reply(`❌ You only have *${fmt(user.money)}* in your wallet.`);
+    if (amount < 10)                  return reply("❌ Minimum bet is $10.");
+
+    user.lastGamble = now;
+
+    const won = randomChance(0.55);
+    const diamondReward = maybeAwardDiamonds(user, won ? 0.003 : 0.001, 1, 2);
+
+    const FACES = ["🎰 🍒 🍋 💎", "🎰 💎 💎 🍒", "🎰 🍀 🍋 🍋",
+                   "🎰 🎯 🎯 💥", "🎰 💀 🍒 🍀", "🎰 7️⃣  7️⃣  🍋"];
+    const spin  = randomChoice(FACES);
+    const tag   = user.name || sender.split("@")[0].split(":")[0];
+
+    if (won) {
+      user.money = (user.money || 0) + amount;
+      user.xp    = (user.xp || 0) + 12;
+
+      const { leveled, startLevel, newLevel } = checkLevelUp(user);
+      await saveUser(sender, user);
+      await addHistory(sender, "slots", amount, `Gamble win +$${amount.toLocaleString()}`);
+
+      await reply(
+`╭─❀「 🎰 *𝐆𝐀𝐌𝐁𝐋𝐄* 」❀─╮
+│ 🎲 *Spin*    :: ${spin}
+│
+│ 💰 *Bet*     :: *${fmt(amount)}*
+│ 💰 *Won*     :: *+${fmt(amount)}*
+│ 💰 *Balance* :: *${fmt(user.money)}*${diamondReward ? `\n│ 💎 *Bonus*   :: *+${diamondReward} Gem${diamondReward === 1 ? "" : "s"}*` : ""}
+│
+│ ✨ *YOU WON!* おめでとう！🎉
+╰───────────────❀`
+      );
+
+      if (leveled) {
+        const newRole = getNewlyUnlockedRole(startLevel, newLevel);
+        await sock.sendMessage(jid, { text: buildLevelUpMsg(tag, startLevel, newLevel, newRole) }, { quoted: msg });
+      }
+    } else {
+      user.money = Math.max(0, (user.money || 0) - amount);
+      await saveUser(sender, user);
+      await addHistory(sender, "slots", -amount, `Gamble loss -$${amount.toLocaleString()}`);
+
+      await reply(
+`╭─❀「 🎰 *𝐆𝐀𝐌𝐁𝐋𝐄* 」❀─╮
+│ 🎲 *Spin*    :: ${spin}
+│
+│ 💰 *Bet*     :: *${fmt(amount)}*
+│ 💸 *Lost*    :: *-${fmt(amount)}*
+│ 💰 *Balance* :: *${fmt(user.money)}*${diamondReward ? `\n│ 💎 *Bonus*   :: *+${diamondReward} Gem${diamondReward === 1 ? "" : "s"}*` : ""}
+│
+│ 💀 *YOU LOST!* 残念... 頑張れ！
+╰───────────────❀`
+      );
+    }
+  },
+};

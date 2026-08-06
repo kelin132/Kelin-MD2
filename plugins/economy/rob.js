@@ -1,1 +1,162 @@
-aW1wb3J0IHsgZ2V0VXNlciwgc2F2ZVVzZXIsIHJlcXVpcmVSZWdpc3RyYXRpb24sIGlzUmVnaXN0ZXJlZCwgYWRkSGlzdG9yeSB9IGZyb20gIi4vZGF0YWJhc2UuanMiOwoKZnVuY3Rpb24gZm10KG4pIHsKICBpZiAobiA+PSAxZTkpIHJldHVybiBg8J+qmSAkeyhuLzFlOSkudG9GaXhlZCgxKX1CYDsKICBpZiAobiA+PSAxZTYpIHJldHVybiBg8J+qmSAkeyhuLzFlNikudG9GaXhlZCgxKX1NYDsKICBpZiAobiA+PSAxZTMpIHJldHVybiBg8J+qmSAkeyhuLzFlMykudG9GaXhlZCgxKX1LYDsKICByZXR1cm4gYPCfqpkgJHtuLnRvTG9jYWxlU3RyaW5nKCl9YDsKfQoKZXhwb3J0IGRlZmF1bHQgewogIG5hbWU6ICJyb2IiLAogIGRlc2NyaXB0aW9uOiAiUm9iIGFub3RoZXIgdXNlciDigJQgNTUlIHN1Y2Nlc3MgcmF0ZSAoNDUtbWluIGNvb2xkb3duKSIsCiAgY2F0ZWdvcnk6ICJlY29ub215IiwKICBjb29sZG93bjogNiwKICB1c2FnZTogIi5yb2IgQHVzZXIiLAogIGNoZWNrSmFpbDogdHJ1ZSwKCiAgYXN5bmMgcnVuKHsgc29jaywgbXNnLCBzZW5kZXIsIGFyZ3MgfSkgewogICAgaWYgKCFhd2FpdCByZXF1aXJlUmVnaXN0cmF0aW9uKHNvY2ssIG1zZywgc2VuZGVyKSkgcmV0dXJuOwoKICAgIGNvbnN0IGppZCA9IG1zZy5rZXkucmVtb3RlSmlkOwoKICAgIGNvbnN0IHRhcmdldEppZCA9IG1zZy5tZXNzYWdlPy5leHRlbmRlZFRleHRNZXNzYWdlPy5jb250ZXh0SW5mbz8ubWVudGlvbmVkSmlkPy5bMF0KICAgICAgfHwgKGFyZ3NbMF0/Lm1hdGNoKC9eWzAtOV0rJC8pID8gYCR7YXJnc1swXX1Acy53aGF0c2FwcC5uZXRgIDogbnVsbCk7CgogICAgaWYgKCF0YXJnZXRKaWQpIHsKICAgICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgICAgdGV4dDoKYOKVreKUgOKdgOOAjCDwn6a5ICrwnZCR8J2QjvCdkIEqIOOAjeKdgOKUgOKVrgrilIIg8J+TliAqVXNhZ2UqICAgOjogKi5yb2IgQHVzZXIqCuKUgiDwn46vICpSYXRlKiAgICA6OiAqNTUlIHN1Y2Nlc3MqCuKUgiDwn5K4ICpSaXNrKiAgICA6OiAqRmluZSBpZiBjYXVnaHQqCuKUgiDij7MgKkNvb2xkb3duKiA6OiAqNDUgbWludXRlcyoK4pWw4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4p2AYAogICAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQoKICAgIGlmIChzZW5kZXIgPT09IHRhcmdldEppZCkgewogICAgICByZXR1cm4gc29jay5zZW5kTWVzc2FnZShqaWQsIHsgdGV4dDogIuKdjCBZb3UgY2FuJ3Qgcm9iIHlvdXJzZWxmISIgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICBpZiAoIWF3YWl0IGlzUmVnaXN0ZXJlZCh0YXJnZXRKaWQpKSB7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgeyB0ZXh0OiAi4p2MIFRoYXQgcGxheWVyIGlzIG5vdCByZWdpc3RlcmVkLiIgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICBjb25zdCByb2JiZXIgPSBhd2FpdCBnZXRVc2VyKHNlbmRlcik7CiAgICBjb25zdCBub3cgICAgPSBEYXRlLm5vdygpOwogICAgY29uc3QgY2QgICAgID0gNDUgKiA2MCAqIDEwMDA7CgogICAgaWYgKG5vdyAtIChyb2JiZXIubGFzdFJvYiB8fCAwKSA8IGNkKSB7CiAgICAgIGNvbnN0IHJlbWFpbmluZyA9IGNkIC0gKG5vdyAtIHJvYmJlci5sYXN0Um9iKTsKICAgICAgY29uc3QgbWludXRlcyAgID0gTWF0aC5mbG9vcihyZW1haW5pbmcgLyAoNjAgKiAxMDAwKSk7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgIHRleHQ6CmDila3ilIDinYDjgIwg8J+muSAq8J2QkfCdkI7wnZCBKiDjgI3inYDilIDila4K4pSCIOKPsyAqUmVzdWx0KiAgOjogKkhJRElORyDwn5S0KgrilIIg8J+NgyAqRmxhdm91ciogOjogX+i6q+OCkumaoOOBm++8geitpuWvn+OBjOadpeOCi+OBnu+8gV8K4pSCCuKUgiDwn5WQICpOZXh0KiAgICA6OiAqJHttaW51dGVzfW0gcmVtYWluaW5nKgrilIIK4pSCIPCfmKQgKkxheSBsb3cgZm9yIG5vdy4uLioK4pWw4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4p2AYAogICAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQoKICAgIGNvbnN0IHRhcmdldCA9IGF3YWl0IGdldFVzZXIodGFyZ2V0SmlkKTsKCiAgICAvLyBDaGVjayBzdGFmZiBpbW11bml0eSDigJQgY2Fubm90IGJlIHJvYmJlZAogICAgaWYgKHRhcmdldC5zdGFmZkltbXVuaXR5KSB7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgIHRleHQ6CmDila3ilIDinYDjgIwg8J+muSAq8J2QkfCdkI7wnZCBKiDjgI3inYDilIDila4K4pSCIPCfjJkgKlJlc3VsdCogIDo6ICpCTE9DS0VEIPCflLQqCuKUgiDwn42DICpGbGF2b3VyKiA6OiBf44GT44Gu5Lq644Gv5a6I44KJ44KM44Gm44GE44KL77yBXwrilIIK4pSCIPCfm6HvuI8gKlNoaWVsZCogIDo6ICpTdGFmZiBJbW11bml0eSoK4pSCCuKUgiDimqDvuI8gKlRoaXMgdGFyZ2V0IGNhbm5vdCBiZSByb2JiZWQhKgrilbDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDinYBgCiAgICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICB9CgogICAgLy8gQ2hlY2sgcm9iIGNoYXJtCiAgICBpZiAodGFyZ2V0LnJvYlNoaWVsZEV4cGlyeSAmJiB0YXJnZXQucm9iU2hpZWxkRXhwaXJ5ID4gRGF0ZS5ub3coKSkgewogICAgICBjb25zdCBtaW5zTGVmdCA9IE1hdGguY2VpbCgodGFyZ2V0LnJvYlNoaWVsZEV4cGlyeSAtIERhdGUubm93KCkpIC8gNjAwMDApOwogICAgICByZXR1cm4gc29jay5zZW5kTWVzc2FnZShqaWQsIHsKICAgICAgICB0ZXh0Ogpg4pWt4pSA4p2A44CMIPCfprkgKvCdkJHwnZCO8J2QgSog44CN4p2A4pSA4pWuCuKUgiDwn4yZICpSZXN1bHQqICA6OiAqQkxPQ0tFRCDwn5S0KgrilIIg8J+NgyAqRmxhdm91ciogOjogX+itt+espuOBjOWuiOOBo+OBpuOBhOOCi++8gV8K4pSCCuKUgiDwn6e/ICpTaGllbGQqICA6OiAqUm9iIENoYXJtKgrilIIg4o+zICpFeHBpcmVzKiA6OiAqJHttaW5zTGVmdH1tIHJlbWFpbmluZyoK4pSCCuKUgiDimqDvuI8gKlRyeSBhZ2FpbiBsYXRlciEqCuKVsOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKdgGAKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICBpZiAodGFyZ2V0Lm1vbmV5IDwgMTAwKSB7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgIHRleHQ6CmDila3ilIDinYDjgIwg8J+muSAq8J2QkfCdkI7wnZCBKiDjgI3inYDilIDila4K4pSCIPCfjJkgKlJlc3VsdCogIDo6ICpBQk9SVEVEIPCflLQqCuKUgiDwn42DICpGbGF2b3VyKiA6OiBf6YeR44GM44Gq44GE77yB5oSP5ZGz44GM44Gq44GE77yBXwrilIIK4pSCIPCfkrggKlRhcmdldCogIDo6ICpCcm9rZSAoJHtmbXQodGFyZ2V0Lm1vbmV5KX0pKgrilIIK4pSCIPCfmIIgKk5vdCB3b3J0aCBpdCEgTWluaW11bSDwn6qZIDEwMCBuZWVkZWQuKgrilbDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDinYBgCiAgICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICB9CgogICAgY29uc3QgYW1vdW50ICA9IE1hdGgubWluKDEwMDAwLCBNYXRoLmZsb29yKE1hdGgucmFuZG9tKCkgKiAodGFyZ2V0Lm1vbmV5ICogMC4zKSkgKyAxMDApOwogICAgY29uc3Qgc3VjY2VzcyA9IE1hdGgucmFuZG9tKCkgPiAwLjQ1OwogICAgY29uc3QgdGFnICAgICA9IGBAJHt0YXJnZXRKaWQuc3BsaXQoIkAiKVswXX1gOwoKICAgIHJvYmJlci5sYXN0Um9iID0gbm93OwoKICAgIGlmIChzdWNjZXNzKSB7CiAgICAgIHRhcmdldC5tb25leSAtPSBhbW91bnQ7CiAgICAgIHJvYmJlci5tb25leSArPSBhbW91bnQ7CiAgICAgIGF3YWl0IHNhdmVVc2VyKHNlbmRlciwgcm9iYmVyKTsKICAgICAgYXdhaXQgc2F2ZVVzZXIodGFyZ2V0SmlkLCB0YXJnZXQpOwogICAgICBhd2FpdCBhZGRIaXN0b3J5KHNlbmRlciwgICAgInJvYiIsICAgICAgICBhbW91bnQsICBgUm9iYmVkICR7dGFyZ2V0Lm5hbWV9YCk7CiAgICAgIGF3YWl0IGFkZEhpc3RvcnkodGFyZ2V0SmlkLCAicm9iX3ZpY3RpbSIsIC1hbW91bnQsIGBSb2JiZWQgYnkgJHtyb2JiZXIubmFtZX1gKTsKCiAgICAgIGF3YWl0IHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgICAgdGV4dDoKYOKVreKUgOKdgOOAjCDwn6a5ICrwnZCR8J2QjvCdkIEqIOOAjeKdgOKUgOKVrgrilIIg8J+MmSAqUmVzdWx0KiAgOjogKlNVQ0NFU1Mg8J+foioK4pSCIPCfjYMgKkZsYXZvdXIqIDo6IF/lroznkqfjgarlvLfnm5fvvIHlvbHjga7jgojjgYbjgavvvIFfCuKUggrilIIg8J+RpCAqVGFyZ2V0KiAgOjogKiR7dGFnfSoK4pSCIPCfqpkgKlN0b2xlbiogIDo6ICorJHtmbXQoYW1vdW50KX0qCuKUgiDwn6qZICpXYWxsZXQqICA6OiAqJHtmbXQocm9iYmVyLm1vbmV5KX0qCuKUggrilIIg8J+muSAqQ2xlYW4gZ2V0YXdheSEgTWlzc2lvbiBjb21wbGV0ZSEqIOKalO+4jwrilbDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDinYBgLAogICAgICAgIG1lbnRpb25zOiBbdGFyZ2V0SmlkXSwKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0gZWxzZSB7CiAgICAgIGNvbnN0IGZpbmUgICA9IE1hdGguZmxvb3IoYW1vdW50ICogMC43KTsKICAgICAgcm9iYmVyLm1vbmV5ID0gTWF0aC5tYXgoMCwgcm9iYmVyLm1vbmV5IC0gZmluZSk7CiAgICAgIGF3YWl0IHNhdmVVc2VyKHNlbmRlciwgcm9iYmVyKTsKICAgICAgYXdhaXQgYWRkSGlzdG9yeShzZW5kZXIsICJyb2IiLCAtZmluZSwgYFJvYiBmYWlsZWQg4oCUIGZpbmVkIPCfqpkgJHtmaW5lLnRvTG9jYWxlU3RyaW5nKCl9YCk7CgogICAgICBhd2FpdCBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgIHRleHQ6CmDila3ilIDinYDjgIwg8J+muSAq8J2QkfCdkI7wnZCBKiDjgI3inYDilIDila4K4pSCIPCfjJkgKlJlc3VsdCogIDo6ICpDQVVHSFQg8J+UtCoK4pSCIPCfjYMgKkZsYXZvdXIqIDo6IF/mjZXjgb7jgaPjgZ/vvIHpgIPjgZLpgYXjgozjgZ8uLi5fCuKUggrilIIg8J+SuCAqRmluZSogICAgOjogKi0ke2ZtdChmaW5lKX0qCuKUgiDwn6qZICpXYWxsZXQqICA6OiAqJHtmbXQocm9iYmVyLm1vbmV5KX0qCuKUggrilIIg8J+alCAqWW91IGdvdCBidXN0ZWQhIExpZSBsb3cgZm9yIDQ1IG1pbi4qCuKVsOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKdgGAKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KICB9Cn07Cg==
+import { getUser, saveUser, requireRegistration, isRegistered, addHistory } from "./database.js";
+
+function fmt(n) {
+  if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `$${(n/1e3).toFixed(1)}K`;
+  return `$${n.toLocaleString()}`;
+}
+
+export default {
+  name: "rob",
+  description: "Rob another user — 55% success rate (45-min cooldown)",
+  category: "economy",
+  cooldown: 6,
+  usage: ".rob @user",
+  checkJail: true,
+
+  async run({ sock, msg, sender, args }) {
+    if (!await requireRegistration(sock, msg, sender)) return;
+
+    const jid = msg.key.remoteJid;
+
+    const targetJid = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0]
+      || (args[0]?.match(/^[0-9]+$/) ? `${args[0]}@s.whatsapp.net` : null);
+
+    if (!targetJid) {
+      return sock.sendMessage(jid, {
+        text:
+`╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
+│ 📖 *Usage*   :: *.rob @user*
+│ 🎯 *Rate*    :: *55% success*
+│ 💸 *Risk*    :: *Fine if caught*
+│ ⏳ *Cooldown* :: *45 minutes*
+╰───────────────❀`
+      }, { quoted: msg });
+    }
+
+    if (sender === targetJid) {
+      return sock.sendMessage(jid, { text: "❌ You can't rob yourself!" }, { quoted: msg });
+    }
+
+    if (!await isRegistered(targetJid)) {
+      return sock.sendMessage(jid, { text: "❌ That player is not registered." }, { quoted: msg });
+    }
+
+    const robber = await getUser(sender);
+    const now    = Date.now();
+    const cd     = 45 * 60 * 1000;
+
+    if (now - (robber.lastRob || 0) < cd) {
+      const remaining = cd - (now - robber.lastRob);
+      const minutes   = Math.floor(remaining / (60 * 1000));
+      return sock.sendMessage(jid, {
+        text:
+`╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
+│ ⏳ *Result*  :: *HIDING 🔴*
+│ 🍃 *Flavour* :: _身を隠せ！警察が来るぞ！_
+│
+│ 🕐 *Next*    :: *${minutes}m remaining*
+│
+│ 😤 *Lay low for now...*
+╰───────────────❀`
+      }, { quoted: msg });
+    }
+
+    const target = await getUser(targetJid);
+
+    // Check staff immunity — cannot be robbed
+    if (target.staffImmunity) {
+      return sock.sendMessage(jid, {
+        text:
+`╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
+│ 🌙 *Result*  :: *BLOCKED 🔴*
+│ 🍃 *Flavour* :: _この人は守られている！_
+│
+│ 🛡️ *Shield*  :: *Staff Immunity*
+│
+│ ⚠️ *This target cannot be robbed!*
+╰───────────────❀`
+      }, { quoted: msg });
+    }
+
+    // Check rob charm
+    if (target.robShieldExpiry && target.robShieldExpiry > Date.now()) {
+      const minsLeft = Math.ceil((target.robShieldExpiry - Date.now()) / 60000);
+      return sock.sendMessage(jid, {
+        text:
+`╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
+│ 🌙 *Result*  :: *BLOCKED 🔴*
+│ 🍃 *Flavour* :: _護符が守っている！_
+│
+│ 🧿 *Shield*  :: *Rob Charm*
+│ ⏳ *Expires* :: *${minsLeft}m remaining*
+│
+│ ⚠️ *Try again later!*
+╰───────────────❀`
+      }, { quoted: msg });
+    }
+
+    if (target.money < 100) {
+      return sock.sendMessage(jid, {
+        text:
+`╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
+│ 🌙 *Result*  :: *ABORTED 🔴*
+│ 🍃 *Flavour* :: _金がない！意味がない！_
+│
+│ 💸 *Target*  :: *Broke (${fmt(target.money)})*
+│
+│ 😂 *Not worth it! Minimum $100 needed.*
+╰───────────────❀`
+      }, { quoted: msg });
+    }
+
+    const amount  = Math.min(10000, Math.floor(Math.random() * (target.money * 0.3)) + 100);
+    const success = Math.random() > 0.45;
+    const tag     = `@${targetJid.split("@")[0]}`;
+
+    robber.lastRob = now;
+
+    if (success) {
+      target.money -= amount;
+      robber.money += amount;
+      await saveUser(sender, robber);
+      await saveUser(targetJid, target);
+      await addHistory(sender,    "rob",        amount,  `Robbed ${target.name}`);
+      await addHistory(targetJid, "rob_victim", -amount, `Robbed by ${robber.name}`);
+
+      await sock.sendMessage(jid, {
+        text:
+`╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
+│ 🌙 *Result*  :: *SUCCESS 🟢*
+│ 🍃 *Flavour* :: _完璧な強盗！影のように！_
+│
+│ 👤 *Target*  :: *${tag}*
+│ 💰 *Stolen*  :: *+${fmt(amount)}*
+│ 💰 *Wallet*  :: *${fmt(robber.money)}*
+│
+│ 🦹 *Clean getaway! Mission complete!* ⚔️
+╰───────────────❀`,
+        mentions: [targetJid],
+      }, { quoted: msg });
+    } else {
+      const fine   = Math.floor(amount * 0.7);
+      robber.money = Math.max(0, robber.money - fine);
+      await saveUser(sender, robber);
+      await addHistory(sender, "rob", -fine, `Rob failed — fined $${fine.toLocaleString()}`);
+
+      await sock.sendMessage(jid, {
+        text:
+`╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
+│ 🌙 *Result*  :: *CAUGHT 🔴*
+│ 🍃 *Flavour* :: _捕まった！逃げ遅れた..._
+│
+│ 💸 *Fine*    :: *-${fmt(fine)}*
+│ 💰 *Wallet*  :: *${fmt(robber.money)}*
+│
+│ 🚔 *You got busted! Lie low for 45 min.*
+╰───────────────❀`
+      }, { quoted: msg });
+    }
+  }
+};

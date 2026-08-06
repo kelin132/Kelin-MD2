@@ -1,1 +1,75 @@
-aW1wb3J0IHsgZ3VpbGRTeXN0ZW0gfSBmcm9tICIuLi8uLi9saWIvZ3VpbGRTeXN0ZW0uanMiOwppbXBvcnQgeyByZXF1aXJlUmVnaXN0cmF0aW9uIH0gZnJvbSAiLi9kYXRhYmFzZS5qcyI7CmltcG9ydCB7IGdlbmVyYXRlR3VpbGRQcm9maWxlLCBnZXRQcm9maWxlUGljLCBnZXRDb250YWN0TmFtZSB9IGZyb20gIi4uLy4uL2xpYi9ndWlsZEdlbi5tanMiOwoKZXhwb3J0IGRlZmF1bHQgewogIG5hbWU6ICJteWd1aWxkIiwKICBkZXNjcmlwdGlvbjogIlZpZXcgeW91ciBndWlsZCBwcm9maWxlIGFuZCBpbmZvIiwKICBjYXRlZ29yeTogImd1aWxkIiwKICB1c2FnZTogIi5teWd1aWxkIiwKICBhbGlhc2VzOiBbIm15ZyIsICJteWd1aWxkcyIsICJndWlsZGluZm8iXSwKICBjb29sZG93bjogNSwKCiAgYXN5bmMgcnVuKHsgc29jaywgbXNnLCBzZW5kZXIsIHRleHQgfSkgewogICAgY29uc3QgamlkID0gbXNnLmtleS5yZW1vdGVKaWQ7CgogICAgaWYgKCFhd2FpdCByZXF1aXJlUmVnaXN0cmF0aW9uKHNvY2ssIG1zZywgc2VuZGVyKSkgcmV0dXJuOwoKICAgIGxldCBndWlsZDsKCiAgICBpZiAodGV4dD8udHJpbSgpKSB7CiAgICAgIC8vIEFsbG93IGxvb2tpbmcgdXAgYSBzcGVjaWZpYyBndWlsZCBieSBuYW1lCiAgICAgIGd1aWxkID0gYXdhaXQgZ3VpbGRTeXN0ZW0uZ2V0R3VpbGQodGV4dC50cmltKCkpOwogICAgICBpZiAoIWd1aWxkKSB7CiAgICAgICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgICAgICB0ZXh0OiBg4p2MIEd1aWxkICoiJHt0ZXh0LnRyaW0oKX0iKiBub3QgZm91bmQuXG5cblVzZSAqLmd1aWxkbGlzdCogdG8gc2VlIGFsbCBndWlsZHMuYAogICAgICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICAgIH0KICAgIH0gZWxzZSB7CiAgICAgIGd1aWxkID0gYXdhaXQgZ3VpbGRTeXN0ZW0uZ2V0VXNlclByaW1hcnlHdWlsZChzZW5kZXIpOwogICAgICBpZiAoIWd1aWxkKSB7CiAgICAgICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgICAgICB0ZXh0Ogpg4pWt4pSA44CUIPCfj7AgKvCdkIzwnZCYIPCdkIbwnZCU8J2QiPCdkIvwnZCDKiDjgJUK4pSCIOKdjCAqWW91IGFyZSBub3QgaW4gYW55IGd1aWxkISoK4pSCCuKUnOKXhiAqLmNyZWF0ZWd1aWxkIDxuYW1lPiog4oCUIENyZWF0ZSB5b3VyIG93bgrilJzil4YgKi5ndWlsZGxpc3QqICAgICAgICAgIOKAlCBCcm93c2UgYWxsIGd1aWxkcwrilJzil4YgKi5qb2luZ3VpbGQgPG5hbWU+KiAgIOKAlCBKb2luIGEgZ3VpbGQK4pSU4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4peGYAogICAgICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICAgIH0KICAgIH0KCiAgICBjb25zdCBvd25lclBpYyAgPSBhd2FpdCBnZXRQcm9maWxlUGljKHNvY2ssIGd1aWxkLm93bmVyKTsKICAgIGNvbnN0IG93bmVyTmFtZSA9IGdldENvbnRhY3ROYW1lKHNvY2ssIGd1aWxkLm93bmVyKTsKICAgIGNvbnN0IGNyZWF0ZWQgICA9IGd1aWxkLmNyZWF0ZWRBdAogICAgICA/IG5ldyBEYXRlKGd1aWxkLmNyZWF0ZWRBdCkudG9Mb2NhbGVEYXRlU3RyaW5nKCkKICAgICAgOiAiVW5rbm93biI7CgogICAgY29uc3QgaXNPd25lciAgPSBndWlsZC5vd25lciA9PT0gc2VuZGVyOwogICAgY29uc3QgaXNNZW1iZXIgPSBndWlsZC5tZW1iZXJzLmluY2x1ZGVzKHNlbmRlcik7CgogICAgY29uc3QgY2FwdGlvbiA9CmDila3ilIDjgJQg8J+PsCAq8J2QhvCdkJTwnZCI8J2Qi/CdkIMg8J2Qj/CdkJHwnZCO8J2QhfCdkIjwnZCL8J2QhCog44CVCuKUnOKXhiAqTmFtZSogICAgIDo6ICoke2d1aWxkLm5hbWV9KgrilJzil4YgKk93bmVyKiAgICA6OiAqJHtvd25lck5hbWV9KgrilJzil4YgKkxldmVsKiAgICA6OiAqJHtndWlsZC5sZXZlbH0qCuKUnOKXhiAqTWVtYmVycyogIDo6ICoke2d1aWxkLm1lbWJlcnMubGVuZ3RofSoK4pSc4peGICpUcmVhc3VyeSogOjogKvCfqpkgJHtndWlsZC50cmVhc3VyeS50b0xvY2FsZVN0cmluZygpfSoK4pSc4peGICpDcmVhdGVkKiAgOjogKiR7Y3JlYXRlZH0qJHtndWlsZC5kZXNjcmlwdGlvbiA/IGBcbuKUnOKXhiAqRGVzYyogICAgIDo6IF8ke2d1aWxkLmRlc2NyaXB0aW9ufV9gIDogIiJ9CuKUggrilJzil4YgKllvdXIgUm9sZSogOjogKiR7aXNPd25lciA/ICLwn5GRIE93bmVyIiA6IGlzTWVtYmVyID8gIvCfkaUgTWVtYmVyIiA6ICLwn5GAIFZpc2l0b3IifSoK4pSU4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4peGYDsKCiAgICB0cnkgewogICAgICBjb25zdCBpbWdCdWZmZXIgPSBhd2FpdCBnZW5lcmF0ZUd1aWxkUHJvZmlsZSgKICAgICAgICB7IG5hbWU6IGd1aWxkLm5hbWUsIGljb246IGd1aWxkLmljb24gfHwgbnVsbCwgZGVzY3JpcHRpb246IGd1aWxkLmRlc2NyaXB0aW9uIHx8ICIiIH0sCiAgICAgICAgeyBuYW1lOiBvd25lck5hbWUsIHByb2ZpbGVQaWM6IG93bmVyUGljIH0KICAgICAgKTsKICAgICAgYXdhaXQgc29jay5zZW5kTWVzc2FnZShqaWQsIHsgaW1hZ2U6IGltZ0J1ZmZlciwgY2FwdGlvbiB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfSBjYXRjaCB7CiAgICAgIGF3YWl0IHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7IHRleHQ6IGNhcHRpb24gfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KICB9Cn07Cg==
+import { guildSystem } from "../../lib/guildSystem.js";
+import { requireRegistration } from "./database.js";
+import { generateGuildProfile, getProfilePic, getContactName } from "../../lib/guildGen.mjs";
+
+export default {
+  name: "myguild",
+  description: "View your guild profile and info",
+  category: "guild",
+  usage: ".myguild",
+  aliases: ["myg", "myguilds", "guildinfo"],
+  cooldown: 5,
+
+  async run({ sock, msg, sender, text }) {
+    const jid = msg.key.remoteJid;
+
+    if (!await requireRegistration(sock, msg, sender)) return;
+
+    let guild;
+
+    if (text?.trim()) {
+      // Allow looking up a specific guild by name
+      guild = await guildSystem.getGuild(text.trim());
+      if (!guild) {
+        return sock.sendMessage(jid, {
+          text: `❌ Guild *"${text.trim()}"* not found.\n\nUse *.guildlist* to see all guilds.`
+        }, { quoted: msg });
+      }
+    } else {
+      guild = await guildSystem.getUserPrimaryGuild(sender);
+      if (!guild) {
+        return sock.sendMessage(jid, {
+          text:
+`╭─〔 🏰 *𝐌𝐘 𝐆𝐔𝐈𝐋𝐃* 〕
+│ ❌ *You are not in any guild!*
+│
+├◆ *.createguild <name>* — Create your own
+├◆ *.guildlist*          — Browse all guilds
+├◆ *.joinguild <name>*   — Join a guild
+└───────────────◆`
+        }, { quoted: msg });
+      }
+    }
+
+    const ownerPic  = await getProfilePic(sock, guild.owner);
+    const ownerName = getContactName(sock, guild.owner);
+    const created   = guild.createdAt
+      ? new Date(guild.createdAt).toLocaleDateString()
+      : "Unknown";
+
+    const isOwner  = guild.owner === sender;
+    const isMember = guild.members.includes(sender);
+
+    const caption =
+`╭─〔 🏰 *𝐆𝐔𝐈𝐋𝐃 𝐏𝐑𝐎𝐅𝐈𝐋𝐄* 〕
+├◆ *Name*     :: *${guild.name}*
+├◆ *Owner*    :: *${ownerName}*
+├◆ *Level*    :: *${guild.level}*
+├◆ *Members*  :: *${guild.members.length}*
+├◆ *Treasury* :: *$${guild.treasury.toLocaleString()}*
+├◆ *Created*  :: *${created}*${guild.description ? `\n├◆ *Desc*     :: _${guild.description}_` : ""}
+│
+├◆ *Your Role* :: *${isOwner ? "👑 Owner" : isMember ? "👥 Member" : "👀 Visitor"}*
+└───────────────◆`;
+
+    try {
+      const imgBuffer = await generateGuildProfile(
+        { name: guild.name, icon: guild.icon || null, description: guild.description || "" },
+        { name: ownerName, profilePic: ownerPic }
+      );
+      await sock.sendMessage(jid, { image: imgBuffer, caption }, { quoted: msg });
+    } catch {
+      await sock.sendMessage(jid, { text: caption }, { quoted: msg });
+    }
+  }
+};

@@ -1,1 +1,48 @@
-aW1wb3J0IHsgQ29sLCBmaW5kT3JDcmVhdGVVc2VyIH0gZnJvbSAiLi9kYi5qcyI7CgpleHBvcnQgZGVmYXVsdCB7CiAgbmFtZTogInNlbGxjIiwKICBhbGlhc2VzOiBbImxpc3RjYXJkIiwgImNhcmRtYXJrZXQiXSwKICBjYXRlZ29yeTogImNhcmRzIiwKICBkZXNjcmlwdGlvbjogIkxpc3Qgb25lIG9mIHlvdXIgY2FyZHMgZm9yIHNhbGUgaW4gdGhlIG1hcmtldHBsYWNlIiwKICB1c2FnZTogIi5zZWxsYyA8aW5kZXg+IDxwcmljZT4iLAoKICBhc3luYyBydW4oeyBzb2NrLCBtc2csIGFyZ3MsIHNlbmRlciB9KSB7CiAgICBjb25zdCBqaWQgICA9IG1zZy5rZXkucmVtb3RlSmlkOwogICAgY29uc3QgcmVwbHkgPSAodGV4dCkgPT4gc29jay5zZW5kTWVzc2FnZShqaWQsIHsgdGV4dCB9LCB7IHF1b3RlZDogbXNnIH0pOwoKICAgIHRyeSB7CiAgICAgIGNvbnN0IGluZGV4ID0gcGFyc2VJbnQoYXJnc1swXSkgLSAxOwogICAgICBjb25zdCBwcmljZSA9IHBhcnNlSW50KGFyZ3NbMV0pOwoKICAgICAgaWYgKGlzTmFOKGluZGV4KSB8fCBpbmRleCA8IDApIHJldHVybiByZXBseSgi4p2MIFVzYWdlOiAuc2VsbGMgPGluZGV4PiA8cHJpY2U+Iik7CiAgICAgIGlmIChpc05hTihwcmljZSkgfHwgcHJpY2UgPD0gMCkgcmV0dXJuIHJlcGx5KCLinYwgUGxlYXNlIHByb3ZpZGUgYSB2YWxpZCBwcmljZS4iKTsKCiAgICAgIGNvbnN0IHVzZXIgPSBhd2FpdCBmaW5kT3JDcmVhdGVVc2VyKHNlbmRlcik7CiAgICAgIGlmICghdXNlci5jYXJkcyB8fCAhdXNlci5jYXJkc1tpbmRleF0pIHJldHVybiByZXBseSgi4p2MIEludmFsaWQgY2FyZCBpbmRleC4gVXNlIC5jb2wgdG8gY2hlY2suIik7CgogICAgICBjb25zdCBjYXJkICAgPSB1c2VyLmNhcmRzW2luZGV4XTsKICAgICAgY29uc3QgbWFya2V0ID0gYXdhaXQgQ29sLm1hcmtldCgpOwoKICAgICAgYXdhaXQgbWFya2V0Lmluc2VydE9uZSh7CiAgICAgICAgc2VsbGVySWQ6ICAgc2VuZGVyLnNwbGl0KCJAIilbMF0sCiAgICAgICAgY2FyZElkOiAgICAgY2FyZC5jYXJkSWQsCiAgICAgICAgY2FyZE5hbWU6ICAgY2FyZC5uYW1lIHx8ICJVbmtub3duIENhcmQiLAogICAgICAgIGNhcmRJbWFnZTogIGNhcmQubWVkaWEgfHwgbnVsbCwKICAgICAgICBjYXJkUmFyaXR5OiBjYXJkLnRpZXIgIHx8ICJDb21tb24iLAogICAgICAgIHByaWNlLAogICAgICAgIGxpc3RlZEF0OiAgIG5ldyBEYXRlKCksCiAgICAgIH0pOwoKICAgICAgdXNlci5jYXJkcy5zcGxpY2UoaW5kZXgsIDEpOwogICAgICB1c2VyLnRvdGFsQ2FyZHMgPSBNYXRoLm1heCgwLCAodXNlci50b3RhbENhcmRzIHx8IDEpIC0gMSk7CiAgICAgIGF3YWl0IHVzZXIuc2F2ZSgpOwoKICAgICAgcmV0dXJuIHJlcGx5KGDinIUgTGlzdGVkICoke2NhcmQubmFtZSB8fCAiVW5rbm93biBDYXJkIn0qIGZvciDwn6qZICR7cHJpY2UudG9Mb2NhbGVTdHJpbmcoKX0gaW4gdGhlIG1hcmtldCFcblxuVXNlIC52cyB0byBzZWUgeW91ciBsaXN0aW5ncy5gKTsKCiAgICB9IGNhdGNoIChlcnIpIHsKICAgICAgY29uc29sZS5lcnJvcigiU0VMTEMgRVJST1I6IiwgZXJyKTsKICAgICAgcmV0dXJuIHJlcGx5KCLinYwgRmFpbGVkIHRvIGxpc3QgY2FyZC4iKTsKICAgIH0KICB9LAp9Owo=
+import { Col, findOrCreateUser } from "./db.js";
+
+export default {
+  name: "sellc",
+  aliases: ["listcard", "cardmarket"],
+  category: "cards",
+  description: "List one of your cards for sale in the marketplace",
+  usage: ".sellc <index> <price>",
+
+  async run({ sock, msg, args, sender }) {
+    const jid   = msg.key.remoteJid;
+    const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
+
+    try {
+      const index = parseInt(args[0]) - 1;
+      const price = parseInt(args[1]);
+
+      if (isNaN(index) || index < 0) return reply("❌ Usage: .sellc <index> <price>");
+      if (isNaN(price) || price <= 0) return reply("❌ Please provide a valid price.");
+
+      const user = await findOrCreateUser(sender);
+      if (!user.cards || !user.cards[index]) return reply("❌ Invalid card index. Use .col to check.");
+
+      const card   = user.cards[index];
+      const market = await Col.market();
+
+      await market.insertOne({
+        sellerId:   sender.split("@")[0],
+        cardId:     card.cardId,
+        cardName:   card.name || "Unknown Card",
+        cardImage:  card.media || null,
+        cardRarity: card.tier  || "Common",
+        price,
+        listedAt:   new Date(),
+      });
+
+      user.cards.splice(index, 1);
+      user.totalCards = Math.max(0, (user.totalCards || 1) - 1);
+      await user.save();
+
+      return reply(`✅ Listed *${card.name || "Unknown Card"}* for $${price.toLocaleString()} in the market!\n\nUse .vs to see your listings.`);
+
+    } catch (err) {
+      console.error("SELLC ERROR:", err);
+      return reply("❌ Failed to list card.");
+    }
+  },
+};

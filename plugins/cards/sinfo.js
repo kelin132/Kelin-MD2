@@ -1,1 +1,38 @@
-aW1wb3J0IHsgQ29sIH0gZnJvbSAiLi9kYi5qcyI7CgpleHBvcnQgZGVmYXVsdCB7CiAgbmFtZTogInNpbmZvIiwKICBhbGlhc2VzOiBbIm1hcmtldGluZm8iLCAiY2FyZGxpc3RpbmciXSwKICBjYXRlZ29yeTogImNhcmRzIiwKICBkZXNjcmlwdGlvbjogIlZpZXcgaW5mbyBhYm91dCBhIGNhcmQgbGlzdGluZyBpbiB0aGUgbWFya2V0cGxhY2UiLAogIHVzYWdlOiAiLnNpbmZvIDxpbmRleD4iLAoKICBhc3luYyBydW4oeyBzb2NrLCBtc2csIGFyZ3MgfSkgewogICAgY29uc3QgamlkICAgPSBtc2cua2V5LnJlbW90ZUppZDsKICAgIGNvbnN0IHJlcGx5ID0gKHRleHQpID0+IHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7IHRleHQgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKCiAgICB0cnkgewogICAgICBjb25zdCBpbmRleCAgPSBwYXJzZUludChhcmdzWzBdKSAtIDE7CiAgICAgIGNvbnN0IG1hcmtldCA9IGF3YWl0IENvbC5tYXJrZXQoKTsKICAgICAgY29uc3QgY2FyZHMgID0gYXdhaXQgbWFya2V0LmZpbmQoKS50b0FycmF5KCk7CgogICAgICBpZiAoaXNOYU4oaW5kZXgpIHx8ICFjYXJkc1tpbmRleF0pIHJldHVybiByZXBseShg4p2MIEludmFsaWQgaW5kZXguIFRoZXJlIGFyZSAke2NhcmRzLmxlbmd0aH0gYWN0aXZlIGxpc3RpbmcocykuYCk7CgogICAgICBjb25zdCBjICAgID0gY2FyZHNbaW5kZXhdOwogICAgICBjb25zdCB0ZXh0ID0KYOKEue+4jyAqQ0FSRCBMSVNUSU5HIElORk8qCgrwn5ObIE5hbWU6ICR7Yy5jYXJkTmFtZX0K8J+SjiBSYXJpdHk6ICR7Yy5jYXJkUmFyaXR5fQrwn6qZIFByaWNlOiDwn6qZICR7TnVtYmVyKGMucHJpY2UpLnRvTG9jYWxlU3RyaW5nKCl9CvCfkaQgU2VsbGVyOiBAJHtjLnNlbGxlcklkfQrwn5OFIExpc3RlZDogJHtuZXcgRGF0ZShjLmxpc3RlZEF0KS50b0RhdGVTdHJpbmcoKX1gOwoKICAgICAgcmV0dXJuIHJlcGx5KHRleHQpOwoKICAgIH0gY2F0Y2ggKGVycikgewogICAgICBjb25zb2xlLmVycm9yKCJTSU5GTyBFUlJPUjoiLCBlcnIpOwogICAgICByZXR1cm4gcmVwbHkoIuKdjCBGYWlsZWQgdG8gZ2V0IGNhcmQgaW5mby4iKTsKICAgIH0KICB9LAp9Owo=
+import { Col } from "./db.js";
+
+export default {
+  name: "sinfo",
+  aliases: ["marketinfo", "cardlisting"],
+  category: "cards",
+  description: "View info about a card listing in the marketplace",
+  usage: ".sinfo <index>",
+
+  async run({ sock, msg, args }) {
+    const jid   = msg.key.remoteJid;
+    const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
+
+    try {
+      const index  = parseInt(args[0]) - 1;
+      const market = await Col.market();
+      const cards  = await market.find().toArray();
+
+      if (isNaN(index) || !cards[index]) return reply(`❌ Invalid index. There are ${cards.length} active listing(s).`);
+
+      const c    = cards[index];
+      const text =
+`ℹ️ *CARD LISTING INFO*
+
+📛 Name: ${c.cardName}
+💎 Rarity: ${c.cardRarity}
+💰 Price: $${Number(c.price).toLocaleString()}
+👤 Seller: @${c.sellerId}
+📅 Listed: ${new Date(c.listedAt).toDateString()}`;
+
+      return reply(text);
+
+    } catch (err) {
+      console.error("SINFO ERROR:", err);
+      return reply("❌ Failed to get card info.");
+    }
+  },
+};

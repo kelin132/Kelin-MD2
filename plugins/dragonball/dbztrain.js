@@ -1,1 +1,150 @@
-Ly8gcGx1Z2lucy9kcmFnb25iYWxsL2RienRyYWluLmpzCi8vIFBvd2VyIHVwIHlvdXIgRHJhZ29uIEJhbGwgZmlnaHRlciB0aHJvdWdoIHRyYWluaW5nIHNlc3Npb25zCi8vIFVzYWdlOiAuZGJ6dHJhaW4gW2F0dGFja3xkZWZlbnNlfHNwZWVkfGtpfGhwXQoKaW1wb3J0IHBsYXllcnMgZnJvbSAiLi4vLi4vbGliL2RyYWdvbmJhbGwvcGxheWVycy5qcyI7CmltcG9ydCB7IGdldFJhbmtOYW1lIH0gZnJvbSAiLi4vLi4vbGliL2RyYWdvbmJhbGwvdXRpbHMuanMiOwoKY29uc3QgVFJBSU5fQ09TVF9DT0lOUyAgPSAxMDA7CmNvbnN0IFRSQUlOX0NPT0xET1dOUyAgID0gbmV3IE1hcCgpOyAvLyBzZW5kZXIg4oaSIGxhc3RUcmFpbmVkQXQKY29uc3QgVFJBSU5fQ09PTERPV05fTVMgPSA1ICogNjAgKiAxMDAwOyAvLyA1IG1pbnV0ZXMgYmV0d2VlbiBzZXNzaW9ucwoKY29uc3QgVFJBSU5fU0VTU0lPTlMgPSB7CiAgYXR0YWNrOiAgeyBzdGF0OiAiYXR0YWNrIiwgIGVtb2ppOiAi4pqU77iPIiwgIGdhaW46IDIsICBsYWJlbDogIkF0dGFjayIgIH0sCiAgZGVmZW5zZTogeyBzdGF0OiAiZGVmZW5zZSIsIGVtb2ppOiAi8J+boe+4jyIsICBnYWluOiAyLCAgbGFiZWw6ICJEZWZlbnNlIiB9LAogIHNwZWVkOiAgIHsgc3RhdDogInNwZWVkIiwgICBlbW9qaTogIvCfkqgiLCAgZ2FpbjogMiwgIGxhYmVsOiAiU3BlZWQiICAgfSwKICBraTogICAgICB7IHN0YXQ6ICJtYXhLaSIsICAgZW1vamk6ICLwn5KgIiwgIGdhaW46IDE1LCBsYWJlbDogIk1heCBLSSIgIH0sCiAgaHA6ICAgICAgeyBzdGF0OiAibWF4SHAiLCAgIGVtb2ppOiAi4p2k77iPIiwgIGdhaW46IDIwLCBsYWJlbDogIk1heCBIUCIgIH0sCn07Cgpjb25zdCBUUkFJTl9NRVNTQUdFUyA9IHsKICBhdHRhY2s6IFsKICAgICLwn5KlIFlvdSB1bmxlYXNoIHRob3VzYW5kcyBvZiBwdW5jaGVzIOKAlCAqQXR0YWNrKiByaXNlcyEiLAogICAgIuKalO+4jyBUcmFpbmluZyBhZ2FpbnN0IHJvY2t5IGNsaWZmcyBhbGwgZGF5IOKAlCBwb3dlciBzdXJnZXMhIiwKICAgICLwn5SlIFlvdSBzcGFyIHJlbGVudGxlc3NseSB1bnRpbCB5b3VyIGtudWNrbGVzIGJsZWVkIOKAlCBzdHJvbmdlciEiLAogIF0sCiAgZGVmZW5zZTogWwogICAgIvCfm6HvuI8gWW91IGVuZHVyZSBLYWlva2VuIHByZXNzdXJlIHRyYWluaW5nIGZvciBob3VycyDigJQgZGVmZW5zZSBoYXJkZW5zISIsCiAgICAi8J+SqiBXZWlnaHRlZCBjbG90aGluZyB0YWtlbiBvZmYg4oCUIHlvdSBmZWVsIGxpZ2h0ZXIgQU5EIHRvdWdoZXIhIiwKICAgICLwn6qoIFlvdSBsZXQgYm91bGRlcnMgY3Jhc2ggYWdhaW5zdCB5b3Ug4oCUIGJvZHkgdG91Z2hlbnMhIiwKICBdLAogIHNwZWVkOiBbCiAgICAi8J+SqCBZb3UgZGFzaCBhY3Jvc3MgdGhlIHdhc3RlbGFuZCBhdCBibGluZGluZyBwYWNlIOKAlCBmYXN0ZXIhIiwKICAgICLimqEgSW5zdGFudCBUcmFuc21pc3Npb24gdHJhaW5pbmcg4oCUIHlvdXIgc3BlZWQgc2t5cm9ja2V0cyEiLAogICAgIvCfjIAgRG9kZ2luZyBlbmVyZ3kgYmxhc3RzIGFsbCBkYXkg4oCUIHJlZmxleGVzIHNoYXJwZW4hIiwKICBdLAogIGtpOiBbCiAgICAi8J+SoCBNZWRpdGF0aW5nIG9uIHRoZSBMb29rb3V0IOKAlCBLSSByZXNlcnZlcyBleHBhbmQhIiwKICAgICLwn4yfIEZvY3VzaW5nIHlvdXIgZW5lcmd5IHRvIHRoZSBsaW1pdCDigJQgS0kgZ3Jvd3Mgc3Ryb25nZXIhIiwKICAgICLwn5CJIFNwaXJpdCBlbmVyZ3kgZmxvd3MgdGhyb3VnaCB5b3Ug4oCUIG1heGltdW0gS0kgcmlzZXMhIiwKICBdLAogIGhwOiBbCiAgICAi4p2k77iPIFplbmthaSBib29zdCBmcm9tIG5lYXItZGVhdGggdHJhaW5pbmcg4oCUIGhlYWx0aCBzb2FycyEiLAogICAgIvCfkqogU3Vydml2aW5nIGJydXRhbCBwdW5pc2htZW50IOKAlCBib2R5IGdyb3dzIHRvdWdoZXIhIiwKICAgICLwn4+U77iPIEhpZ2gtZ3Jhdml0eSB0cmFpbmluZyBjb21wbGV0ZSDigJQgSFAgaW5jcmVhc2VzISIsCiAgXSwKfTsKCmZ1bmN0aW9uIHJhbmRvbShhcnIpIHsgcmV0dXJuIGFycltNYXRoLmZsb29yKE1hdGgucmFuZG9tKCkgKiBhcnIubGVuZ3RoKV07IH0KCmV4cG9ydCBkZWZhdWx0IHsKICBuYW1lOiAiZGJ6dHJhaW4iLAogIGRlc2NyaXB0aW9uOiAiVHJhaW4gdG8gaW5jcmVhc2UgeW91ciBEcmFnb24gQmFsbCBmaWdodGVyIHN0YXRzIiwKICBjYXRlZ29yeTogImRyYWdvbmJhbGwiLAogIHVzYWdlOiAiLmRienRyYWluIFthdHRhY2t8ZGVmZW5zZXxzcGVlZHxraXxocF0iLAogIGFsaWFzZXM6IFsiZGJ6cG93ZXIiLCAiZGJ6cG93ZXJ1cCJdLAogIGNvb2xkb3duOiAzLAoKICBhc3luYyBydW4oeyBzb2NrLCBtc2csIHRleHQsIHNlbmRlciB9KSB7CiAgICBjb25zdCBqaWQgPSBtc2cua2V5LnJlbW90ZUppZDsKCiAgICB0cnkgewogICAgICBjb25zdCBwbGF5ZXIgPSBhd2FpdCBwbGF5ZXJzLmdldChzZW5kZXIpOwogICAgICBpZiAoIXBsYXllcikgewogICAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgICAgdGV4dDogIvCfkIkgWW91IGRvbid0IGhhdmUgYSBmaWdodGVyIHlldCFcblVzZSAqLmRienN0YXJ0KiB0byBjcmVhdGUgb25lLiIsCiAgICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgICAgfQoKICAgICAgY29uc3QgY21kID0gKHRleHQgfHwgIiIpLnRyaW0oKS50b0xvd2VyQ2FzZSgpOwoKICAgICAgLy8gTm8gYXJndW1lbnQg4oCUIHNob3cgdHJhaW5pbmcgbWVudQogICAgICBpZiAoIWNtZCkgewogICAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgICAgdGV4dDogWwogICAgICAgICAgICAi8J+QiSAqVFJBSU5JTkcgR1JPVU5EUyoiLAogICAgICAgICAgICAi4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSBIiwKICAgICAgICAgICAgYPCfqpkgQ29zdDogKiR7VFJBSU5fQ09TVF9DT0lOU30gY29pbnMqIHBlciBzZXNzaW9uYCwKICAgICAgICAgICAgYPCfqpkgWW91ciBjb2luczogKiR7cGxheWVyLnplbml9KmAsCiAgICAgICAgICAgICIiLAogICAgICAgICAgICAiQ2hvb3NlIHdoYXQgdG8gdHJhaW46IiwKICAgICAgICAgICAgIiAg4pqU77iPICAqLmRienRyYWluIGF0dGFjayogICDigJQgKzIgQVRLIiwKICAgICAgICAgICAgIiAg8J+boe+4jyAgKi5kYnp0cmFpbiBkZWZlbnNlKiAg4oCUICsyIERFRiIsCiAgICAgICAgICAgICIgIPCfkqggICouZGJ6dHJhaW4gc3BlZWQqICAgIOKAlCArMiBTUEQiLAogICAgICAgICAgICAiICDwn5KgICAqLmRienRyYWluIGtpKiAgICAgICDigJQgKzE1IE1heCBLSSIsCiAgICAgICAgICAgICIgIOKdpO+4jyAgKi5kYnp0cmFpbiBocCogICAgICAg4oCUICsyMCBNYXggSFAiLAogICAgICAgICAgICAiIiwKICAgICAgICAgICAgIuKPsyBDb29sZG93bjogNSBtaW51dGVzIGJldHdlZW4gc2Vzc2lvbnMiLAogICAgICAgICAgXS5qb2luKCJcbiIpLAogICAgICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICAgIH0KCiAgICAgIGNvbnN0IHNlc3Npb24gPSBUUkFJTl9TRVNTSU9OU1tjbWRdOwogICAgICBpZiAoIXNlc3Npb24pIHsKICAgICAgICByZXR1cm4gc29jay5zZW5kTWVzc2FnZShqaWQsIHsKICAgICAgICAgIHRleHQ6ICLinYwgVW5rbm93biB0cmFpbmluZyB0eXBlIVxuXG5PcHRpb25zOiAqYXR0YWNrKiwgKmRlZmVuc2UqLCAqc3BlZWQqLCAqa2kqLCAqaHAqIiwKICAgICAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgICB9CgogICAgICAvLyBDb29sZG93biBjaGVjawogICAgICBjb25zdCBsYXN0VHJhaW5lZCA9IFRSQUlOX0NPT0xET1dOUy5nZXQoc2VuZGVyKTsKICAgICAgaWYgKGxhc3RUcmFpbmVkICYmIERhdGUubm93KCkgLSBsYXN0VHJhaW5lZCA8IFRSQUlOX0NPT0xET1dOX01TKSB7CiAgICAgICAgY29uc3QgcmVtYWluaW5nID0gTWF0aC5jZWlsKChUUkFJTl9DT09MRE9XTl9NUyAtIChEYXRlLm5vdygpIC0gbGFzdFRyYWluZWQpKSAvIDEwMDApOwogICAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgICAgdGV4dDogYOKPsyBUcmFpbmluZyBjb29sZG93biBhY3RpdmUg4oCUIHJlc3QgZm9yICoke3JlbWFpbmluZ31zKiBiZWZvcmUgdGhlIG5leHQgc2Vzc2lvbi5gLAogICAgICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICAgIH0KCiAgICAgIC8vIENvaW5zIGNoZWNrCiAgICAgIGlmICgocGxheWVyLnplbmkgfHwgMCkgPCBUUkFJTl9DT1NUX0NPSU5TKSB7CiAgICAgICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgICAgICB0ZXh0OiBg4p2MIE5vdCBlbm91Z2ggY29pbnMhXG5cbllvdSBuZWVkICoke1RSQUlOX0NPU1RfQ09JTlN9KiBidXQgb25seSBoYXZlICoke3BsYXllci56ZW5pIHx8IDB9Ki5gLAogICAgICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICAgIH0KCiAgICAgIC8vIEFwcGx5IHN0YXQgY2hhbmdlCiAgICAgIHBsYXllci56ZW5pICAgICAgICAgICAgICA9IChwbGF5ZXIuemVuaSB8fCAwKSAtIFRSQUlOX0NPU1RfQ09JTlM7CiAgICAgIHBsYXllcltzZXNzaW9uLnN0YXRdICAgICAgPSAocGxheWVyW3Nlc3Npb24uc3RhdF0gfHwgMCkgKyBzZXNzaW9uLmdhaW47CiAgICAgIGlmIChzZXNzaW9uLnN0YXQgPT09ICJtYXhIcCIpIHBsYXllci5ocCA9IE1hdGgubWluKHBsYXllci5ocCArIHNlc3Npb24uZ2FpbiwgcGxheWVyLm1heEhwKTsKICAgICAgaWYgKHNlc3Npb24uc3RhdCA9PT0gIm1heEtpIikgcGxheWVyLmtpID0gTWF0aC5taW4ocGxheWVyLmtpICsgc2Vzc2lvbi5nYWluLCBwbGF5ZXIubWF4S2kpOwoKICAgICAgYXdhaXQgcGxheWVyLnNhdmUoKTsKICAgICAgVFJBSU5fQ09PTERPV05TLnNldChzZW5kZXIsIERhdGUubm93KCkpOwoKICAgICAgY29uc3QgcmFuayAgPSBnZXRSYW5rTmFtZShwbGF5ZXIubGV2ZWwpOwogICAgICBjb25zdCBtc2cyICA9IHJhbmRvbShUUkFJTl9NRVNTQUdFU1tjbWRdKTsKCiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgIHRleHQ6IFsKICAgICAgICAgICLwn5KqICpUUkFJTklORyBDT01QTEVURSEqIiwKICAgICAgICAgICIiLAogICAgICAgICAgbXNnMiwKICAgICAgICAgICIiLAogICAgICAgICAgYCR7c2Vzc2lvbi5lbW9qaX0gKiR7c2Vzc2lvbi5sYWJlbH0qIGluY3JlYXNlZCBieSAqKyR7c2Vzc2lvbi5nYWlufSohYCwKICAgICAgICAgIGDwn6qZIENvaW5zIHNwZW50OiAqJHtUUkFJTl9DT1NUX0NPSU5TfSogIHwgIFJlbWFpbmluZzogKiR7cGxheWVyLnplbml9KmAsCiAgICAgICAgICAiIiwKICAgICAgICAgIGDirZAgTGV2ZWw6ICR7cGxheWVyLmxldmVsfSAoJHtyYW5rfSlgLAogICAgICAgICAgYOKdpO+4jyBIUDogJHtwbGF5ZXIuaHB9LyR7cGxheWVyLm1heEhwfWAsCiAgICAgICAgICBg8J+SoCBLSTogJHtwbGF5ZXIua2l9LyR7cGxheWVyLm1heEtpfWAsCiAgICAgICAgICBg4pqU77iPIEFUSzogJHtwbGF5ZXIuYXR0YWNrfSAg8J+boe+4jyBERUY6ICR7cGxheWVyLmRlZmVuc2V9ICDwn5KoIFNQRDogJHtwbGF5ZXIuc3BlZWR9YCwKICAgICAgICAgICIiLAogICAgICAgICAgIlRyYWluIGFnYWluIGluIDUgbWludXRlcy4iLAogICAgICAgIF0uam9pbigiXG4iKSwKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKCiAgICB9IGNhdGNoIChlcnIpIHsKICAgICAgY29uc29sZS5lcnJvcigiREJaVFJBSU4gRVJST1I6IiwgZXJyKTsKICAgICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7IHRleHQ6ICLinYwgVHJhaW5pbmcgZmFpbGVkIOKAlCB0cnkgYWdhaW4uIiB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQogIH0sCn07Cg==
+// plugins/dragonball/dbztrain.js
+// Power up your Dragon Ball fighter through training sessions
+// Usage: .dbztrain [attack|defense|speed|ki|hp]
+
+import players from "../../lib/dragonball/players.js";
+import { getRankName } from "../../lib/dragonball/utils.js";
+
+const TRAIN_COST_COINS  = 100;
+const TRAIN_COOLDOWNS   = new Map(); // sender → lastTrainedAt
+const TRAIN_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes between sessions
+
+const TRAIN_SESSIONS = {
+  attack:  { stat: "attack",  emoji: "⚔️",  gain: 2,  label: "Attack"  },
+  defense: { stat: "defense", emoji: "🛡️",  gain: 2,  label: "Defense" },
+  speed:   { stat: "speed",   emoji: "💨",  gain: 2,  label: "Speed"   },
+  ki:      { stat: "maxKi",   emoji: "💠",  gain: 15, label: "Max KI"  },
+  hp:      { stat: "maxHp",   emoji: "❤️",  gain: 20, label: "Max HP"  },
+};
+
+const TRAIN_MESSAGES = {
+  attack: [
+    "💥 You unleash thousands of punches — *Attack* rises!",
+    "⚔️ Training against rocky cliffs all day — power surges!",
+    "🔥 You spar relentlessly until your knuckles bleed — stronger!",
+  ],
+  defense: [
+    "🛡️ You endure Kaioken pressure training for hours — defense hardens!",
+    "💪 Weighted clothing taken off — you feel lighter AND tougher!",
+    "🪨 You let boulders crash against you — body toughens!",
+  ],
+  speed: [
+    "💨 You dash across the wasteland at blinding pace — faster!",
+    "⚡ Instant Transmission training — your speed skyrockets!",
+    "🌀 Dodging energy blasts all day — reflexes sharpen!",
+  ],
+  ki: [
+    "💠 Meditating on the Lookout — KI reserves expand!",
+    "🌟 Focusing your energy to the limit — KI grows stronger!",
+    "🐉 Spirit energy flows through you — maximum KI rises!",
+  ],
+  hp: [
+    "❤️ Zenkai boost from near-death training — health soars!",
+    "💪 Surviving brutal punishment — body grows tougher!",
+    "🏔️ High-gravity training complete — HP increases!",
+  ],
+};
+
+function random(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+export default {
+  name: "dbztrain",
+  description: "Train to increase your Dragon Ball fighter stats",
+  category: "dragonball",
+  usage: ".dbztrain [attack|defense|speed|ki|hp]",
+  aliases: ["dbzpower", "dbzpowerup"],
+  cooldown: 3,
+
+  async run({ sock, msg, text, sender }) {
+    const jid = msg.key.remoteJid;
+
+    try {
+      const player = await players.get(sender);
+      if (!player) {
+        return sock.sendMessage(jid, {
+          text: "🐉 You don't have a fighter yet!\nUse *.dbzstart* to create one.",
+        }, { quoted: msg });
+      }
+
+      const cmd = (text || "").trim().toLowerCase();
+
+      // No argument — show training menu
+      if (!cmd) {
+        return sock.sendMessage(jid, {
+          text: [
+            "🐉 *TRAINING GROUNDS*",
+            "━━━━━━━━━━━━━━━━━━━━━━━━",
+            `💰 Cost: *${TRAIN_COST_COINS} coins* per session`,
+            `💰 Your coins: *${player.zeni}*`,
+            "",
+            "Choose what to train:",
+            "  ⚔️  *.dbztrain attack*   — +2 ATK",
+            "  🛡️  *.dbztrain defense*  — +2 DEF",
+            "  💨  *.dbztrain speed*    — +2 SPD",
+            "  💠  *.dbztrain ki*       — +15 Max KI",
+            "  ❤️  *.dbztrain hp*       — +20 Max HP",
+            "",
+            "⏳ Cooldown: 5 minutes between sessions",
+          ].join("\n"),
+        }, { quoted: msg });
+      }
+
+      const session = TRAIN_SESSIONS[cmd];
+      if (!session) {
+        return sock.sendMessage(jid, {
+          text: "❌ Unknown training type!\n\nOptions: *attack*, *defense*, *speed*, *ki*, *hp*",
+        }, { quoted: msg });
+      }
+
+      // Cooldown check
+      const lastTrained = TRAIN_COOLDOWNS.get(sender);
+      if (lastTrained && Date.now() - lastTrained < TRAIN_COOLDOWN_MS) {
+        const remaining = Math.ceil((TRAIN_COOLDOWN_MS - (Date.now() - lastTrained)) / 1000);
+        return sock.sendMessage(jid, {
+          text: `⏳ Training cooldown active — rest for *${remaining}s* before the next session.`,
+        }, { quoted: msg });
+      }
+
+      // Coins check
+      if ((player.zeni || 0) < TRAIN_COST_COINS) {
+        return sock.sendMessage(jid, {
+          text: `❌ Not enough coins!\n\nYou need *${TRAIN_COST_COINS}* but only have *${player.zeni || 0}*.`,
+        }, { quoted: msg });
+      }
+
+      // Apply stat change
+      player.zeni              = (player.zeni || 0) - TRAIN_COST_COINS;
+      player[session.stat]      = (player[session.stat] || 0) + session.gain;
+      if (session.stat === "maxHp") player.hp = Math.min(player.hp + session.gain, player.maxHp);
+      if (session.stat === "maxKi") player.ki = Math.min(player.ki + session.gain, player.maxKi);
+
+      await player.save();
+      TRAIN_COOLDOWNS.set(sender, Date.now());
+
+      const rank  = getRankName(player.level);
+      const msg2  = random(TRAIN_MESSAGES[cmd]);
+
+      return sock.sendMessage(jid, {
+        text: [
+          "💪 *TRAINING COMPLETE!*",
+          "",
+          msg2,
+          "",
+          `${session.emoji} *${session.label}* increased by *+${session.gain}*!`,
+          `💰 Coins spent: *${TRAIN_COST_COINS}*  |  Remaining: *${player.zeni}*`,
+          "",
+          `⭐ Level: ${player.level} (${rank})`,
+          `❤️ HP: ${player.hp}/${player.maxHp}`,
+          `💠 KI: ${player.ki}/${player.maxKi}`,
+          `⚔️ ATK: ${player.attack}  🛡️ DEF: ${player.defense}  💨 SPD: ${player.speed}`,
+          "",
+          "Train again in 5 minutes.",
+        ].join("\n"),
+      }, { quoted: msg });
+
+    } catch (err) {
+      console.error("DBZTRAIN ERROR:", err);
+      return sock.sendMessage(jid, { text: "❌ Training failed — try again." }, { quoted: msg });
+    }
+  },
+};

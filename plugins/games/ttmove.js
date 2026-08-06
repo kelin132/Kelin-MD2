@@ -1,1 +1,126 @@
-Ly8gcGx1Z2lucy9nYW1lcy90dG1vdmUuanMKLy8gUHJvY2VzcyBtb3ZlcyBpbiBhbiBhY3RpdmUgVGljIFRhYyBUb2UgZ2FtZS4KLy8gVXNhZ2U6IC5tIDwxLTk+Ci8vCi8vIFJld2FyZHMgdGhlIHdpbm5lciB3aXRoIGNvaW5zLiBObyBwZW5hbHR5IGZvciB0aGUgbG9zZXIuCgppbXBvcnQgeyBnYW1lcyB9IGZyb20gIi4uLy4uL2xpYi90aWN0YWN0b2UuanMiOwppbXBvcnQgeyBhZGRNb25leSwgaXNSZWdpc3RlcmVkIH0gZnJvbSAiLi4vZWNvbm9teS9kYXRhYmFzZS5qcyI7Cgpjb25zdCBXSU5fUkVXQVJEID0gMjAwOyAvLyBjb2lucyBhd2FyZGVkIHRvIHRoZSB3aW5uZXIKCmV4cG9ydCBkZWZhdWx0IHsKICBuYW1lOiAibSIsCiAgZGVzY3JpcHRpb246ICJNYWtlIGEgbW92ZSBpbiB0aGUgYWN0aXZlIFRpYyBUYWMgVG9lIGdhbWUgKDHigJM5KSIsCiAgY2F0ZWdvcnk6ICJnYW1lcyIsCiAgdXNhZ2U6ICIubSA8MS05PiIsCiAgYWxpYXNlczogWyJtb3ZlIl0sCiAgY29vbGRvd246IDEsCgogIGFzeW5jIHJ1bih7IHNvY2ssIG1zZywgc2VuZGVyLCBhcmdzIH0pIHsKICAgIGNvbnN0IGppZCA9IG1zZy5rZXkucmVtb3RlSmlkOwoKICAgIGlmICghamlkLmVuZHNXaXRoKCJAZy51cyIpKSB7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgIHRleHQ6ICLinYwgVGljIFRhYyBUb2Ugb25seSB3b3JrcyBpbiBncm91cHMuIiwKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICBjb25zdCBnYW1lID0gZ2FtZXMuZ2V0KGppZCk7CgogICAgaWYgKCFnYW1lKSB7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgIHRleHQ6ICLinYwgTm8gYWN0aXZlIFRpYyBUYWMgVG9lIGdhbWUgaGVyZS5cblxuU3RhcnQgb25lIHdpdGggKi50dHQgQHVzZXIqIiwKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICAvLyBDbGVhbiB1cCBpZiBhbHJlYWR5IGZpbmlzaGVkIChzaG91bGRuJ3QgaGFwcGVuLCBidXQgYmUgc2FmZSkKICAgIGlmIChnYW1lLmZpbmlzaGVkKSB7CiAgICAgIGdhbWVzLmRlbGV0ZShqaWQpOwogICAgICByZXR1cm4gc29jay5zZW5kTWVzc2FnZShqaWQsIHsKICAgICAgICB0ZXh0OiAi4p2MIFRoYXQgZ2FtZSBoYXMgYWxyZWFkeSBlbmRlZC4gU3RhcnQgYSBuZXcgb25lIHdpdGggKi50dHQgQHVzZXIqIiwKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICAvLyBPbmx5IHRoZSB0d28gcGxheWVycyBjYW4gbW92ZQogICAgaWYgKHNlbmRlciAhPT0gZ2FtZS5wbGF5ZXJYICYmIHNlbmRlciAhPT0gZ2FtZS5wbGF5ZXJPKSB7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgIHRleHQ6ICLinYwgWW91IGFyZSBub3QgYSBwbGF5ZXIgaW4gdGhpcyBnYW1lISIsCiAgICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICB9CgogICAgY29uc3QgcG9zID0gcGFyc2VJbnQoYXJnc1swXSk7CiAgICBpZiAoIWFyZ3NbMF0gfHwgaXNOYU4ocG9zKSB8fCBwb3MgPCAxIHx8IHBvcyA+IDkpIHsKICAgICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgICAgdGV4dDogYOKdjCBQaWNrIGEgbnVtYmVyIGZyb20gKjHigJM5Ki5cblxuJHtnYW1lLnJlbmRlcigpfWAsCiAgICAgICAgbWVudGlvbnM6IFtnYW1lLnR1cm5dLAogICAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQoKICAgIGNvbnN0IHJlc3VsdCA9IGdhbWUubW92ZShzZW5kZXIsIHBvcyk7CgogICAgaWYgKCFyZXN1bHQuc3VjY2VzcykgewogICAgICByZXR1cm4gc29jay5zZW5kTWVzc2FnZShqaWQsIHsKICAgICAgICB0ZXh0OiBg4p2MICR7cmVzdWx0Lm1lc3NhZ2V9YCwKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICBjb25zdCBib2FyZCA9IGdhbWUucmVuZGVyKCk7CgogICAgLy8g4pSA4pSAIERyYXcg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACiAgICBpZiAocmVzdWx0LmRyYXcpIHsKICAgICAgZ2FtZXMuZGVsZXRlKGppZCk7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgIHRleHQ6CmAke2JvYXJkfQrwn6SdICpJdCdzIGEgZHJhdyEqCgpAJHtnYW1lLnBsYXllclguc3BsaXQoIkAiKVswXX0gdnMgQCR7Z2FtZS5wbGF5ZXJPLnNwbGl0KCJAIilbMF19CgpObyBjb2lucyB0aGlzIHRpbWUuIFJlbWF0Y2ggd2l0aCAqLnR0dCBAdXNlcipgLAogICAgICAgIG1lbnRpb25zOiBbZ2FtZS5wbGF5ZXJYLCBnYW1lLnBsYXllck9dLAogICAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQoKICAgIC8vIOKUgOKUgCBXaW5uZXIg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACiAgICBpZiAocmVzdWx0Lndpbm5lcikgewogICAgICBjb25zdCB3aW5uZXJKaWQgPSBnYW1lLndpbm5lcjsKICAgICAgY29uc3QgbG9zZXJKaWQgID0gd2lubmVySmlkID09PSBnYW1lLnBsYXllclggPyBnYW1lLnBsYXllck8gOiBnYW1lLnBsYXllclg7CgogICAgICBnYW1lcy5kZWxldGUoamlkKTsKCiAgICAgIC8vIEF3YXJkIGNvaW5zIOKAlCBvbmx5IGlmIHRoZSB3aW5uZXIgaXMgcmVnaXN0ZXJlZCBpbiB0aGUgZWNvbm9teQogICAgICBsZXQgcmV3YXJkTGluZSA9ICIiOwogICAgICB0cnkgewogICAgICAgIGlmIChhd2FpdCBpc1JlZ2lzdGVyZWQod2lubmVySmlkKSkgewogICAgICAgICAgYXdhaXQgYWRkTW9uZXkod2lubmVySmlkLCBXSU5fUkVXQVJEKTsKICAgICAgICAgIHJld2FyZExpbmUgPSBgXG7wn6qZIEAke3dpbm5lckppZC5zcGxpdCgiQCIpWzBdfSBlYXJuZWQgKivwn6qZICR7V0lOX1JFV0FSRH0qIGNvaW5zIWA7CiAgICAgICAgfQogICAgICB9IGNhdGNoIHsKICAgICAgICAvLyBFY29ub215IHVuYXZhaWxhYmxlIOKAlCBzdGlsbCBhbm5vdW5jZSB0aGUgd2luCiAgICAgIH0KCiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgIHRleHQ6CmAke2JvYXJkfQrwn4+GICpAJHt3aW5uZXJKaWQuc3BsaXQoIkAiKVswXX0gd2lucyEqJHtyZXdhcmRMaW5lfQoKQmV0dGVyIGx1Y2sgbmV4dCB0aW1lLCBAJHtsb3NlckppZC5zcGxpdCgiQCIpWzBdfSEKClJlbWF0Y2g6ICoudHR0IEB1c2VyKmAsCiAgICAgICAgbWVudGlvbnM6IFt3aW5uZXJKaWQsIGxvc2VySmlkXSwKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICAvLyDilIDilIAgR2FtZSBjb250aW51ZXMg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACiAgICBjb25zdCBuZXh0VHVybiA9IGdhbWUudHVybjsKICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICB0ZXh0OgpgJHtib2FyZH0K8J+OryBUdXJuOiBAJHtuZXh0VHVybi5zcGxpdCgiQCIpWzBdfQoKVXNlICoubSA8MS05PiogdG8gbWFrZSB5b3VyIG1vdmUuYCwKICAgICAgbWVudGlvbnM6IFtuZXh0VHVybl0sCiAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogIH0sCn07Cg==
+// plugins/games/ttmove.js
+// Process moves in an active Tic Tac Toe game.
+// Usage: .m <1-9>
+//
+// Rewards the winner with coins. No penalty for the loser.
+
+import { games } from "../../lib/tictactoe.js";
+import { addMoney, isRegistered } from "../economy/database.js";
+
+const WIN_REWARD = 200; // coins awarded to the winner
+
+export default {
+  name: "m",
+  description: "Make a move in the active Tic Tac Toe game (1–9)",
+  category: "games",
+  usage: ".m <1-9>",
+  aliases: ["move"],
+  cooldown: 1,
+
+  async run({ sock, msg, sender, args }) {
+    const jid = msg.key.remoteJid;
+
+    if (!jid.endsWith("@g.us")) {
+      return sock.sendMessage(jid, {
+        text: "❌ Tic Tac Toe only works in groups.",
+      }, { quoted: msg });
+    }
+
+    const game = games.get(jid);
+
+    if (!game) {
+      return sock.sendMessage(jid, {
+        text: "❌ No active Tic Tac Toe game here.\n\nStart one with *.ttt @user*",
+      }, { quoted: msg });
+    }
+
+    // Clean up if already finished (shouldn't happen, but be safe)
+    if (game.finished) {
+      games.delete(jid);
+      return sock.sendMessage(jid, {
+        text: "❌ That game has already ended. Start a new one with *.ttt @user*",
+      }, { quoted: msg });
+    }
+
+    // Only the two players can move
+    if (sender !== game.playerX && sender !== game.playerO) {
+      return sock.sendMessage(jid, {
+        text: "❌ You are not a player in this game!",
+      }, { quoted: msg });
+    }
+
+    const pos = parseInt(args[0]);
+    if (!args[0] || isNaN(pos) || pos < 1 || pos > 9) {
+      return sock.sendMessage(jid, {
+        text: `❌ Pick a number from *1–9*.\n\n${game.render()}`,
+        mentions: [game.turn],
+      }, { quoted: msg });
+    }
+
+    const result = game.move(sender, pos);
+
+    if (!result.success) {
+      return sock.sendMessage(jid, {
+        text: `❌ ${result.message}`,
+      }, { quoted: msg });
+    }
+
+    const board = game.render();
+
+    // ── Draw ─────────────────────────────────────────────────────────────────
+    if (result.draw) {
+      games.delete(jid);
+      return sock.sendMessage(jid, {
+        text:
+`${board}
+🤝 *It's a draw!*
+
+@${game.playerX.split("@")[0]} vs @${game.playerO.split("@")[0]}
+
+No coins this time. Rematch with *.ttt @user*`,
+        mentions: [game.playerX, game.playerO],
+      }, { quoted: msg });
+    }
+
+    // ── Winner ───────────────────────────────────────────────────────────────
+    if (result.winner) {
+      const winnerJid = game.winner;
+      const loserJid  = winnerJid === game.playerX ? game.playerO : game.playerX;
+
+      games.delete(jid);
+
+      // Award coins — only if the winner is registered in the economy
+      let rewardLine = "";
+      try {
+        if (await isRegistered(winnerJid)) {
+          await addMoney(winnerJid, WIN_REWARD);
+          rewardLine = `\n💰 @${winnerJid.split("@")[0]} earned *+$${WIN_REWARD}* coins!`;
+        }
+      } catch {
+        // Economy unavailable — still announce the win
+      }
+
+      return sock.sendMessage(jid, {
+        text:
+`${board}
+🏆 *@${winnerJid.split("@")[0]} wins!*${rewardLine}
+
+Better luck next time, @${loserJid.split("@")[0]}!
+
+Rematch: *.ttt @user*`,
+        mentions: [winnerJid, loserJid],
+      }, { quoted: msg });
+    }
+
+    // ── Game continues ────────────────────────────────────────────────────────
+    const nextTurn = game.turn;
+    return sock.sendMessage(jid, {
+      text:
+`${board}
+🎯 Turn: @${nextTurn.split("@")[0]}
+
+Use *.m <1-9>* to make your move.`,
+      mentions: [nextTurn],
+    }, { quoted: msg });
+  },
+};

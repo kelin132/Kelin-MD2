@@ -1,1 +1,34 @@
-aW1wb3J0IHsgQ29sIH0gZnJvbSAiLi9kYi5qcyI7CgpleHBvcnQgZGVmYXVsdCB7CiAgbmFtZTogInZzIiwKICBhbGlhc2VzOiBbIm15bGlzdGluZ3MiLCAibXltYXJrZXQiXSwKICBjYXRlZ29yeTogImNhcmRzIiwKICBkZXNjcmlwdGlvbjogIlZpZXcgeW91ciBjYXJkcyBsaXN0ZWQgZm9yIHNhbGUgaW4gdGhlIG1hcmtldHBsYWNlIiwKICB1c2FnZTogIi52cyIsCgogIGFzeW5jIHJ1bih7IHNvY2ssIG1zZywgc2VuZGVyIH0pIHsKICAgIGNvbnN0IGppZCAgID0gbXNnLmtleS5yZW1vdGVKaWQ7CiAgICBjb25zdCByZXBseSA9ICh0ZXh0KSA9PiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgeyB0ZXh0IH0sIHsgcXVvdGVkOiBtc2cgfSk7CgogICAgdHJ5IHsKICAgICAgY29uc3QgdXNlcklkID0gc2VuZGVyLnNwbGl0KCJAIilbMF07CiAgICAgIGNvbnN0IG1hcmtldCA9IGF3YWl0IENvbC5tYXJrZXQoKTsKICAgICAgY29uc3QgY2FyZHMgID0gYXdhaXQgbWFya2V0LmZpbmQoeyBzZWxsZXJJZDogdXNlcklkIH0pLnRvQXJyYXkoKTsKCiAgICAgIGlmICghY2FyZHMubGVuZ3RoKSByZXR1cm4gcmVwbHkoIvCfk60gWW91IGhhdmVuJ3QgbGlzdGVkIGFueSBjYXJkcyBmb3Igc2FsZS5cblxuVXNlIC5zZWxsYyA8aW5kZXg+IDxwcmljZT4gdG8gbGlzdCBvbmUuIik7CgogICAgICBsZXQgdGV4dCA9ICLwn5OLICpZT1VSIExJU1RFRCBDQVJEUypcblxuIjsKICAgICAgY2FyZHMuZm9yRWFjaCgoYywgaSkgPT4gewogICAgICAgIHRleHQgKz0gYCR7aSArIDF9LiAqJHtjLmNhcmROYW1lfSogWyR7Yy5jYXJkUmFyaXR5fV1cbvCfqpkgUHJpY2U6IPCfqpkgJHtOdW1iZXIoYy5wcmljZSkudG9Mb2NhbGVTdHJpbmcoKX1cblxuYDsKICAgICAgfSk7CiAgICAgIHRleHQgKz0gIlVzZSAqLnJjIDxpbmRleD4qIHRvIHJlbW92ZSBhIGxpc3RpbmcuIjsKCiAgICAgIHJldHVybiByZXBseSh0ZXh0KTsKCiAgICB9IGNhdGNoIChlcnIpIHsKICAgICAgY29uc29sZS5lcnJvcigiVlMgRVJST1I6IiwgZXJyKTsKICAgICAgcmV0dXJuIHJlcGx5KCLinYwgRmFpbGVkIHRvIGZldGNoIHlvdXIgbGlzdGluZ3MuIik7CiAgICB9CiAgfSwKfTsK
+import { Col } from "./db.js";
+
+export default {
+  name: "vs",
+  aliases: ["mylistings", "mymarket"],
+  category: "cards",
+  description: "View your cards listed for sale in the marketplace",
+  usage: ".vs",
+
+  async run({ sock, msg, sender }) {
+    const jid   = msg.key.remoteJid;
+    const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
+
+    try {
+      const userId = sender.split("@")[0];
+      const market = await Col.market();
+      const cards  = await market.find({ sellerId: userId }).toArray();
+
+      if (!cards.length) return reply("📭 You haven't listed any cards for sale.\n\nUse .sellc <index> <price> to list one.");
+
+      let text = "📋 *YOUR LISTED CARDS*\n\n";
+      cards.forEach((c, i) => {
+        text += `${i + 1}. *${c.cardName}* [${c.cardRarity}]\n💰 Price: $${Number(c.price).toLocaleString()}\n\n`;
+      });
+      text += "Use *.rc <index>* to remove a listing.";
+
+      return reply(text);
+
+    } catch (err) {
+      console.error("VS ERROR:", err);
+      return reply("❌ Failed to fetch your listings.");
+    }
+  },
+};

@@ -1,1 +1,80 @@
-aW1wb3J0IHsgZmluZE9yQ3JlYXRlVXNlciB9IGZyb20gIi4vZGIuanMiOwppbXBvcnQgeyBzZW5kQ2FyZE1lZGlhLCBUSUVSX0VNT0pJIH0gZnJvbSAiLi4vLi4vbGliL2NhcmRBcGkubWpzIjsKCmV4cG9ydCBkZWZhdWx0IHsKICBuYW1lOiAiY2FyZCIsCiAgYWxpYXNlczogWyJ2aWV3Y2FyZCJdLAogIGNhdGVnb3J5OiAiY2FyZHMiLAogIGRlc2NyaXB0aW9uOiAiVmlldyBhIGNhcmQgZnJvbSB5b3VyIGNvbGxlY3Rpb24gYnkgaW5kZXgiLAogIHVzYWdlOiAiLmNhcmQgPGluZGV4PiIsCgogIGFzeW5jIHJ1bih7IHNvY2ssIG1zZywgYXJncywgc2VuZGVyIH0pIHsKICAgIGNvbnN0IGppZCAgID0gbXNnLmtleS5yZW1vdGVKaWQ7CiAgICBjb25zdCByZXBseSA9ICh0ZXh0KSA9PiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgeyB0ZXh0IH0sIHsgcXVvdGVkOiBtc2cgfSk7CgogICAgdHJ5IHsKICAgICAgY29uc3QgdXNlciA9IGF3YWl0IGZpbmRPckNyZWF0ZVVzZXIoc2VuZGVyKTsKCiAgICAgIGlmICghQXJyYXkuaXNBcnJheSh1c2VyLmNhcmRzKSB8fCB1c2VyLmNhcmRzLmxlbmd0aCA9PT0gMCkgewogICAgICAgIHJldHVybiByZXBseSgKYOKVreKUgOKdgOOAjCDwn460ICrwnZCC8J2QgPCdkJHwnZCDIPCdkJXwnZCI8J2QhPCdkJYqIOOAjeKdgOKUgOKVrgrilIIg4p2MIFlvdSBoYXZlIG5vIGNhcmRzIHlldCEK4pSCCuKUgiDwn5KhIFdhaXQgZm9yIGEgc3Bhd24gYW5kIHR5cGUK4pSCICAgICouY2xhaW0gPElEPiogdG8gZ3JhYiBvbmUuCuKVsOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKdgGAKICAgICAgICApOwogICAgICB9CgogICAgICBpZiAoIWFyZ3NbMF0pIHsKICAgICAgICByZXR1cm4gcmVwbHkoCmDila3ilIDinYDjgIwg8J+OtCAq8J2QgvCdkIDwnZCR8J2QgyDwnZCV8J2QiPCdkITwnZCWKiDjgI3inYDilIDila4K4pSCIPCfkqEgKlVzYWdlKiA6OiAqLmNhcmQgPGluZGV4PioK4pSCCuKUgiDwn4OPIFlvdSBvd24gKiR7dXNlci5jYXJkcy5sZW5ndGh9KiBjYXJkKHMpLgrilIIgICAgVXNlICouY29sKiB0byBicm93c2UgdGhlbS4K4pWw4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4p2AYAogICAgICAgICk7CiAgICAgIH0KCiAgICAgIGNvbnN0IGluZGV4ID0gcGFyc2VJbnQoYXJnc1swXSk7CiAgICAgIGlmIChpc05hTihpbmRleCkgfHwgaW5kZXggPCAxIHx8IGluZGV4ID4gdXNlci5jYXJkcy5sZW5ndGgpIHsKICAgICAgICByZXR1cm4gcmVwbHkoCmDila3ilIDinYDjgIwg8J+OtCAq8J2QgvCdkIDwnZCR8J2QgyDwnZCV8J2QiPCdkITwnZCWKiDjgI3inYDilIDila4K4pSCIOKdjCBJbnZhbGlkIGNhcmQgbnVtYmVyIQrilIIK4pSCIPCfg48gWW91IGhhdmUgKiR7dXNlci5jYXJkcy5sZW5ndGh9KiBjYXJkKHMpLgrilIIgICAgVXNlICouY29sKiB0byBzZWUgdGhlIGxpc3QuCuKVsOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKdgGAKICAgICAgICApOwogICAgICB9CgogICAgICBjb25zdCBjYXJkICA9IHVzZXIuY2FyZHNbaW5kZXggLSAxXTsKICAgICAgY29uc3QgZW1vamkgPSBUSUVSX0VNT0pJW2NhcmQudGllcl0gfHwgIuKtkCI7CgogICAgICBjb25zdCBjYXB0aW9uID0KYOKVreKUgOKdgOOAjCDwn460ICrwnZCC8J2QgPCdkJHwnZCDIPCdkJXwnZCI8J2QhPCdkJYqIOOAjeKdgOKUgOKVrgrilIIgJHtlbW9qaX0gKiR7Y2FyZC5uYW1lIHx8ICJVbmtub3duIn0qCuKUggrilIIg8J+Pt++4jyAgKlRpZXIqICAgOjogKiR7Y2FyZC50aWVyIHx8ICJVbmtub3duIn0qCuKUgiDwn5O6ICpTZXJpZXMqIDo6ICoke2NhcmQuc2VyaWVzIHx8ICJVbmtub3duIn0qCuKUgiDwn4aUICpJRCogICAgIDo6IFxgJHtjYXJkLmNhcmRJZCB8fCAiVW5rbm93biJ9XGAK4pSCIPCfko4gKlZhbHVlKiAgOjogKvCfqpkgJHsoY2FyZC5wcmljZSB8fCAwKS50b0xvY2FsZVN0cmluZygpfSoK4pSCCuKUgiDwn4OPIENhcmQgKiMke2luZGV4fSogb2YgKiR7dXNlci5jYXJkcy5sZW5ndGh9KgrilbDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDinYBgOwoKICAgICAgaWYgKGNhcmQubWVkaWEpIHsKICAgICAgICB0cnkgewogICAgICAgICAgcmV0dXJuIGF3YWl0IHNlbmRDYXJkTWVkaWEoc29jaywgamlkLCBjYXJkLCBjYXB0aW9uLCB7IHF1b3RlZDogbXNnIH0pOwogICAgICAgIH0gY2F0Y2ggeyAvKiBmYWxsIHRocm91Z2ggdG8gdGV4dCAqLyB9CiAgICAgIH0KCiAgICAgIHJldHVybiByZXBseShjYXB0aW9uKTsKCiAgICB9IGNhdGNoIChlcnIpIHsKICAgICAgY29uc29sZS5lcnJvcigiQ0FSRCBFUlJPUjoiLCBlcnIpOwogICAgICByZXR1cm4gcmVwbHkoIuKdjCBGYWlsZWQgdG8gc2hvdyBjYXJkLiIpOwogICAgfQogIH0sCn07Cg==
+import { findOrCreateUser } from "./db.js";
+import { sendCardMedia, TIER_EMOJI } from "../../lib/cardApi.mjs";
+
+export default {
+  name: "card",
+  aliases: ["viewcard"],
+  category: "cards",
+  description: "View a card from your collection by index",
+  usage: ".card <index>",
+
+  async run({ sock, msg, args, sender }) {
+    const jid   = msg.key.remoteJid;
+    const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
+
+    try {
+      const user = await findOrCreateUser(sender);
+
+      if (!Array.isArray(user.cards) || user.cards.length === 0) {
+        return reply(
+`╭─❀「 🎴 *𝐂𝐀𝐑𝐃 𝐕𝐈𝐄𝐖* 」❀─╮
+│ ❌ You have no cards yet!
+│
+│ 💡 Wait for a spawn and type
+│    *.claim <ID>* to grab one.
+╰───────────────❀`
+        );
+      }
+
+      if (!args[0]) {
+        return reply(
+`╭─❀「 🎴 *𝐂𝐀𝐑𝐃 𝐕𝐈𝐄𝐖* 」❀─╮
+│ 💡 *Usage* :: *.card <index>*
+│
+│ 🃏 You own *${user.cards.length}* card(s).
+│    Use *.col* to browse them.
+╰───────────────❀`
+        );
+      }
+
+      const index = parseInt(args[0]);
+      if (isNaN(index) || index < 1 || index > user.cards.length) {
+        return reply(
+`╭─❀「 🎴 *𝐂𝐀𝐑𝐃 𝐕𝐈𝐄𝐖* 」❀─╮
+│ ❌ Invalid card number!
+│
+│ 🃏 You have *${user.cards.length}* card(s).
+│    Use *.col* to see the list.
+╰───────────────❀`
+        );
+      }
+
+      const card  = user.cards[index - 1];
+      const emoji = TIER_EMOJI[card.tier] || "⭐";
+
+      const caption =
+`╭─❀「 🎴 *𝐂𝐀𝐑𝐃 𝐕𝐈𝐄𝐖* 」❀─╮
+│ ${emoji} *${card.name || "Unknown"}*
+│
+│ 🏷️  *Tier*   :: *${card.tier || "Unknown"}*
+│ 📺 *Series* :: *${card.series || "Unknown"}*
+│ 🆔 *ID*     :: \`${card.cardId || "Unknown"}\`
+│ 💎 *Value*  :: *$${(card.price || 0).toLocaleString()}*
+│
+│ 🃏 Card *#${index}* of *${user.cards.length}*
+╰───────────────❀`;
+
+      if (card.media) {
+        try {
+          return await sendCardMedia(sock, jid, card, caption, { quoted: msg });
+        } catch { /* fall through to text */ }
+      }
+
+      return reply(caption);
+
+    } catch (err) {
+      console.error("CARD ERROR:", err);
+      return reply("❌ Failed to show card.");
+    }
+  },
+};

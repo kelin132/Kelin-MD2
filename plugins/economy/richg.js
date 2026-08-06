@@ -1,1 +1,52 @@
-aW1wb3J0IHsgZ2V0VXNlciB9IGZyb20gIi4vZGF0YWJhc2UuanMiOwoKZXhwb3J0IGRlZmF1bHQgewogIG5hbWU6ICJyaWNoZyIsCiAgYWxpYXNlczogWyJncm91cHJpY2giLCAiZ2xiIl0sCiAgY2F0ZWdvcnk6ICJlY29ub215IiwKICBkZXNjcmlwdGlvbjogIlJpY2hlc3QgcGxheWVycyBpbiB0aGlzIGdyb3VwIiwKICB1c2FnZTogIi5yaWNoZyIsCiAgY29vbGRvd246IDE1LAoKICBhc3luYyBydW4oeyBzb2NrLCBtc2cgfSkgewogICAgY29uc3QgamlkICAgPSBtc2cua2V5LnJlbW90ZUppZDsKICAgIGNvbnN0IHJlcGx5ID0gKHRleHQpID0+IHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7IHRleHQgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKCiAgICBpZiAoIWppZC5lbmRzV2l0aCgiQGcudXMiKSkgewogICAgICByZXR1cm4gcmVwbHkoIuKdjCBUaGlzIGNvbW1hbmQgb25seSB3b3JrcyBpbiBncm91cHMhIik7CiAgICB9CgogICAgdHJ5IHsKICAgICAgY29uc3QgbWV0YSAgICA9IGF3YWl0IHNvY2suZ3JvdXBNZXRhZGF0YShqaWQpOwogICAgICBjb25zdCBtZW1iZXJzID0gbWV0YS5wYXJ0aWNpcGFudHMubWFwKHAgPT4gcC5pZCk7CgogICAgICBjb25zdCByZXN1bHRzID0gYXdhaXQgUHJvbWlzZS5hbGxTZXR0bGVkKG1lbWJlcnMubWFwKG0gPT4gZ2V0VXNlcihtKSkpOwoKICAgICAgY29uc3QgdXNlcnMgPSByZXN1bHRzCiAgICAgICAgLmZpbHRlcihyID0+IHIuc3RhdHVzID09PSAiZnVsZmlsbGVkIiAmJiByLnZhbHVlPy5yZWdpc3RlcmVkKQogICAgICAgIC5tYXAoKHIsIGkpID0+ICh7IC4uLnIudmFsdWUsIGppZDogbWVtYmVyc1tpXSB9KSkKICAgICAgICAubWFwKHUgPT4gKHsgLi4udSwgbmV0OiAodS5tb25leSB8fCAwKSArICh1LmJhbmsgfHwgMCkgfSkpCiAgICAgICAgLnNvcnQoKGEsIGIpID0+IGIubmV0IC0gYS5uZXQpCiAgICAgICAgLnNsaWNlKDAsIDEwKTsKCiAgICAgIGlmICghdXNlcnMubGVuZ3RoKSB7CiAgICAgICAgcmV0dXJuIHJlcGx5KCLinYwgTm8gcmVnaXN0ZXJlZCB1c2VycyBpbiB0aGlzIGdyb3VwIHlldC5cblxuVXNlICoucmVnaXN0ZXIgPG5hbWU+KiB0byBqb2luISIpOwogICAgICB9CgogICAgICBjb25zdCBtZWRhbHMgPSBbIvCfpYciLCAi8J+liCIsICLwn6WJIl07CiAgICAgIGxldCB0ZXh0ID0gYPCfj4YgKkdST1VQIExFQURFUkJPQVJEKlxu8J+TjSAke21ldGEuc3ViamVjdH1cblxuYDsKCiAgICAgIHVzZXJzLmZvckVhY2goKHUsIGkpID0+IHsKICAgICAgICBjb25zdCByYW5rID0gbWVkYWxzW2ldIHx8IGAke2kgKyAxfS5gOwogICAgICAgIGNvbnN0IG5hbWUgPSB1Lm5hbWUgfHwgYFVzZXJfJHt1LmppZD8uc3BsaXQoIkAiKVswXT8uc2xpY2UoLTQpIHx8ICI/Pz8ifWA7CiAgICAgICAgdGV4dCArPSBgJHtyYW5rfSAqJHtuYW1lfSpcbmA7CiAgICAgICAgdGV4dCArPSBgICAg8J+qmSDwn6qZICR7dS5uZXQudG9Mb2NhbGVTdHJpbmcoKX0gIOKAoiAg4q2QIEx2JHt1LmxldmVsIHx8IDF9XG5cbmA7CiAgICAgIH0pOwoKICAgICAgcmV0dXJuIHJlcGx5KHRleHQpOwogICAgfSBjYXRjaCAoZXJyKSB7CiAgICAgIGNvbnNvbGUuZXJyb3IoIlJJQ0hHIEVSUk9SOiIsIGVycik7CiAgICAgIHJldHVybiByZXBseSgi4p2MIEZhaWxlZCB0byBsb2FkIGdyb3VwIGxlYWRlcmJvYXJkLiIpOwogICAgfQogIH0sCn07Cg==
+import { getUser } from "./database.js";
+
+export default {
+  name: "richg",
+  aliases: ["grouprich", "glb"],
+  category: "economy",
+  description: "Richest players in this group",
+  usage: ".richg",
+  cooldown: 15,
+
+  async run({ sock, msg }) {
+    const jid   = msg.key.remoteJid;
+    const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
+
+    if (!jid.endsWith("@g.us")) {
+      return reply("❌ This command only works in groups!");
+    }
+
+    try {
+      const meta    = await sock.groupMetadata(jid);
+      const members = meta.participants.map(p => p.id);
+
+      const results = await Promise.allSettled(members.map(m => getUser(m)));
+
+      const users = results
+        .filter(r => r.status === "fulfilled" && r.value?.registered)
+        .map((r, i) => ({ ...r.value, jid: members[i] }))
+        .map(u => ({ ...u, net: (u.money || 0) + (u.bank || 0) }))
+        .sort((a, b) => b.net - a.net)
+        .slice(0, 10);
+
+      if (!users.length) {
+        return reply("❌ No registered users in this group yet.\n\nUse *.register <name>* to join!");
+      }
+
+      const medals = ["🥇", "🥈", "🥉"];
+      let text = `🏆 *GROUP LEADERBOARD*\n📍 ${meta.subject}\n\n`;
+
+      users.forEach((u, i) => {
+        const rank = medals[i] || `${i + 1}.`;
+        const name = u.name || `User_${u.jid?.split("@")[0]?.slice(-4) || "???"}`;
+        text += `${rank} *${name}*\n`;
+        text += `   💰 $${u.net.toLocaleString()}  •  ⭐ Lv${u.level || 1}\n\n`;
+      });
+
+      return reply(text);
+    } catch (err) {
+      console.error("RICHG ERROR:", err);
+      return reply("❌ Failed to load group leaderboard.");
+    }
+  },
+};

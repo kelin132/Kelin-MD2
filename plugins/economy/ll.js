@@ -1,1 +1,118 @@
-Ly8gcGx1Z2lucy9lY29ub215L2xsLmpzCi8vIC5sbCAgICAgICAgICDigJQgc2hvdyBsb3R0ZXJ5IHBvb2wgc3RhdHVzCi8vIC5sbCBkcmF3ICAgICDigJQgb3duZXItb25seTogZHJhdyB3aW5uZXIgKHJlcXVpcmVzIOKJpTcgZW50cmllcykKCmltcG9ydCB7IGdldERiIH0gZnJvbSAiLi4vLi4vbGliL21vbmdvLm1qcyI7CmltcG9ydCB7IGdlbmVyYXRlV0FNZXNzYWdlRnJvbUNvbnRlbnQsIHByb3RvIH0gZnJvbSAiQHdoaXNrZXlzb2NrZXRzL2JhaWxleXMiOwoKY29uc3QgUkVRVUlSRUQgPSA3OyAvLyBtaW5pbXVtIHRvdGFsIHRpY2tldHMgYmVmb3JlIGEgZHJhdyBjYW4gaGFwcGVuCgpleHBvcnQgZGVmYXVsdCB7CiAgbmFtZTogImxsIiwKICBkZXNjcmlwdGlvbjogIkxvdHRlcnkgc3RhdHVzIG9yIG93bmVyIGRyYXciLAogIGNhdGVnb3J5OiAiZWNvbm9teSIsCiAgdXNhZ2U6ICIubGwgfCAubGwgZHJhdyIsCiAgY29vbGRvd246IDUsCgogIGFzeW5jIHJ1bih7IHNvY2ssIG1zZywgc2VuZGVyLCBhcmdzLCBpc093bmVyIH0pIHsKICAgIGNvbnN0IGppZCAgID0gbXNnLmtleS5yZW1vdGVKaWQ7CiAgICBjb25zdCByZXBseSA9ICh0ZXh0KSA9PiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgeyB0ZXh0IH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICBjb25zdCBzdWIgICA9IChhcmdzWzBdIHx8ICIiKS50b0xvd2VyQ2FzZSgpOwoKICAgIHRyeSB7CiAgICAgIGNvbnN0IGRiICA9IGdldERiKCk7CiAgICAgIGNvbnN0IGxvdCA9IGF3YWl0IGRiLmNvbGxlY3Rpb24oImxvdHRlcnkiKS5maW5kT25lKHsgX2lkOiAiY3VycmVudCIgfSk7CgogICAgICAvLyDilIDilIAgRFJBVyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKICAgICAgaWYgKHN1YiA9PT0gImRyYXciKSB7CiAgICAgICAgaWYgKCFpc093bmVyKSByZXR1cm4gcmVwbHkoIuKdjCBPbmx5IHRoZSBvd25lciBjYW4gZHJhdyB0aGUgbG90dGVyeS4iKTsKICAgICAgICBpZiAoIWxvdCB8fCAhbG90LnRpY2tldHM/Lmxlbmd0aCkgcmV0dXJuIHJlcGx5KCLinYwgTm8gYWN0aXZlIGxvdHRlcnkuIik7CgogICAgICAgIGNvbnN0IHRvdGFsVGlja2V0cyA9IGxvdC50b3RhbFRpY2tldHMgfHwgMDsKICAgICAgICBpZiAodG90YWxUaWNrZXRzIDwgUkVRVUlSRUQpIHsKICAgICAgICAgIHJldHVybiByZXBseShg4p2MIE5lZWQgYXQgbGVhc3QgJHtSRVFVSVJFRH0gdG90YWwgdGlja2V0cyB0byBkcmF3LlxuQ3VycmVudDogJHt0b3RhbFRpY2tldHN9YCk7CiAgICAgICAgfQoKICAgICAgICAvLyBCdWlsZCB3ZWlnaHRlZCBwb29sCiAgICAgICAgY29uc3QgcG9vbCA9IFtdOwogICAgICAgIGZvciAoY29uc3QgdCBvZiBsb3QudGlja2V0cykgewogICAgICAgICAgZm9yIChsZXQgaSA9IDA7IGkgPCAodC5jb3VudCB8fCAwKTsgaSsrKSBwb29sLnB1c2godCk7CiAgICAgICAgfQoKICAgICAgICBjb25zdCB3aW5uZXIgPSBwb29sW01hdGguZmxvb3IoTWF0aC5yYW5kb20oKSAqIHBvb2wubGVuZ3RoKV07CiAgICAgICAgY29uc3QgcHJpemUgID0gbG90LmphY2twb3QgfHwgMDsKCiAgICAgICAgLy8gQXdhcmQgcHJpemUKICAgICAgICBjb25zdCB3aW5uZXJKaWQgPSBgJHt3aW5uZXIudXNlcklkfUBzLndoYXRzYXBwLm5ldGA7CiAgICAgICAgYXdhaXQgZGIuY29sbGVjdGlvbigiZWNvbm9teV91c2VycyIpLnVwZGF0ZU9uZSgKICAgICAgICAgIHsgamlkOiB3aW5uZXJKaWQgfSwKICAgICAgICAgIHsgJGluYzogeyBtb25leTogcHJpemUgfSB9CiAgICAgICAgKTsKCiAgICAgICAgLy8gUmVzZXQgbG90dGVyeSB3aXRoIGEgZnJlc2ggamFja3BvdAogICAgICAgIGNvbnN0IG5ld0Jhc2UgPSBNYXRoLmZsb29yKE1hdGgucmFuZG9tKCkgKiAoNTBfMDAwXzAwMCAtIDEwXzAwMF8wMDAgKyAxKSkgKyAxMF8wMDBfMDAwOwogICAgICAgIGF3YWl0IGRiLmNvbGxlY3Rpb24oImxvdHRlcnkiKS51cGRhdGVPbmUoCiAgICAgICAgICB7IF9pZDogImN1cnJlbnQiIH0sCiAgICAgICAgICB7ICRzZXQ6IHsgdGlja2V0czogW10sIHRvdGFsVGlja2V0czogMCwgamFja3BvdDogbmV3QmFzZSwgYmFzZUphY2twb3Q6IG5ld0Jhc2UsIGNyZWF0ZWRBdDogbmV3IERhdGUoKSB9IH0KICAgICAgICApOwoKICAgICAgICByZXR1cm4gc29jay5zZW5kTWVzc2FnZShqaWQsIHsKICAgICAgICAgIHRleHQ6CmDila3ilIHilIHilIHjgJQg8J+OsCDwnZGz8J2RtvCdkbvwnZG78J2RrPCdkbnwnZKAIPCdkavwnZG58J2RqPCdkb4g8J+PhiDjgJXilIHilIHilIHila4K4pSDIOKcpiBUaGUgd2lubmluZyB0aWNrZXQgaGFzIGJlZW4gZHJhd24uLi4K4pSDCuKUgyDwn4+GIFdpbm5lciAg4p6cIOOAjiBAJHt3aW5uZXIudXNlcklkfSDjgI8K4pSDIPCfjqsgVGlja2V0cyDinpwg44COICR7d2lubmVyLmNvdW50fSDjgI8K4pSDCuKUo+KUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgQrilIMg8J+qmSBKYWNrcG90IFdvbiDigLog8J+qmSAke3ByaXplLnRvTG9jYWxlU3RyaW5nKCl9CuKUo+KUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgQrilIMg8J+OiSDwnZeW8J2XovCdl6HwnZea8J2XpfCdl5TwnZen8J2XqPCdl5/wnZeU8J2Xp/Cdl5zwnZei8J2XofCdl6YhCuKUgyBBIG5ldyBsb3R0ZXJ5IGhhcyBzdGFydGVkIQrilbDilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHila9gLAogICAgICAgICAgbWVudGlvbnM6IFt3aW5uZXJKaWRdLAogICAgICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICAgIH0KCiAgICAgIC8vIOKUgOKUgCBTVEFUVVMgKHBvbGwtc3R5bGUpIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAogICAgICBjb25zdCB0aWNrZXRzID0gbG90Py50aWNrZXRzIHx8IFtdOwogICAgICBjb25zdCB0b3RhbEVudHJpZXMgPSBsb3Q/LnRvdGFsVGlja2V0cyB8fCAwOwoKICAgICAgdHJ5IHsKICAgICAgICBjb25zdCBwb2xsTXNnID0gZ2VuZXJhdGVXQU1lc3NhZ2VGcm9tQ29udGVudCgKICAgICAgICAgIGppZCwKICAgICAgICAgIHByb3RvLk1lc3NhZ2UuZnJvbU9iamVjdCh7CiAgICAgICAgICAgIHBvbGxSZXN1bHRTbmFwc2hvdE1lc3NhZ2U6CiAgICAgICAgICAgICAgcHJvdG8uTWVzc2FnZS5Qb2xsUmVzdWx0U25hcHNob3RNZXNzYWdlLmZyb21PYmplY3QoewogICAgICAgICAgICAgICAgbmFtZTogYPCfjp/vuI8gTG90dGVyeSBQb29sIOKAlCAke1JFUVVJUkVEfSBlbnRyaWVzIHJlcXVpcmVkIHRvIGRyYXdgLAogICAgICAgICAgICAgICAgcG9sbFZvdGVzOiBbCiAgICAgICAgICAgICAgICAgIHsgb3B0aW9uTmFtZTogIvCflJIgUmVxdWlyZWQgZW50cmllcyIsIG9wdGlvblZvdGVDb3VudDogUkVRVUlSRUQgfSwKICAgICAgICAgICAgICAgICAgeyBvcHRpb25OYW1lOiAi8J+OqyBDdXJyZW50IGVudHJpZXMiLCAgb3B0aW9uVm90ZUNvdW50OiB0b3RhbEVudHJpZXMgfSwKICAgICAgICAgICAgICAgIF0sCiAgICAgICAgICAgICAgfSksCiAgICAgICAgICB9KSwKICAgICAgICAgIHsgcXVvdGVkOiBtc2cgfQogICAgICAgICk7CiAgICAgICAgYXdhaXQgc29jay5yZWxheU1lc3NhZ2UoamlkLCBwb2xsTXNnLm1lc3NhZ2UsIHsgbWVzc2FnZUlkOiBwb2xsTXNnLmtleS5pZCB9KTsKICAgICAgfSBjYXRjaCAoXykgewogICAgICAgIC8vIEZhbGxiYWNrIHRvIHBsYWluIHRleHQgaWYgcG9sbCBmYWlscwogICAgICAgIGNvbnN0IGphY2twb3QgPSBsb3Q/LmphY2twb3QgPz8gMDsKICAgICAgICBjb25zdCBteUNvdW50ID0gdGlja2V0cy5maW5kKHQgPT4gdC51c2VySWQgPT09IHNlbmRlci5zcGxpdCgiQCIpWzBdKT8uY291bnQgPz8gMDsKICAgICAgICBhd2FpdCByZXBseSgKYOKVreKUgeKUgeKUgeOAlCDwn46wIPCdkbPwnZG28J2Ru/CdkbvwnZGs8J2RufCdkoAg8J2RuvCdkbvwnZGo8J2Ru/CdkbzwnZG6IOOAleKUgeKUgeKUgeKVrgrilIMg8J+qmSBKYWNrcG90ICAgICDigLog8J+qmSAke2phY2twb3QudG9Mb2NhbGVTdHJpbmcoKX0K4pSDIPCfjqsgRW50cmllcyAgICAg4oC6ICR7dG90YWxFbnRyaWVzfSAvICR7UkVRVUlSRUR9IHJlcXVpcmVkCuKUgyDwn46f77iPICBZb3VyIHRpY2tldHMg4oC6ICR7bXlDb3VudH0K4pSj4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSBCuKUgyDwn5KhIC5sb3R0ZXJ5IGJ1eSA8bj4gdG8gam9pbgrilIMg8J+SoSAubG90dGVyeSBkcmF3IOKAlCBkcmF3IHdpbm5lciAob3duZXIpCuKVsOKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKVr2AKICAgICAgICApOwogICAgICB9CgogICAgfSBjYXRjaCAoZXJyKSB7CiAgICAgIGNvbnNvbGUuZXJyb3IoIkxMIEVSUk9SOiIsIGVycik7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgeyB0ZXh0OiAi4p2MIExvdHRlcnkgZXJyb3I6ICIgKyBlcnIubWVzc2FnZSB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQogIH0sCn07Cg==
+// plugins/economy/ll.js
+// .ll          — show lottery pool status
+// .ll draw     — owner-only: draw winner (requires ≥7 entries)
+
+import { getDb } from "../../lib/mongo.mjs";
+import { generateWAMessageFromContent, proto } from "@whiskeysockets/baileys";
+
+const REQUIRED = 7; // minimum total tickets before a draw can happen
+
+export default {
+  name: "ll",
+  description: "Lottery status or owner draw",
+  category: "economy",
+  usage: ".ll | .ll draw",
+  cooldown: 5,
+
+  async run({ sock, msg, sender, args, isOwner }) {
+    const jid   = msg.key.remoteJid;
+    const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
+    const sub   = (args[0] || "").toLowerCase();
+
+    try {
+      const db  = getDb();
+      const lot = await db.collection("lottery").findOne({ _id: "current" });
+
+      // ── DRAW ──────────────────────────────────────────────────────────────
+      if (sub === "draw") {
+        if (!isOwner) return reply("❌ Only the owner can draw the lottery.");
+        if (!lot || !lot.tickets?.length) return reply("❌ No active lottery.");
+
+        const totalTickets = lot.totalTickets || 0;
+        if (totalTickets < REQUIRED) {
+          return reply(`❌ Need at least ${REQUIRED} total tickets to draw.\nCurrent: ${totalTickets}`);
+        }
+
+        // Build weighted pool
+        const pool = [];
+        for (const t of lot.tickets) {
+          for (let i = 0; i < (t.count || 0); i++) pool.push(t);
+        }
+
+        const winner = pool[Math.floor(Math.random() * pool.length)];
+        const prize  = lot.jackpot || 0;
+
+        // Award prize
+        const winnerJid = `${winner.userId}@s.whatsapp.net`;
+        await db.collection("economy_users").updateOne(
+          { jid: winnerJid },
+          { $inc: { money: prize } }
+        );
+
+        // Reset lottery with a fresh jackpot
+        const newBase = Math.floor(Math.random() * (50_000_000 - 10_000_000 + 1)) + 10_000_000;
+        await db.collection("lottery").updateOne(
+          { _id: "current" },
+          { $set: { tickets: [], totalTickets: 0, jackpot: newBase, baseJackpot: newBase, createdAt: new Date() } }
+        );
+
+        return sock.sendMessage(jid, {
+          text:
+`╭━━━〔 🎰 𝑳𝑶𝑻𝑻𝑬𝑹𝒀 𝑫𝑹𝑨𝑾 🏆 〕━━━╮
+┃ ✦ The winning ticket has been drawn...
+┃
+┃ 🏆 Winner  ➜ 『 @${winner.userId} 』
+┃ 🎫 Tickets ➜ 『 ${winner.count} 』
+┃
+┣━━━━━━━━━━━━━━━━━━━━
+┃ 💰 Jackpot Won › $${prize.toLocaleString()}
+┣━━━━━━━━━━━━━━━━━━━━
+┃ 🎉 𝗖𝗢𝗡𝗚𝗥𝗔𝗧𝗨𝗟𝗔𝗧𝗜𝗢𝗡𝗦!
+┃ A new lottery has started!
+╰━━━━━━━━━━━━━━━━━━━━╯`,
+          mentions: [winnerJid],
+        }, { quoted: msg });
+      }
+
+      // ── STATUS (poll-style) ───────────────────────────────────────────────
+      const tickets = lot?.tickets || [];
+      const totalEntries = lot?.totalTickets || 0;
+
+      try {
+        const pollMsg = generateWAMessageFromContent(
+          jid,
+          proto.Message.fromObject({
+            pollResultSnapshotMessage:
+              proto.Message.PollResultSnapshotMessage.fromObject({
+                name: `🎟️ Lottery Pool — ${REQUIRED} entries required to draw`,
+                pollVotes: [
+                  { optionName: "🔒 Required entries", optionVoteCount: REQUIRED },
+                  { optionName: "🎫 Current entries",  optionVoteCount: totalEntries },
+                ],
+              }),
+          }),
+          { quoted: msg }
+        );
+        await sock.relayMessage(jid, pollMsg.message, { messageId: pollMsg.key.id });
+      } catch (_) {
+        // Fallback to plain text if poll fails
+        const jackpot = lot?.jackpot ?? 0;
+        const myCount = tickets.find(t => t.userId === sender.split("@")[0])?.count ?? 0;
+        await reply(
+`╭━━━〔 🎰 𝑳𝑶𝑻𝑻𝑬𝑹𝒀 𝑺𝑻𝑨𝑻𝑼𝑺 〕━━━╮
+┃ 💰 Jackpot     › $${jackpot.toLocaleString()}
+┃ 🎫 Entries     › ${totalEntries} / ${REQUIRED} required
+┃ 🎟️  Your tickets › ${myCount}
+┣━━━━━━━━━━━━━━━━━━━━
+┃ 💡 .lottery buy <n> to join
+┃ 💡 .lottery draw — draw winner (owner)
+╰━━━━━━━━━━━━━━━━━━━━╯`
+        );
+      }
+
+    } catch (err) {
+      console.error("LL ERROR:", err);
+      return sock.sendMessage(jid, { text: "❌ Lottery error: " + err.message }, { quoted: msg });
+    }
+  },
+};

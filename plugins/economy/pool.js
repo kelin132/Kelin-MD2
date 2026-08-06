@@ -1,1 +1,347 @@
-LyoqCiAqIEtFTElOIE1EIOKAlCAucG9vbCAoSW52ZXN0bWVudCBQb29sKQogKiAzLXBlcnNvbiBzaGFyZWQgaW52ZXN0bWVudCBwb29sLiBBbGwgbWVtYmVycyBkZXBvc2l0IGVxdWFsbHkgJiBzaGFyZSBwcm9maXRzLgogKgogKiBDb21tYW5kczoKICogICAucG9vbCBjcmVhdGUgPGFtb3VudD4gPHNob3J0fG1lZGl1bXxsb25nPiBAdXNlcjEgQHVzZXIyIOKAlCBTdGFydCBhIHBvb2wgJiBpbnZpdGUgMiBvdGhlcnMKICogICAucG9vbCBqb2luICAgICAgICAg4oCUIEFjY2VwdCBhbiBpbnZpdGF0aW9uIHRvIGpvaW4gYSBwb29sCiAqICAgLnBvb2wgc3RhdHVzICAgICAgIOKAlCBDaGVjayB5b3VyIHBvb2wncyBzdGF0dXMKICogICAucG9vbCBjb2xsZWN0ICAgICAg4oCUIENvbGxlY3QgcHJvZml0cyB3aGVuIHRoZSBpbnZlc3RtZW50IG1hdHVyZXMKICogICAucG9vbCBjYW5jZWwgICAgICAg4oCUIENhbmNlbCBwZW5kaW5nIHBvb2wgKGNyZWF0b3Igb25seSkKICovCmltcG9ydCB7IGdldFVzZXIsIHNhdmVVc2VyLCByZXF1aXJlUmVnaXN0cmF0aW9uLCBhZGRIaXN0b3J5IH0gZnJvbSAiLi9kYXRhYmFzZS5qcyI7CmltcG9ydCB7IGdldERiIH0gZnJvbSAiLi4vLi4vbGliL21vbmdvLm1qcyI7Cgpjb25zdCBQT09MX1NJWkUgPSAzOyAvLyBhbHdheXMgZXhhY3RseSAzIG1lbWJlcnMKCmNvbnN0IFBMQU5TID0gewogIHNob3J0OiAgeyBsYWJlbDogIlNob3J0LVRlcm0iLCAgZW1vamk6ICLimqEiLCBkdXJhdGlvbjogNSAgKiA2MCAqIDEwMDAsICAgICAgbWluUmV0OiAwLjA1LCBtYXhSZXQ6IDAuMTUsIGNyYXNoQ2hhbmNlOiAwLjQ1LCBsb3NzUGN0OiAwLjEwLCBtaW5BbXQ6IDUwMCB9LAogIG1lZGl1bTogeyBsYWJlbDogIk1lZGl1bS1UZXJtIiwgZW1vamk6ICLwn5OKIiwgZHVyYXRpb246IDMwICogNjAgKiAxMDAwLCAgICAgIG1pblJldDogMC4yMCwgbWF4UmV0OiAwLjUwLCBjcmFzaENoYW5jZTogMC40NSwgbG9zc1BjdDogMC4yMCwgbWluQW10OiAyMDAwIH0sCiAgbG9uZzogICB7IGxhYmVsOiAiTG9uZy1UZXJtIiwgICBlbW9qaTogIvCfj6YiLCBkdXJhdGlvbjogMiAgKiA2MCAqIDYwICogMTAwMCwgbWluUmV0OiAwLjUwLCBtYXhSZXQ6IDEuMjAsIGNyYXNoQ2hhbmNlOiAwLjQ1LCBsb3NzUGN0OiAwLjMwLCBtaW5BbXQ6IDEwMDAwIH0sCn07CgpmdW5jdGlvbiBmbXRNcyhtcykgewogIGNvbnN0IGggPSBNYXRoLmZsb29yKG1zIC8gMzYwMDAwMCk7CiAgY29uc3QgbSA9IE1hdGguZmxvb3IoKG1zICUgMzYwMDAwMCkgLyA2MDAwMCk7CiAgY29uc3QgcyA9IE1hdGguZmxvb3IoKG1zICUgNjAwMDApIC8gMTAwMCk7CiAgaWYgKGggPiAwKSAgcmV0dXJuIGAke2h9aCAke219bWA7CiAgaWYgKG0gPiAwKSAgcmV0dXJuIGAke219bSAke3N9c2A7CiAgcmV0dXJuIGAke3N9c2A7Cn0KCmFzeW5jIGZ1bmN0aW9uIGdldFBvb2woaWQpIHsKICBjb25zdCBkYiA9IGF3YWl0IGdldERiKCk7CiAgcmV0dXJuIGRiLmNvbGxlY3Rpb24oImludmVzdF9wb29scyIpLmZpbmRPbmUoeyAkb3I6IFt7IGNyZWF0b3JJZDogaWQgfSwgeyBpbnZpdGVkSmlkczogaWQgfSwgeyAibWVtYmVycy5qaWQiOiBpZCB9XSB9KTsKfQoKYXN5bmMgZnVuY3Rpb24gc2F2ZVBvb2woZGF0YSkgewogIGNvbnN0IGRiID0gYXdhaXQgZ2V0RGIoKTsKICBjb25zdCB7IF9pZCwgLi4ucmVzdCB9ID0gZGF0YTsKICBhd2FpdCBkYi5jb2xsZWN0aW9uKCJpbnZlc3RfcG9vbHMiKS51cGRhdGVPbmUoCiAgICB7IHBvb2xJZDogZGF0YS5wb29sSWQgfSwKICAgIHsgJHNldDogcmVzdCB9LAogICAgeyB1cHNlcnQ6IHRydWUgfQogICk7Cn0KCmFzeW5jIGZ1bmN0aW9uIGRlbGV0ZVBvb2wocG9vbElkKSB7CiAgY29uc3QgZGIgPSBhd2FpdCBnZXREYigpOwogIGF3YWl0IGRiLmNvbGxlY3Rpb24oImludmVzdF9wb29scyIpLmRlbGV0ZU9uZSh7IHBvb2xJZCB9KTsKfQoKZXhwb3J0IGRlZmF1bHQgewogIG5hbWU6ICJwb29sIiwKICBhbGlhc2VzOiBbImludmVzdHBvb2wiLCAiaXBvb2wiXSwKICBjYXRlZ29yeTogImVjb25vbXkiLAogIGNvb2xkb3duOiA2LAogIGRlc2NyaXB0aW9uOiAiMy1wZXJzb24gc2hhcmVkIGludmVzdG1lbnQgcG9vbCDigJQgc3BsaXQgdGhlIHByb2ZpdHMhIiwKICB1c2FnZTogIi5wb29sIGNyZWF0ZSA8YW1vdW50PiA8cGxhbj4gQHVzZXIxIEB1c2VyMiB8IC5wb29sIGpvaW4gfCAucG9vbCBzdGF0dXMgfCAucG9vbCBjb2xsZWN0IiwKCiAgYXN5bmMgcnVuKHsgc29jaywgbXNnLCBzZW5kZXIsIGFyZ3MgfSkgewogICAgaWYgKCFhd2FpdCByZXF1aXJlUmVnaXN0cmF0aW9uKHNvY2ssIG1zZywgc2VuZGVyKSkgcmV0dXJuOwoKICAgIGNvbnN0IGppZCAgID0gbXNnLmtleS5yZW1vdGVKaWQ7CiAgICBjb25zdCByZXBseSA9ICh0KSA9PiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgeyB0ZXh0OiB0IH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICBjb25zdCBzdWIgICA9IChhcmdzWzBdIHx8ICJzdGF0dXMiKS50b0xvd2VyQ2FzZSgpOwogICAgY29uc3Qgbm93ICAgPSBEYXRlLm5vdygpOwoKICAgIC8vIOKUgOKUgCBIRUxQIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAogICAgaWYgKHN1YiA9PT0gImhlbHAiKSB7CiAgICAgIHJldHVybiByZXBseSgKYPCfkrwgKklOVkVTVE1FTlQgUE9PTCoKClBvb2wgeW91ciBtb25leSB3aXRoIDIgZnJpZW5kcyBhbmQgc2hhcmUgdGhlIHByb2ZpdHMhCgrwn5OLICpDb21tYW5kczoqCiAgKi5wb29sIGNyZWF0ZSA8YW1vdW50PiA8cGxhbj4gQHVzZXIxIEB1c2VyMioKICAgICAgIOKAlCBJbnZpdGUgMiBwZW9wbGUgdG8gaW52ZXN0IHRvZ2V0aGVyCiAgKi5wb29sIGpvaW4qICAgICDigJQgSm9pbiBhIHBvb2wgeW91IHdlcmUgaW52aXRlZCB0bwogICoucG9vbCBzdGF0dXMqICAg4oCUIENoZWNrIHBvb2wgc3RhdHVzCiAgKi5wb29sIGNvbGxlY3QqICDigJQgQ29sbGVjdCByZXR1cm5zIHdoZW4gcmVhZHkKICAqLnBvb2wgY2FuY2VsKiAgIOKAlCBDYW5jZWwgeW91ciBwZW5kaW5nIHBvb2wKCvCfk4ogKlBsYW5zOioKICDimqEgc2hvcnQgIOKAlCA1IG1pbiAgfCA14oCTMTUlIHJldHVybiAgfCDwn6qZIDUwMCBtaW4gZWFjaAogIPCfk4ogbWVkaXVtIOKAlCAzMCBtaW4gfCAyMOKAkzUwJSByZXR1cm4gfCDwn6qZIDJrIG1pbiBlYWNoCiAg8J+PpiBsb25nICAg4oCUIDIgaHJzICB8IDUw4oCTMTIwJSByZXR1cm58IPCfqpkgMTBrIG1pbiBlYWNoCgrimqDvuI8gNDUlIGNyYXNoIHJpc2sgb24gYWxsIHBsYW5zLiBQcm9maXRzIHNwbGl0IGVxdWFsbHkgMyB3YXlzLmAKICAgICAgKTsKICAgIH0KCiAgICAvLyDilIDilIAgQ1JFQVRFIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAogICAgaWYgKHN1YiA9PT0gImNyZWF0ZSIpIHsKICAgICAgY29uc3QgZXhpc3RpbmcgPSBhd2FpdCBnZXRQb29sKHNlbmRlcik7CiAgICAgIGlmIChleGlzdGluZykgcmV0dXJuIHJlcGx5KCLinYwgWW91IGFscmVhZHkgaGF2ZSBhbiBhY3RpdmUgcG9vbCFcblxuVXNlICoucG9vbCBzdGF0dXMqIHRvIHZpZXcgaXQuIik7CgogICAgICBjb25zdCByYXdBbXQgID0gKGFyZ3NbMV0gfHwgIiIpLnRvTG93ZXJDYXNlKCk7CiAgICAgIGNvbnN0IHBsYW5LZXkgPSAoYXJnc1syXSB8fCAiIikudG9Mb3dlckNhc2UoKTsKICAgICAgY29uc3QgcGxhbiAgICA9IFBMQU5TW3BsYW5LZXldOwoKICAgICAgaWYgKCFyYXdBbXQgfHwgIXBsYW4pIHsKICAgICAgICByZXR1cm4gcmVwbHkoIuKdjCBVc2FnZTogKi5wb29sIGNyZWF0ZSA8YW1vdW50PiA8c2hvcnR8bWVkaXVtfGxvbmc+IEB1c2VyMSBAdXNlcjIqIik7CiAgICAgIH0KCiAgICAgIGNvbnN0IGFtb3VudCA9IHJhd0FtdCA9PT0gImFsbCIgID8gKGF3YWl0IGdldFVzZXIoc2VuZGVyKSkubW9uZXkKICAgICAgICAgICAgICAgICAgIDogcmF3QW10ID09PSAiaGFsZiIgPyBNYXRoLmZsb29yKChhd2FpdCBnZXRVc2VyKHNlbmRlcikpLm1vbmV5IC8gMikKICAgICAgICAgICAgICAgICAgIDogcGFyc2VJbnQocmF3QW10LnJlcGxhY2UoL1xEL2csICIiKSwgMTApOwoKICAgICAgaWYgKCFhbW91bnQgfHwgaXNOYU4oYW1vdW50KSkgcmV0dXJuIHJlcGx5KCLinYwgRW50ZXIgYSB2YWxpZCBhbW91bnQuIik7CiAgICAgIGlmIChhbW91bnQgPCBwbGFuLm1pbkFtdCkgcmV0dXJuIHJlcGx5KGDinYwgTWluaW11bSBkZXBvc2l0IGlzIPCfqpkgJHtwbGFuLm1pbkFtdC50b0xvY2FsZVN0cmluZygpfSBmb3IgJHtwbGFuLmxhYmVsfS5gKTsKCiAgICAgIGNvbnN0IG1lbnRpb25lZEppZHMgPSBtc2cubWVzc2FnZT8uZXh0ZW5kZWRUZXh0TWVzc2FnZT8uY29udGV4dEluZm8/Lm1lbnRpb25lZEppZCB8fCBbXTsKICAgICAgaWYgKG1lbnRpb25lZEppZHMubGVuZ3RoIDwgMikgewogICAgICAgIHJldHVybiByZXBseSgi4p2MIFlvdSBuZWVkIHRvIGludml0ZSBleGFjdGx5IDIgdXNlcnMuXG5cblVzYWdlOiAqLnBvb2wgY3JlYXRlIDxhbW91bnQ+IDxwbGFuPiBAdXNlcjEgQHVzZXIyKiIpOwogICAgICB9CgogICAgICBjb25zdCB1c2VyID0gYXdhaXQgZ2V0VXNlcihzZW5kZXIpOwogICAgICBpZiAoKHVzZXIubW9uZXkgfHwgMCkgPCBhbW91bnQpIHJldHVybiByZXBseShg4p2MIFlvdSBvbmx5IGhhdmUg8J+qmSAkeyh1c2VyLm1vbmV5IHx8IDApLnRvTG9jYWxlU3RyaW5nKCl9LmApOwoKICAgICAgLy8gRGVkdWN0IGNyZWF0b3IncyBkZXBvc2l0IGltbWVkaWF0ZWx5CiAgICAgIHVzZXIubW9uZXkgLT0gYW1vdW50OwogICAgICBhd2FpdCBzYXZlVXNlcihzZW5kZXIsIHVzZXIpOwogICAgICBhd2FpdCBhZGRIaXN0b3J5KHNlbmRlciwgInBvb2xfZGVwb3NpdCIsIC1hbW91bnQsIGBQb29sIGRlcG9zaXQ6ICR7cGxhbktleX0gcGxhbmApOwoKICAgICAgY29uc3QgaW52aXRlZEppZHMgPSBtZW50aW9uZWRKaWRzLnNsaWNlKDAsIDIpOwogICAgICBjb25zdCBwb29sSWQgPSBgcG9vbF8ke3NlbmRlcn1fJHtub3d9YDsKCiAgICAgIGF3YWl0IHNhdmVQb29sKHsKICAgICAgICBwb29sSWQsCiAgICAgICAgY3JlYXRvcklkOiAgIHNlbmRlciwKICAgICAgICBjcmVhdG9yTmFtZTogdXNlci5uYW1lIHx8IHNlbmRlci5zcGxpdCgiQCIpWzBdLAogICAgICAgIHBsYW46ICAgICAgICBwbGFuS2V5LAogICAgICAgIGFtb3VudCwKICAgICAgICBpbnZpdGVkSmlkcywKICAgICAgICBtZW1iZXJzOiBbeyBqaWQ6IHNlbmRlciwgbmFtZTogdXNlci5uYW1lIHx8IHNlbmRlci5zcGxpdCgiQCIpWzBdLCBqb2luZWRBdDogbm93IH1dLAogICAgICAgIHN0YXJ0ZWRBdDogIG51bGwsCiAgICAgICAgc3RhdHVzOiAgICAgInBlbmRpbmciLAogICAgICAgIHBheW91dDogICAgIG51bGwsCiAgICAgICAgY3JlYXRlZEF0OiAgbm93LAogICAgICB9KTsKCiAgICAgIHJldHVybiBhd2FpdCBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgIHRleHQ6CmDwn5K8ICpJTlZFU1RNRU5UIFBPT0wgQ1JFQVRFRCEqCgoke3BsYW4uZW1vaml9IFBsYW4gICAgOiAke3BsYW4ubGFiZWx9CvCfqpkgRWFjaCBEZXBvc2l0OiDwn6qZICR7YW1vdW50LnRvTG9jYWxlU3RyaW5nKCl9CvCfk4ggUmV0dXJuICA6ICR7KHBsYW4ubWluUmV0ICogMTAwKS50b0ZpeGVkKDApfeKAkyR7KHBsYW4ubWF4UmV0ICogMTAwKS50b0ZpeGVkKDApfSUK4o+wIER1cmF0aW9uIDogJHtmbXRNcyhwbGFuLmR1cmF0aW9uKX0KCvCfk6kgSW52aXRlZDogQCR7aW52aXRlZEppZHNbMF0uc3BsaXQoIkAiKVswXX0gJiBAJHtpbnZpdGVkSmlkc1sxXS5zcGxpdCgiQCIpWzBdfQpfKFRoZXkgbXVzdCB0eXBlICoucG9vbCBqb2luKiB0byBhY2NlcHQgYW5kIGRlcG9zaXQpXwoKUG9vbCBzdGFydHMgd2hlbiBhbGwgMyBtZW1iZXJzIGpvaW4hYCwKICAgICAgICBtZW50aW9uczogaW52aXRlZEppZHMsCiAgICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICB9CgogICAgLy8g4pSA4pSAIEpPSU4g4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACiAgICBpZiAoc3ViID09PSAiam9pbiIpIHsKICAgICAgY29uc3QgZGIgICA9IGF3YWl0IGdldERiKCk7CiAgICAgIGNvbnN0IHBvb2wgPSBhd2FpdCBkYi5jb2xsZWN0aW9uKCJpbnZlc3RfcG9vbHMiKS5maW5kT25lKHsKICAgICAgICBpbnZpdGVkSmlkczogc2VuZGVyLAogICAgICAgIHN0YXR1czogInBlbmRpbmciLAogICAgICB9KTsKCiAgICAgIGlmICghcG9vbCkgcmV0dXJuIHJlcGx5KCLinYwgWW91IGRvbid0IGhhdmUgYSBwZW5kaW5nIHBvb2wgaW52aXRhdGlvbi5cblxuQXNrIHNvbWVvbmUgdG8gKi5wb29sIGNyZWF0ZSogYW5kIHRhZyB5b3UuIik7CgogICAgICBjb25zdCBhbHJlYWR5ID0gcG9vbC5tZW1iZXJzLnNvbWUobSA9PiBtLmppZCA9PT0gc2VuZGVyKTsKICAgICAgaWYgKGFscmVhZHkpIHJldHVybiByZXBseSgi4p2MIFlvdSd2ZSBhbHJlYWR5IGpvaW5lZCB0aGlzIHBvb2whIik7CgogICAgICBjb25zdCBwbGFuID0gUExBTlNbcG9vbC5wbGFuXTsKICAgICAgY29uc3QgdXNlciA9IGF3YWl0IGdldFVzZXIoc2VuZGVyKTsKCiAgICAgIGlmICgodXNlci5tb25leSB8fCAwKSA8IHBvb2wuYW1vdW50KSB7CiAgICAgICAgcmV0dXJuIHJlcGx5KGDinYwgWW91IG5lZWQg8J+qmSAke3Bvb2wuYW1vdW50LnRvTG9jYWxlU3RyaW5nKCl9IHRvIGpvaW4uXG5Zb3UgaGF2ZTog8J+qmSAkeyh1c2VyLm1vbmV5IHx8IDApLnRvTG9jYWxlU3RyaW5nKCl9YCk7CiAgICAgIH0KCiAgICAgIC8vIERlZHVjdCBkZXBvc2l0CiAgICAgIHVzZXIubW9uZXkgLT0gcG9vbC5hbW91bnQ7CiAgICAgIGF3YWl0IHNhdmVVc2VyKHNlbmRlciwgdXNlcik7CiAgICAgIGF3YWl0IGFkZEhpc3Rvcnkoc2VuZGVyLCAicG9vbF9kZXBvc2l0IiwgLXBvb2wuYW1vdW50LCBgSm9pbmVkIGludmVzdG1lbnQgcG9vbDogJHtwb29sLnBsYW59IHBsYW5gKTsKCiAgICAgIHBvb2wubWVtYmVycy5wdXNoKHsgamlkOiBzZW5kZXIsIG5hbWU6IHVzZXIubmFtZSB8fCBzZW5kZXIuc3BsaXQoIkAiKVswXSwgam9pbmVkQXQ6IG5vdyB9KTsKCiAgICAgIGxldCByZXNwb25zZVRleHQ7CiAgICAgIGlmIChwb29sLm1lbWJlcnMubGVuZ3RoID49IFBPT0xfU0laRSkgewogICAgICAgIC8vIEFsbCAzIGpvaW5lZCDigJQgc3RhcnQgdGhlIGludmVzdG1lbnQKICAgICAgICBwb29sLnN0YXR1cyAgICAgPSAiYWN0aXZlIjsKICAgICAgICBwb29sLnN0YXJ0ZWRBdCAgPSBub3c7CiAgICAgICAgY29uc3QgbWF0dXJlQXQgID0gbm93ICsgcGxhbi5kdXJhdGlvbjsKICAgICAgICByZXNwb25zZVRleHQgPQpg4pyFICpBTEwgTUVNQkVSUyBKT0lORUQhKgoK8J+SvCBQb29sIGlzIG5vdyBBQ1RJVkUhCiR7cGxhbi5lbW9qaX0gUGxhbiAgICA6ICR7cGxhbi5sYWJlbH0K8J+qmSBFYWNoIERlcG9zaXQgOiDwn6qZICR7cG9vbC5hbW91bnQudG9Mb2NhbGVTdHJpbmcoKX0K8J+qmSBUb3RhbCBQb29sICAgOiDwn6qZICR7KHBvb2wuYW1vdW50ICogUE9PTF9TSVpFKS50b0xvY2FsZVN0cmluZygpfQrij7AgTWF0dXJlcyBpbiAgIDogJHtmbXRNcyhwbGFuLmR1cmF0aW9uKX0KClVzZSAqLnBvb2wgY29sbGVjdCogd2hlbiByZWFkeSFgOwogICAgICB9IGVsc2UgewogICAgICAgIHJlc3BvbnNlVGV4dCA9CmDinIUgQCR7c2VuZGVyLnNwbGl0KCJAIilbMF19IGpvaW5lZCB0aGUgcG9vbCEKCvCfqpkgRGVwb3NpdGVkOiDwn6qZICR7cG9vbC5hbW91bnQudG9Mb2NhbGVTdHJpbmcoKX0K8J+RpSBNZW1iZXJzOiAke3Bvb2wubWVtYmVycy5sZW5ndGh9LyR7UE9PTF9TSVpFfQoKV2FpdGluZyBmb3IgbW9yZSBtZW1iZXJzIHRvIGpvaW7igKZgOwogICAgICB9CgogICAgICBhd2FpdCBzYXZlUG9vbChwb29sKTsKCiAgICAgIHJldHVybiBhd2FpdCBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgIHRleHQ6IHJlc3BvbnNlVGV4dCwKICAgICAgICBtZW50aW9uczogcG9vbC5tZW1iZXJzLm1hcChtID0+IG0uamlkKSwKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICAvLyDilIDilIAgU1RBVFVTIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAogICAgaWYgKHN1YiA9PT0gInN0YXR1cyIpIHsKICAgICAgY29uc3QgcG9vbCA9IGF3YWl0IGdldFBvb2woc2VuZGVyKTsKICAgICAgaWYgKCFwb29sKSByZXR1cm4gcmVwbHkoIuKdjCBObyBhY3RpdmUgcG9vbCBmb3VuZC5cblxuQ3JlYXRlIG9uZSB3aXRoICoucG9vbCBjcmVhdGUgPGFtb3VudD4gPHBsYW4+IEB1c2VyMSBAdXNlcjIqIik7CgogICAgICBjb25zdCBwbGFuID0gUExBTlNbcG9vbC5wbGFuXTsKICAgICAgY29uc3QgbWF0dXJlQXQgPSBwb29sLnN0YXJ0ZWRBdCA/IHBvb2wuc3RhcnRlZEF0ICsgcGxhbi5kdXJhdGlvbiA6IG51bGw7CiAgICAgIGNvbnN0IG1hdHVyZWQgID0gbWF0dXJlQXQgJiYgbm93ID49IG1hdHVyZUF0OwoKICAgICAgY29uc3QgbWVtYmVyTGlzdCA9IHBvb2wubWVtYmVycy5tYXAoKG0sIGkpID0+CiAgICAgICAgYCAgJHtpICsgMX0uIEAke20uamlkLnNwbGl0KCJAIilbMF19YAogICAgICApLmpvaW4oIlxuIik7CgogICAgICBjb25zdCBzdGF0dXNFbW9qaSA9IHBvb2wuc3RhdHVzID09PSAicGVuZGluZyIgPyAi4o+zIiA6IHBvb2wuc3RhdHVzID09PSAiYWN0aXZlIiA/ICLwn5+iIiA6ICLinIUiOwoKICAgICAgcmV0dXJuIGF3YWl0IHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgICAgdGV4dDoKYPCfkrwgKklOVkVTVE1FTlQgUE9PTCBTVEFUVVMqCgoke3BsYW4uZW1vaml9IFBsYW4gICA6ICR7cGxhbi5sYWJlbH0K8J+qmSBFYWNoIERlcG9zaXQ6IPCfqpkgJHtwb29sLmFtb3VudC50b0xvY2FsZVN0cmluZygpfQrwn6qZIFRvdGFsIFBvb2wgIDog8J+qmSAkeyhwb29sLmFtb3VudCAqIHBvb2wubWVtYmVycy5sZW5ndGgpLnRvTG9jYWxlU3RyaW5nKCl9CiR7c3RhdHVzRW1vaml9IFN0YXR1cyAgOiAke3Bvb2wuc3RhdHVzLnRvVXBwZXJDYXNlKCl9Cgrwn5GlICpNZW1iZXJzICgke3Bvb2wubWVtYmVycy5sZW5ndGh9LyR7UE9PTF9TSVpFfSk6Kgoke21lbWJlckxpc3R9Cgoke3Bvb2wuc3RhdHVzID09PSAicGVuZGluZyIKICA/IGDij7MgV2FpdGluZyBmb3IgJHtQT09MX1NJWkUgLSBwb29sLm1lbWJlcnMubGVuZ3RofSBtb3JlIG1lbWJlcihzKS5cbkludml0ZWQgdG8gam9pbjogKi5wb29sIGpvaW4qYAogIDogbWF0dXJlZAogICAgPyAi4pyFICpSZWFkeSB0byBjb2xsZWN0ISogVXNlICoucG9vbCBjb2xsZWN0KiIKICAgIDogYOKPsCBNYXR1cmVzIGluOiAqJHtmbXRNcyhtYXR1cmVBdCAtIG5vdyl9KmAKfWAsCiAgICAgICAgbWVudGlvbnM6IHBvb2wubWVtYmVycy5tYXAobSA9PiBtLmppZCksCiAgICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICB9CgogICAgLy8g4pSA4pSAIENPTExFQ1Qg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACiAgICBpZiAoc3ViID09PSAiY29sbGVjdCIpIHsKICAgICAgY29uc3QgcG9vbCA9IGF3YWl0IGdldFBvb2woc2VuZGVyKTsKICAgICAgaWYgKCFwb29sKSAgICAgICAgICAgICAgICAgICAgICAgICByZXR1cm4gcmVwbHkoIuKdjCBObyBhY3RpdmUgcG9vbCBmb3VuZC4iKTsKICAgICAgaWYgKHBvb2wuc3RhdHVzICE9PSAiYWN0aXZlIikgICAgICByZXR1cm4gcmVwbHkoIuKdjCBQb29sIGhhc24ndCBzdGFydGVkIHlldCDigJQgd2FpdGluZyBmb3IgYWxsIG1lbWJlcnMgdG8gam9pbi4iKTsKICAgICAgaWYgKCFwb29sLm1lbWJlcnMuc29tZShtID0+IG0uamlkID09PSBzZW5kZXIpKSByZXR1cm4gcmVwbHkoIuKdjCBZb3UncmUgbm90IGEgbWVtYmVyIG9mIHRoaXMgcG9vbCEiKTsKCiAgICAgIGNvbnN0IHBsYW4gICAgID0gUExBTlNbcG9vbC5wbGFuXTsKICAgICAgY29uc3QgbWF0dXJlQXQgPSBwb29sLnN0YXJ0ZWRBdCArIHBsYW4uZHVyYXRpb247CgogICAgICBpZiAobm93IDwgbWF0dXJlQXQpIHsKICAgICAgICByZXR1cm4gcmVwbHkoYOKPsyBQb29sIGhhc24ndCBtYXR1cmVkIHlldCFcblxuTWF0dXJlcyBpbiAqJHtmbXRNcyhtYXR1cmVBdCAtIG5vdyl9Ki5gKTsKICAgICAgfQoKICAgICAgaWYgKHBvb2wuc3RhdHVzID09PSAiY29tcGxldGVkIikgewogICAgICAgIHJldHVybiByZXBseSgi4pyFIFRoaXMgcG9vbCBoYXMgYWxyZWFkeSBiZWVuIGNvbGxlY3RlZC4iKTsKICAgICAgfQoKICAgICAgLy8gRGV0ZXJtaW5lIG91dGNvbWUKICAgICAgY29uc3QgY3Jhc2hlZCAgICAgID0gTWF0aC5yYW5kb20oKSA8IHBsYW4uY3Jhc2hDaGFuY2U7CiAgICAgIGNvbnN0IHRvdGFsRGVwb3NpdCA9IHBvb2wuYW1vdW50ICogUE9PTF9TSVpFOwogICAgICBsZXQgdG90YWxQYXlvdXQsIHByb2ZpdFBlck1lbWJlciwgbmV0UGVyTWVtYmVyOwoKICAgICAgaWYgKGNyYXNoZWQpIHsKICAgICAgICBjb25zdCBsb3N0UGN0ICAgPSBwbGFuLmxvc3NQY3Q7CiAgICAgICAgdG90YWxQYXlvdXQgICAgID0gdG90YWxEZXBvc2l0IC0gTWF0aC5mbG9vcih0b3RhbERlcG9zaXQgKiBsb3N0UGN0KTsKICAgICAgICBwcm9maXRQZXJNZW1iZXIgPSBNYXRoLmZsb29yKHRvdGFsUGF5b3V0IC8gUE9PTF9TSVpFKTsKICAgICAgICBuZXRQZXJNZW1iZXIgICAgPSBwcm9maXRQZXJNZW1iZXIgLSBwb29sLmFtb3VudDsKICAgICAgfSBlbHNlIHsKICAgICAgICBjb25zdCByZXRQY3QgICAgPSBwbGFuLm1pblJldCArIE1hdGgucmFuZG9tKCkgKiAocGxhbi5tYXhSZXQgLSBwbGFuLm1pblJldCk7CiAgICAgICAgdG90YWxQYXlvdXQgICAgID0gdG90YWxEZXBvc2l0ICsgTWF0aC5mbG9vcih0b3RhbERlcG9zaXQgKiByZXRQY3QpOwogICAgICAgIHByb2ZpdFBlck1lbWJlciA9IE1hdGguZmxvb3IodG90YWxQYXlvdXQgLyBQT09MX1NJWkUpOwogICAgICAgIG5ldFBlck1lbWJlciAgICA9IHByb2ZpdFBlck1lbWJlciAtIHBvb2wuYW1vdW50OwogICAgICB9CgogICAgICAvLyBQYXkgZWFjaCBtZW1iZXIKICAgICAgZm9yIChjb25zdCBtIG9mIHBvb2wubWVtYmVycykgewogICAgICAgIGNvbnN0IHUgPSBhd2FpdCBnZXRVc2VyKG0uamlkKTsKICAgICAgICB1Lm1vbmV5ID0gKHUubW9uZXkgfHwgMCkgKyBwcm9maXRQZXJNZW1iZXI7CiAgICAgICAgYXdhaXQgc2F2ZVVzZXIobS5qaWQsIHUpOwogICAgICAgIGF3YWl0IGFkZEhpc3RvcnkobS5qaWQsICJwb29sX2NvbGxlY3QiLCBuZXRQZXJNZW1iZXIsCiAgICAgICAgICBgUG9vbCAke2NyYXNoZWQgPyAibG9zcyIgOiAicHJvZml0In06ICR7cGxhbi5sYWJlbH1gKTsKICAgICAgfQoKICAgICAgcG9vbC5zdGF0dXMgPSAiY29tcGxldGVkIjsKICAgICAgcG9vbC5wYXlvdXQgPSBwcm9maXRQZXJNZW1iZXI7CiAgICAgIGF3YWl0IHNhdmVQb29sKHBvb2wpOwoKICAgICAgLy8gRGVsZXRlIHBvb2wgYWZ0ZXIgMSBtaW51dGUKICAgICAgc2V0VGltZW91dCgoKSA9PiBkZWxldGVQb29sKHBvb2wucG9vbElkKS5jYXRjaCgoKSA9PiB7fSksIDYwXzAwMCk7CgogICAgICByZXR1cm4gYXdhaXQgc29jay5zZW5kTWVzc2FnZShqaWQsIHsKICAgICAgICB0ZXh0OgpgJHtwbGFuLmVtb2ppfSAqUE9PTCBJTlZFU1RNRU5UIENPTExFQ1RFRCEqCgoke2NyYXNoZWQKICA/IGDwn5OJICpNYXJrZXQgY3Jhc2hlZCEqIExvc3QgJHsocGxhbi5sb3NzUGN0ICogMTAwKS50b0ZpeGVkKDApfSVgCiAgOiBg8J+TiCAqUHJvZml0ISogR3JlYXQgcmV0dXJucyBmb3IgZXZlcnlvbmUhYAp9Cgrwn6qZIFRvdGFsIFBvb2wgICA6IPCfqpkgJHt0b3RhbERlcG9zaXQudG9Mb2NhbGVTdHJpbmcoKX0K8J+qmSBFYWNoIFJlY2VpdmVkOiDwn6qZICR7cHJvZml0UGVyTWVtYmVyLnRvTG9jYWxlU3RyaW5nKCl9CiR7bmV0UGVyTWVtYmVyID49IDAgPyBg8J+TiCBFYWNoIFByb2ZpdGAgOiBg8J+TiSBFYWNoIExvc3NgfSAgOiAke25ldFBlck1lbWJlciA+PSAwID8gIisiIDogIiJ98J+qmSAke25ldFBlck1lbWJlci50b0xvY2FsZVN0cmluZygpfQoK8J+RpSBQYWlkIHRvIGFsbCAke1BPT0xfU0laRX0gbWVtYmVycyFgLAogICAgICAgIG1lbnRpb25zOiBwb29sLm1lbWJlcnMubWFwKG0gPT4gbS5qaWQpLAogICAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQoKICAgIC8vIOKUgOKUgCBDQU5DRUwg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACiAgICBpZiAoc3ViID09PSAiY2FuY2VsIikgewogICAgICBjb25zdCBwb29sID0gYXdhaXQgZ2V0UG9vbChzZW5kZXIpOwogICAgICBpZiAoIXBvb2wpIHJldHVybiByZXBseSgi4p2MIE5vIGFjdGl2ZSBwb29sIGZvdW5kLiIpOwogICAgICBpZiAocG9vbC5jcmVhdG9ySWQgIT09IHNlbmRlcikgcmV0dXJuIHJlcGx5KCLinYwgT25seSB0aGUgcG9vbCBjcmVhdG9yIGNhbiBjYW5jZWwgaXQuIik7CiAgICAgIGlmIChwb29sLnN0YXR1cyAhPT0gInBlbmRpbmciKSAgcmV0dXJuIHJlcGx5KCLinYwgQ2FuIG9ubHkgY2FuY2VsIHBlbmRpbmcgcG9vbHMgKGJlZm9yZSBhbGwgbWVtYmVycyBqb2luKS4iKTsKCiAgICAgIC8vIFJlZnVuZCBhbGwgam9pbmVkIG1lbWJlcnMKICAgICAgZm9yIChjb25zdCBtIG9mIHBvb2wubWVtYmVycykgewogICAgICAgIGNvbnN0IHUgPSBhd2FpdCBnZXRVc2VyKG0uamlkKTsKICAgICAgICB1Lm1vbmV5ID0gKHUubW9uZXkgfHwgMCkgKyBwb29sLmFtb3VudDsKICAgICAgICBhd2FpdCBzYXZlVXNlcihtLmppZCwgdSk7CiAgICAgICAgYXdhaXQgYWRkSGlzdG9yeShtLmppZCwgInBvb2xfcmVmdW5kIiwgcG9vbC5hbW91bnQsICJQb29sIGNhbmNlbGxlZCDigJQgcmVmdW5kZWQiKTsKICAgICAgfQoKICAgICAgYXdhaXQgZGVsZXRlUG9vbChwb29sLnBvb2xJZCk7CiAgICAgIHJldHVybiByZXBseShg4p2MICpQb29sIGNhbmNlbGxlZCEqXG5cbvCfqpkg8J+qmSAke3Bvb2wuYW1vdW50LnRvTG9jYWxlU3RyaW5nKCl9IHJlZnVuZGVkIHRvIGFsbCAke3Bvb2wubWVtYmVycy5sZW5ndGh9IGpvaW5lZCBtZW1iZXIocykuYCk7CiAgICB9CgogICAgcmV0dXJuIHJlcGx5KCLinYwgVW5rbm93biBjb21tYW5kLlxuXG5UeXBlICoucG9vbCBoZWxwKiBmb3IgYWxsIHBvb2wgY29tbWFuZHMuIik7CiAgfSwKfTsK
+/**
+ * KELIN MD — .pool (Investment Pool)
+ * 3-person shared investment pool. All members deposit equally & share profits.
+ *
+ * Commands:
+ *   .pool create <amount> <short|medium|long> @user1 @user2 — Start a pool & invite 2 others
+ *   .pool join         — Accept an invitation to join a pool
+ *   .pool status       — Check your pool's status
+ *   .pool collect      — Collect profits when the investment matures
+ *   .pool cancel       — Cancel pending pool (creator only)
+ */
+import { getUser, saveUser, requireRegistration, addHistory } from "./database.js";
+import { getDb } from "../../lib/mongo.mjs";
+
+const POOL_SIZE = 3; // always exactly 3 members
+
+const PLANS = {
+  short:  { label: "Short-Term",  emoji: "⚡", duration: 5  * 60 * 1000,      minRet: 0.05, maxRet: 0.15, crashChance: 0.45, lossPct: 0.10, minAmt: 500 },
+  medium: { label: "Medium-Term", emoji: "📊", duration: 30 * 60 * 1000,      minRet: 0.20, maxRet: 0.50, crashChance: 0.45, lossPct: 0.20, minAmt: 2000 },
+  long:   { label: "Long-Term",   emoji: "🏦", duration: 2  * 60 * 60 * 1000, minRet: 0.50, maxRet: 1.20, crashChance: 0.45, lossPct: 0.30, minAmt: 10000 },
+};
+
+function fmtMs(ms) {
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  if (h > 0)  return `${h}h ${m}m`;
+  if (m > 0)  return `${m}m ${s}s`;
+  return `${s}s`;
+}
+
+async function getPool(id) {
+  const db = await getDb();
+  return db.collection("invest_pools").findOne({ $or: [{ creatorId: id }, { invitedJids: id }, { "members.jid": id }] });
+}
+
+async function savePool(data) {
+  const db = await getDb();
+  const { _id, ...rest } = data;
+  await db.collection("invest_pools").updateOne(
+    { poolId: data.poolId },
+    { $set: rest },
+    { upsert: true }
+  );
+}
+
+async function deletePool(poolId) {
+  const db = await getDb();
+  await db.collection("invest_pools").deleteOne({ poolId });
+}
+
+export default {
+  name: "pool",
+  aliases: ["investpool", "ipool"],
+  category: "economy",
+  cooldown: 6,
+  description: "3-person shared investment pool — split the profits!",
+  usage: ".pool create <amount> <plan> @user1 @user2 | .pool join | .pool status | .pool collect",
+
+  async run({ sock, msg, sender, args }) {
+    if (!await requireRegistration(sock, msg, sender)) return;
+
+    const jid   = msg.key.remoteJid;
+    const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
+    const sub   = (args[0] || "status").toLowerCase();
+    const now   = Date.now();
+
+    // ── HELP ─────────────────────────────────────────────────────────────────
+    if (sub === "help") {
+      return reply(
+`💼 *INVESTMENT POOL*
+
+Pool your money with 2 friends and share the profits!
+
+📋 *Commands:*
+  *.pool create <amount> <plan> @user1 @user2*
+       — Invite 2 people to invest together
+  *.pool join*     — Join a pool you were invited to
+  *.pool status*   — Check pool status
+  *.pool collect*  — Collect returns when ready
+  *.pool cancel*   — Cancel your pending pool
+
+📊 *Plans:*
+  ⚡ short  — 5 min  | 5–15% return  | $500 min each
+  📊 medium — 30 min | 20–50% return | $2k min each
+  🏦 long   — 2 hrs  | 50–120% return| $10k min each
+
+⚠️ 45% crash risk on all plans. Profits split equally 3 ways.`
+      );
+    }
+
+    // ── CREATE ────────────────────────────────────────────────────────────────
+    if (sub === "create") {
+      const existing = await getPool(sender);
+      if (existing) return reply("❌ You already have an active pool!\n\nUse *.pool status* to view it.");
+
+      const rawAmt  = (args[1] || "").toLowerCase();
+      const planKey = (args[2] || "").toLowerCase();
+      const plan    = PLANS[planKey];
+
+      if (!rawAmt || !plan) {
+        return reply("❌ Usage: *.pool create <amount> <short|medium|long> @user1 @user2*");
+      }
+
+      const amount = rawAmt === "all"  ? (await getUser(sender)).money
+                   : rawAmt === "half" ? Math.floor((await getUser(sender)).money / 2)
+                   : parseInt(rawAmt.replace(/\D/g, ""), 10);
+
+      if (!amount || isNaN(amount)) return reply("❌ Enter a valid amount.");
+      if (amount < plan.minAmt) return reply(`❌ Minimum deposit is $${plan.minAmt.toLocaleString()} for ${plan.label}.`);
+
+      const mentionedJids = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+      if (mentionedJids.length < 2) {
+        return reply("❌ You need to invite exactly 2 users.\n\nUsage: *.pool create <amount> <plan> @user1 @user2*");
+      }
+
+      const user = await getUser(sender);
+      if ((user.money || 0) < amount) return reply(`❌ You only have $${(user.money || 0).toLocaleString()}.`);
+
+      // Deduct creator's deposit immediately
+      user.money -= amount;
+      await saveUser(sender, user);
+      await addHistory(sender, "pool_deposit", -amount, `Pool deposit: ${planKey} plan`);
+
+      const invitedJids = mentionedJids.slice(0, 2);
+      const poolId = `pool_${sender}_${now}`;
+
+      await savePool({
+        poolId,
+        creatorId:   sender,
+        creatorName: user.name || sender.split("@")[0],
+        plan:        planKey,
+        amount,
+        invitedJids,
+        members: [{ jid: sender, name: user.name || sender.split("@")[0], joinedAt: now }],
+        startedAt:  null,
+        status:     "pending",
+        payout:     null,
+        createdAt:  now,
+      });
+
+      return await sock.sendMessage(jid, {
+        text:
+`💼 *INVESTMENT POOL CREATED!*
+
+${plan.emoji} Plan    : ${plan.label}
+💰 Each Deposit: $${amount.toLocaleString()}
+📈 Return  : ${(plan.minRet * 100).toFixed(0)}–${(plan.maxRet * 100).toFixed(0)}%
+⏰ Duration : ${fmtMs(plan.duration)}
+
+📩 Invited: @${invitedJids[0].split("@")[0]} & @${invitedJids[1].split("@")[0]}
+_(They must type *.pool join* to accept and deposit)_
+
+Pool starts when all 3 members join!`,
+        mentions: invitedJids,
+      }, { quoted: msg });
+    }
+
+    // ── JOIN ──────────────────────────────────────────────────────────────────
+    if (sub === "join") {
+      const db   = await getDb();
+      const pool = await db.collection("invest_pools").findOne({
+        invitedJids: sender,
+        status: "pending",
+      });
+
+      if (!pool) return reply("❌ You don't have a pending pool invitation.\n\nAsk someone to *.pool create* and tag you.");
+
+      const already = pool.members.some(m => m.jid === sender);
+      if (already) return reply("❌ You've already joined this pool!");
+
+      const plan = PLANS[pool.plan];
+      const user = await getUser(sender);
+
+      if ((user.money || 0) < pool.amount) {
+        return reply(`❌ You need $${pool.amount.toLocaleString()} to join.\nYou have: $${(user.money || 0).toLocaleString()}`);
+      }
+
+      // Deduct deposit
+      user.money -= pool.amount;
+      await saveUser(sender, user);
+      await addHistory(sender, "pool_deposit", -pool.amount, `Joined investment pool: ${pool.plan} plan`);
+
+      pool.members.push({ jid: sender, name: user.name || sender.split("@")[0], joinedAt: now });
+
+      let responseText;
+      if (pool.members.length >= POOL_SIZE) {
+        // All 3 joined — start the investment
+        pool.status     = "active";
+        pool.startedAt  = now;
+        const matureAt  = now + plan.duration;
+        responseText =
+`✅ *ALL MEMBERS JOINED!*
+
+💼 Pool is now ACTIVE!
+${plan.emoji} Plan    : ${plan.label}
+💰 Each Deposit : $${pool.amount.toLocaleString()}
+💰 Total Pool   : $${(pool.amount * POOL_SIZE).toLocaleString()}
+⏰ Matures in   : ${fmtMs(plan.duration)}
+
+Use *.pool collect* when ready!`;
+      } else {
+        responseText =
+`✅ @${sender.split("@")[0]} joined the pool!
+
+💰 Deposited: $${pool.amount.toLocaleString()}
+👥 Members: ${pool.members.length}/${POOL_SIZE}
+
+Waiting for more members to join…`;
+      }
+
+      await savePool(pool);
+
+      return await sock.sendMessage(jid, {
+        text: responseText,
+        mentions: pool.members.map(m => m.jid),
+      }, { quoted: msg });
+    }
+
+    // ── STATUS ────────────────────────────────────────────────────────────────
+    if (sub === "status") {
+      const pool = await getPool(sender);
+      if (!pool) return reply("❌ No active pool found.\n\nCreate one with *.pool create <amount> <plan> @user1 @user2*");
+
+      const plan = PLANS[pool.plan];
+      const matureAt = pool.startedAt ? pool.startedAt + plan.duration : null;
+      const matured  = matureAt && now >= matureAt;
+
+      const memberList = pool.members.map((m, i) =>
+        `  ${i + 1}. @${m.jid.split("@")[0]}`
+      ).join("\n");
+
+      const statusEmoji = pool.status === "pending" ? "⏳" : pool.status === "active" ? "🟢" : "✅";
+
+      return await sock.sendMessage(jid, {
+        text:
+`💼 *INVESTMENT POOL STATUS*
+
+${plan.emoji} Plan   : ${plan.label}
+💰 Each Deposit: $${pool.amount.toLocaleString()}
+💰 Total Pool  : $${(pool.amount * pool.members.length).toLocaleString()}
+${statusEmoji} Status  : ${pool.status.toUpperCase()}
+
+👥 *Members (${pool.members.length}/${POOL_SIZE}):*
+${memberList}
+
+${pool.status === "pending"
+  ? `⏳ Waiting for ${POOL_SIZE - pool.members.length} more member(s).\nInvited to join: *.pool join*`
+  : matured
+    ? "✅ *Ready to collect!* Use *.pool collect*"
+    : `⏰ Matures in: *${fmtMs(matureAt - now)}*`
+}`,
+        mentions: pool.members.map(m => m.jid),
+      }, { quoted: msg });
+    }
+
+    // ── COLLECT ───────────────────────────────────────────────────────────────
+    if (sub === "collect") {
+      const pool = await getPool(sender);
+      if (!pool)                         return reply("❌ No active pool found.");
+      if (pool.status !== "active")      return reply("❌ Pool hasn't started yet — waiting for all members to join.");
+      if (!pool.members.some(m => m.jid === sender)) return reply("❌ You're not a member of this pool!");
+
+      const plan     = PLANS[pool.plan];
+      const matureAt = pool.startedAt + plan.duration;
+
+      if (now < matureAt) {
+        return reply(`⏳ Pool hasn't matured yet!\n\nMatures in *${fmtMs(matureAt - now)}*.`);
+      }
+
+      if (pool.status === "completed") {
+        return reply("✅ This pool has already been collected.");
+      }
+
+      // Determine outcome
+      const crashed      = Math.random() < plan.crashChance;
+      const totalDeposit = pool.amount * POOL_SIZE;
+      let totalPayout, profitPerMember, netPerMember;
+
+      if (crashed) {
+        const lostPct   = plan.lossPct;
+        totalPayout     = totalDeposit - Math.floor(totalDeposit * lostPct);
+        profitPerMember = Math.floor(totalPayout / POOL_SIZE);
+        netPerMember    = profitPerMember - pool.amount;
+      } else {
+        const retPct    = plan.minRet + Math.random() * (plan.maxRet - plan.minRet);
+        totalPayout     = totalDeposit + Math.floor(totalDeposit * retPct);
+        profitPerMember = Math.floor(totalPayout / POOL_SIZE);
+        netPerMember    = profitPerMember - pool.amount;
+      }
+
+      // Pay each member
+      for (const m of pool.members) {
+        const u = await getUser(m.jid);
+        u.money = (u.money || 0) + profitPerMember;
+        await saveUser(m.jid, u);
+        await addHistory(m.jid, "pool_collect", netPerMember,
+          `Pool ${crashed ? "loss" : "profit"}: ${plan.label}`);
+      }
+
+      pool.status = "completed";
+      pool.payout = profitPerMember;
+      await savePool(pool);
+
+      // Delete pool after 1 minute
+      setTimeout(() => deletePool(pool.poolId).catch(() => {}), 60_000);
+
+      return await sock.sendMessage(jid, {
+        text:
+`${plan.emoji} *POOL INVESTMENT COLLECTED!*
+
+${crashed
+  ? `📉 *Market crashed!* Lost ${(plan.lossPct * 100).toFixed(0)}%`
+  : `📈 *Profit!* Great returns for everyone!`
+}
+
+💰 Total Pool   : $${totalDeposit.toLocaleString()}
+💰 Each Received: $${profitPerMember.toLocaleString()}
+${netPerMember >= 0 ? `📈 Each Profit` : `📉 Each Loss`}  : ${netPerMember >= 0 ? "+" : ""}$${netPerMember.toLocaleString()}
+
+👥 Paid to all ${POOL_SIZE} members!`,
+        mentions: pool.members.map(m => m.jid),
+      }, { quoted: msg });
+    }
+
+    // ── CANCEL ────────────────────────────────────────────────────────────────
+    if (sub === "cancel") {
+      const pool = await getPool(sender);
+      if (!pool) return reply("❌ No active pool found.");
+      if (pool.creatorId !== sender) return reply("❌ Only the pool creator can cancel it.");
+      if (pool.status !== "pending")  return reply("❌ Can only cancel pending pools (before all members join).");
+
+      // Refund all joined members
+      for (const m of pool.members) {
+        const u = await getUser(m.jid);
+        u.money = (u.money || 0) + pool.amount;
+        await saveUser(m.jid, u);
+        await addHistory(m.jid, "pool_refund", pool.amount, "Pool cancelled — refunded");
+      }
+
+      await deletePool(pool.poolId);
+      return reply(`❌ *Pool cancelled!*\n\n💰 $${pool.amount.toLocaleString()} refunded to all ${pool.members.length} joined member(s).`);
+    }
+
+    return reply("❌ Unknown command.\n\nType *.pool help* for all pool commands.");
+  },
+};

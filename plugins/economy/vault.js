@@ -1,1 +1,90 @@
-LyoqCiAqIC52YXVsdCBbZGVwb3NpdHx3aXRoZHJhd3xiYWxhbmNlXSBbYW1vdW50XQogKiBWYXVsdCBpcyBhIHByb3RlY3RlZCBzYXZpbmdzIGFjY291bnQg4oCUIGNhbm5vdCBiZSByb2JiZWQuCiAqIERlcG9zaXRzIGFyZSBmcmVlOyB3aXRoZHJhd2FscyBjb3N0IDUlIGZlZS4KICovCmltcG9ydCB7IGdldFVzZXIsIHNhdmVVc2VyLCByZXF1aXJlUmVnaXN0cmF0aW9uLCBhZGRIaXN0b3J5IH0gZnJvbSAiLi9kYXRhYmFzZS5qcyI7CgpleHBvcnQgZGVmYXVsdCB7CiAgbmFtZTogInZhdWx0IiwKICBkZXNjcmlwdGlvbjogIk1hbmFnZSB5b3VyIHNlY3VyZSB2YXVsdCAocm9iLXByb29mIHNhdmluZ3MpIiwKICBjYXRlZ29yeTogImVjb25vbXkiLAogIHVzYWdlOiAiLnZhdWx0IFtkZXBvc2l0fHdpdGhkcmF3fGJhbF0gW2Ftb3VudF0iLAogIGFsaWFzZXM6IFsic2FmZSJdLAogIGNvb2xkb3duOiA2LAogIGNoZWNrSmFpbDogdHJ1ZSwKCiAgYXN5bmMgcnVuKHsgc29jaywgbXNnLCBhcmdzLCBzZW5kZXIgfSkgewogICAgaWYgKCFhd2FpdCByZXF1aXJlUmVnaXN0cmF0aW9uKHNvY2ssIG1zZywgc2VuZGVyKSkgcmV0dXJuOwoKICAgIGNvbnN0IHN1YiAgICA9IChhcmdzWzBdIHx8ICJiYWwiKS50b0xvd2VyQ2FzZSgpOwogICAgY29uc3QgdXNlciAgID0gYXdhaXQgZ2V0VXNlcihzZW5kZXIpOwogICAgY29uc3QgamlkICAgID0gbXNnLmtleS5yZW1vdGVKaWQ7CgogICAgLy8g4pSA4pSAIEJhbGFuY2Ug4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACiAgICBpZiAoIWFyZ3NbMF0gfHwgWyJiYWwiLCAiYmFsYW5jZSIsICJjaGVjayJdLmluY2x1ZGVzKHN1YikpIHsKICAgICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgICAgdGV4dDoKICAgICAgICAgIGDwn4+mICpZb3VyIFZhdWx0KlxuXG5gICsKICAgICAgICAgIGDwn5SSIFZhdWx0IEJhbGFuY2UgOiDwn6qZICR7KHVzZXIudmF1bHQgfHwgMCkudG9Mb2NhbGVTdHJpbmcoKX1cbmAgKwogICAgICAgICAgYPCfqpkgQ2FzaCAgICAgICAgICA6IPCfqpkgJHt1c2VyLm1vbmV5LnRvTG9jYWxlU3RyaW5nKCl9XG5cbmAgKwogICAgICAgICAgYF9UaXA6IFZhdWx0IGZ1bmRzIGNhbm5vdCBiZSBzdG9sZW4gYnkgLnJvYl9gCiAgICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICB9CgogICAgY29uc3QgYW1vdW50ID0gcGFyc2VJbnQoYXJnc1sxXSk7CiAgICBpZiAoIWFtb3VudCB8fCBhbW91bnQgPD0gMCB8fCBpc05hTihhbW91bnQpKSB7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgeyB0ZXh0OiAi4p2MIFVzYWdlOiBgLnZhdWx0IGRlcG9zaXQgMTAwMGAgb3IgYC52YXVsdCB3aXRoZHJhdyA1MDBgIiB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQoKICAgIC8vIOKUgOKUgCBEZXBvc2l0IOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAogICAgaWYgKFsiZGVwb3NpdCIsICJkZXAiLCAiZCJdLmluY2x1ZGVzKHN1YikpIHsKICAgICAgaWYgKHVzZXIubW9uZXkgPCBhbW91bnQpIHsKICAgICAgICByZXR1cm4gc29jay5zZW5kTWVzc2FnZShqaWQsIHsKICAgICAgICAgIHRleHQ6IGDinYwgSW5zdWZmaWNpZW50IGNhc2ghXG5cbvCfqpkgWW91IGhhdmU6IPCfqpkgJHt1c2VyLm1vbmV5LnRvTG9jYWxlU3RyaW5nKCl9YAogICAgICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICAgIH0KICAgICAgdXNlci5tb25leSAtPSBhbW91bnQ7CiAgICAgIHVzZXIudmF1bHQgID0gKHVzZXIudmF1bHQgfHwgMCkgKyBhbW91bnQ7CiAgICAgIGF3YWl0IHNhdmVVc2VyKHNlbmRlciwgdXNlcik7CiAgICAgIGF3YWl0IGFkZEhpc3Rvcnkoc2VuZGVyLCAidmF1bHRfZGVwb3NpdCIsIC1hbW91bnQsIGBEZXBvc2l0ZWQg8J+qmSAke2Ftb3VudC50b0xvY2FsZVN0cmluZygpfSB0byB2YXVsdGApOwoKICAgICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgICAgdGV4dDoKICAgICAgICAgIGDwn5SSICpWYXVsdCBEZXBvc2l0KlxuXG5gICsKICAgICAgICAgIGDwn6qZIERlcG9zaXRlZCA6IPCfqpkgJHthbW91bnQudG9Mb2NhbGVTdHJpbmcoKX1cbmAgKwogICAgICAgICAgYPCfj6YgVmF1bHQgICAgIDog8J+qmSAke3VzZXIudmF1bHQudG9Mb2NhbGVTdHJpbmcoKX1cbmAgKwogICAgICAgICAgYPCfqpkgQ2FzaCBMZWZ0IDog8J+qmSAke3VzZXIubW9uZXkudG9Mb2NhbGVTdHJpbmcoKX1gCiAgICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICB9CgogICAgLy8g4pSA4pSAIFdpdGhkcmF3IOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAogICAgaWYgKFsid2l0aGRyYXciLCAid2l0aCIsICJ3Il0uaW5jbHVkZXMoc3ViKSkgewogICAgICBpZiAoKHVzZXIudmF1bHQgfHwgMCkgPCBhbW91bnQpIHsKICAgICAgICByZXR1cm4gc29jay5zZW5kTWVzc2FnZShqaWQsIHsKICAgICAgICAgIHRleHQ6IGDinYwgSW5zdWZmaWNpZW50IHZhdWx0IGJhbGFuY2UhXG5cbvCflJIgVmF1bHQ6IPCfqpkgJHsodXNlci52YXVsdCB8fCAwKS50b0xvY2FsZVN0cmluZygpfWAKICAgICAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgICB9CiAgICAgIGNvbnN0IGZlZSAgICAgID0gTWF0aC5mbG9vcihhbW91bnQgKiAwLjA1KTsKICAgICAgY29uc3QgcmVjZWl2ZWQgPSBhbW91bnQgLSBmZWU7CgogICAgICB1c2VyLnZhdWx0IC09IGFtb3VudDsKICAgICAgdXNlci5tb25leSArPSByZWNlaXZlZDsKICAgICAgYXdhaXQgc2F2ZVVzZXIoc2VuZGVyLCB1c2VyKTsKICAgICAgYXdhaXQgYWRkSGlzdG9yeShzZW5kZXIsICJ2YXVsdF93aXRoZHJhdyIsIHJlY2VpdmVkLCBgV2l0aGRyZXcg8J+qmSAke2Ftb3VudC50b0xvY2FsZVN0cmluZygpfSBmcm9tIHZhdWx0IChmZWU6IPCfqpkgJHtmZWUudG9Mb2NhbGVTdHJpbmcoKX0pYCk7CgogICAgICByZXR1cm4gc29jay5zZW5kTWVzc2FnZShqaWQsIHsKICAgICAgICB0ZXh0OgogICAgICAgICAgYPCflJMgKlZhdWx0IFdpdGhkcmF3YWwqXG5cbmAgKwogICAgICAgICAgYPCfk6QgV2l0aGRyYXduIDog8J+qmSAke2Ftb3VudC50b0xvY2FsZVN0cmluZygpfVxuYCArCiAgICAgICAgICBg8J+SuCBGZWUgKDUlKSAgOiAt8J+qmSAke2ZlZS50b0xvY2FsZVN0cmluZygpfVxuYCArCiAgICAgICAgICBg8J+qmSBSZWNlaXZlZCAgOiDwn6qZICR7cmVjZWl2ZWQudG9Mb2NhbGVTdHJpbmcoKX1cbmAgKwogICAgICAgICAgYPCfj6YgVmF1bHQgTGVmdDog8J+qmSAke3VzZXIudmF1bHQudG9Mb2NhbGVTdHJpbmcoKX1gCiAgICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICB9CgogICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgIHRleHQ6ICLinZMgVXNhZ2U6IGAudmF1bHQgYmFsYW5jZWAgfCBgLnZhdWx0IGRlcG9zaXQgPGFtb3VudD5gIHwgYC52YXVsdCB3aXRoZHJhdyA8YW1vdW50PmAiCiAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogIH0KfTsK
+/**
+ * .vault [deposit|withdraw|balance] [amount]
+ * Vault is a protected savings account — cannot be robbed.
+ * Deposits are free; withdrawals cost 5% fee.
+ */
+import { getUser, saveUser, requireRegistration, addHistory } from "./database.js";
+
+export default {
+  name: "vault",
+  description: "Manage your secure vault (rob-proof savings)",
+  category: "economy",
+  usage: ".vault [deposit|withdraw|bal] [amount]",
+  aliases: ["safe"],
+  cooldown: 6,
+  checkJail: true,
+
+  async run({ sock, msg, args, sender }) {
+    if (!await requireRegistration(sock, msg, sender)) return;
+
+    const sub    = (args[0] || "bal").toLowerCase();
+    const user   = await getUser(sender);
+    const jid    = msg.key.remoteJid;
+
+    // ── Balance ───────────────────────────────────────────────────────────
+    if (!args[0] || ["bal", "balance", "check"].includes(sub)) {
+      return sock.sendMessage(jid, {
+        text:
+          `🏦 *Your Vault*\n\n` +
+          `🔒 Vault Balance : $${(user.vault || 0).toLocaleString()}\n` +
+          `💰 Cash          : $${user.money.toLocaleString()}\n\n` +
+          `_Tip: Vault funds cannot be stolen by .rob_`
+      }, { quoted: msg });
+    }
+
+    const amount = parseInt(args[1]);
+    if (!amount || amount <= 0 || isNaN(amount)) {
+      return sock.sendMessage(jid, { text: "❌ Usage: `.vault deposit 1000` or `.vault withdraw 500`" }, { quoted: msg });
+    }
+
+    // ── Deposit ───────────────────────────────────────────────────────────
+    if (["deposit", "dep", "d"].includes(sub)) {
+      if (user.money < amount) {
+        return sock.sendMessage(jid, {
+          text: `❌ Insufficient cash!\n\n💰 You have: $${user.money.toLocaleString()}`
+        }, { quoted: msg });
+      }
+      user.money -= amount;
+      user.vault  = (user.vault || 0) + amount;
+      await saveUser(sender, user);
+      await addHistory(sender, "vault_deposit", -amount, `Deposited $${amount.toLocaleString()} to vault`);
+
+      return sock.sendMessage(jid, {
+        text:
+          `🔒 *Vault Deposit*\n\n` +
+          `💰 Deposited : $${amount.toLocaleString()}\n` +
+          `🏦 Vault     : $${user.vault.toLocaleString()}\n` +
+          `💰 Cash Left : $${user.money.toLocaleString()}`
+      }, { quoted: msg });
+    }
+
+    // ── Withdraw ──────────────────────────────────────────────────────────
+    if (["withdraw", "with", "w"].includes(sub)) {
+      if ((user.vault || 0) < amount) {
+        return sock.sendMessage(jid, {
+          text: `❌ Insufficient vault balance!\n\n🔒 Vault: $${(user.vault || 0).toLocaleString()}`
+        }, { quoted: msg });
+      }
+      const fee      = Math.floor(amount * 0.05);
+      const received = amount - fee;
+
+      user.vault -= amount;
+      user.money += received;
+      await saveUser(sender, user);
+      await addHistory(sender, "vault_withdraw", received, `Withdrew $${amount.toLocaleString()} from vault (fee: $${fee.toLocaleString()})`);
+
+      return sock.sendMessage(jid, {
+        text:
+          `🔓 *Vault Withdrawal*\n\n` +
+          `📤 Withdrawn : $${amount.toLocaleString()}\n` +
+          `💸 Fee (5%)  : -$${fee.toLocaleString()}\n` +
+          `💰 Received  : $${received.toLocaleString()}\n` +
+          `🏦 Vault Left: $${user.vault.toLocaleString()}`
+      }, { quoted: msg });
+    }
+
+    return sock.sendMessage(jid, {
+      text: "❓ Usage: `.vault balance` | `.vault deposit <amount>` | `.vault withdraw <amount>`"
+    }, { quoted: msg });
+  }
+};

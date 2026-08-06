@@ -1,1 +1,109 @@
-LyoqCiAqIC5iaWQgPGFtb3VudD4KICogUGxhY2UgYSBiaWQgb24gdGhlIGFjdGl2ZSBncm91cCBhdWN0aW9uLgogKi8KaW1wb3J0IHsKICBnZXRBdWN0aW9uLCBwbGFjZUJpZCwgdGltZUxlZnQsCn0gZnJvbSAiLi4vLi4vbGliL2F1Y3Rpb25NYW5hZ2VyLm1qcyI7CmltcG9ydCB7CiAgZ2V0VXNlciAgICAgICBhcyBnZXRFY29ub215VXNlciwKICBpc1JlZ2lzdGVyZWQsCn0gZnJvbSAiLi4vZWNvbm9teS9kYXRhYmFzZS5qcyI7CgpleHBvcnQgZGVmYXVsdCB7CiAgbmFtZTogICAgICAgICJiaWQiLAogIGFsaWFzZXM6ICAgICBbImIiXSwKICBjYXRlZ29yeTogICAgImNhcmRzIiwKICBkZXNjcmlwdGlvbjogIlBsYWNlIGEgYmlkIG9uIHRoZSBhY3RpdmUgZ3JvdXAgYXVjdGlvbiIsCiAgdXNhZ2U6ICAgICAgICIuYmlkIDxhbW91bnQ+IiwKICBjb29sZG93bjogICAgMiwKCiAgYXN5bmMgcnVuKHsgc29jaywgbXNnLCBhcmdzLCBzZW5kZXIgfSkgewogICAgY29uc3QgZ3JvdXBKaWQgPSBtc2cua2V5LnJlbW90ZUppZDsKICAgIGNvbnN0IHJlcGx5ICAgID0gKHRleHQpID0+IHNvY2suc2VuZE1lc3NhZ2UoZ3JvdXBKaWQsIHsgdGV4dCB9LCB7IHF1b3RlZDogbXNnIH0pOwoKICAgIC8vIOKUgOKUgCBHcm91cHMgb25seSDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKICAgIGlmICghZ3JvdXBKaWQuZW5kc1dpdGgoIkBnLnVzIikpIHsKICAgICAgcmV0dXJuIHJlcGx5KCLinYwgQXVjdGlvbnMgb25seSBydW4gaW4gZ3JvdXBzLiIpOwogICAgfQoKICAgIC8vIOKUgOKUgCBBY3RpdmUgYXVjdGlvbj8g4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACiAgICBjb25zdCBhdWN0aW9uID0gZ2V0QXVjdGlvbihncm91cEppZCk7CiAgICBpZiAoIWF1Y3Rpb24pIHsKICAgICAgcmV0dXJuIHJlcGx5KCLinYwgTm8gYWN0aXZlIGF1Y3Rpb24gaW4gdGhpcyBncm91cCByaWdodCBub3cuXG5cblN0YXJ0IG9uZSB3aXRoICouYXVjdGlvbiA8aW5kZXg+KiIpOwogICAgfQoKICAgIC8vIOKUgOKUgCBVc2FnZSDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKICAgIGlmICghYXJnc1swXSkgewogICAgICBjb25zdCBzZWNzID0gdGltZUxlZnQoZ3JvdXBKaWQpOwogICAgICByZXR1cm4gcmVwbHkoCiAgICAgICAgYPCflKggKkFDVElWRSBBVUNUSU9OKlxuXG5gICsKICAgICAgICBg8J+DjyAqJHthdWN0aW9uLmNhcmQubmFtZX0qIFske2F1Y3Rpb24uY2FyZC50aWVyfV1cbmAgKwogICAgICAgIGDwn6qZIEN1cnJlbnQgYmlkIDogJHthdWN0aW9uLmN1cnJlbnRCaWQgPiAwID8gYPCfqpkgJHthdWN0aW9uLmN1cnJlbnRCaWQudG9Mb2NhbGVTdHJpbmcoKX1gIDogIk5vIGJpZHMgeWV0In1cbmAgKwogICAgICAgIGDwn6qZIE1pbmltdW0gICAgIDog8J+qmSAke01hdGgubWF4KGF1Y3Rpb24uc3RhcnRCaWQsIGF1Y3Rpb24uY3VycmVudEJpZCArIDEpLnRvTG9jYWxlU3RyaW5nKCl9XG5gICsKICAgICAgICBg4o+x77iPIFRpbWUgbGVmdCAgICA6ICR7c2Vjc31zXG5cbmAgKwogICAgICAgIGBVc2UgKi5iaWQgPGFtb3VudD4qIHRvIHBsYWNlIHlvdXIgYmlkIWAKICAgICAgKTsKICAgIH0KCiAgICAvLyDilIDilIAgRWNvbm9teSByZWdpc3RyYXRpb24g4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACiAgICBpZiAoIWF3YWl0IGlzUmVnaXN0ZXJlZChzZW5kZXIpKSB7CiAgICAgIHJldHVybiByZXBseSgi4p2MIFlvdSBuZWVkIGFuIGVjb25vbXkgYWNjb3VudCB0byBiaWQuXG5cblVzZSAqLnJlZ2lzdGVyIDx5b3VyIG5hbWU+KiBmaXJzdC4iKTsKICAgIH0KCiAgICAvLyDilIDilIAgUGFyc2UgYW1vdW50IOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAogICAgY29uc3QgYW1vdW50ID0gcGFyc2VJbnQoYXJnc1swXS5yZXBsYWNlKC9bXjAtOV0vZywgIiIpKTsKICAgIGlmIChpc05hTihhbW91bnQpIHx8IGFtb3VudCA8PSAwKSB7CiAgICAgIHJldHVybiByZXBseSgi4p2MIEVudGVyIGEgdmFsaWQgYmlkIGFtb3VudC4gRXhhbXBsZTogKi5iaWQgMTUwMCoiKTsKICAgIH0KCiAgICAvLyDilIDilIAgQ2hlY2sgd2FsbGV0IOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAogICAgY29uc3QgdXNlciA9IGF3YWl0IGdldEVjb25vbXlVc2VyKHNlbmRlcik7CiAgICBpZiAoKHVzZXIubW9uZXkgfHwgMCkgPCBhbW91bnQpIHsKICAgICAgcmV0dXJuIHJlcGx5KAogICAgICAgIGDinYwgTm90IGVub3VnaCBtb25leSFcblxuYCArCiAgICAgICAgYPCfqpkgWW91ciB3YWxsZXQgOiDwn6qZICR7KHVzZXIubW9uZXkgfHwgMCkudG9Mb2NhbGVTdHJpbmcoKX1cbmAgKwogICAgICAgIGDwn46vIFlvdXIgYmlkICAgIDog8J+qmSAke2Ftb3VudC50b0xvY2FsZVN0cmluZygpfWAKICAgICAgKTsKICAgIH0KCiAgICAvLyDilIDilIAgUGxhY2UgYmlkIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAogICAgY29uc3QgcmVzdWx0ID0gcGxhY2VCaWQoZ3JvdXBKaWQsIHNlbmRlciwgYW1vdW50KTsKCiAgICBpZiAoIXJlc3VsdC5vaykgewogICAgICBpZiAocmVzdWx0LnJlYXNvbiA9PT0gIm93bl9hdWN0aW9uIikgewogICAgICAgIHJldHVybiByZXBseSgi4p2MIFlvdSBjYW4ndCBiaWQgb24geW91ciBvd24gYXVjdGlvbiEiKTsKICAgICAgfQogICAgICBpZiAocmVzdWx0LnJlYXNvbiA9PT0gInRvb19sb3ciKSB7CiAgICAgICAgcmV0dXJuIHJlcGx5KAogICAgICAgICAgYOKdjCBCaWQgdG9vIGxvdyFcblxuYCArCiAgICAgICAgICBg8J+qmSBDdXJyZW50IGhpZ2hlc3QgOiDwn6qZICR7cmVzdWx0LmN1cnJlbnQudG9Mb2NhbGVTdHJpbmcoKX1cbmAgKwogICAgICAgICAgYPCfk4wgWW91IG11c3QgYmlkIG1vcmUgdGhhbiB0aGUgY3VycmVudCBoaWdoZXN0IGJpZC5gCiAgICAgICAgKTsKICAgICAgfQogICAgICBpZiAocmVzdWx0LnJlYXNvbiA9PT0gImJlbG93X3N0YXJ0IikgewogICAgICAgIHJldHVybiByZXBseShg4p2MIE1pbmltdW0gc3RhcnRpbmcgYmlkIGlzIPCfqpkgJHtyZXN1bHQuc3RhcnQudG9Mb2NhbGVTdHJpbmcoKX0uYCk7CiAgICAgIH0KICAgICAgcmV0dXJuIHJlcGx5KCLinYwgQ291bGQgbm90IHBsYWNlIGJpZC4gVGhlIGF1Y3Rpb24gbWF5IGhhdmUganVzdCBlbmRlZC4iKTsKICAgIH0KCiAgICAvLyDilIDilIAgU3VjY2VzcyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKICAgIGNvbnN0IHNlY3MgICAgICA9IHRpbWVMZWZ0KGdyb3VwSmlkKTsKICAgIGNvbnN0IGJpZGRlck51bSA9IHNlbmRlci5zcGxpdCgiQCIpWzBdLnNwbGl0KCI6IilbMF07CgogICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UoZ3JvdXBKaWQsIHsKICAgICAgdGV4dDogWwogICAgICAgIGDwn6qZICpORVcgSElHSEVTVCBCSUQhKmAsCiAgICAgICAgYGAsCiAgICAgICAgYPCfg48gKiR7YXVjdGlvbi5jYXJkLm5hbWV9KiBbJHthdWN0aW9uLmNhcmQudGllcn1dYCwKICAgICAgICBgYCwKICAgICAgICBg8J+PhiBMZWFkZXIgIDogQCR7YmlkZGVyTnVtfWAsCiAgICAgICAgYPCfqpkgQmlkICAgICA6IPCfqpkgJHthbW91bnQudG9Mb2NhbGVTdHJpbmcoKX1gLAogICAgICAgIGDij7HvuI8gVGltZSBsZWZ0OiAke3NlY3N9c2AsCiAgICAgICAgYGAsCiAgICAgICAgYEJlYXQgaXQgd2l0aCAqLmJpZCA8aGlnaGVyIGFtb3VudD4qIWAsCiAgICAgIF0uam9pbigiXG4iKSwKICAgICAgbWVudGlvbnM6IFtzZW5kZXJdLAogICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICB9LAp9Owo=
+/**
+ * .bid <amount>
+ * Place a bid on the active group auction.
+ */
+import {
+  getAuction, placeBid, timeLeft,
+} from "../../lib/auctionManager.mjs";
+import {
+  getUser       as getEconomyUser,
+  isRegistered,
+} from "../economy/database.js";
+
+export default {
+  name:        "bid",
+  aliases:     ["b"],
+  category:    "cards",
+  description: "Place a bid on the active group auction",
+  usage:       ".bid <amount>",
+  cooldown:    2,
+
+  async run({ sock, msg, args, sender }) {
+    const groupJid = msg.key.remoteJid;
+    const reply    = (text) => sock.sendMessage(groupJid, { text }, { quoted: msg });
+
+    // ── Groups only ────────────────────────────────────────────────────────
+    if (!groupJid.endsWith("@g.us")) {
+      return reply("❌ Auctions only run in groups.");
+    }
+
+    // ── Active auction? ────────────────────────────────────────────────────
+    const auction = getAuction(groupJid);
+    if (!auction) {
+      return reply("❌ No active auction in this group right now.\n\nStart one with *.auction <index>*");
+    }
+
+    // ── Usage ──────────────────────────────────────────────────────────────
+    if (!args[0]) {
+      const secs = timeLeft(groupJid);
+      return reply(
+        `🔨 *ACTIVE AUCTION*\n\n` +
+        `🃏 *${auction.card.name}* [${auction.card.tier}]\n` +
+        `💰 Current bid : ${auction.currentBid > 0 ? `$${auction.currentBid.toLocaleString()}` : "No bids yet"}\n` +
+        `💰 Minimum     : $${Math.max(auction.startBid, auction.currentBid + 1).toLocaleString()}\n` +
+        `⏱️ Time left    : ${secs}s\n\n` +
+        `Use *.bid <amount>* to place your bid!`
+      );
+    }
+
+    // ── Economy registration ───────────────────────────────────────────────
+    if (!await isRegistered(sender)) {
+      return reply("❌ You need an economy account to bid.\n\nUse *.register <your name>* first.");
+    }
+
+    // ── Parse amount ───────────────────────────────────────────────────────
+    const amount = parseInt(args[0].replace(/[^0-9]/g, ""));
+    if (isNaN(amount) || amount <= 0) {
+      return reply("❌ Enter a valid bid amount. Example: *.bid 1500*");
+    }
+
+    // ── Check wallet ───────────────────────────────────────────────────────
+    const user = await getEconomyUser(sender);
+    if ((user.money || 0) < amount) {
+      return reply(
+        `❌ Not enough money!\n\n` +
+        `💰 Your wallet : $${(user.money || 0).toLocaleString()}\n` +
+        `🎯 Your bid    : $${amount.toLocaleString()}`
+      );
+    }
+
+    // ── Place bid ──────────────────────────────────────────────────────────
+    const result = placeBid(groupJid, sender, amount);
+
+    if (!result.ok) {
+      if (result.reason === "own_auction") {
+        return reply("❌ You can't bid on your own auction!");
+      }
+      if (result.reason === "too_low") {
+        return reply(
+          `❌ Bid too low!\n\n` +
+          `💰 Current highest : $${result.current.toLocaleString()}\n` +
+          `📌 You must bid more than the current highest bid.`
+        );
+      }
+      if (result.reason === "below_start") {
+        return reply(`❌ Minimum starting bid is $${result.start.toLocaleString()}.`);
+      }
+      return reply("❌ Could not place bid. The auction may have just ended.");
+    }
+
+    // ── Success ────────────────────────────────────────────────────────────
+    const secs      = timeLeft(groupJid);
+    const bidderNum = sender.split("@")[0].split(":")[0];
+
+    return sock.sendMessage(groupJid, {
+      text: [
+        `💰 *NEW HIGHEST BID!*`,
+        ``,
+        `🃏 *${auction.card.name}* [${auction.card.tier}]`,
+        ``,
+        `🏆 Leader  : @${bidderNum}`,
+        `💰 Bid     : $${amount.toLocaleString()}`,
+        `⏱️ Time left: ${secs}s`,
+        ``,
+        `Beat it with *.bid <higher amount>*!`,
+      ].join("\n"),
+      mentions: [sender],
+    }, { quoted: msg });
+  },
+};

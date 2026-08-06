@@ -1,1 +1,96 @@
-aW1wb3J0IHsgZ2V0VXNlciwgc2F2ZVVzZXIsIGNoZWNrTGV2ZWxVcCwgcmVxdWlyZVJlZ2lzdHJhdGlvbiwgYWRkSGlzdG9yeSB9IGZyb20gIi4vZGF0YWJhc2UuanMiOwppbXBvcnQgeyBTSE9QX0lURU1TIH0gZnJvbSAiLi9faXRlbXMuanMiOwoKY29uc3QgSVRFTV9VU0VfTVNHUyA9IHsKICBwb3Rpb246ICAgICAgICLwn6eqIFlvdSBkcmFuayBhIHBvdGlvbiBhbmQgZmVsdCBlbmVyZ2lzZWQhIiwKICBzY3JvbGw6ICAgICAgICLwn5OcIFlvdSByZWFkIHRoZSBzY3JvbGwgYW5kIGdhaW5lZCBhbmNpZW50IGtub3dsZWRnZSEiLAogIGVsaXhpcjogICAgICAgIvCfjbYgVGhlIGVsaXhpciBzdXJnZWQgdGhyb3VnaCB5b3VyIHZlaW5zISIsCiAgcm9kOiAgICAgICAgICAi8J+OoyBZb3UgcHJhY3Rpc2VkIGNhc3Rpbmcgd2l0aCB5b3VyIHJvZCDigJQgWFAgZ2FpbmVkISIsCiAgcGlja2F4ZTogICAgICAi4puP77iPIFlvdSBzaGFycGVuZWQgeW91ciBza2lsbHMgd2l0aCB0aGUgcGlja2F4ZSEiLAogIG9yYjogICAgICAgICAgIvCflK4gVGhlIG9yYiBjcmFja2xlZCB3aXRoIGVuZXJneSBhbmQgZmlsbGVkIHlvdXIgcmVzZXJ2ZXMhIiwKICByb2JfY2hhcm06ICAgICLwn6e/IFJvYiBDaGFybSBhY3RpdmF0ZWQhIFlvdSdyZSBwcm90ZWN0ZWQgZnJvbSB0aGlldmVzIGZvciAxIGRheSEiLAogIHN0ZWFsdGhfaG9vZDogIvCfqoQgU3RlYWx0aCBIb29kIG9uISBZb3UnbGwgcGF5IGhhbGYgdGhlIGZpbmUgaWYgeW91IGdldCBjYXVnaHQgcm9iYmluZyEiLAogIHZhdWx0X2d1YXJkOiAgIvCflJIgVmF1bHQgR3VhcmQgYWN0aXZhdGVkISBZb3VyIHZhdWx0IGlzIGxvY2tlZCBkb3duISIsCiAgeHBfYm9tYjogICAgICAi8J+SpSBYUCBCb21iIGRldG9uYXRlZCEgTWFzc2l2ZSBYUCBzdXJnZSEiLAp9OwoKLy8gVGltZWQgYnVmZnMg4oCUIHVzZUVmZmVjdCBmb3JtYXQ6ICJrZXk6ZHVyYXRpb25NcyIKY29uc3QgVElNRURfRUZGRUNUUyA9IHsKICByb2Jfc2hpZWxkOiAgICAodXNlciwgbXMpID0+IHsgdXNlci5yb2JTaGllbGRFeHBpcnkgICA9IERhdGUubm93KCkgKyBtczsgcmV0dXJuIGDwn6e/IFJvYiBTaGllbGQ6ICR7bXMgLyA2MDAwMH0gbWluYDsgfSwKICBzdGVhbHRoOiAgICAgICAodXNlciwgbXMpID0+IHsgdXNlci5zdGVhbHRoRXhwaXJ5ICAgICA9IERhdGUubm93KCkgKyBtczsgcmV0dXJuIGDwn6qEIFN0ZWFsdGg6ICR7bXMgLyA2MDAwMH0gbWluYDsgfSwKICB2YXVsdF9zaGllbGQ6ICAodXNlciwgbXMpID0+IHsgdXNlci52YXVsdFNoaWVsZEV4cGlyeSA9IERhdGUubm93KCkgKyBtczsgcmV0dXJuIGDwn5SSIFZhdWx0IFNoaWVsZDogJHttcyAvIDYwMDAwfSBtaW5gOyB9LAp9OwoKZXhwb3J0IGRlZmF1bHQgewogIG5hbWU6ICJ1c2UiLAogIGFsaWFzZXM6IFsidXNlaXRlbSJdLAogIGNhdGVnb3J5OiAiZWNvbm9teSIsCiAgY29vbGRvd246IDYsCiAgZGVzY3JpcHRpb246ICJVc2UgYW4gaXRlbSBmcm9tIHlvdXIgaW52ZW50b3J5IiwKICB1c2FnZTogIi51c2UgPGl0ZW0gbmFtZT4iLAoKICBhc3luYyBydW4oeyBzb2NrLCBtc2csIHNlbmRlciwgYXJncyB9KSB7CiAgICBpZiAoIWF3YWl0IHJlcXVpcmVSZWdpc3RyYXRpb24oc29jaywgbXNnLCBzZW5kZXIpKSByZXR1cm47CgogICAgY29uc3QgamlkICAgPSBtc2cua2V5LnJlbW90ZUppZDsKICAgIGNvbnN0IHJlcGx5ID0gKHQpID0+IHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7IHRleHQ6IHQgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKCiAgICBpZiAoIWFyZ3NbMF0pIHJldHVybiByZXBseSgi4p2MIFVzYWdlOiAudXNlIDxpdGVtPlxuXG5DaGVjayB5b3VyIGl0ZW1zIHdpdGggKi5pbnZlbnRvcnkqIik7CgogICAgY29uc3QgaXRlbU5hbWUgPSBhcmdzWzBdLnRvTG93ZXJDYXNlKCk7CiAgICBjb25zdCBpdGVtRGVmICA9IFNIT1BfSVRFTVNbaXRlbU5hbWVdOwoKICAgIGlmICghaXRlbURlZj8udXNlRWZmZWN0KSB7CiAgICAgIGNvbnN0IGtub3duID0gT2JqZWN0LmVudHJpZXMoU0hPUF9JVEVNUykKICAgICAgICAuZmlsdGVyKChbLCB2XSkgPT4gdi51c2VFZmZlY3QpCiAgICAgICAgLm1hcCgoW2tdKSA9PiBrKS5qb2luKCIsICIpOwogICAgICByZXR1cm4gcmVwbHkoYOKdjCAqJHtpdGVtTmFtZX0qIGNhbid0IGJlIHVzZWQuXG5cblVzYWJsZSBpdGVtczogJHtrbm93bn1gKTsKICAgIH0KCiAgICBjb25zdCB1c2VyID0gYXdhaXQgZ2V0VXNlcihzZW5kZXIpOwogICAgY29uc3QgaW52ICA9IHVzZXIuaW52ZW50b3J5IHx8IFtdOwogICAgY29uc3QgaWR4ICA9IGludi5pbmRleE9mKGl0ZW1OYW1lKTsKCiAgICBpZiAoaWR4ID09PSAtMSkgewogICAgICByZXR1cm4gcmVwbHkoYOKdjCBZb3UgZG9uJ3QgaGF2ZSBhICoke2l0ZW1OYW1lfSogaW4geW91ciBpbnZlbnRvcnkuXG5cbkJ1eSBvbmUgZnJvbSAqLnNob3AqYCk7CiAgICB9CgogICAgLy8gUmVtb3ZlIG9uZSBpbnN0YW5jZQogICAgaW52LnNwbGljZShpZHgsIDEpOwogICAgdXNlci5pbnZlbnRvcnkgPSBpbnY7CgogICAgLy8gUGFyc2UgYW5kIGFwcGx5IGVmZmVjdHMKICAgIC8vIEZvcm1hdHMgc3VwcG9ydGVkOiAieHArNTAiLCAiY2FzaCsyMDAiLCAib3Jicys1IiwgInJvYl9zaGllbGQ6MzYwMDAwMCIKICAgIGNvbnN0IGVmZmVjdHMgID0gaXRlbURlZi51c2VFZmZlY3Quc3BsaXQoIiwiKTsKICAgIGNvbnN0IGdhaW5zICAgID0gW107CiAgICBmb3IgKGNvbnN0IGVmZmVjdCBvZiBlZmZlY3RzKSB7CiAgICAgIGlmIChlZmZlY3QuaW5jbHVkZXMoIjoiKSkgewogICAgICAgIC8vIFRpbWVkIGJ1ZmYg4oCUICJrZXk6ZHVyYXRpb25NcyIKICAgICAgICBjb25zdCBba2V5LCBkdXJTdHJdID0gZWZmZWN0LnNwbGl0KCI6Iik7CiAgICAgICAgY29uc3QgZHVyID0gcGFyc2VJbnQoZHVyU3RyLCAxMCk7CiAgICAgICAgY29uc3QgZm4gID0gVElNRURfRUZGRUNUU1trZXldOwogICAgICAgIGlmIChmbikgZ2FpbnMucHVzaChmbih1c2VyLCBkdXIpKTsKICAgICAgfSBlbHNlIGlmIChlZmZlY3QuaW5jbHVkZXMoIisiKSkgewogICAgICAgIC8vIEluc3RhbnQgc3RhdCBib29zdCDigJQgInN0YXQrdmFsdWUiCiAgICAgICAgY29uc3QgW3N0YXQsIHZhbFN0cl0gPSBlZmZlY3Quc3BsaXQoIisiKTsKICAgICAgICBjb25zdCB2YWwgPSBwYXJzZUludCh2YWxTdHIsIDEwKTsKICAgICAgICBpZiAoc3RhdCA9PT0gInhwIikgICB7IHVzZXIueHAgICAgPSAodXNlci54cCAgICB8fCAwKSArIHZhbDsgZ2FpbnMucHVzaChgKyR7dmFsfSBYUGApOyB9CiAgICAgICAgaWYgKHN0YXQgPT09ICJjYXNoIikgeyB1c2VyLm1vbmV5ID0gKHVzZXIubW9uZXkgfHwgMCkgKyB2YWw7IGdhaW5zLnB1c2goYCvwn6qZICR7dmFsLnRvTG9jYWxlU3RyaW5nKCl9YCk7IH0KICAgICAgICBpZiAoc3RhdCA9PT0gIm9yYnMiKSB7IHVzZXIub3JicyAgPSAodXNlci5vcmJzICB8fCAwKSArIHZhbDsgZ2FpbnMucHVzaChgKyR7dmFsfSDwn5SuYCk7IH0KICAgICAgfQogICAgfQoKICAgIC8vIExldmVsLXVwIGNoZWNrCiAgICBjb25zdCB7IGxldmVsZWQsIG5ld0xldmVsIH0gPSBjaGVja0xldmVsVXAodXNlcik7CgogICAgYXdhaXQgc2F2ZVVzZXIoc2VuZGVyLCB1c2VyKTsKICAgIGF3YWl0IGFkZEhpc3Rvcnkoc2VuZGVyLCAidXNlIiwgMCwgYFVzZWQgJHtpdGVtTmFtZX1gKTsKCiAgICBsZXQgdGV4dCA9IGAke0lURU1fVVNFX01TR1NbaXRlbU5hbWVdIHx8ICLinIUgSXRlbSB1c2VkISJ9XG5cbmA7CiAgICB0ZXh0ICs9IGAke2l0ZW1EZWYuZW1vaml9ICoke2l0ZW1OYW1lfSogY29uc3VtZWRcbmA7CiAgICBpZiAoZ2FpbnMubGVuZ3RoKSB0ZXh0ICs9IGDinKggRWZmZWN0OiAke2dhaW5zLmpvaW4oIiAg4oCiICAiKX1cbmA7CiAgICBpZiAobGV2ZWxlZCkgdGV4dCArPSBgXG7wn46JICpMRVZFTCBVUCEqIFlvdSBhcmUgbm93IExldmVsICR7dXNlci5sZXZlbH0hYDsKCiAgICByZXR1cm4gcmVwbHkodGV4dCk7CiAgfSwKfTsK
+import { getUser, saveUser, checkLevelUp, requireRegistration, addHistory } from "./database.js";
+import { SHOP_ITEMS } from "./_items.js";
+
+const ITEM_USE_MSGS = {
+  potion:       "🧪 You drank a potion and felt energised!",
+  scroll:       "📜 You read the scroll and gained ancient knowledge!",
+  elixir:       "🍶 The elixir surged through your veins!",
+  rod:          "🎣 You practised casting with your rod — XP gained!",
+  pickaxe:      "⛏️ You sharpened your skills with the pickaxe!",
+  orb:          "🔮 The orb crackled with energy and filled your reserves!",
+  rob_charm:    "🧿 Rob Charm activated! You're protected from thieves for 1 day!",
+  stealth_hood: "🪄 Stealth Hood on! You'll pay half the fine if you get caught robbing!",
+  vault_guard:  "🔒 Vault Guard activated! Your vault is locked down!",
+  xp_bomb:      "💥 XP Bomb detonated! Massive XP surge!",
+};
+
+// Timed buffs — useEffect format: "key:durationMs"
+const TIMED_EFFECTS = {
+  rob_shield:    (user, ms) => { user.robShieldExpiry   = Date.now() + ms; return `🧿 Rob Shield: ${ms / 60000} min`; },
+  stealth:       (user, ms) => { user.stealthExpiry     = Date.now() + ms; return `🪄 Stealth: ${ms / 60000} min`; },
+  vault_shield:  (user, ms) => { user.vaultShieldExpiry = Date.now() + ms; return `🔒 Vault Shield: ${ms / 60000} min`; },
+};
+
+export default {
+  name: "use",
+  aliases: ["useitem"],
+  category: "economy",
+  cooldown: 6,
+  description: "Use an item from your inventory",
+  usage: ".use <item name>",
+
+  async run({ sock, msg, sender, args }) {
+    if (!await requireRegistration(sock, msg, sender)) return;
+
+    const jid   = msg.key.remoteJid;
+    const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
+
+    if (!args[0]) return reply("❌ Usage: .use <item>\n\nCheck your items with *.inventory*");
+
+    const itemName = args[0].toLowerCase();
+    const itemDef  = SHOP_ITEMS[itemName];
+
+    if (!itemDef?.useEffect) {
+      const known = Object.entries(SHOP_ITEMS)
+        .filter(([, v]) => v.useEffect)
+        .map(([k]) => k).join(", ");
+      return reply(`❌ *${itemName}* can't be used.\n\nUsable items: ${known}`);
+    }
+
+    const user = await getUser(sender);
+    const inv  = user.inventory || [];
+    const idx  = inv.indexOf(itemName);
+
+    if (idx === -1) {
+      return reply(`❌ You don't have a *${itemName}* in your inventory.\n\nBuy one from *.shop*`);
+    }
+
+    // Remove one instance
+    inv.splice(idx, 1);
+    user.inventory = inv;
+
+    // Parse and apply effects
+    // Formats supported: "xp+50", "cash+200", "orbs+5", "rob_shield:3600000"
+    const effects  = itemDef.useEffect.split(",");
+    const gains    = [];
+    for (const effect of effects) {
+      if (effect.includes(":")) {
+        // Timed buff — "key:durationMs"
+        const [key, durStr] = effect.split(":");
+        const dur = parseInt(durStr, 10);
+        const fn  = TIMED_EFFECTS[key];
+        if (fn) gains.push(fn(user, dur));
+      } else if (effect.includes("+")) {
+        // Instant stat boost — "stat+value"
+        const [stat, valStr] = effect.split("+");
+        const val = parseInt(valStr, 10);
+        if (stat === "xp")   { user.xp    = (user.xp    || 0) + val; gains.push(`+${val} XP`); }
+        if (stat === "cash") { user.money = (user.money || 0) + val; gains.push(`+$${val.toLocaleString()}`); }
+        if (stat === "orbs") { user.orbs  = (user.orbs  || 0) + val; gains.push(`+${val} 🔮`); }
+      }
+    }
+
+    // Level-up check
+    const { leveled, newLevel } = checkLevelUp(user);
+
+    await saveUser(sender, user);
+    await addHistory(sender, "use", 0, `Used ${itemName}`);
+
+    let text = `${ITEM_USE_MSGS[itemName] || "✅ Item used!"}\n\n`;
+    text += `${itemDef.emoji} *${itemName}* consumed\n`;
+    if (gains.length) text += `✨ Effect: ${gains.join("  •  ")}\n`;
+    if (leveled) text += `\n🎉 *LEVEL UP!* You are now Level ${user.level}!`;
+
+    return reply(text);
+  },
+};

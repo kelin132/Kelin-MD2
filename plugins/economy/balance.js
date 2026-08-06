@@ -1,1 +1,66 @@
-aW1wb3J0IHsgZ2V0VXNlciwgcmVxdWlyZVJlZ2lzdHJhdGlvbiB9IGZyb20gIi4vZGF0YWJhc2UuanMiOwppbXBvcnQgeyBnZXRMZXZlbFJvbGVMYWJlbCB9IGZyb20gIi4uLy4uL2xpYi9sZXZlbFJvbGVzLm1qcyI7CmltcG9ydCB7IGdlbmVyYXRlQmFsYW5jZUltYWdlIH0gZnJvbSAiLi4vLi4vbGliL2Vjb25vbXlDYW52YXMubWpzIjsKCmZ1bmN0aW9uIGZtdChuKSB7CiAgaWYgKG4gPj0gMV8wMDBfMDAwXzAwMCkgcmV0dXJuIGDwn6qZICR7KG4gLyAxXzAwMF8wMDBfMDAwKS50b0ZpeGVkKDEpfUJgOwogIGlmIChuID49IDFfMDAwXzAwMCkgICAgIHJldHVybiBg8J+qmSAkeyhuIC8gMV8wMDBfMDAwKS50b0ZpeGVkKDEpfU1gOwogIGlmIChuID49IDFfMDAwKSAgICAgICAgIHJldHVybiBg8J+qmSAkeyhuIC8gMV8wMDApLnRvRml4ZWQoMSl9S2A7CiAgcmV0dXJuIGDwn6qZICR7bi50b0xvY2FsZVN0cmluZygpfWA7Cn0KCmZ1bmN0aW9uIGZtdFhQKG4pIHsKICBpZiAobiA+PSAxXzAwMF8wMDApIHJldHVybiBgJHsobiAvIDFfMDAwXzAwMCkudG9GaXhlZCgxKX1NYDsKICBpZiAobiA+PSAxXzAwMCkgICAgIHJldHVybiBgJHsobiAvIDFfMDAwKS50b0ZpeGVkKDEpfUtgOwogIHJldHVybiBgJHtufWA7Cn0KCmV4cG9ydCBkZWZhdWx0IHsKICBuYW1lOiAiYmFsYW5jZSIsCiAgZGVzY3JpcHRpb246ICJDaGVjayB5b3VyIHdhbGxldCBhbmQgYmFuayBiYWxhbmNlIiwKICBjYXRlZ29yeTogImVjb25vbXkiLAogIHVzYWdlOiAiLmJhbGFuY2UiLAogIGFsaWFzZXM6IFsiYmFsIiwgIm1vbmV5IiwgIndhbGxldCJdLAogIGNvb2xkb3duOiA2LAoKICBhc3luYyBydW4oeyBzb2NrLCBtc2csIHNlbmRlciB9KSB7CiAgICBpZiAoIWF3YWl0IHJlcXVpcmVSZWdpc3RyYXRpb24oc29jaywgbXNnLCBzZW5kZXIpKSByZXR1cm47CgogICAgY29uc3QgdXNlciA9IGF3YWl0IGdldFVzZXIoc2VuZGVyKTsKICAgIGNvbnN0IHRhZyAgPSBzZW5kZXIuc3BsaXQoIkAiKVswXS5zcGxpdCgiOiIpWzBdOwogICAgY29uc3Qgcm9sZSA9IGdldExldmVsUm9sZUxhYmVsKHVzZXIubGV2ZWwgPz8gMSk7CiAgICBjb25zdCBqaWQgID0gbXNnLmtleS5yZW1vdGVKaWQ7CiAgICBjb25zdCBuZXQgID0gKHVzZXIubW9uZXkgPz8gMCkgKyAodXNlci5iYW5rID8/IDApOwoKICAgIGNvbnN0IGNhcHRpb24gPQpg4pWt4pSA4p2A44CMIPCfqpkgKvCdkJbwnZCA8J2Qi/CdkIvwnZCE8J2Qkyog44CN4p2A4pSA4pWuCuKUgiDwn5GkICpVc2VyKiAgICA6OiAqQCR7dGFnfSoK4pSCIPCfko4gKk5ldCBXb3J0aCo6OiAqJHtmbXQobmV0KX0qCuKUggrilIIg8J+qmSAqQ2FzaCogICAgOjogKiR7Zm10KHVzZXIubW9uZXkgPz8gMCl9KgrilIIg8J+PpiAqQmFuayogICAgOjogKiR7Zm10KHVzZXIuYmFuayAgPz8gMCl9KgrilIIg8J+SjiAqR2VtcyogICAgOjogKiR7dXNlci5kaWFtb25kcyA/PyAwfSBnZW1zKgrilIIK4pSCIOKtkCAqTGV2ZWwqICAgOjogKiR7dXNlci5sZXZlbCA/PyAxfSoK4pSCIPCflK4gKlhQKiAgICAgIDo6ICoke2ZtdFhQKHVzZXIueHAgPz8gMCl9KgrilIIg8J+OrSAqUm9sZSogICAgOjogKiR7cm9sZX0qCuKUggrilIIg8J+TiiBVc2UgKi5lYmFsKiBmb3IgZnVsbCBhY2NvdW50IGJyZWFrZG93bgrilbDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDinYBgOwoKICAgIHRyeSB7CiAgICAgIGNvbnN0IGltZ0J1ZmZlciA9IGF3YWl0IGdlbmVyYXRlQmFsYW5jZUltYWdlKHsKICAgICAgICB0YWcsCiAgICAgICAgY2FzaDogICAgIHVzZXIubW9uZXkgICAgPz8gMCwKICAgICAgICBiYW5rOiAgICAgdXNlci5iYW5rICAgICA/PyAwLAogICAgICAgIGRpYW1vbmRzOiB1c2VyLmRpYW1vbmRzID8/IDAsCiAgICAgICAgbGV2ZWw6ICAgIHVzZXIubGV2ZWwgICAgPz8gMSwKICAgICAgICB4cDogICAgICAgdXNlci54cCAgICAgID8/IDAsCiAgICAgICAgcm9sZSwKICAgICAgfSk7CiAgICAgIGF3YWl0IHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7IGltYWdlOiBpbWdCdWZmZXIsIGNhcHRpb24sIG1lbnRpb25zOiBbc2VuZGVyXSB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfSBjYXRjaCB7CiAgICAgIGF3YWl0IHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7IHRleHQ6IGNhcHRpb24sIG1lbnRpb25zOiBbc2VuZGVyXSB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQogIH0sCn07Cg==
+import { getUser, requireRegistration } from "./database.js";
+import { getLevelRoleLabel } from "../../lib/levelRoles.mjs";
+import { generateBalanceImage } from "../../lib/economyCanvas.mjs";
+
+function fmt(n) {
+  if (n >= 1_000_000_000) return `$${(n / 1_000_000_000).toFixed(1)}B`;
+  if (n >= 1_000_000)     return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000)         return `$${(n / 1_000).toFixed(1)}K`;
+  return `$${n.toLocaleString()}`;
+}
+
+function fmtXP(n) {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000)     return `${(n / 1_000).toFixed(1)}K`;
+  return `${n}`;
+}
+
+export default {
+  name: "balance",
+  description: "Check your wallet and bank balance",
+  category: "economy",
+  usage: ".balance",
+  aliases: ["bal", "money", "wallet"],
+  cooldown: 6,
+
+  async run({ sock, msg, sender }) {
+    if (!await requireRegistration(sock, msg, sender)) return;
+
+    const user = await getUser(sender);
+    const tag  = sender.split("@")[0].split(":")[0];
+    const role = getLevelRoleLabel(user.level ?? 1);
+    const jid  = msg.key.remoteJid;
+    const net  = (user.money ?? 0) + (user.bank ?? 0);
+
+    const caption =
+`╭─❀「 💰 *𝐖𝐀𝐋𝐋𝐄𝐓* 」❀─╮
+│ 👤 *User*    :: *@${tag}*
+│ 💎 *Net Worth*:: *${fmt(net)}*
+│
+│ 💰 *Cash*    :: *${fmt(user.money ?? 0)}*
+│ 🏦 *Bank*    :: *${fmt(user.bank  ?? 0)}*
+│ 💎 *Gems*    :: *${user.diamonds ?? 0} gems*
+│
+│ ⭐ *Level*   :: *${user.level ?? 1}*
+│ 🔮 *XP*      :: *${fmtXP(user.xp ?? 0)}*
+│ 🎭 *Role*    :: *${role}*
+│
+│ 📊 Use *.ebal* for full account breakdown
+╰───────────────❀`;
+
+    try {
+      const imgBuffer = await generateBalanceImage({
+        tag,
+        cash:     user.money    ?? 0,
+        bank:     user.bank     ?? 0,
+        diamonds: user.diamonds ?? 0,
+        level:    user.level    ?? 1,
+        xp:       user.xp      ?? 0,
+        role,
+      });
+      await sock.sendMessage(jid, { image: imgBuffer, caption, mentions: [sender] }, { quoted: msg });
+    } catch {
+      await sock.sendMessage(jid, { text: caption, mentions: [sender] }, { quoted: msg });
+    }
+  },
+};

@@ -1,1 +1,126 @@
-Ly8gcGx1Z2lucy9wZXRzL3BldGJhdHRsZS5qcwovLyAucGV0YmF0dGxlIOKAlCBGaWdodCBtb25zdGVycyB3aXRoIHlvdXIgcGV0IGZvciBFWFAgYW5kIGdvbGQKaW1wb3J0IHsgZ2V0QWN0aXZlUGV0LCBzYXZlUGV0LCBhd2FyZEV4cCB9IGZyb20gIi4uLy4uL2xpYi9wZXREYXRhYmFzZS5qcyI7CmltcG9ydCB7IE1PTlNURVJTLCBQRVRfU1BFQ0lFUyB9IGZyb20gIi4uLy4uL2xpYi9wZXREYXRhLmpzIjsKCmNvbnN0IENPT0xET1dOX01TID0gMjAgKiA2MCAqIDEwMDA7IC8vIDIwIG1pbnV0ZXMKCmZ1bmN0aW9uIHJvbGwobWluLCBtYXgpIHsKICByZXR1cm4gTWF0aC5mbG9vcihNYXRoLnJhbmRvbSgpICogKG1heCAtIG1pbiArIDEpKSArIG1pbjsKfQoKZnVuY3Rpb24gYmFyKHYsIG1heCwgbGVuID0gMTApIHsKICBjb25zdCBmID0gTWF0aC5tYXgoMCwgTWF0aC5yb3VuZCgodiAvIG1heCkgKiBsZW4pKTsKICByZXR1cm4gIuKWiCIucmVwZWF0KGYpICsgIuKWkSIucmVwZWF0KGxlbiAtIGYpOwp9CgpmdW5jdGlvbiBjYWxjRGFtYWdlKGF0aywgZGVmKSB7CiAgY29uc3QgYmFzZSA9IE1hdGgubWF4KDEsIGF0ayAtIE1hdGguZmxvb3IoZGVmICogMC40KSk7CiAgcmV0dXJuIHJvbGwoTWF0aC5mbG9vcihiYXNlICogMC44KSwgTWF0aC5jZWlsKGJhc2UgKiAxLjIpKTsKfQoKZXhwb3J0IGRlZmF1bHQgewogIG5hbWU6ICJwZXRiYXR0bGUiLAogIGRlc2NyaXB0aW9uOiAiRmlnaHQgYSBtb25zdGVyIHdpdGggeW91ciBwZXQiLAogIGNhdGVnb3J5OiAicGV0cyIsCiAgdXNhZ2U6ICIucGV0YmF0dGxlIiwKICBhbGlhc2VzOiBbInBiYXR0bGUiLCAicG1vbnN0ZXIiLCAicGV0ZmlnaHQiXSwKICBjaGVja0phaWw6IHRydWUsCgogIGFzeW5jIHJ1bih7IHNvY2ssIG1zZyB9KSB7CiAgICBjb25zdCBqaWQgICAgPSBtc2cua2V5LnJlbW90ZUppZDsKICAgIGNvbnN0IHNlbmRlciA9IG1zZy5rZXkucGFydGljaXBhbnQgfHwgbXNnLmtleS5yZW1vdGVKaWQ7CgogICAgY29uc3QgcGV0ID0gYXdhaXQgZ2V0QWN0aXZlUGV0KHNlbmRlcik7CiAgICBpZiAoIXBldCkgewogICAgICByZXR1cm4gc29jay5zZW5kTWVzc2FnZShqaWQsIHsKICAgICAgICB0ZXh0OiBg8J+QviBZb3UgZG9uJ3QgaGF2ZSBhbiBhY3RpdmUgcGV0IVxuXG5Vc2UgKi5hZG9wdCogb3IgKi5wZXRzIHNlbGVjdCA8SUQ+KiBmaXJzdC5gLAogICAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQoKICAgIC8vIENvb2xkb3duCiAgICBjb25zdCBub3cgICAgICAgICA9IERhdGUubm93KCk7CiAgICBjb25zdCBsYXN0QmF0dGxlICA9IHBldC5sYXN0QmF0dGxlID8gbmV3IERhdGUocGV0Lmxhc3RCYXR0bGUpLmdldFRpbWUoKSA6IDA7CiAgICBpZiAobm93IC0gbGFzdEJhdHRsZSA8IENPT0xET1dOX01TKSB7CiAgICAgIGNvbnN0IG1pbnMgPSBNYXRoLmNlaWwoKENPT0xET1dOX01TIC0gKG5vdyAtIGxhc3RCYXR0bGUpKSAvIDYwMDAwKTsKICAgICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgICAgdGV4dDogYOKalO+4jyAqJHtwZXQubmFtZX0qIGlzIHN0aWxsIHJlY292ZXJpbmchXG5cbk5leHQgYmF0dGxlIGluICoke21pbnN9IG1pbnV0ZSR7bWlucyAhPT0gMSA/ICJzIiA6ICIifSouYCwKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICAvLyBIdW5nZXIgbXVzdCBiZSBhYm92ZSAxMCUKICAgIGNvbnN0IGh1bmdlciA9IHBldC5odW5nZXIgPz8gMTAwOwogICAgaWYgKGh1bmdlciA8IDEwKSB7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgIHRleHQ6IGDwn42WICoke3BldC5uYW1lfSogaXMgdG9vIGh1bmdyeSB0byBmaWdodCFcblxuRmVlZCB0aGVtIHdpdGggKi5mZWVkKiBmaXJzdC5gLAogICAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQoKICAgIC8vIFNjYWxlIG1vbnN0ZXIgdG8gcGV0IGxldmVsCiAgICBjb25zdCB0ZW1wbGF0ZSAgPSBNT05TVEVSU1tNYXRoLmZsb29yKE1hdGgucmFuZG9tKCkgKiBNT05TVEVSUy5sZW5ndGgpXTsKICAgIGNvbnN0IG1vbkhwICAgICA9IE1hdGgubWF4KDIwLCBNYXRoLmZsb29yKHBldC5tYXhIcCAqIHRlbXBsYXRlLmhwTXVsdCkpOwogICAgY29uc3QgbW9uQXRrICAgID0gTWF0aC5tYXgoNSwgIE1hdGguZmxvb3IocGV0LmF0dGFjayAqIHRlbXBsYXRlLmF0a011bHQpKTsKCiAgICAvLyBTaW11bGF0ZSBiYXR0bGUgKHVwIHRvIDEwIHJvdW5kcykKICAgIGxldCBwZXRIcCAgICAgICA9IHBldC5tYXhIcDsKICAgIGxldCBtb25zdGVySHAgICA9IG1vbkhwOwogICAgY29uc3QgbG9nICAgICAgID0gW107CiAgICBsZXQgcm91bmQgICAgICAgPSAxOwoKICAgIHdoaWxlIChwZXRIcCA+IDAgJiYgbW9uc3RlckhwID4gMCAmJiByb3VuZCA8PSAxMCkgewogICAgICAvLyBQZXQgYXR0YWNrcwogICAgICBjb25zdCBwZXREbWcgPSBjYWxjRGFtYWdlKHBldC5hdHRhY2ssIE1hdGguZmxvb3IobW9uQXRrICogMC41KSk7CiAgICAgIG1vbnN0ZXJIcCAgIC09IHBldERtZzsKICAgICAgbG9nLnB1c2goYFJvdW5kICR7cm91bmR9OiAqJHtwZXQubmFtZX0qIGRlYWxzICoke3BldERtZ30qIGRtZyEgJHt0ZW1wbGF0ZS5lbW9qaX0gSFA6ICR7TWF0aC5tYXgoMCwgbW9uc3RlckhwKX0vJHttb25IcH1gKTsKCiAgICAgIGlmIChtb25zdGVySHAgPD0gMCkgYnJlYWs7CgogICAgICAvLyBNb25zdGVyIGF0dGFja3MKICAgICAgY29uc3QgbW9uRG1nID0gY2FsY0RhbWFnZShtb25BdGssIHBldC5kZWZlbnNlKTsKICAgICAgcGV0SHAgICAgICAgLT0gbW9uRG1nOwogICAgICBsb2cucHVzaChgICAgICAgICAgICR7dGVtcGxhdGUuZW1vaml9ICoke3RlbXBsYXRlLm5hbWV9KiBkZWFscyAqJHttb25EbWd9KiBkbWchIOKdpO+4jyAke01hdGgubWF4KDAsIHBldEhwKX0vJHtwZXQubWF4SHB9YCk7CiAgICAgIHJvdW5kKys7CiAgICB9CgogICAgY29uc3QgcGV0V29uICAgICA9IG1vbnN0ZXJIcCA8PSAwIHx8IHBldEhwID4gMDsKICAgIGNvbnN0IGV4cFJld2FyZCAgPSBwZXRXb24gPyB0ZW1wbGF0ZS5yZXdhcmQuZXhwICA6IE1hdGguZmxvb3IodGVtcGxhdGUucmV3YXJkLmV4cCAgKiAwLjIpOwogICAgY29uc3QgZ29sZFJld2FyZCA9IHBldFdvbiA/IHRlbXBsYXRlLnJld2FyZC5nb2xkIDogMDsKCiAgICAvLyBEcmFpbiBodW5nZXIgJiB1cGRhdGUgYmF0dGxlIHRpbWUKICAgIGNvbnN0IG5ld0h1bmdlciA9IE1hdGgubWF4KDAsIGh1bmdlciAtIDIwKTsKICAgIGF3YWl0IHNhdmVQZXQoc2VuZGVyLCBwZXQucGV0SWQsIHsKICAgICAgaHVuZ2VyOiAgICAgbmV3SHVuZ2VyLAogICAgICBsYXN0QmF0dGxlOiBuZXcgRGF0ZSgpLnRvSVNPU3RyaW5nKCksCiAgICB9KTsKCiAgICBjb25zdCByZXN1bHQgPSBhd2FpdCBhd2FyZEV4cChzZW5kZXIsIHBldC5wZXRJZCwgZXhwUmV3YXJkKTsKICAgIGNvbnN0IHVwZGF0ZWRQZXQgPSByZXN1bHQ/LnBldCB8fCBwZXQ7CgogICAgY29uc3QgbGluZXMgPSBbCiAgICAgIGDimpTvuI8gKlBFVCBCQVRUTEUqYCwKICAgICAgYGAsCiAgICAgIGAke3BldC5uYW1lfSB2cyAke3RlbXBsYXRlLmVtb2ppfSAqJHt0ZW1wbGF0ZS5uYW1lfSpgLAogICAgICBg4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSBYCwKICAgICAgLi4ubG9nLnNsaWNlKDAsIDYpLCAvLyBzaG93IHVwIHRvIDYgbGluZXMgb2YgY29tYmF0CiAgICAgIGDilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIFgLAogICAgICBgYCwKICAgIF07CgogICAgaWYgKHBldFdvbikgewogICAgICBsaW5lcy5wdXNoKGDwn4+GICoke3BldC5uYW1lfSBXSU5TISpgKTsKICAgICAgbGluZXMucHVzaChgYCwgYOKcqCArJHtleHBSZXdhcmR9IEVYUCAg8J+qmSArJHtnb2xkUmV3YXJkfSBHb2xkYCk7CiAgICAgIGlmIChyZXN1bHQ/LmxldmVsc0dhaW5lZCA+IDApIHsKICAgICAgICBsaW5lcy5wdXNoKGDwn46JICpMRVZFTCBVUCEqIE5vdyBMZXZlbCAqJHt1cGRhdGVkUGV0LmxldmVsfSohYCk7CiAgICAgIH0KICAgIH0gZWxzZSB7CiAgICAgIGxpbmVzLnB1c2goYPCfkoAgKiR7dGVtcGxhdGUubmFtZX0qIHdpbnMgdGhpcyByb3VuZC4uLmApOwogICAgICBsaW5lcy5wdXNoKGBgLCBg4pyoICske2V4cFJld2FyZH0gRVhQIChjb25zb2xhdGlvbilgKTsKICAgICAgbGluZXMucHVzaChg8J+SqiBUcmFpbiBtb3JlIHdpdGggKi50cmFpbnBldCogdG8gZ3JvdyBzdHJvbmdlciFgKTsKICAgIH0KCiAgICBsaW5lcy5wdXNoKGBgLCBg8J+NliBIdW5nZXI6ICR7aHVuZ2VyfSUg4oaSICoke25ld0h1bmdlcn0lKmApOwogICAgbGluZXMucHVzaChg4o+zIE5leHQgYmF0dGxlIGluICoyMCBtaW51dGVzKi5gKTsKCiAgICByZXR1cm4gc29jay5zZW5kTWVzc2FnZShqaWQsIHsgdGV4dDogbGluZXMuam9pbigiXG4iKSB9LCB7IHF1b3RlZDogbXNnIH0pOwogIH0sCn07Cg==
+// plugins/pets/petbattle.js
+// .petbattle — Fight monsters with your pet for EXP and gold
+import { getActivePet, savePet, awardExp } from "../../lib/petDatabase.js";
+import { MONSTERS, PET_SPECIES } from "../../lib/petData.js";
+
+const COOLDOWN_MS = 20 * 60 * 1000; // 20 minutes
+
+function roll(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function bar(v, max, len = 10) {
+  const f = Math.max(0, Math.round((v / max) * len));
+  return "█".repeat(f) + "░".repeat(len - f);
+}
+
+function calcDamage(atk, def) {
+  const base = Math.max(1, atk - Math.floor(def * 0.4));
+  return roll(Math.floor(base * 0.8), Math.ceil(base * 1.2));
+}
+
+export default {
+  name: "petbattle",
+  description: "Fight a monster with your pet",
+  category: "pets",
+  usage: ".petbattle",
+  aliases: ["pbattle", "pmonster", "petfight"],
+  checkJail: true,
+
+  async run({ sock, msg }) {
+    const jid    = msg.key.remoteJid;
+    const sender = msg.key.participant || msg.key.remoteJid;
+
+    const pet = await getActivePet(sender);
+    if (!pet) {
+      return sock.sendMessage(jid, {
+        text: `🐾 You don't have an active pet!\n\nUse *.adopt* or *.pets select <ID>* first.`,
+      }, { quoted: msg });
+    }
+
+    // Cooldown
+    const now         = Date.now();
+    const lastBattle  = pet.lastBattle ? new Date(pet.lastBattle).getTime() : 0;
+    if (now - lastBattle < COOLDOWN_MS) {
+      const mins = Math.ceil((COOLDOWN_MS - (now - lastBattle)) / 60000);
+      return sock.sendMessage(jid, {
+        text: `⚔️ *${pet.name}* is still recovering!\n\nNext battle in *${mins} minute${mins !== 1 ? "s" : ""}*.`,
+      }, { quoted: msg });
+    }
+
+    // Hunger must be above 10%
+    const hunger = pet.hunger ?? 100;
+    if (hunger < 10) {
+      return sock.sendMessage(jid, {
+        text: `🍖 *${pet.name}* is too hungry to fight!\n\nFeed them with *.feed* first.`,
+      }, { quoted: msg });
+    }
+
+    // Scale monster to pet level
+    const template  = MONSTERS[Math.floor(Math.random() * MONSTERS.length)];
+    const monHp     = Math.max(20, Math.floor(pet.maxHp * template.hpMult));
+    const monAtk    = Math.max(5,  Math.floor(pet.attack * template.atkMult));
+
+    // Simulate battle (up to 10 rounds)
+    let petHp       = pet.maxHp;
+    let monsterHp   = monHp;
+    const log       = [];
+    let round       = 1;
+
+    while (petHp > 0 && monsterHp > 0 && round <= 10) {
+      // Pet attacks
+      const petDmg = calcDamage(pet.attack, Math.floor(monAtk * 0.5));
+      monsterHp   -= petDmg;
+      log.push(`Round ${round}: *${pet.name}* deals *${petDmg}* dmg! ${template.emoji} HP: ${Math.max(0, monsterHp)}/${monHp}`);
+
+      if (monsterHp <= 0) break;
+
+      // Monster attacks
+      const monDmg = calcDamage(monAtk, pet.defense);
+      petHp       -= monDmg;
+      log.push(`          ${template.emoji} *${template.name}* deals *${monDmg}* dmg! ❤️ ${Math.max(0, petHp)}/${pet.maxHp}`);
+      round++;
+    }
+
+    const petWon     = monsterHp <= 0 || petHp > 0;
+    const expReward  = petWon ? template.reward.exp  : Math.floor(template.reward.exp  * 0.2);
+    const goldReward = petWon ? template.reward.gold : 0;
+
+    // Drain hunger & update battle time
+    const newHunger = Math.max(0, hunger - 20);
+    await savePet(sender, pet.petId, {
+      hunger:     newHunger,
+      lastBattle: new Date().toISOString(),
+    });
+
+    const result = await awardExp(sender, pet.petId, expReward);
+    const updatedPet = result?.pet || pet;
+
+    const lines = [
+      `⚔️ *PET BATTLE*`,
+      ``,
+      `${pet.name} vs ${template.emoji} *${template.name}*`,
+      `━━━━━━━━━━━━━━━━━━`,
+      ...log.slice(0, 6), // show up to 6 lines of combat
+      `━━━━━━━━━━━━━━━━━━`,
+      ``,
+    ];
+
+    if (petWon) {
+      lines.push(`🏆 *${pet.name} WINS!*`);
+      lines.push(``, `✨ +${expReward} EXP  💰 +${goldReward} Gold`);
+      if (result?.levelsGained > 0) {
+        lines.push(`🎉 *LEVEL UP!* Now Level *${updatedPet.level}*!`);
+      }
+    } else {
+      lines.push(`💀 *${template.name}* wins this round...`);
+      lines.push(``, `✨ +${expReward} EXP (consolation)`);
+      lines.push(`💪 Train more with *.trainpet* to grow stronger!`);
+    }
+
+    lines.push(``, `🍖 Hunger: ${hunger}% → *${newHunger}%*`);
+    lines.push(`⏳ Next battle in *20 minutes*.`);
+
+    return sock.sendMessage(jid, { text: lines.join("\n") }, { quoted: msg });
+  },
+};

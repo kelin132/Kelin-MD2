@@ -1,1 +1,73 @@
-aW1wb3J0IHsgZ2V0VXNlciwgc2F2ZVVzZXIsIHJlcXVpcmVSZWdpc3RyYXRpb24sIGFkZEhpc3RvcnksIGNoZWNrTGV2ZWxVcCB9IGZyb20gIi4vZGF0YWJhc2UuanMiOwoKZnVuY3Rpb24gZm10KG4pIHsKICBpZiAobiA+PSAxZTkpIHJldHVybiBg8J+qmSAkeyhuLzFlOSkudG9GaXhlZCgxKX1CYDsKICBpZiAobiA+PSAxZTYpIHJldHVybiBg8J+qmSAkeyhuLzFlNikudG9GaXhlZCgxKX1NYDsKICBpZiAobiA+PSAxZTMpIHJldHVybiBg8J+qmSAkeyhuLzFlMykudG9GaXhlZCgxKX1LYDsKICByZXR1cm4gYPCfqpkgJHtuLnRvTG9jYWxlU3RyaW5nKCl9YDsKfQoKZXhwb3J0IGRlZmF1bHQgewogIG5hbWU6ICJ3ZWVrbHkiLAogIGRlc2NyaXB0aW9uOiAiQ2xhaW0geW91ciB3ZWVrbHkgcmV3YXJkICg3LWRheSBjb29sZG93bikiLAogIGNhdGVnb3J5OiAiZWNvbm9teSIsCiAgY29vbGRvd246IDYsCiAgdXNhZ2U6ICIud2Vla2x5IiwKICBjaGVja0phaWw6IHRydWUsCgogIGFzeW5jIHJ1bih7IHNvY2ssIG1zZywgc2VuZGVyIH0pIHsKICAgIGlmICghYXdhaXQgcmVxdWlyZVJlZ2lzdHJhdGlvbihzb2NrLCBtc2csIHNlbmRlcikpIHJldHVybjsKCiAgICBjb25zdCB1c2VyICAgICA9IGF3YWl0IGdldFVzZXIoc2VuZGVyKTsKICAgIGNvbnN0IG5vdyAgICAgID0gRGF0ZS5ub3coKTsKICAgIGNvbnN0IGNvb2xkb3duID0gNyAqIDI0ICogNjAgKiA2MCAqIDEwMDA7CiAgICBjb25zdCBqaWQgICAgICA9IG1zZy5rZXkucmVtb3RlSmlkOwoKICAgIGlmIChub3cgLSAodXNlci5sYXN0V2Vla2x5IHx8IDApIDwgY29vbGRvd24pIHsKICAgICAgY29uc3QgcmVtYWluaW5nID0gY29vbGRvd24gLSAobm93IC0gdXNlci5sYXN0V2Vla2x5KTsKICAgICAgY29uc3QgZGF5cyAgICA9IE1hdGguZmxvb3IocmVtYWluaW5nIC8gKDI0ICogNjAgKiA2MCAqIDEwMDApKTsKICAgICAgY29uc3QgaG91cnMgICA9IE1hdGguZmxvb3IoKHJlbWFpbmluZyAlICgyNCAqIDYwICogNjAgKiAxMDAwKSkgLyAoNjAgKiA2MCAqIDEwMDApKTsKICAgICAgY29uc3QgbWludXRlcyA9IE1hdGguZmxvb3IoKHJlbWFpbmluZyAlICg2MCAqIDYwICogMTAwMCkpIC8gKDYwICogMTAwMCkpOwoKICAgICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgICAgdGV4dDoKYOKVreKUgOKdgOOAjCDwn5eT77iPICrwnZCW8J2QhPCdkITwnZCK8J2Qi/CdkJgqIOOAjeKdgOKUgOKVrgrilIIg8J+MmSAqUmVzdWx0KiAgOjogKkFMUkVBRFkgQ0xBSU1FRCDwn5S0KgrilIIg8J+NgyAqRmxhdm91ciogOjogX+OBvuOBn+adpemAse+8geawl+mVt+OBq+W+heOBo+OBpu+8gV8K4pSCCuKUgiDij7MgKk5leHQqICAgIDo6ICoke2RheXN9ZCAke2hvdXJzfWggJHttaW51dGVzfW0qCuKUggrilIIg8J+UpSAqQ29tZSBiYWNrIGluIGEgd2VlayEqCuKVsOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKdgGAKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICBjb25zdCBiYXNlUmV3YXJkICA9IDUwMDAgKyBNYXRoLmZsb29yKE1hdGgucmFuZG9tKCkgKiA1MDAwKTsKICAgIGNvbnN0IHByZW1pdW1NdWx0ID0gdXNlci5pc1ByZW1pdW0gPyAxLjUgOiAxOwogICAgY29uc3QgcmV3YXJkICAgICAgPSBNYXRoLmZsb29yKGJhc2VSZXdhcmQgKiBwcmVtaXVtTXVsdCk7CiAgICBjb25zdCB4cFJld2FyZCAgICA9IDI1MDsKCiAgICB1c2VyLm1vbmV5ICAgICAgKz0gcmV3YXJkOwogICAgdXNlci5sYXN0V2Vla2x5ICA9IG5vdzsKICAgIHVzZXIueHAgICAgICAgICAgPSAodXNlci54cCB8fCAwKSArIHhwUmV3YXJkOwoKICAgIGNvbnN0IHsgbGV2ZWxlZCwgbmV3TGV2ZWwgfSA9IGNoZWNrTGV2ZWxVcCh1c2VyKTsKCiAgICBhd2FpdCBzYXZlVXNlcihzZW5kZXIsIHVzZXIpOwogICAgYXdhaXQgYWRkSGlzdG9yeShzZW5kZXIsICJ3ZWVrbHkiLCByZXdhcmQsIGBXZWVrbHkgcmV3YXJkIGNsYWltZWRgKTsKCiAgICBhd2FpdCBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICB0ZXh0Ogpg4pWt4pSA4p2A44CMIPCfl5PvuI8gKvCdkJbwnZCE8J2QhPCdkIrwnZCL8J2QmCog44CN4p2A4pSA4pWuCuKUgiDwn4yZICpSZXN1bHQqICA6OiAqQ0xBSU1FRCDwn5+iKgrilIIg8J+NgyAqRmxhdm91ciogOjogX+S7iumAseOCguOBiueWsuOCjOanmO+8gV8K4pSCCuKUgiDwn6qZICpSZXdhcmQqICA6OiAqKyR7Zm10KHJld2FyZCl9KiR7dXNlci5pc1ByZW1pdW0gPyBgIF8oKzUwJSBwcmVtaXVtKV9gIDogIiJ9CuKUgiDwn5SuICpYUCogICAgICA6OiAqKyR7eHBSZXdhcmR9KgrilIIg8J+qmSAqV2FsbGV0KiAgOjogKiR7Zm10KHVzZXIubW9uZXkpfSoK4pSCCuKUgiDirZAgKkxldmVsICR7dXNlci5sZXZlbH0qICDwn5OFICpDb21lIGJhY2sgaW4gNyBkYXlzISoke2xldmVsZWQgPyBgXG7ilIJcbuKUgiDwn46JICpMRVZFTCBVUCEqIOKAlCBOb3cgTGV2ZWwgJHt1c2VyLmxldmVsfWAgOiAiIn0K4pWw4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4p2AYAogICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICB9Cn07Cg==
+import { getUser, saveUser, requireRegistration, addHistory, checkLevelUp } from "./database.js";
+
+function fmt(n) {
+  if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `$${(n/1e3).toFixed(1)}K`;
+  return `$${n.toLocaleString()}`;
+}
+
+export default {
+  name: "weekly",
+  description: "Claim your weekly reward (7-day cooldown)",
+  category: "economy",
+  cooldown: 6,
+  usage: ".weekly",
+  checkJail: true,
+
+  async run({ sock, msg, sender }) {
+    if (!await requireRegistration(sock, msg, sender)) return;
+
+    const user     = await getUser(sender);
+    const now      = Date.now();
+    const cooldown = 7 * 24 * 60 * 60 * 1000;
+    const jid      = msg.key.remoteJid;
+
+    if (now - (user.lastWeekly || 0) < cooldown) {
+      const remaining = cooldown - (now - user.lastWeekly);
+      const days    = Math.floor(remaining / (24 * 60 * 60 * 1000));
+      const hours   = Math.floor((remaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+      const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+
+      return sock.sendMessage(jid, {
+        text:
+`╭─❀「 🗓️ *𝐖𝐄𝐄𝐊𝐋𝐘* 」❀─╮
+│ 🌙 *Result*  :: *ALREADY CLAIMED 🔴*
+│ 🍃 *Flavour* :: _また来週！気長に待って！_
+│
+│ ⏳ *Next*    :: *${days}d ${hours}h ${minutes}m*
+│
+│ 🔥 *Come back in a week!*
+╰───────────────❀`
+      }, { quoted: msg });
+    }
+
+    const baseReward  = 5000 + Math.floor(Math.random() * 5000);
+    const premiumMult = user.isPremium ? 1.5 : 1;
+    const reward      = Math.floor(baseReward * premiumMult);
+    const xpReward    = 250;
+
+    user.money      += reward;
+    user.lastWeekly  = now;
+    user.xp          = (user.xp || 0) + xpReward;
+
+    const { leveled, newLevel } = checkLevelUp(user);
+
+    await saveUser(sender, user);
+    await addHistory(sender, "weekly", reward, `Weekly reward claimed`);
+
+    await sock.sendMessage(jid, {
+      text:
+`╭─❀「 🗓️ *𝐖𝐄𝐄𝐊𝐋𝐘* 」❀─╮
+│ 🌙 *Result*  :: *CLAIMED 🟢*
+│ 🍃 *Flavour* :: _今週もお疲れ様！_
+│
+│ 💰 *Reward*  :: *+${fmt(reward)}*${user.isPremium ? ` _(+50% premium)_` : ""}
+│ 🔮 *XP*      :: *+${xpReward}*
+│ 💰 *Wallet*  :: *${fmt(user.money)}*
+│
+│ ⭐ *Level ${user.level}*  📅 *Come back in 7 days!*${leveled ? `\n│\n│ 🎉 *LEVEL UP!* — Now Level ${user.level}` : ""}
+╰───────────────❀`
+    }, { quoted: msg });
+  }
+};

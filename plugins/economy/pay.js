@@ -1,1 +1,85 @@
-aW1wb3J0IHsgcmVhZERhdGEsIHdyaXRlRGF0YSB9IGZyb20gIi4uLy4uL2xpYi9zdG9yZS5tanMiOwppbXBvcnQgeyBwYXJzZUFtb3VudCwgZm9ybWF0U2hvcnRoYW5kIH0gZnJvbSAiLi9wYXJzZUFtb3VudC5qcyI7CgpleHBvcnQgZGVmYXVsdCB7CiAgbmFtZTogInBheSIsCiAgZGVzY3JpcHRpb246ICJTZW5kIGNvaW5zIHRvIGFub3RoZXIgdXNlciIsCiAgY2F0ZWdvcnk6ICJlY29ub215IiwKICB1c2FnZTogIi5wYXkgQHVzZXIgPGFtb3VudD4gIE9SICByZXBseSB0byBzb21lb25lJ3MgbWVzc2FnZSB0aGVuIC5wYXkgPGFtb3VudD4iLAogIGFsaWFzZXM6IFsiZ2l2ZSIsICJzZW5kIl0sCiAgY29vbGRvd246IDUsCiAgaXNPd25lcjogZmFsc2UsCiAgaXNBZG1pbjogZmFsc2UsCiAgaXNQcmVtaXVtOiBmYWxzZSwKICB2ZXJzaW9uOiAiMS4yLjAiLAogIGFzeW5jIHJ1bih7IHNvY2ssIG1zZywgYXJncywgc2VuZGVyTnVtIH0pIHsKICAgIGNvbnN0IGppZCA9IG1zZy5rZXkucmVtb3RlSmlkOwogICAgY29uc3QgY3R4ID0gbXNnLm1lc3NhZ2U/LmV4dGVuZGVkVGV4dE1lc3NhZ2U/LmNvbnRleHRJbmZvOwoKICAgIC8vIOKUgOKUgCBSZXNvbHZlIHRhcmdldCDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKICAgIC8vIFByaW9yaXR5IDE6IEBtZW50aW9uIGluIHRoZSBjb21tYW5kIG1lc3NhZ2UKICAgIC8vIFByaW9yaXR5IDI6IHNlbmRlciBvZiB0aGUgbWVzc2FnZSB5b3UgcmVwbGllZCB0bwogICAgY29uc3QgbWVudGlvbmVkSmlkID0gY3R4Py5tZW50aW9uZWRKaWQ/LlswXTsKICAgIGNvbnN0IHF1b3RlZFNlbmRlciA9CiAgICAgIGN0eD8ucGFydGljaXBhbnQgfHwgICAgICAgICAgICAgICAgICAgICAgICAgIC8vIGdyb3VwIHF1b3RlZCBzZW5kZXIKICAgICAgKG1zZy5xdW90ZWQ/LmtleT8ucGFydGljaXBhbnQgPz8gbnVsbCkgfHwgICAgLy8gQmFpbGV5cyBxdW90ZWQga2V5CiAgICAgIChtc2cucXVvdGVkPy5rZXk/LnJlbW90ZUppZCAhPT0gamlkICAgICAgICAgIC8vIERNIHF1b3RlZCBzZW5kZXIKICAgICAgICA/IG1zZy5xdW90ZWQ/LmtleT8ucmVtb3RlSmlkCiAgICAgICAgOiBudWxsKTsKCiAgICBjb25zdCB0YXJnZXRKaWQgPSBtZW50aW9uZWRKaWQgfHwgcXVvdGVkU2VuZGVyIHx8IG51bGw7CgogICAgLy8g4pSA4pSAIFJlc29sdmUgYW1vdW50IOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAogICAgLy8gTGFzdCBhcmd1bWVudCBpcyBhbHdheXMgdGhlIGFtb3VudCDigJQgc3VwcG9ydHMgc2hvcnRjdXRzOiAxayA1bSAxYiBhbGwgaGFsZgogICAgY29uc3QgZWNvICAgICAgID0gcmVhZERhdGEoImVjb25vbXkiLCB7fSk7CiAgICBjb25zdCBzZW5kZXIgICAgPSBlY29bc2VuZGVyTnVtXSA/PyB7IGNvaW5zOiAwLCBiYW5rOiAwIH07CiAgICBjb25zdCByYXdBbW91bnQgPSBhcmdzW2FyZ3MubGVuZ3RoIC0gMV07CiAgICBjb25zdCBhbW91bnQgICAgPSBwYXJzZUFtb3VudChyYXdBbW91bnQsIHNlbmRlci5jb2lucyA/PyAwKTsKCiAgICBpZiAoIXRhcmdldEppZCB8fCBpc05hTihhbW91bnQpIHx8IGFtb3VudCA8PSAwKSB7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKAogICAgICAgIGppZCwKICAgICAgICB7CiAgICAgICAgICB0ZXh0OgogICAgICAgICAgICAiVXNhZ2U6XG4iICsKICAgICAgICAgICAgIuKAoiAqLnBheSBAdXNlciA8YW1vdW50Piog4oCUIG1lbnRpb24gdGhlIHBlcnNvblxuIiArCiAgICAgICAgICAgICLigKIgUmVwbHkgdG8gdGhlaXIgbWVzc2FnZSB0aGVuICoucGF5IDxhbW91bnQ+KlxuXG4iICsKICAgICAgICAgICAgIvCfkqEgKlNob3J0Y3V0czoqIGAxa2AgYDVtYCBgMWJgIGBhbGxgIGBoYWxmYCIsCiAgICAgICAgfSwKICAgICAgICB7IHF1b3RlZDogbXNnIH0KICAgICAgKTsKICAgIH0KCiAgICBjb25zdCB0YXJnZXROdW0gPSB0YXJnZXRKaWQucmVwbGFjZSgvW14wLTldL2csICIiKTsKICAgIGlmICh0YXJnZXROdW0gPT09IHNlbmRlck51bSkgewogICAgICByZXR1cm4gc29jay5zZW5kTWVzc2FnZShqaWQsIHsgdGV4dDogIuKdjCBZb3UgY2FuJ3QgcGF5IHlvdXJzZWxmLiIgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICBjb25zdCB0YXJnZXQgPSBlY29bdGFyZ2V0TnVtXSA/PyB7IGNvaW5zOiAwLCBiYW5rOiAwIH07CgogICAgaWYgKChzZW5kZXIuY29pbnMgPz8gMCkgPCBhbW91bnQpIHsKICAgICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UoCiAgICAgICAgamlkLAogICAgICAgIHsgdGV4dDogYOKdjCBJbnN1ZmZpY2llbnQgY29pbnMuIFlvdSBoYXZlICoke2Zvcm1hdFNob3J0aGFuZChzZW5kZXIuY29pbnMgPz8gMCl9Ki5gIH0sCiAgICAgICAgeyBxdW90ZWQ6IG1zZyB9CiAgICAgICk7CiAgICB9CgogICAgc2VuZGVyLmNvaW5zID0gKHNlbmRlci5jb2lucyA/PyAwKSAtIGFtb3VudDsKICAgIHRhcmdldC5jb2lucyA9ICh0YXJnZXQuY29pbnMgPz8gMCkgKyBhbW91bnQ7CiAgICBlY29bc2VuZGVyTnVtXSA9IHNlbmRlcjsKICAgIGVjb1t0YXJnZXROdW1dID0gdGFyZ2V0OwogICAgd3JpdGVEYXRhKCJlY29ub215IiwgZWNvKTsKCiAgICBhd2FpdCBzb2NrLnNlbmRNZXNzYWdlKAogICAgICBqaWQsCiAgICAgIHsKICAgICAgICB0ZXh0OgogICAgICAgICAgYOKchSBTZW50ICoke2Zvcm1hdFNob3J0aGFuZChhbW91bnQpfSogdG8gQCR7dGFyZ2V0TnVtfVxuYCArCiAgICAgICAgICBg8J+qmSBZb3VyIGJhbGFuY2U6ICoke2Zvcm1hdFNob3J0aGFuZChzZW5kZXIuY29pbnMpfSpgLAogICAgICAgIG1lbnRpb25zOiBbdGFyZ2V0SmlkXSwKICAgICAgfSwKICAgICAgeyBxdW90ZWQ6IG1zZyB9CiAgICApOwogIH0sCn07Cg==
+import { readData, writeData } from "../../lib/store.mjs";
+import { parseAmount, formatShorthand } from "./parseAmount.js";
+
+export default {
+  name: "pay",
+  description: "Send coins to another user",
+  category: "economy",
+  usage: ".pay @user <amount>  OR  reply to someone's message then .pay <amount>",
+  aliases: ["give", "send"],
+  cooldown: 5,
+  isOwner: false,
+  isAdmin: false,
+  isPremium: false,
+  version: "1.2.0",
+  async run({ sock, msg, args, senderNum }) {
+    const jid = msg.key.remoteJid;
+    const ctx = msg.message?.extendedTextMessage?.contextInfo;
+
+    // ── Resolve target ─────────────────────────────────────────────────────────
+    // Priority 1: @mention in the command message
+    // Priority 2: sender of the message you replied to
+    const mentionedJid = ctx?.mentionedJid?.[0];
+    const quotedSender =
+      ctx?.participant ||                          // group quoted sender
+      (msg.quoted?.key?.participant ?? null) ||    // Baileys quoted key
+      (msg.quoted?.key?.remoteJid !== jid          // DM quoted sender
+        ? msg.quoted?.key?.remoteJid
+        : null);
+
+    const targetJid = mentionedJid || quotedSender || null;
+
+    // ── Resolve amount ─────────────────────────────────────────────────────────
+    // Last argument is always the amount — supports shortcuts: 1k 5m 1b all half
+    const eco       = readData("economy", {});
+    const sender    = eco[senderNum] ?? { coins: 0, bank: 0 };
+    const rawAmount = args[args.length - 1];
+    const amount    = parseAmount(rawAmount, sender.coins ?? 0);
+
+    if (!targetJid || isNaN(amount) || amount <= 0) {
+      return sock.sendMessage(
+        jid,
+        {
+          text:
+            "Usage:\n" +
+            "• *.pay @user <amount>* — mention the person\n" +
+            "• Reply to their message then *.pay <amount>*\n\n" +
+            "💡 *Shortcuts:* `1k` `5m` `1b` `all` `half`",
+        },
+        { quoted: msg }
+      );
+    }
+
+    const targetNum = targetJid.replace(/[^0-9]/g, "");
+    if (targetNum === senderNum) {
+      return sock.sendMessage(jid, { text: "❌ You can't pay yourself." }, { quoted: msg });
+    }
+
+    const target = eco[targetNum] ?? { coins: 0, bank: 0 };
+
+    if ((sender.coins ?? 0) < amount) {
+      return sock.sendMessage(
+        jid,
+        { text: `❌ Insufficient coins. You have *${formatShorthand(sender.coins ?? 0)}*.` },
+        { quoted: msg }
+      );
+    }
+
+    sender.coins = (sender.coins ?? 0) - amount;
+    target.coins = (target.coins ?? 0) + amount;
+    eco[senderNum] = sender;
+    eco[targetNum] = target;
+    writeData("economy", eco);
+
+    await sock.sendMessage(
+      jid,
+      {
+        text:
+          `✅ Sent *${formatShorthand(amount)}* to @${targetNum}\n` +
+          `💰 Your balance: *${formatShorthand(sender.coins)}*`,
+        mentions: [targetJid],
+      },
+      { quoted: msg }
+    );
+  },
+};

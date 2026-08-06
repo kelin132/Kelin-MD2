@@ -1,1 +1,198 @@
-LyoqCiAqIC5jbG9hbiA8Y2FyZF9pbmRleD4gPGFtb3VudD4gIOKAlCB0YWtlIGEgbG9hbiB1c2luZyBhIGNhcmQgYXMgY29sbGF0ZXJhbAogKiAuY2xvYW4gcGF5ICAgICAgICAgICAgICAgICAgICDigJQgcmVwYXkgeW91ciBjYXJkIGxvYW4gYW5kIGdldCB0aGUgY2FyZCBiYWNrCiAqIC5jbG9hbiBpbmZvICAgICAgICAgICAgICAgICAgIOKAlCBjaGVjayBjYXJkIGxvYW4gc3RhdHVzCiAqCiAqIENhcmQgaXMgaGVsZCBpbiBlc2Nyb3cgdW50aWwgdGhlIGxvYW4gaXMgcmVwYWlkLgogKiBNYXggbG9hbiBwZXIgdGllcjoKICogICBDb21tb24g8J+qmSA1MDAgfCBVbmNvbW1vbiDwn6qZIDEsMDAwIHwgUmFyZSDwn6qZIDMsMDAwIHwgRXBpYyDwn6qZIDcsMDAwIHwgTGVnZW5kYXJ5IPCfqpkgMTUsMDAwCiAqIEludGVyZXN0OiA1JS9kYXkg4oCUIGR1ZSBpbiA3IGRheXMuIE92ZXJkdWUgPSBjYXJkIGlzIGZvcmZlaXRlZC4KICovCmltcG9ydCB7IGZpbmRPckNyZWF0ZVVzZXIgfSAgICAgICAgICAgICAgICBmcm9tICIuL2RiLmpzIjsKaW1wb3J0IHsgZ2V0VXNlciwgc2F2ZVVzZXIsIGFkZEhpc3RvcnksCiAgICAgICAgIHJlcXVpcmVSZWdpc3RyYXRpb24gfSAgICAgICAgICAgICBmcm9tICIuLi9lY29ub215L2RhdGFiYXNlLmpzIjsKCmNvbnN0IElOVEVSRVNUX1BDVCA9IDAuMDU7CmNvbnN0IERVRV9EQVlTICAgICA9IDc7Cgpjb25zdCBUSUVSX0xJTUlUUyA9IHsKICBDb21tb246ICAgIDUwMCwKICBVbmNvbW1vbjogIDFfMDAwLAogIFJhcmU6ICAgICAgM18wMDAsCiAgRXBpYzogICAgICA3XzAwMCwKICBMZWdlbmRhcnk6IDE1XzAwMCwKfTsKCmNvbnN0IFRJRVJfRU1PSkkgPSB7CiAgQ29tbW9uOiAi4pqqIiwgVW5jb21tb246ICLwn5+iIiwgUmFyZTogIvCflLUiLCBFcGljOiAi8J+foyIsIExlZ2VuZGFyeTogIvCfn6EiLAp9OwoKZXhwb3J0IGRlZmF1bHQgewogIG5hbWU6ICAgICAiY2xvYW4iLAogIGFsaWFzZXM6ICBbImNhcmRsb2FuIiwgImNsYm9ycm93Il0sCiAgY2F0ZWdvcnk6ICJjYXJkcyIsCiAgZGVzY3JpcHRpb246ICJCb3Jyb3cgbW9uZXkgdXNpbmcgYSBjYXJkIGFzIGNvbGxhdGVyYWwiLAogIHVzYWdlOiAgICAiLmNsb2FuIDxjYXJkIGluZGV4PiA8YW1vdW50PiAgfCAgLmNsb2FuIHBheSAgfCAgLmNsb2FuIGluZm8iLAogIGNoZWNrSmFpbDogdHJ1ZSwKCiAgYXN5bmMgcnVuKHsgc29jaywgbXNnLCBzZW5kZXIsIGFyZ3MgfSkgewogICAgaWYgKCFhd2FpdCByZXF1aXJlUmVnaXN0cmF0aW9uKHNvY2ssIG1zZywgc2VuZGVyKSkgcmV0dXJuOwoKICAgIGNvbnN0IGppZCAgID0gbXNnLmtleS5yZW1vdGVKaWQ7CiAgICBjb25zdCByZXBseSA9ICh0KSA9PiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgeyB0ZXh0OiB0IH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICBjb25zdCBub3cgICA9IERhdGUubm93KCk7CgogICAgY29uc3QgY2FyZFVzZXIgPSBhd2FpdCBmaW5kT3JDcmVhdGVVc2VyKHNlbmRlcik7CiAgICBjb25zdCBlY29Vc2VyICA9IGF3YWl0IGdldFVzZXIoc2VuZGVyKTsKCiAgICBjb25zdCBzdWIgPSAoYXJnc1swXSB8fCAiaW5mbyIpLnRvTG93ZXJDYXNlKCk7CgogICAgLy8g4pSA4pSAIElORk8g4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACiAgICBpZiAoc3ViID09PSAiaW5mbyIpIHsKICAgICAgY29uc3QgbG9hbiA9IGNhcmRVc2VyLmNhcmRMb2FuOwogICAgICBpZiAoIWxvYW4/LmFjdGl2ZSkgewogICAgICAgIHJldHVybiByZXBseSgKICAgICAgICAgICLwn4OPIFlvdSBoYXZlIG5vIGFjdGl2ZSBjYXJkIGxvYW4uXG5cbiIgKwogICAgICAgICAgIlVzZSAqLmNsb2FuIDxjYXJkIG51bWJlcj4gPGFtb3VudD4qIHRvIGJvcnJvdyBhZ2FpbnN0IGEgY2FyZC5cblxuIiArCiAgICAgICAgICAiKk1heCBsb2FuIGJ5IHJhcml0eToqXG4iICsKICAgICAgICAgICLimqogQ29tbW9uIOKGkiDwn6qZIDUwMFxu8J+foiBVbmNvbW1vbiDihpIg8J+qmSAxLDAwMFxu8J+UtSBSYXJlIOKGkiDwn6qZIDMsMDAwXG7wn5+jIEVwaWMg4oaSIPCfqpkgNywwMDBcbvCfn6EgTGVnZW5kYXJ5IOKGkiDwn6qZIDE1LDAwMCIKICAgICAgICApOwogICAgICB9CgogICAgICBjb25zdCBkYXlzTGVmdCA9IE1hdGgubWF4KDAsIE1hdGguY2VpbCgobG9hbi5kdWUgLSBub3cpIC8gODZfNDAwXzAwMCkpOwogICAgICBjb25zdCBkYXlzVXNlZCA9IE1hdGgubWF4KDEsIE1hdGguY2VpbCgobm93IC0gbG9hbi5pc3N1ZWRBdCkgLyA4Nl80MDBfMDAwKSk7CiAgICAgIGNvbnN0IGludGVyZXN0ID0gTWF0aC5yb3VuZChsb2FuLmFtb3VudCAqIElOVEVSRVNUX1BDVCAqIGRheXNVc2VkKTsKICAgICAgY29uc3Qgb3ZlcmR1ZSAgPSBub3cgPiBsb2FuLmR1ZTsKCiAgICAgIHJldHVybiByZXBseSgKYPCfg48gKkNBUkQgTE9BTiBJTkZPKgoK8J+OtCBDb2xsYXRlcmFsIDogJHtUSUVSX0VNT0pJW2xvYW4uY2FyZC50aWVyXSB8fCAi4q2QIn0gKiR7bG9hbi5jYXJkLm5hbWV9KiAoJHtsb2FuLmNhcmQudGllcn0pCvCfkrggQm9ycm93ZWQgICA6IPCfqpkgJHtsb2FuLmFtb3VudC50b0xvY2FsZVN0cmluZygpfQrwn5K5IEludGVyZXN0ICAgOiA1JS9kYXkK8J+ThSBEdWUgICAgICAgIDogJHtuZXcgRGF0ZShsb2FuLmR1ZSkudG9EYXRlU3RyaW5nKCl9CiR7b3ZlcmR1ZQogID8gIuKaoO+4jyAqT1ZFUkRVRSEgUmVwYXkgbm93IG9yIHlvdXIgY2FyZCBpcyBmb3JmZWl0ZWQhKiIKICA6IGDij7MgRHVlIGluICAgIDogJHtkYXlzTGVmdH0gZGF5KHMpYH0KCvCfkrMgUmVwYXkgbm93ICA6IPCfqpkgJHsobG9hbi5hbW91bnQgKyBpbnRlcmVzdCkudG9Mb2NhbGVTdHJpbmcoKX0KVXNlICouY2xvYW4gcGF5KiB0byByZXBheSBhbmQgcmVjbGFpbSB5b3VyIGNhcmQuYAogICAgICApOwogICAgfQoKICAgIC8vIOKUgOKUgCBQQVkg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACiAgICBpZiAoc3ViID09PSAicGF5IikgewogICAgICBjb25zdCBsb2FuID0gY2FyZFVzZXIuY2FyZExvYW47CiAgICAgIGlmICghbG9hbj8uYWN0aXZlKSByZXR1cm4gcmVwbHkoIuKdjCBZb3UgZG9uJ3QgaGF2ZSBhbiBhY3RpdmUgY2FyZCBsb2FuLiIpOwoKICAgICAgY29uc3QgZGF5c1VzZWQgPSBNYXRoLm1heCgxLCBNYXRoLmNlaWwoKG5vdyAtIGxvYW4uaXNzdWVkQXQpIC8gODZfNDAwXzAwMCkpOwogICAgICBjb25zdCBpbnRlcmVzdCA9IE1hdGgucm91bmQobG9hbi5hbW91bnQgKiBJTlRFUkVTVF9QQ1QgKiBkYXlzVXNlZCk7CiAgICAgIGNvbnN0IHRvdGFsICAgID0gbG9hbi5hbW91bnQgKyBpbnRlcmVzdDsKCiAgICAgIGlmIChlY29Vc2VyLm1vbmV5IDwgdG90YWwpIHsKICAgICAgICByZXR1cm4gcmVwbHkoCmDinYwgKk5vdCBlbm91Z2ggY2FzaCEqCgrwn5K4IExvYW4gKyBpbnRlcmVzdCA6IPCfqpkgJHt0b3RhbC50b0xvY2FsZVN0cmluZygpfQrwn6qZIFlvdXIgd2FsbGV0ICAgICA6IPCfqpkgJHtlY29Vc2VyLm1vbmV5LnRvTG9jYWxlU3RyaW5nKCl9CvCfk4kgU2hvcnQgYnkgICAgICAgIDog8J+qmSAkeyh0b3RhbCAtIGVjb1VzZXIubW9uZXkpLnRvTG9jYWxlU3RyaW5nKCl9CgpFYXJuIG1vcmUgd2l0aCAqLmRhaWx5KiwgKi53b3JrKiwgKi5maXNoKiwgKi5kaWcqLmAKICAgICAgICApOwogICAgICB9CgogICAgICAvLyBEZWR1Y3QgbW9uZXksIHJlc3RvcmUgY2FyZAogICAgICBlY29Vc2VyLm1vbmV5IC09IHRvdGFsOwogICAgICBhd2FpdCBzYXZlVXNlcihzZW5kZXIsIGVjb1VzZXIpOwogICAgICBhd2FpdCBhZGRIaXN0b3J5KHNlbmRlciwgIndpdGhkcmF3IiwgLXRvdGFsLCBgUmVwYWlkIGNhcmQgbG9hbiAo8J+qmSAke2xvYW4uYW1vdW50fSArIPCfqpkgJHtpbnRlcmVzdH0gaW50ZXJlc3QpYCk7CgogICAgICBpZiAoIUFycmF5LmlzQXJyYXkoY2FyZFVzZXIuY2FyZHMpKSBjYXJkVXNlci5jYXJkcyA9IFtdOwogICAgICBjYXJkVXNlci5jYXJkcy5wdXNoKGxvYW4uY2FyZCk7CiAgICAgIGNhcmRVc2VyLnRvdGFsQ2FyZHMgPSAoY2FyZFVzZXIudG90YWxDYXJkcyB8fCAwKSArIDE7CiAgICAgIGNhcmRVc2VyLmNhcmRMb2FuICAgPSBudWxsOwogICAgICBhd2FpdCBjYXJkVXNlci5zYXZlKCk7CgogICAgICByZXR1cm4gcmVwbHkoCmDinIUgKkNhcmQgTG9hbiBSZXBhaWQhKgoK8J+SuCBSZXBhaWQgICAgOiDwn6qZICR7dG90YWwudG9Mb2NhbGVTdHJpbmcoKX0KICAocHJpbmNpcGFsIPCfqpkgJHtsb2FuLmFtb3VudC50b0xvY2FsZVN0cmluZygpfSArIPCfqpkgJHtpbnRlcmVzdC50b0xvY2FsZVN0cmluZygpfSBpbnRlcmVzdCkK8J+OtCBSZXR1cm5lZCAgOiAke1RJRVJfRU1PSklbbG9hbi5jYXJkLnRpZXJdIHx8ICLirZAifSAqJHtsb2FuLmNhcmQubmFtZX0qCvCfqpkgQmFsYW5jZSAgIDog8J+qmSAke2Vjb1VzZXIubW9uZXkudG9Mb2NhbGVTdHJpbmcoKX0KCllvdXIgY2FyZCBpcyBiYWNrIGluIHlvdXIgY29sbGVjdGlvbiEg8J+OiWAKICAgICAgKTsKICAgIH0KCiAgICAvLyDilIDilIAgVEFLRSBMT0FOIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAogICAgaWYgKGNhcmRVc2VyLmNhcmRMb2FuPy5hY3RpdmUpIHsKICAgICAgcmV0dXJuIHJlcGx5KCLinYwgWW91IGFscmVhZHkgaGF2ZSBhbiBhY3RpdmUgY2FyZCBsb2FuLlxuXG5Vc2UgKi5jbG9hbiBwYXkqIHRvIHJlcGF5IGl0IGZpcnN0LiIpOwogICAgfQoKICAgIGNvbnN0IGluZGV4ICA9IHBhcnNlSW50KGFyZ3NbMF0sIDEwKSAtIDE7CiAgICBjb25zdCBhbW91bnQgPSBwYXJzZUludChhcmdzWzFdLCAxMCk7CgogICAgaWYgKGlzTmFOKGluZGV4KSB8fCBpbmRleCA8IDApIHsKICAgICAgcmV0dXJuIHJlcGx5KCLinYwgVXNhZ2U6ICouY2xvYW4gPGNhcmQgbnVtYmVyPiA8YW1vdW50PipcbkV4YW1wbGU6IC5jbG9hbiAzIDEwMDBcblxuVXNlICouY29sKiB0byBzZWUgeW91ciBjYXJkIG51bWJlcnMuIik7CiAgICB9CiAgICBpZiAoaXNOYU4oYW1vdW50KSB8fCBhbW91bnQgPD0gMCkgewogICAgICByZXR1cm4gcmVwbHkoIuKdjCBQbGVhc2UgcHJvdmlkZSBhIHZhbGlkIGFtb3VudC5cbkV4YW1wbGU6IC5jbG9hbiAzIDEwMDAiKTsKICAgIH0KCiAgICBpZiAoIUFycmF5LmlzQXJyYXkoY2FyZFVzZXIuY2FyZHMpIHx8IGNhcmRVc2VyLmNhcmRzLmxlbmd0aCA9PT0gMCkgewogICAgICByZXR1cm4gcmVwbHkoIuKdjCBZb3UgaGF2ZSBubyBjYXJkcyB0byB1c2UgYXMgY29sbGF0ZXJhbC4iKTsKICAgIH0KICAgIGlmIChpbmRleCA+PSBjYXJkVXNlci5jYXJkcy5sZW5ndGgpIHsKICAgICAgcmV0dXJuIHJlcGx5KGDinYwgSW52YWxpZCBjYXJkIG51bWJlci4gWW91IGhhdmUgJHtjYXJkVXNlci5jYXJkcy5sZW5ndGh9IGNhcmRzLiBVc2UgKi5jb2wqIHRvIGNoZWNrLmApOwogICAgfQoKICAgIGNvbnN0IGNhcmQgPSBjYXJkVXNlci5jYXJkc1tpbmRleF07CiAgICBpZiAoIWNhcmQpIHJldHVybiByZXBseSgi4p2MIENhcmQgbm90IGZvdW5kLiIpOwogICAgaWYgKGNhcmQubG9ja2VkIHx8IGNhcmQuaW5BdWN0aW9uKSB7CiAgICAgIHJldHVybiByZXBseSgi4p2MIFRoaXMgY2FyZCBpcyBhbHJlYWR5IGxvY2tlZCBvciBpbiBhbiBhdWN0aW9uIGFuZCBjYW4ndCBiZSB1c2VkIGFzIGNvbGxhdGVyYWwuIik7CiAgICB9CgogICAgY29uc3QgbWF4TG9hbiA9IFRJRVJfTElNSVRTW2NhcmQudGllcl0gfHwgNTAwOwogICAgaWYgKGFtb3VudCA+IG1heExvYW4pIHsKICAgICAgcmV0dXJuIHJlcGx5KApg4p2MICpMb2FuIHRvbyBoaWdoISoKCvCfjrQgJHtUSUVSX0VNT0pJW2NhcmQudGllcl0gfHwgIuKtkCJ9ICR7Y2FyZC5uYW1lfSAoJHtjYXJkLnRpZXJ9KQrwn6qZIE1heCBsb2FuIGZvciB0aGlzIHRpZXI6IPCfqpkgJHttYXhMb2FuLnRvTG9jYWxlU3RyaW5nKCl9CvCfkqEgWW91IHJlcXVlc3RlZDog8J+qmSAke2Ftb3VudC50b0xvY2FsZVN0cmluZygpfWAKICAgICAgKTsKICAgIH0KICAgIGlmIChhbW91bnQgPCAxMDApIHJldHVybiByZXBseSgi4p2MIE1pbmltdW0gbG9hbiBhbW91bnQgaXMg8J+qmSAxMDAuIik7CgogICAgLy8gUmVtb3ZlIGNhcmQgZnJvbSBpbnZlbnRvcnksIHN0b3JlIGFzIGNvbGxhdGVyYWwKICAgIGNhcmRVc2VyLmNhcmRzLnNwbGljZShpbmRleCwgMSk7CiAgICBjYXJkVXNlci50b3RhbENhcmRzID0gTWF0aC5tYXgoMCwgKGNhcmRVc2VyLnRvdGFsQ2FyZHMgfHwgMSkgLSAxKTsKICAgIGNhcmRVc2VyLmNhcmRMb2FuICAgPSB7CiAgICAgIGFjdGl2ZTogICB0cnVlLAogICAgICBhbW91bnQsCiAgICAgIGlzc3VlZEF0OiBub3csCiAgICAgIGR1ZTogICAgICBub3cgKyBEVUVfREFZUyAqIDg2XzQwMF8wMDAsCiAgICAgIGludGVyZXN0OiBJTlRFUkVTVF9QQ1QsCiAgICAgIGNhcmQsCiAgICB9OwogICAgYXdhaXQgY2FyZFVzZXIuc2F2ZSgpOwoKICAgIC8vIEFkZCBtb25leSB0byBlY29ub215IHdhbGxldAogICAgZWNvVXNlci5tb25leSArPSBhbW91bnQ7CiAgICBhd2FpdCBzYXZlVXNlcihzZW5kZXIsIGVjb1VzZXIpOwogICAgYXdhaXQgYWRkSGlzdG9yeShzZW5kZXIsICJ0cmFuc2Zlcl9pbiIsIGFtb3VudCwgYENhcmQgbG9hbjogJHtjYXJkLm5hbWV9IGFzIGNvbGxhdGVyYWxgKTsKCiAgICByZXR1cm4gcmVwbHkoCmDwn4OPICpDQVJEIExPQU4gQVBQUk9WRUQhKgoK8J+OtCBDb2xsYXRlcmFsIDogJHtUSUVSX0VNT0pJW2NhcmQudGllcl0gfHwgIuKtkCJ9ICoke2NhcmQubmFtZX0qICgke2NhcmQudGllcn0pCvCfqpkgUmVjZWl2ZWQgICA6IPCfqpkgJHthbW91bnQudG9Mb2NhbGVTdHJpbmcoKX0K8J+ThSBEdWUgRGF0ZSAgIDogJHtuZXcgRGF0ZShjYXJkVXNlci5jYXJkTG9hbi5kdWUpLnRvRGF0ZVN0cmluZygpfQrwn5K5IEludGVyZXN0ICAgOiA1JSBwZXIgZGF5CgrimqDvuI8gWW91ciBjYXJkIGlzIGhlbGQgdW50aWwgeW91IHJlcGF5LgpVc2UgKi5jbG9hbiBwYXkqIHRvIHJlY2xhaW0gaXQuCvCfqpkgTmV3IEJhbGFuY2U6IPCfqpkgJHtlY29Vc2VyLm1vbmV5LnRvTG9jYWxlU3RyaW5nKCl9YAogICAgKTsKICB9LAp9Owo=
+/**
+ * .cloan <card_index> <amount>  — take a loan using a card as collateral
+ * .cloan pay                    — repay your card loan and get the card back
+ * .cloan info                   — check card loan status
+ *
+ * Card is held in escrow until the loan is repaid.
+ * Max loan per tier:
+ *   Common $500 | Uncommon $1,000 | Rare $3,000 | Epic $7,000 | Legendary $15,000
+ * Interest: 5%/day — due in 7 days. Overdue = card is forfeited.
+ */
+import { findOrCreateUser }                from "./db.js";
+import { getUser, saveUser, addHistory,
+         requireRegistration }             from "../economy/database.js";
+
+const INTEREST_PCT = 0.05;
+const DUE_DAYS     = 7;
+
+const TIER_LIMITS = {
+  Common:    500,
+  Uncommon:  1_000,
+  Rare:      3_000,
+  Epic:      7_000,
+  Legendary: 15_000,
+};
+
+const TIER_EMOJI = {
+  Common: "⚪", Uncommon: "🟢", Rare: "🔵", Epic: "🟣", Legendary: "🟡",
+};
+
+export default {
+  name:     "cloan",
+  aliases:  ["cardloan", "clborrow"],
+  category: "cards",
+  description: "Borrow money using a card as collateral",
+  usage:    ".cloan <card index> <amount>  |  .cloan pay  |  .cloan info",
+  checkJail: true,
+
+  async run({ sock, msg, sender, args }) {
+    if (!await requireRegistration(sock, msg, sender)) return;
+
+    const jid   = msg.key.remoteJid;
+    const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
+    const now   = Date.now();
+
+    const cardUser = await findOrCreateUser(sender);
+    const ecoUser  = await getUser(sender);
+
+    const sub = (args[0] || "info").toLowerCase();
+
+    // ── INFO ─────────────────────────────────────────────────────────────────
+    if (sub === "info") {
+      const loan = cardUser.cardLoan;
+      if (!loan?.active) {
+        return reply(
+          "🃏 You have no active card loan.\n\n" +
+          "Use *.cloan <card number> <amount>* to borrow against a card.\n\n" +
+          "*Max loan by rarity:*\n" +
+          "⚪ Common → $500\n🟢 Uncommon → $1,000\n🔵 Rare → $3,000\n🟣 Epic → $7,000\n🟡 Legendary → $15,000"
+        );
+      }
+
+      const daysLeft = Math.max(0, Math.ceil((loan.due - now) / 86_400_000));
+      const daysUsed = Math.max(1, Math.ceil((now - loan.issuedAt) / 86_400_000));
+      const interest = Math.round(loan.amount * INTEREST_PCT * daysUsed);
+      const overdue  = now > loan.due;
+
+      return reply(
+`🃏 *CARD LOAN INFO*
+
+🎴 Collateral : ${TIER_EMOJI[loan.card.tier] || "⭐"} *${loan.card.name}* (${loan.card.tier})
+💸 Borrowed   : $${loan.amount.toLocaleString()}
+💹 Interest   : 5%/day
+📅 Due        : ${new Date(loan.due).toDateString()}
+${overdue
+  ? "⚠️ *OVERDUE! Repay now or your card is forfeited!*"
+  : `⏳ Due in    : ${daysLeft} day(s)`}
+
+💳 Repay now  : $${(loan.amount + interest).toLocaleString()}
+Use *.cloan pay* to repay and reclaim your card.`
+      );
+    }
+
+    // ── PAY ──────────────────────────────────────────────────────────────────
+    if (sub === "pay") {
+      const loan = cardUser.cardLoan;
+      if (!loan?.active) return reply("❌ You don't have an active card loan.");
+
+      const daysUsed = Math.max(1, Math.ceil((now - loan.issuedAt) / 86_400_000));
+      const interest = Math.round(loan.amount * INTEREST_PCT * daysUsed);
+      const total    = loan.amount + interest;
+
+      if (ecoUser.money < total) {
+        return reply(
+`❌ *Not enough cash!*
+
+💸 Loan + interest : $${total.toLocaleString()}
+💰 Your wallet     : $${ecoUser.money.toLocaleString()}
+📉 Short by        : $${(total - ecoUser.money).toLocaleString()}
+
+Earn more with *.daily*, *.work*, *.fish*, *.dig*.`
+        );
+      }
+
+      // Deduct money, restore card
+      ecoUser.money -= total;
+      await saveUser(sender, ecoUser);
+      await addHistory(sender, "withdraw", -total, `Repaid card loan ($${loan.amount} + $${interest} interest)`);
+
+      if (!Array.isArray(cardUser.cards)) cardUser.cards = [];
+      cardUser.cards.push(loan.card);
+      cardUser.totalCards = (cardUser.totalCards || 0) + 1;
+      cardUser.cardLoan   = null;
+      await cardUser.save();
+
+      return reply(
+`✅ *Card Loan Repaid!*
+
+💸 Repaid    : $${total.toLocaleString()}
+  (principal $${loan.amount.toLocaleString()} + $${interest.toLocaleString()} interest)
+🎴 Returned  : ${TIER_EMOJI[loan.card.tier] || "⭐"} *${loan.card.name}*
+💰 Balance   : $${ecoUser.money.toLocaleString()}
+
+Your card is back in your collection! 🎉`
+      );
+    }
+
+    // ── TAKE LOAN ─────────────────────────────────────────────────────────────
+    if (cardUser.cardLoan?.active) {
+      return reply("❌ You already have an active card loan.\n\nUse *.cloan pay* to repay it first.");
+    }
+
+    const index  = parseInt(args[0], 10) - 1;
+    const amount = parseInt(args[1], 10);
+
+    if (isNaN(index) || index < 0) {
+      return reply("❌ Usage: *.cloan <card number> <amount>*\nExample: .cloan 3 1000\n\nUse *.col* to see your card numbers.");
+    }
+    if (isNaN(amount) || amount <= 0) {
+      return reply("❌ Please provide a valid amount.\nExample: .cloan 3 1000");
+    }
+
+    if (!Array.isArray(cardUser.cards) || cardUser.cards.length === 0) {
+      return reply("❌ You have no cards to use as collateral.");
+    }
+    if (index >= cardUser.cards.length) {
+      return reply(`❌ Invalid card number. You have ${cardUser.cards.length} cards. Use *.col* to check.`);
+    }
+
+    const card = cardUser.cards[index];
+    if (!card) return reply("❌ Card not found.");
+    if (card.locked || card.inAuction) {
+      return reply("❌ This card is already locked or in an auction and can't be used as collateral.");
+    }
+
+    const maxLoan = TIER_LIMITS[card.tier] || 500;
+    if (amount > maxLoan) {
+      return reply(
+`❌ *Loan too high!*
+
+🎴 ${TIER_EMOJI[card.tier] || "⭐"} ${card.name} (${card.tier})
+💰 Max loan for this tier: $${maxLoan.toLocaleString()}
+💡 You requested: $${amount.toLocaleString()}`
+      );
+    }
+    if (amount < 100) return reply("❌ Minimum loan amount is $100.");
+
+    // Remove card from inventory, store as collateral
+    cardUser.cards.splice(index, 1);
+    cardUser.totalCards = Math.max(0, (cardUser.totalCards || 1) - 1);
+    cardUser.cardLoan   = {
+      active:   true,
+      amount,
+      issuedAt: now,
+      due:      now + DUE_DAYS * 86_400_000,
+      interest: INTEREST_PCT,
+      card,
+    };
+    await cardUser.save();
+
+    // Add money to economy wallet
+    ecoUser.money += amount;
+    await saveUser(sender, ecoUser);
+    await addHistory(sender, "transfer_in", amount, `Card loan: ${card.name} as collateral`);
+
+    return reply(
+`🃏 *CARD LOAN APPROVED!*
+
+🎴 Collateral : ${TIER_EMOJI[card.tier] || "⭐"} *${card.name}* (${card.tier})
+💰 Received   : $${amount.toLocaleString()}
+📅 Due Date   : ${new Date(cardUser.cardLoan.due).toDateString()}
+💹 Interest   : 5% per day
+
+⚠️ Your card is held until you repay.
+Use *.cloan pay* to reclaim it.
+💰 New Balance: $${ecoUser.money.toLocaleString()}`
+    );
+  },
+};

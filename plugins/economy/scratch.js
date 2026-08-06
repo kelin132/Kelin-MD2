@@ -1,1 +1,140 @@
-LyoqCiAqIEtFTElOIE1EIOKAlCAuc2NyYXRjaAogKiBCdXkgYSBzY3JhdGNoIGNhcmQgYW5kIHJldmVhbCBpbnN0YW50IHByaXplcyEKICogVXNhZ2U6IC5zY3JhdGNoIFt0eXBlXQogKi8KaW1wb3J0IHsgZ2V0VXNlciwgc2F2ZVVzZXIsIHJlcXVpcmVSZWdpc3RyYXRpb24sIGFkZEhpc3RvcnkgfSBmcm9tICIuL2RhdGFiYXNlLmpzIjsKCmNvbnN0IENPT0xET1dOID0gMTAgKiAxMDAwOyAvLyAxMCBzZWNvbmRzCgpjb25zdCBDQVJEUyA9IHsKICBiYXNpYzogewogICAgcHJpY2U6IDEwMCwKICAgIGVtb2ppOiAi8J+OqyIsCiAgICBsYWJlbDogIkJhc2ljIiwKICAgIHByaXplczogWwogICAgICB7IHJld2FyZDogMCwgICAgbGFiZWw6ICLinYwgTm90aGluZyIsICAgICAgd2VpZ2h0OiA0MCB9LAogICAgICB7IHJld2FyZDogNTAsICAgbGFiZWw6ICLwn6qZIPCfqpkgNTAiLCAgICAgICAgICB3ZWlnaHQ6IDI1IH0sCiAgICAgIHsgcmV3YXJkOiAxNTAsICBsYWJlbDogIvCfqpkg8J+qmSAxNTAiLCAgICAgICAgIHdlaWdodDogMTUgfSwKICAgICAgeyByZXdhcmQ6IDMwMCwgIGxhYmVsOiAi8J+qmSDwn6qZIDMwMCIsICAgICAgICAgd2VpZ2h0OiAxMCB9LAogICAgICB7IHJld2FyZDogNzUwLCAgbGFiZWw6ICLwn6qZIPCfqpkgNzUwIiwgICAgICAgICB3ZWlnaHQ6ICA2IH0sCiAgICAgIHsgcmV3YXJkOiAyMDAwLCBsYWJlbDogIvCfko4g8J+qmSAyLDAwMCIsICAgICAgIHdlaWdodDogIDMgfSwKICAgICAgeyByZXdhcmQ6IDUwMDAsIGxhYmVsOiAi8J+PhiBKQUNLUE9UIPCfqpkgNSwwMDAhIiwgd2VpZ2h0OiAxIH0sCiAgICBdLAogIH0sCiAgc2lsdmVyOiB7CiAgICBwcmljZTogNTAwLAogICAgZW1vamk6ICLwn6WIIiwKICAgIGxhYmVsOiAiU2lsdmVyIiwKICAgIHByaXplczogWwogICAgICB7IHJld2FyZDogMCwgICAgIGxhYmVsOiAi4p2MIE5vdGhpbmciLCAgICAgICAgIHdlaWdodDogMzAgfSwKICAgICAgeyByZXdhcmQ6IDI1MCwgICBsYWJlbDogIvCfqpkg8J+qmSAyNTAiLCAgICAgICAgICAgIHdlaWdodDogMjIgfSwKICAgICAgeyByZXdhcmQ6IDgwMCwgICBsYWJlbDogIvCfqpkg8J+qmSA4MDAiLCAgICAgICAgICAgIHdlaWdodDogMTggfSwKICAgICAgeyByZXdhcmQ6IDIwMDAsICBsYWJlbDogIvCfqpkg8J+qmSAyLDAwMCIsICAgICAgICAgIHdlaWdodDogMTQgfSwKICAgICAgeyByZXdhcmQ6IDUwMDAsICBsYWJlbDogIvCfqpkg8J+qmSA1LDAwMCIsICAgICAgICAgIHdlaWdodDogIDkgfSwKICAgICAgeyByZXdhcmQ6IDEyMDAwLCBsYWJlbDogIvCfko4g8J+qmSAxMiwwMDAiLCAgICAgICAgIHdlaWdodDogIDUgfSwKICAgICAgeyByZXdhcmQ6IDI1MDAwLCBsYWJlbDogIvCfj4YgSkFDS1BPVCDwn6qZIDI1LDAwMCEiLCB3ZWlnaHQ6IDIgfSwKICAgIF0sCiAgfSwKICBnb2xkOiB7CiAgICBwcmljZTogMjAwMCwKICAgIGVtb2ppOiAi8J+lhyIsCiAgICBsYWJlbDogIkdvbGQiLAogICAgcHJpemVzOiBbCiAgICAgIHsgcmV3YXJkOiAwLCAgICAgIGxhYmVsOiAi4p2MIE5vdGhpbmciLCAgICAgICAgICAgd2VpZ2h0OiAyMCB9LAogICAgICB7IHJld2FyZDogMTAwMCwgICBsYWJlbDogIvCfqpkg8J+qmSAxLDAwMCIsICAgICAgICAgICAgd2VpZ2h0OiAyMCB9LAogICAgICB7IHJld2FyZDogNDAwMCwgICBsYWJlbDogIvCfqpkg8J+qmSA0LDAwMCIsICAgICAgICAgICAgd2VpZ2h0OiAxOCB9LAogICAgICB7IHJld2FyZDogMTAwMDAsICBsYWJlbDogIvCfqpkg8J+qmSAxMCwwMDAiLCAgICAgICAgICAgd2VpZ2h0OiAxNSB9LAogICAgICB7IHJld2FyZDogMjUwMDAsICBsYWJlbDogIvCfqpkg8J+qmSAyNSwwMDAiLCAgICAgICAgICAgd2VpZ2h0OiAxMiB9LAogICAgICB7IHJld2FyZDogNjAwMDAsICBsYWJlbDogIvCfko4g8J+qmSA2MCwwMDAiLCAgICAgICAgICAgd2VpZ2h0OiAgOSB9LAogICAgICB7IHJld2FyZDogMTUwMDAwLCBsYWJlbDogIvCfj4YgSkFDS1BPVCDwn6qZIDE1MCwwMDAhIiwgd2VpZ2h0OiAgNiB9LAogICAgXSwKICB9LAp9OwoKZnVuY3Rpb24gcm9sbFByaXplKHByaXplcykgewogIGNvbnN0IHRvdGFsID0gcHJpemVzLnJlZHVjZSgocywgcCkgPT4gcyArIHAud2VpZ2h0LCAwKTsKICBsZXQgciA9IE1hdGgucmFuZG9tKCkgKiB0b3RhbDsKICBmb3IgKGNvbnN0IHAgb2YgcHJpemVzKSB7CiAgICByIC09IHAud2VpZ2h0OwogICAgaWYgKHIgPD0gMCkgcmV0dXJuIHA7CiAgfQogIHJldHVybiBwcml6ZXNbcHJpemVzLmxlbmd0aCAtIDFdOwp9CgpleHBvcnQgZGVmYXVsdCB7CiAgbmFtZTogInNjcmF0Y2giLAogIGFsaWFzZXM6IFsic2NyYXRjaGNhcmQiLCAic2NyYXRjaHkiXSwKICBjYXRlZ29yeTogImVjb25vbXkiLAogIGNvb2xkb3duOiA2LAogIGRlc2NyaXB0aW9uOiAiQnV5IGEgc2NyYXRjaCBjYXJkIGZvciBhbiBpbnN0YW50IHByaXplISIsCiAgdXNhZ2U6ICIuc2NyYXRjaCBbYmFzaWN8c2lsdmVyfGdvbGRdIiwKICBjaGVja0phaWw6IHRydWUsCgogIGFzeW5jIHJ1bih7IHNvY2ssIG1zZywgc2VuZGVyLCBhcmdzIH0pIHsKICAgIGlmICghYXdhaXQgcmVxdWlyZVJlZ2lzdHJhdGlvbihzb2NrLCBtc2csIHNlbmRlcikpIHJldHVybjsKCiAgICBjb25zdCBqaWQgICA9IG1zZy5rZXkucmVtb3RlSmlkOwogICAgY29uc3QgcmVwbHkgPSAodCkgPT4gc29jay5zZW5kTWVzc2FnZShqaWQsIHsgdGV4dDogdCB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgY29uc3Qgbm93ICAgPSBEYXRlLm5vdygpOwogICAgY29uc3QgdXNlciAgPSBhd2FpdCBnZXRVc2VyKHNlbmRlcik7CgogICAgLy8g4pSA4pSAIENvb2xkb3duIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAogICAgaWYgKG5vdyAtICh1c2VyLmxhc3RTY3JhdGNoIHx8IDApIDwgQ09PTERPV04pIHsKICAgICAgY29uc3Qgc2VjcyA9IE1hdGguY2VpbCgoQ09PTERPV04gLSAobm93IC0gdXNlci5sYXN0U2NyYXRjaCkpIC8gMTAwMCk7CiAgICAgIHJldHVybiByZXBseShg8J+OqyBIb2xkIG9uISBZb3UgY2FuIHNjcmF0Y2ggYWdhaW4gaW4gKiR7c2Vjc31zKi5gKTsKICAgIH0KCiAgICBjb25zdCB0eXBlID0gKGFyZ3NbMF0gfHwgImJhc2ljIikudG9Mb3dlckNhc2UoKTsKICAgIGNvbnN0IGNhcmQgPSBDQVJEU1t0eXBlXTsKCiAgICBpZiAoIWNhcmQpIHsKICAgICAgcmV0dXJuIHJlcGx5KApg8J+OqyAqU0NSQVRDSCBDQVJEUyoKCkNob29zZSBhIGNhcmQ6CiAg8J+OqyAqLnNjcmF0Y2ggYmFzaWMqICDigJQg8J+qmSAxMDAgIChzbWFsbCBwcml6ZXMpCiAg8J+liCAqLnNjcmF0Y2ggc2lsdmVyKiDigJQg8J+qmSA1MDAgIChtZWRpdW0gcHJpemVzKQogIPCfpYcgKi5zY3JhdGNoIGdvbGQqICAg4oCUIPCfqpkgMiwwMDAgKGJpZyBwcml6ZXMhKQoKVHlwZSAqLnNjcmF0Y2ggPHR5cGU+KiB0byBidXkgYW5kIHNjcmF0Y2ggaW5zdGFudGx5IWAKICAgICAgKTsKICAgIH0KCiAgICBpZiAodXNlci5tb25leSA8IGNhcmQucHJpY2UpIHsKICAgICAgcmV0dXJuIHJlcGx5KGDinYwgWW91IG5lZWQgKvCfqpkgJHtjYXJkLnByaWNlLnRvTG9jYWxlU3RyaW5nKCl9KiBmb3IgYSAke2NhcmQubGFiZWx9IHNjcmF0Y2ggY2FyZC5cbllvdSBoYXZlOiAq8J+qmSAke3VzZXIubW9uZXkudG9Mb2NhbGVTdHJpbmcoKX0qYCk7CiAgICB9CgogICAgdXNlci5sYXN0U2NyYXRjaCA9IG5vdzsKICAgIHVzZXIubW9uZXkgICAgICAtPSBjYXJkLnByaWNlOwoKICAgIGNvbnN0IHByaXplID0gcm9sbFByaXplKGNhcmQucHJpemVzKTsKCiAgICBpZiAocHJpemUucmV3YXJkID4gMCkgewogICAgICB1c2VyLm1vbmV5ICs9IHByaXplLnJld2FyZDsKICAgICAgdXNlci54cCAgICAgPSAodXNlci54cCB8fCAwKSArIDEwOwogICAgfQoKICAgIGNvbnN0IG5ldCA9IHByaXplLnJld2FyZCAtIGNhcmQucHJpY2U7CiAgICBhd2FpdCBzYXZlVXNlcihzZW5kZXIsIHVzZXIpOwogICAgYXdhaXQgYWRkSGlzdG9yeShzZW5kZXIsICJzY3JhdGNoIiwgbmV0LCBgU2NyYXRjaCAke3R5cGV9OiAke3ByaXplLmxhYmVsfWApOwoKICAgIGNvbnN0IGlzSmFja3BvdCA9IHByaXplLnJld2FyZCA+PSAyNTAwMDsKCiAgICByZXR1cm4gcmVwbHkoCmAke2NhcmQuZW1vaml9ICoke2NhcmQubGFiZWwudG9VcHBlckNhc2UoKX0gU0NSQVRDSCBDQVJEKgoK8J+UsiDwn5SyIPCflLIK4pyoIFNjcmF0Y2hpbmcuLi4KCvCfjrQgUmVzdWx0OiAqJHtwcml6ZS5sYWJlbH0qCgoke3ByaXplLnJld2FyZCA+IDAKICA/IGAke2lzSmFja3BvdCA/ICLwn46K8J+OivCfjoogSFVHRSBXSU4hIPCfjorwn46K8J+OilxuIiA6ICIiffCfqpkgUHJpemU6ICvwn6qZICR7cHJpemUucmV3YXJkLnRvTG9jYWxlU3RyaW5nKCl9YAogIDogIvCfmJQgTm8gcHJpemUgdGhpcyB0aW1lISJ9Cgrwn6qZIENhcmQgY29zdCA6IC3wn6qZICR7Y2FyZC5wcmljZS50b0xvY2FsZVN0cmluZygpfQrwn6qZIEJhbGFuY2UgICA6IPCfqpkgJHt1c2VyLm1vbmV5LnRvTG9jYWxlU3RyaW5nKCl9YAogICAgKTsKICB9LAp9Owo=
+/**
+ * KELIN MD — .scratch
+ * Buy a scratch card and reveal instant prizes!
+ * Usage: .scratch [type]
+ */
+import { getUser, saveUser, requireRegistration, addHistory } from "./database.js";
+
+const COOLDOWN = 10 * 1000; // 10 seconds
+
+const CARDS = {
+  basic: {
+    price: 100,
+    emoji: "🎫",
+    label: "Basic",
+    prizes: [
+      { reward: 0,    label: "❌ Nothing",      weight: 40 },
+      { reward: 50,   label: "💰 $50",          weight: 25 },
+      { reward: 150,  label: "💰 $150",         weight: 15 },
+      { reward: 300,  label: "💰 $300",         weight: 10 },
+      { reward: 750,  label: "💰 $750",         weight:  6 },
+      { reward: 2000, label: "💎 $2,000",       weight:  3 },
+      { reward: 5000, label: "🏆 JACKPOT $5,000!", weight: 1 },
+    ],
+  },
+  silver: {
+    price: 500,
+    emoji: "🥈",
+    label: "Silver",
+    prizes: [
+      { reward: 0,     label: "❌ Nothing",         weight: 30 },
+      { reward: 250,   label: "💰 $250",            weight: 22 },
+      { reward: 800,   label: "💰 $800",            weight: 18 },
+      { reward: 2000,  label: "💰 $2,000",          weight: 14 },
+      { reward: 5000,  label: "💰 $5,000",          weight:  9 },
+      { reward: 12000, label: "💎 $12,000",         weight:  5 },
+      { reward: 25000, label: "🏆 JACKPOT $25,000!", weight: 2 },
+    ],
+  },
+  gold: {
+    price: 2000,
+    emoji: "🥇",
+    label: "Gold",
+    prizes: [
+      { reward: 0,      label: "❌ Nothing",           weight: 20 },
+      { reward: 1000,   label: "💰 $1,000",            weight: 20 },
+      { reward: 4000,   label: "💰 $4,000",            weight: 18 },
+      { reward: 10000,  label: "💰 $10,000",           weight: 15 },
+      { reward: 25000,  label: "💰 $25,000",           weight: 12 },
+      { reward: 60000,  label: "💎 $60,000",           weight:  9 },
+      { reward: 150000, label: "🏆 JACKPOT $150,000!", weight:  6 },
+    ],
+  },
+};
+
+function rollPrize(prizes) {
+  const total = prizes.reduce((s, p) => s + p.weight, 0);
+  let r = Math.random() * total;
+  for (const p of prizes) {
+    r -= p.weight;
+    if (r <= 0) return p;
+  }
+  return prizes[prizes.length - 1];
+}
+
+export default {
+  name: "scratch",
+  aliases: ["scratchcard", "scratchy"],
+  category: "economy",
+  cooldown: 6,
+  description: "Buy a scratch card for an instant prize!",
+  usage: ".scratch [basic|silver|gold]",
+  checkJail: true,
+
+  async run({ sock, msg, sender, args }) {
+    if (!await requireRegistration(sock, msg, sender)) return;
+
+    const jid   = msg.key.remoteJid;
+    const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
+    const now   = Date.now();
+    const user  = await getUser(sender);
+
+    // ── Cooldown ──────────────────────────────────────────────────────────
+    if (now - (user.lastScratch || 0) < COOLDOWN) {
+      const secs = Math.ceil((COOLDOWN - (now - user.lastScratch)) / 1000);
+      return reply(`🎫 Hold on! You can scratch again in *${secs}s*.`);
+    }
+
+    const type = (args[0] || "basic").toLowerCase();
+    const card = CARDS[type];
+
+    if (!card) {
+      return reply(
+`🎫 *SCRATCH CARDS*
+
+Choose a card:
+  🎫 *.scratch basic*  — $100  (small prizes)
+  🥈 *.scratch silver* — $500  (medium prizes)
+  🥇 *.scratch gold*   — $2,000 (big prizes!)
+
+Type *.scratch <type>* to buy and scratch instantly!`
+      );
+    }
+
+    if (user.money < card.price) {
+      return reply(`❌ You need *$${card.price.toLocaleString()}* for a ${card.label} scratch card.\nYou have: *$${user.money.toLocaleString()}*`);
+    }
+
+    user.lastScratch = now;
+    user.money      -= card.price;
+
+    const prize = rollPrize(card.prizes);
+
+    if (prize.reward > 0) {
+      user.money += prize.reward;
+      user.xp     = (user.xp || 0) + 10;
+    }
+
+    const net = prize.reward - card.price;
+    await saveUser(sender, user);
+    await addHistory(sender, "scratch", net, `Scratch ${type}: ${prize.label}`);
+
+    const isJackpot = prize.reward >= 25000;
+
+    return reply(
+`${card.emoji} *${card.label.toUpperCase()} SCRATCH CARD*
+
+🔲 🔲 🔲
+✨ Scratching...
+
+🎴 Result: *${prize.label}*
+
+${prize.reward > 0
+  ? `${isJackpot ? "🎊🎊🎊 HUGE WIN! 🎊🎊🎊\n" : ""}💰 Prize: +$${prize.reward.toLocaleString()}`
+  : "😔 No prize this time!"}
+
+💰 Card cost : -$${card.price.toLocaleString()}
+💰 Balance   : $${user.money.toLocaleString()}`
+    );
+  },
+};

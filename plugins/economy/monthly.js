@@ -1,1 +1,79 @@
-aW1wb3J0IHsgZ2V0VXNlciwgc2F2ZVVzZXIsIHJlcXVpcmVSZWdpc3RyYXRpb24sIGFkZEhpc3RvcnksIGNoZWNrTGV2ZWxVcCB9IGZyb20gIi4vZGF0YWJhc2UuanMiOwoKZnVuY3Rpb24gZm10KG4pIHsKICBpZiAobiA+PSAxZTkpIHJldHVybiBg8J+qmSAkeyhuLzFlOSkudG9GaXhlZCgxKX1CYDsKICBpZiAobiA+PSAxZTYpIHJldHVybiBg8J+qmSAkeyhuLzFlNikudG9GaXhlZCgxKX1NYDsKICBpZiAobiA+PSAxZTMpIHJldHVybiBg8J+qmSAkeyhuLzFlMykudG9GaXhlZCgxKX1LYDsKICByZXR1cm4gYPCfqpkgJHtuLnRvTG9jYWxlU3RyaW5nKCl9YDsKfQoKZXhwb3J0IGRlZmF1bHQgewogIG5hbWU6ICJtb250aGx5IiwKICBkZXNjcmlwdGlvbjogIkNsYWltIHlvdXIgbW9udGhseSByZXdhcmQgKDMwLWRheSBjb29sZG93bikiLAogIGNhdGVnb3J5OiAiZWNvbm9teSIsCiAgY29vbGRvd246IDYsCiAgdXNhZ2U6ICIubW9udGhseSIsCiAgY2hlY2tKYWlsOiB0cnVlLAoKICBhc3luYyBydW4oeyBzb2NrLCBtc2csIHNlbmRlciB9KSB7CiAgICBpZiAoIWF3YWl0IHJlcXVpcmVSZWdpc3RyYXRpb24oc29jaywgbXNnLCBzZW5kZXIpKSByZXR1cm47CgogICAgY29uc3QgdXNlciAgICAgPSBhd2FpdCBnZXRVc2VyKHNlbmRlcik7CiAgICBjb25zdCBub3cgICAgICA9IERhdGUubm93KCk7CiAgICBjb25zdCBjb29sZG93biA9IDMwICogMjQgKiA2MCAqIDYwICogMTAwMDsKICAgIGNvbnN0IGppZCAgICAgID0gbXNnLmtleS5yZW1vdGVKaWQ7CgogICAgaWYgKG5vdyAtICh1c2VyLmxhc3RNb250aGx5IHx8IDApIDwgY29vbGRvd24pIHsKICAgICAgY29uc3QgcmVtYWluaW5nID0gY29vbGRvd24gLSAobm93IC0gdXNlci5sYXN0TW9udGhseSk7CiAgICAgIGNvbnN0IGRheXMgID0gTWF0aC5mbG9vcihyZW1haW5pbmcgLyAoMjQgKiA2MCAqIDYwICogMTAwMCkpOwogICAgICBjb25zdCBob3VycyA9IE1hdGguZmxvb3IoKHJlbWFpbmluZyAlICgyNCAqIDYwICogNjAgKiAxMDAwKSkgLyAoNjAgKiA2MCAqIDEwMDApKTsKCiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgIHRleHQ6CmDila3ilIDinYDjgIwg8J+ThSAq8J2QjPCdkI7wnZCN8J2Qk/CdkIfwnZCL8J2QmCog44CN4p2A4pSA4pWuCuKUgiDwn4yZICpSZXN1bHQqICA6OiAqQUxSRUFEWSBDTEFJTUVEIPCflLQqCuKUgiDwn42DICpGbGF2b3VyKiA6OiBf5p2l5pyI44G+44Gf5Lya44GE44G+44GX44KH44GG77yBXwrilIIK4pSCIOKPsyAqTmV4dCogICAgOjogKiR7ZGF5c31kICR7aG91cnN9aCoK4pSCCuKUgiDwn5SlICpDb21lIGJhY2sgbmV4dCBtb250aCEqCuKVsOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKdgGAKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICBjb25zdCBiYXNlUmV3YXJkICA9IDI1MDAwICsgTWF0aC5mbG9vcihNYXRoLnJhbmRvbSgpICogMjUwMDApOwogICAgY29uc3QgcHJlbWl1bU11bHQgPSB1c2VyLmlzUHJlbWl1bSA/IDIgOiAxOwogICAgY29uc3QgcmV3YXJkICAgICAgPSBNYXRoLmZsb29yKGJhc2VSZXdhcmQgKiBwcmVtaXVtTXVsdCk7CiAgICBjb25zdCB4cFJld2FyZCAgICA9IDEwMDA7CgogICAgdXNlci5tb25leSAgICAgICArPSByZXdhcmQ7CiAgICB1c2VyLmxhc3RNb250aGx5ICA9IG5vdzsKICAgIHVzZXIueHAgICAgICAgICAgID0gKHVzZXIueHAgfHwgMCkgKyB4cFJld2FyZDsKCiAgICBjb25zdCB7IGxldmVsZWQsIG5ld0xldmVsIH0gPSBjaGVja0xldmVsVXAodXNlcik7CgogICAgYXdhaXQgc2F2ZVVzZXIoc2VuZGVyLCB1c2VyKTsKICAgIGF3YWl0IGFkZEhpc3Rvcnkoc2VuZGVyLCAibW9udGhseSIsIHJld2FyZCwgYE1vbnRobHkgcmV3YXJkIGNsYWltZWRgKTsKCiAgICAvLyBFeHRyYTogYm9udXMgaXRlbSBmb3IgcHJlbWl1bQogICAgaWYgKHVzZXIuaXNQcmVtaXVtKSB7CiAgICAgIHVzZXIuaW52ZW50b3J5ID0gdXNlci5pbnZlbnRvcnkgfHwgW107CiAgICAgIHVzZXIuaW52ZW50b3J5LnB1c2goeyBpdGVtOiAiTXlzdGVyeSBCb3giLCBxdWFudGl0eTogMSwgdHM6IG5vdyB9KTsKICAgICAgYXdhaXQgc2F2ZVVzZXIoc2VuZGVyLCB1c2VyKTsKICAgIH0KCiAgICBhd2FpdCBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICB0ZXh0Ogpg4pWt4pSA4p2A44CMIPCfk4UgKvCdkIzwnZCO8J2QjfCdkJPwnZCH8J2Qi/CdkJgqIOOAjeKdgOKUgOKVrgrilIIg8J+MmSAqUmVzdWx0KiAgOjogKkNMQUlNRUQg8J+foioK4pSCIPCfjYMgKkZsYXZvdXIqIDo6IF/ku4rmnIjjgoLjgYLjgorjgYzjgajjgYbvvIFfCuKUggrilIIg8J+qmSAqUmV3YXJkKiAgOjogKiske2ZtdChyZXdhcmQpfSoke3VzZXIuaXNQcmVtaXVtID8gYCBfKMOXMiBwcmVtaXVtKV9gIDogIiJ9CuKUgiDwn5SuICpYUCogICAgICA6OiAqKyR7eHBSZXdhcmR9KgrilIIg8J+qmSAqV2FsbGV0KiAgOjogKiR7Zm10KHVzZXIubW9uZXkpfSoke3VzZXIuaXNQcmVtaXVtID8gYFxu4pSCIPCfjoEgKkJvbnVzKiAgIDo6ICorMSBNeXN0ZXJ5IEJveCpgIDogIiJ9CuKUggrilIIg4q2QICpMZXZlbCAke3VzZXIubGV2ZWx9KiAg8J+ThSAqU2VlIHlvdSBuZXh0IG1vbnRoISoke2xldmVsZWQgPyBgXG7ilIJcbuKUgiDwn46JICpMRVZFTCBVUCEqIOKAlCBOb3cgTGV2ZWwgJHt1c2VyLmxldmVsfWAgOiAiIn0K4pWw4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4p2AYAogICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICB9Cn07Cg==
+import { getUser, saveUser, requireRegistration, addHistory, checkLevelUp } from "./database.js";
+
+function fmt(n) {
+  if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `$${(n/1e3).toFixed(1)}K`;
+  return `$${n.toLocaleString()}`;
+}
+
+export default {
+  name: "monthly",
+  description: "Claim your monthly reward (30-day cooldown)",
+  category: "economy",
+  cooldown: 6,
+  usage: ".monthly",
+  checkJail: true,
+
+  async run({ sock, msg, sender }) {
+    if (!await requireRegistration(sock, msg, sender)) return;
+
+    const user     = await getUser(sender);
+    const now      = Date.now();
+    const cooldown = 30 * 24 * 60 * 60 * 1000;
+    const jid      = msg.key.remoteJid;
+
+    if (now - (user.lastMonthly || 0) < cooldown) {
+      const remaining = cooldown - (now - user.lastMonthly);
+      const days  = Math.floor(remaining / (24 * 60 * 60 * 1000));
+      const hours = Math.floor((remaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+
+      return sock.sendMessage(jid, {
+        text:
+`╭─❀「 📅 *𝐌𝐎𝐍𝐓𝐇𝐋𝐘* 」❀─╮
+│ 🌙 *Result*  :: *ALREADY CLAIMED 🔴*
+│ 🍃 *Flavour* :: _来月また会いましょう！_
+│
+│ ⏳ *Next*    :: *${days}d ${hours}h*
+│
+│ 🔥 *Come back next month!*
+╰───────────────❀`
+      }, { quoted: msg });
+    }
+
+    const baseReward  = 25000 + Math.floor(Math.random() * 25000);
+    const premiumMult = user.isPremium ? 2 : 1;
+    const reward      = Math.floor(baseReward * premiumMult);
+    const xpReward    = 1000;
+
+    user.money       += reward;
+    user.lastMonthly  = now;
+    user.xp           = (user.xp || 0) + xpReward;
+
+    const { leveled, newLevel } = checkLevelUp(user);
+
+    await saveUser(sender, user);
+    await addHistory(sender, "monthly", reward, `Monthly reward claimed`);
+
+    // Extra: bonus item for premium
+    if (user.isPremium) {
+      user.inventory = user.inventory || [];
+      user.inventory.push({ item: "Mystery Box", quantity: 1, ts: now });
+      await saveUser(sender, user);
+    }
+
+    await sock.sendMessage(jid, {
+      text:
+`╭─❀「 📅 *𝐌𝐎𝐍𝐓𝐇𝐋𝐘* 」❀─╮
+│ 🌙 *Result*  :: *CLAIMED 🟢*
+│ 🍃 *Flavour* :: _今月もありがとう！_
+│
+│ 💰 *Reward*  :: *+${fmt(reward)}*${user.isPremium ? ` _(×2 premium)_` : ""}
+│ 🔮 *XP*      :: *+${xpReward}*
+│ 💰 *Wallet*  :: *${fmt(user.money)}*${user.isPremium ? `\n│ 🎁 *Bonus*   :: *+1 Mystery Box*` : ""}
+│
+│ ⭐ *Level ${user.level}*  📅 *See you next month!*${leveled ? `\n│\n│ 🎉 *LEVEL UP!* — Now Level ${user.level}` : ""}
+╰───────────────❀`
+    }, { quoted: msg });
+  }
+};

@@ -1,1 +1,87 @@
-aW1wb3J0IHsgZ3VpbGRTeXN0ZW0gfSBmcm9tICIuLi8uLi9saWIvZ3VpbGRTeXN0ZW0uanMiOwppbXBvcnQgeyByZXF1aXJlUmVnaXN0cmF0aW9uIH0gZnJvbSAiLi9kYXRhYmFzZS5qcyI7CmltcG9ydCB7IGdlbmVyYXRlR3VpbGRQcm9maWxlLCBnZXRQcm9maWxlUGljLCBnZXRDb250YWN0TmFtZSB9IGZyb20gIi4uLy4uL2xpYi9ndWlsZEdlbi5tanMiOwoKZXhwb3J0IGRlZmF1bHQgewogIG5hbWU6ICJjcmVhdGVndWlsZCIsCiAgZGVzY3JpcHRpb246ICJDcmVhdGUgYSBuZXcgZ3VpbGQiLAogIGNhdGVnb3J5OiAiZ3VpbGQiLAogIHVzYWdlOiAiLmNyZWF0ZWd1aWxkIDxndWlsZF9uYW1lPiIsCiAgYWxpYXNlczogWyJtYWtlZ3VpbGQiLCAibmV3Z3VpbGQiXSwKICBjb29sZG93bjogMzAsCgogIGFzeW5jIHJ1bih7IHNvY2ssIG1zZywgc2VuZGVyLCB0ZXh0IH0pIHsKICAgIGNvbnN0IGppZCA9IG1zZy5rZXkucmVtb3RlSmlkOwoKICAgIGlmICghYXdhaXQgcmVxdWlyZVJlZ2lzdHJhdGlvbihzb2NrLCBtc2csIHNlbmRlcikpIHJldHVybjsKCiAgICBpZiAoIXRleHQpIHsKICAgICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgICAgdGV4dDoKYOKVreKUgOOAlCDwn4+wICrwnZCC8J2QkfCdkITwnZCA8J2Qk/CdkIQg8J2QhvCdkJTwnZCI8J2Qi/CdkIMqIOOAlQrilIIg8J+TliAqVXNhZ2UqIDo6ICouY3JlYXRlZ3VpbGQgPG5hbWU+KgrilIIg8J+SoSAqRXhhbXBsZSogOjogKi5jcmVhdGVndWlsZCBXYXJyaW9ycyoK4pSCCuKUgiDimqDvuI8gTmFtZSBtdXN0IGJlICoz4oCTMzAgY2hhcmFjdGVycyoK4pSU4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4peGYAogICAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQoKICAgIGNvbnN0IGd1aWxkTmFtZSA9IHRleHQudHJpbSgpOwoKICAgIGlmIChndWlsZE5hbWUubGVuZ3RoIDwgMyB8fCBndWlsZE5hbWUubGVuZ3RoID4gMzApIHsKICAgICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgICAgdGV4dDogIuKdjCBHdWlsZCBuYW1lIG11c3QgYmUgKjPigJMzMCBjaGFyYWN0ZXJzKiBsb25nLiIKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICBjb25zdCBleGlzdGluZyA9IGF3YWl0IGd1aWxkU3lzdGVtLmdldEd1aWxkKGd1aWxkTmFtZSk7CiAgICBpZiAoZXhpc3RpbmcpIHsKICAgICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgICAgdGV4dDogYOKdjCBHdWlsZCAqIiR7Z3VpbGROYW1lfSIqIGFscmVhZHkgZXhpc3RzIWAKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICAvLyBDaGVjayBpZiB1c2VyIGFscmVhZHkgb3ducyBhIGd1aWxkCiAgICBjb25zdCB1c2VyR3VpbGRzID0gYXdhaXQgZ3VpbGRTeXN0ZW0uZ2V0VXNlckd1aWxkcyhzZW5kZXIpOwogICAgaWYgKHVzZXJHdWlsZHMuc29tZShnID0+IGcub3duZXIgPT09IHNlbmRlcikpIHsKICAgICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgICAgdGV4dDogIuKdjCBZb3UgYWxyZWFkeSBvd24gYSBndWlsZCEgVXNlICouc2V0Z3VpbGRuYW1lKiB0byByZW5hbWUgaXQuIgogICAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQoKICAgIGNvbnN0IGd1aWxkID0gYXdhaXQgZ3VpbGRTeXN0ZW0uY3JlYXRlR3VpbGQoZ3VpbGROYW1lLCBzZW5kZXIpOwoKICAgIGlmICghZ3VpbGQpIHsKICAgICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgICAgdGV4dDogIuKdjCBGYWlsZWQgdG8gY3JlYXRlIGd1aWxkLiBQbGVhc2UgdHJ5IGFnYWluLiIKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICBjb25zdCBvd25lclBpYyAgPSBhd2FpdCBnZXRQcm9maWxlUGljKHNvY2ssIHNlbmRlcik7CiAgICBjb25zdCBvd25lck5hbWUgPSBnZXRDb250YWN0TmFtZShzb2NrLCBzZW5kZXIpOwoKICAgIGNvbnN0IGNhcHRpb24gPQpg4pWt4pSA44CUIPCfj7AgKvCdkIbwnZCU8J2QiPCdkIvwnZCDIPCdkILwnZCR8J2QhPCdkIDwnZCT8J2QhPCdkIMqIOOAlQrilJzil4YgKk5hbWUqICAgICA6OiAqJHtndWlsZE5hbWV9KgrilJzil4YgKk93bmVyKiAgICA6OiAqJHtvd25lck5hbWV9KgrilJzil4YgKk1lbWJlcnMqICA6OiAqMSoK4pSc4peGICpMZXZlbCogICAgOjogKjEqCuKUnOKXhiAqVHJlYXN1cnkqIDo6ICrwn6qZIDAqCuKUggrilJzil4YgVXNlICouc2V0Z3VpbGRkZXNjKiB0byBhZGQgYSBkZXNjcmlwdGlvbgrilJzil4YgVXNlICouc2V0Z3VpbGRpY29uKiB0byBzZXQgYSBiYW5uZXIK4pSc4peGIFVzZSAqLmFkZG1lbWJlciBAdXNlciogdG8gaW52aXRlIG1lbWJlcnMK4pSU4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4peGYDsKCiAgICB0cnkgewogICAgICBjb25zdCBpbWdCdWZmZXIgPSBhd2FpdCBnZW5lcmF0ZUd1aWxkUHJvZmlsZSgKICAgICAgICB7IG5hbWU6IGd1aWxkTmFtZSwgaWNvbjogbnVsbCB9LAogICAgICAgIHsgbmFtZTogb3duZXJOYW1lLCBwcm9maWxlUGljOiBvd25lclBpYyB9CiAgICAgICk7CiAgICAgIGF3YWl0IHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7IGltYWdlOiBpbWdCdWZmZXIsIGNhcHRpb24gfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0gY2F0Y2ggewogICAgICBhd2FpdCBzb2NrLnNlbmRNZXNzYWdlKGppZCwgeyB0ZXh0OiBjYXB0aW9uLCBtZW50aW9uczogW3NlbmRlcl0gfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KICB9Cn07Cg==
+import { guildSystem } from "../../lib/guildSystem.js";
+import { requireRegistration } from "./database.js";
+import { generateGuildProfile, getProfilePic, getContactName } from "../../lib/guildGen.mjs";
+
+export default {
+  name: "createguild",
+  description: "Create a new guild",
+  category: "guild",
+  usage: ".createguild <guild_name>",
+  aliases: ["makeguild", "newguild"],
+  cooldown: 30,
+
+  async run({ sock, msg, sender, text }) {
+    const jid = msg.key.remoteJid;
+
+    if (!await requireRegistration(sock, msg, sender)) return;
+
+    if (!text) {
+      return sock.sendMessage(jid, {
+        text:
+`╭─〔 🏰 *𝐂𝐑𝐄𝐀𝐓𝐄 𝐆𝐔𝐈𝐋𝐃* 〕
+│ 📖 *Usage* :: *.createguild <name>*
+│ 💡 *Example* :: *.createguild Warriors*
+│
+│ ⚠️ Name must be *3–30 characters*
+└───────────────◆`
+      }, { quoted: msg });
+    }
+
+    const guildName = text.trim();
+
+    if (guildName.length < 3 || guildName.length > 30) {
+      return sock.sendMessage(jid, {
+        text: "❌ Guild name must be *3–30 characters* long."
+      }, { quoted: msg });
+    }
+
+    const existing = await guildSystem.getGuild(guildName);
+    if (existing) {
+      return sock.sendMessage(jid, {
+        text: `❌ Guild *"${guildName}"* already exists!`
+      }, { quoted: msg });
+    }
+
+    // Check if user already owns a guild
+    const userGuilds = await guildSystem.getUserGuilds(sender);
+    if (userGuilds.some(g => g.owner === sender)) {
+      return sock.sendMessage(jid, {
+        text: "❌ You already own a guild! Use *.setguildname* to rename it."
+      }, { quoted: msg });
+    }
+
+    const guild = await guildSystem.createGuild(guildName, sender);
+
+    if (!guild) {
+      return sock.sendMessage(jid, {
+        text: "❌ Failed to create guild. Please try again."
+      }, { quoted: msg });
+    }
+
+    const ownerPic  = await getProfilePic(sock, sender);
+    const ownerName = getContactName(sock, sender);
+
+    const caption =
+`╭─〔 🏰 *𝐆𝐔𝐈𝐋𝐃 𝐂𝐑𝐄𝐀𝐓𝐄𝐃* 〕
+├◆ *Name*     :: *${guildName}*
+├◆ *Owner*    :: *${ownerName}*
+├◆ *Members*  :: *1*
+├◆ *Level*    :: *1*
+├◆ *Treasury* :: *$0*
+│
+├◆ Use *.setguilddesc* to add a description
+├◆ Use *.setguildicon* to set a banner
+├◆ Use *.addmember @user* to invite members
+└───────────────◆`;
+
+    try {
+      const imgBuffer = await generateGuildProfile(
+        { name: guildName, icon: null },
+        { name: ownerName, profilePic: ownerPic }
+      );
+      await sock.sendMessage(jid, { image: imgBuffer, caption }, { quoted: msg });
+    } catch {
+      await sock.sendMessage(jid, { text: caption, mentions: [sender] }, { quoted: msg });
+    }
+  }
+};

@@ -1,1 +1,76 @@
-aW1wb3J0IHsgZ3VpbGRTeXN0ZW0gfSBmcm9tICIuLi8uLi9saWIvZ3VpbGRTeXN0ZW0uanMiOwppbXBvcnQgeyByZXF1aXJlUmVnaXN0cmF0aW9uIH0gZnJvbSAiLi9kYXRhYmFzZS5qcyI7CmltcG9ydCB7IGdlbmVyYXRlR3VpbGRQcm9maWxlLCBnZXRQcm9maWxlUGljLCBnZXRDb250YWN0TmFtZSB9IGZyb20gIi4uLy4uL2xpYi9ndWlsZEdlbi5tanMiOwoKZXhwb3J0IGRlZmF1bHQgewogIG5hbWU6ICJqb2luZ3VpbGQiLAogIGRlc2NyaXB0aW9uOiAiSm9pbiBhbiBleGlzdGluZyBndWlsZCBieSBuYW1lIiwKICBjYXRlZ29yeTogImd1aWxkIiwKICB1c2FnZTogIi5qb2luZ3VpbGQgPGd1aWxkX25hbWU+IiwKICBhbGlhc2VzOiBbImd1aWxkam9pbiIsICJnam9pbiJdLAogIGNvb2xkb3duOiAxMCwKCiAgYXN5bmMgcnVuKHsgc29jaywgbXNnLCBzZW5kZXIsIHRleHQgfSkgewogICAgY29uc3QgamlkID0gbXNnLmtleS5yZW1vdGVKaWQ7CgogICAgaWYgKCFhd2FpdCByZXF1aXJlUmVnaXN0cmF0aW9uKHNvY2ssIG1zZywgc2VuZGVyKSkgcmV0dXJuOwoKICAgIGlmICghdGV4dD8udHJpbSgpKSB7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgIHRleHQ6CmDila3ilIDjgJQg8J+PsCAq8J2QifCdkI7wnZCI8J2QjSDwnZCG8J2QlPCdkIjwnZCL8J2Qgyog44CVCuKUgiDwn5OWICpVc2FnZSogICA6OiAqLmpvaW5ndWlsZCA8bmFtZT4qCuKUgiDwn5KhICpFeGFtcGxlKiA6OiAqLmpvaW5ndWlsZCBXYXJyaW9ycyoK4pSCCuKUgiBVc2UgKi5ndWlsZGxpc3QqIHRvIHNlZSBhbGwgZ3VpbGRzLgrilJTilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDil4ZgCiAgICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICB9CgogICAgY29uc3QgZ3VpbGROYW1lID0gdGV4dC50cmltKCk7CiAgICBjb25zdCBndWlsZCA9IGF3YWl0IGd1aWxkU3lzdGVtLmdldEd1aWxkKGd1aWxkTmFtZSk7CgogICAgaWYgKCFndWlsZCkgewogICAgICByZXR1cm4gc29jay5zZW5kTWVzc2FnZShqaWQsIHsKICAgICAgICB0ZXh0OiBg4p2MIEd1aWxkICoiJHtndWlsZE5hbWV9IiogZG9lcyBub3QgZXhpc3QuXG5cblVzZSAqLmd1aWxkbGlzdCogdG8gc2VlIGFsbCBhdmFpbGFibGUgZ3VpbGRzLmAKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICBpZiAoZ3VpbGQubWVtYmVycy5pbmNsdWRlcyhzZW5kZXIpKSB7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgIHRleHQ6IGDinYwgWW91IGFyZSBhbHJlYWR5IGEgbWVtYmVyIG9mICoke2d1aWxkLm5hbWV9Ki5cblxuVXNlICoubXlndWlsZCogdG8gc2VlIHlvdXIgZ3VpbGQuYAogICAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQoKICAgIGNvbnN0IHN1Y2Nlc3MgPSBhd2FpdCBndWlsZFN5c3RlbS5hZGRNZW1iZXIoZ3VpbGROYW1lLCBzZW5kZXIpOwogICAgaWYgKCFzdWNjZXNzKSB7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgeyB0ZXh0OiAi4p2MIEZhaWxlZCB0byBqb2luIGd1aWxkLiBQbGVhc2UgdHJ5IGFnYWluLiIgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICBjb25zdCB1cGRhdGVkICA9IGF3YWl0IGd1aWxkU3lzdGVtLmdldEd1aWxkKGd1aWxkTmFtZSk7CiAgICBjb25zdCBvd25lclBpYyA9IGF3YWl0IGdldFByb2ZpbGVQaWMoc29jaywgZ3VpbGQub3duZXIpOwogICAgY29uc3QgbXlOYW1lICAgPSBnZXRDb250YWN0TmFtZShzb2NrLCBzZW5kZXIpOwogICAgY29uc3QgbXlQaWMgICAgPSBhd2FpdCBnZXRQcm9maWxlUGljKHNvY2ssIHNlbmRlcik7CgogICAgY29uc3QgY2FwdGlvbiA9CmDila3ilIDjgJQg8J+PsCAq8J2QifCdkI7wnZCI8J2QjfCdkITwnZCDIPCdkIbwnZCU8J2QiPCdkIvwnZCDKiDjgJUK4pSc4peGICpHdWlsZCogICAgOjogKiR7Z3VpbGQubmFtZX0qCuKUnOKXhiAqT3duZXIqICAgIDo6ICpAJHtndWlsZC5vd25lci5zcGxpdCgiQCIpWzBdfSoK4pSc4peGICpMZXZlbCogICAgOjogKiR7dXBkYXRlZC5sZXZlbH0qCuKUnOKXhiAqTWVtYmVycyogIDo6ICoke3VwZGF0ZWQubWVtYmVycy5sZW5ndGh9KgrilJzil4YgKlRyZWFzdXJ5KiA6OiAq8J+qmSAke3VwZGF0ZWQudHJlYXN1cnkudG9Mb2NhbGVTdHJpbmcoKX0qJHtndWlsZC5kZXNjcmlwdGlvbiA/IGBcbuKUnOKXhiAqRGVzYyogOjogXyR7Z3VpbGQuZGVzY3JpcHRpb259X2AgOiAiIn0K4pSCCuKUnOKXhiAqLm15Z3VpbGQqIOKAlCB2aWV3IHlvdXIgZ3VpbGQK4pSU4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4peGYDsKCiAgICB0cnkgewogICAgICBjb25zdCBpbWdCdWZmZXIgPSBhd2FpdCBnZW5lcmF0ZUd1aWxkUHJvZmlsZSgKICAgICAgICB7IG5hbWU6IGd1aWxkLm5hbWUsIGljb246IGd1aWxkLmljb24gfHwgbnVsbCwgZGVzY3JpcHRpb246IGd1aWxkLmRlc2NyaXB0aW9uIHx8ICIiIH0sCiAgICAgICAgeyBuYW1lOiBteU5hbWUsIHByb2ZpbGVQaWM6IG15UGljIHx8IG93bmVyUGljIH0KICAgICAgKTsKICAgICAgYXdhaXQgc29jay5zZW5kTWVzc2FnZShqaWQsIHsgaW1hZ2U6IGltZ0J1ZmZlciwgY2FwdGlvbiwgbWVudGlvbnM6IFtndWlsZC5vd25lcl0gfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0gY2F0Y2ggewogICAgICBhd2FpdCBzb2NrLnNlbmRNZXNzYWdlKGppZCwgeyB0ZXh0OiBjYXB0aW9uLCBtZW50aW9uczogW2d1aWxkLm93bmVyXSB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQogIH0KfTsK
+import { guildSystem } from "../../lib/guildSystem.js";
+import { requireRegistration } from "./database.js";
+import { generateGuildProfile, getProfilePic, getContactName } from "../../lib/guildGen.mjs";
+
+export default {
+  name: "joinguild",
+  description: "Join an existing guild by name",
+  category: "guild",
+  usage: ".joinguild <guild_name>",
+  aliases: ["guildjoin", "gjoin"],
+  cooldown: 10,
+
+  async run({ sock, msg, sender, text }) {
+    const jid = msg.key.remoteJid;
+
+    if (!await requireRegistration(sock, msg, sender)) return;
+
+    if (!text?.trim()) {
+      return sock.sendMessage(jid, {
+        text:
+`╭─〔 🏰 *𝐉𝐎𝐈𝐍 𝐆𝐔𝐈𝐋𝐃* 〕
+│ 📖 *Usage*   :: *.joinguild <name>*
+│ 💡 *Example* :: *.joinguild Warriors*
+│
+│ Use *.guildlist* to see all guilds.
+└───────────────◆`
+      }, { quoted: msg });
+    }
+
+    const guildName = text.trim();
+    const guild = await guildSystem.getGuild(guildName);
+
+    if (!guild) {
+      return sock.sendMessage(jid, {
+        text: `❌ Guild *"${guildName}"* does not exist.\n\nUse *.guildlist* to see all available guilds.`
+      }, { quoted: msg });
+    }
+
+    if (guild.members.includes(sender)) {
+      return sock.sendMessage(jid, {
+        text: `❌ You are already a member of *${guild.name}*.\n\nUse *.myguild* to see your guild.`
+      }, { quoted: msg });
+    }
+
+    const success = await guildSystem.addMember(guildName, sender);
+    if (!success) {
+      return sock.sendMessage(jid, { text: "❌ Failed to join guild. Please try again." }, { quoted: msg });
+    }
+
+    const updated  = await guildSystem.getGuild(guildName);
+    const ownerPic = await getProfilePic(sock, guild.owner);
+    const myName   = getContactName(sock, sender);
+    const myPic    = await getProfilePic(sock, sender);
+
+    const caption =
+`╭─〔 🏰 *𝐉𝐎𝐈𝐍𝐄𝐃 𝐆𝐔𝐈𝐋𝐃* 〕
+├◆ *Guild*    :: *${guild.name}*
+├◆ *Owner*    :: *@${guild.owner.split("@")[0]}*
+├◆ *Level*    :: *${updated.level}*
+├◆ *Members*  :: *${updated.members.length}*
+├◆ *Treasury* :: *$${updated.treasury.toLocaleString()}*${guild.description ? `\n├◆ *Desc* :: _${guild.description}_` : ""}
+│
+├◆ *.myguild* — view your guild
+└───────────────◆`;
+
+    try {
+      const imgBuffer = await generateGuildProfile(
+        { name: guild.name, icon: guild.icon || null, description: guild.description || "" },
+        { name: myName, profilePic: myPic || ownerPic }
+      );
+      await sock.sendMessage(jid, { image: imgBuffer, caption, mentions: [guild.owner] }, { quoted: msg });
+    } catch {
+      await sock.sendMessage(jid, { text: caption, mentions: [guild.owner] }, { quoted: msg });
+    }
+  }
+};

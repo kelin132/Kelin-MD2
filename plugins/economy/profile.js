@@ -1,1 +1,122 @@
-aW1wb3J0IHsgZ2V0VXNlciwgcmVxdWlyZVJlZ2lzdHJhdGlvbiB9IGZyb20gIi4vZGF0YWJhc2UuanMiOwppbXBvcnQgeyBnZW5lcmF0ZVByb2ZpbGVJbWFnZSwgZ2V0UHJvZmlsZVBpYywgcmVzb2x2ZVJvbGUgfSBmcm9tICIuLi8uLi9saWIvcHJvZmlsZUdlbi5tanMiOwppbXBvcnQgeyBnZXRMZXZlbFJvbGUsIGdldEFsbEVhcm5lZFJvbGVzLCBnZXRMZXZlbFJvbGVMYWJlbCB9IGZyb20gIi4uLy4uL2xpYi9sZXZlbFJvbGVzLm1qcyI7CmltcG9ydCB7IGdldFVzZXIgYXMgZ2V0Q2FyZFVzZXIgfSBmcm9tICIuLi9jYXJkcy9kYi5qcyI7Cgpjb25zdCB4cEZvckxldmVsID0gKGxldmVsKSA9PiBsZXZlbCAqIDEwMDsKCmZ1bmN0aW9uIGZtdERhdGUoaXNvKSB7CiAgaWYgKCFpc28pIHJldHVybiAiVW5rbm93biI7CiAgdHJ5IHsKICAgIHJldHVybiBuZXcgRGF0ZShpc28pLnRvTG9jYWxlRGF0ZVN0cmluZygiZW4tVVMiLCB7CiAgICAgIG1vbnRoOiAic2hvcnQiLCBkYXk6ICJudW1lcmljIiwgeWVhcjogIm51bWVyaWMiLAogICAgfSk7CiAgfSBjYXRjaCB7IHJldHVybiAiVW5rbm93biI7IH0KfQoKZXhwb3J0IGRlZmF1bHQgewogIG5hbWU6ICJwcm9maWxlIiwKICBkZXNjcmlwdGlvbjogIlZpZXcgeW91ciBlY29ub215IHByb2ZpbGUgY2FyZCIsCiAgY2F0ZWdvcnk6ICJlY29ub215IiwKICB1c2FnZTogIi5wcm9maWxlIFtAdXNlcl0iLAogIGFsaWFzZXM6IFsibWUiLCAiYWNjIiwgImFjY291bnQiLCAicCJdLAogIGNvb2xkb3duOiA1LAoKICBhc3luYyBydW4oeyBzb2NrLCBtc2csIHNlbmRlciwgaXNPd25lciwgaXNNb2QsIGlzU3RhZmYgfSkgewogICAgY29uc3QgamlkID0gbXNnLmtleS5yZW1vdGVKaWQ7CgogICAgY29uc3QgbWVudGlvbmVkID0gbXNnLm1lc3NhZ2U/LmV4dGVuZGVkVGV4dE1lc3NhZ2U/LmNvbnRleHRJbmZvPy5tZW50aW9uZWRKaWQ/LlswXTsKICAgIGNvbnN0IHRhcmdldCAgICA9IG1lbnRpb25lZCB8fCBzZW5kZXI7CgogICAgaWYgKHRhcmdldCA9PT0gc2VuZGVyICYmICFhd2FpdCByZXF1aXJlUmVnaXN0cmF0aW9uKHNvY2ssIG1zZywgc2VuZGVyKSkgcmV0dXJuOwoKICAgIGNvbnN0IFt1c2VyLCBwcm9maWxlUGljLCBjYXJkVXNlcl0gPSBhd2FpdCBQcm9taXNlLmFsbChbCiAgICAgIGdldFVzZXIodGFyZ2V0KSwKICAgICAgZ2V0UHJvZmlsZVBpYyhzb2NrLCB0YXJnZXQpLAogICAgICBnZXRDYXJkVXNlcih0YXJnZXQpLAogICAgXSk7CgogICAgY29uc3QgdGFnICAgPSB0YXJnZXQuc3BsaXQoIkAiKVswXS5zcGxpdCgiOiIpWzBdOwogICAgY29uc3QgbGV2ZWwgPSB1c2VyLmxldmVsID8/IDE7CiAgICBjb25zdCB4cCAgICA9IHVzZXIueHAgICAgPz8gMDsKICAgIGNvbnN0IHJlZ2lzdGVyZWROYW1lID0gU3RyaW5nKHVzZXIubmFtZSB8fCAiVXNlciIpLnRyaW0oKSB8fCAiVXNlciI7CiAgICBjb25zdCBjYXJkc093bmVkID0gQXJyYXkuaXNBcnJheShjYXJkVXNlcj8uY2FyZHMpCiAgICAgID8gY2FyZFVzZXIuY2FyZHMubGVuZ3RoCiAgICAgIDogKGNhcmRVc2VyPy50b3RhbENhcmRzID8/IDApOwogICAgY29uc3QgaGlzdG9yeSA9IEFycmF5LmlzQXJyYXkodXNlci5oaXN0b3J5KSA/IHVzZXIuaGlzdG9yeSA6IFtdOwogICAgY29uc3QgZ2FtZVR5cGVzID0gbmV3IFNldChbImJldCIsICJjb2luZmxpcCIsICJzbG90cyIsICJyb3VsZXR0ZSIsICJzY3JhdGNoIiwgImdhbWJsZSJdKTsKICAgIGNvbnN0IGNhc2lub1R5cGVzID0gbmV3IFNldChbInNsb3RzIiwgInJvdWxldHRlIiwgInNjcmF0Y2giLCAiZ2FtYmxlIl0pOwogICAgY29uc3QgZ2FtZXNQbGF5ZWQgPSBoaXN0b3J5LmZpbHRlcigoZW50cnkpID0+IGdhbWVUeXBlcy5oYXMoZW50cnkudHlwZSkpLmxlbmd0aDsKICAgIGNvbnN0IGNhc2lub0dhbWVzID0gaGlzdG9yeS5maWx0ZXIoKGVudHJ5KSA9PiBjYXNpbm9UeXBlcy5oYXMoZW50cnkudHlwZSkpLmxlbmd0aDsKCiAgICBjb25zdCByb2xlID0gcmVzb2x2ZVJvbGUoewogICAgICBpc093bmVyOiAgICB0YXJnZXQgPT09IHNlbmRlciA/IGlzT3duZXIgIDogZmFsc2UsCiAgICAgIGlzTW9kOiAgICAgIHRhcmdldCA9PT0gc2VuZGVyID8gaXNNb2QgICAgOiAodXNlci5zdGFmZkxldmVsID49IDEpLAogICAgICBpc1N0YWZmOiAgICB0YXJnZXQgPT09IHNlbmRlciA/IGlzU3RhZmYgIDogKHVzZXIuc3RhZmZMZXZlbCA+PSAyKSwKICAgICAgaXNQcmVtaXVtOiAgdXNlci5pc1ByZW1pdW0sCiAgICAgIHN0YWZmTGV2ZWw6IHVzZXIuc3RhZmZMZXZlbCA/PyAwLAogICAgfSk7CgogICAgY29uc3QgbGV2ZWxSb2xlICAgPSBnZXRMZXZlbFJvbGUobGV2ZWwpOwogICAgY29uc3QgZWFybmVkUm9sZXMgPSBnZXRBbGxFYXJuZWRSb2xlcyhsZXZlbCk7CiAgICBjb25zdCByb2xlTGFiZWwgICA9IGdldExldmVsUm9sZUxhYmVsKGxldmVsKTsKCiAgICBjb25zdCBsYXN0RGFpbHkgICAgICAgPSB1c2VyLmxhc3REYWlseSA/PyAwOwogICAgY29uc3QgaG91cnNTaW5jZURhaWx5ID0gKERhdGUubm93KCkgLSBsYXN0RGFpbHkpIC8gMzZlNTsKICAgIGNvbnN0IHN0cmVhayAgICAgICAgICA9IGhvdXJzU2luY2VEYWlseSA8IDQ4ID8gKHVzZXIuc3RyZWFrID8/IDEpIDogMDsKCiAgICBjb25zdCBkYXlzQWN0aXZlID0gdXNlci5yZWdpc3RlcmVkQXQKICAgICAgPyBNYXRoLm1heCgwLCBNYXRoLmZsb29yKChEYXRlLm5vdygpIC0gbmV3IERhdGUodXNlci5yZWdpc3RlcmVkQXQpLmdldFRpbWUoKSkgLyA4NjQwMDAwMCkpCiAgICAgIDogMDsKICAgIGNvbnN0IGNhcHRpb24gPQpg4pWt4pSA4p2A44CMIOKcqCAqUFJPRklMRSog44CN4p2A4pSA4pWuCuKUgiDwn5GkICpQcm9maWxlIDogJHtyZWdpc3RlcmVkTmFtZX0qCuKUgiDwn46tICpSb2xlIDoqICR7cm9sZX0g4oCiICR7cm9sZUxhYmVsfQrilIIK4pSCIPCfj4UgKkFjaGlldmVtZW50cyog8J+PhQrilIIg8J+MnyBEYXlzIEFjdGl2ZSA6ICR7ZGF5c0FjdGl2ZX0K4pSCIPCfg48gQ2FyZHMgICAgICAgOiAke2NhcmRzT3duZWR9CuKUgiDwn46uIEdhbWVzICAgICAgIDogJHtnYW1lc1BsYXllZH0K4pSCIPCfkrggQ2FzaW5vICAgICAgOiAke2Nhc2lub0dhbWVzfQrilIIK4pSCIOKtkCBMZXZlbCA6ICR7bGV2ZWx9CuKUgiDwn5OaIFhQICAgIDogJHt4cC50b0xvY2FsZVN0cmluZygpfSAvICR7eHBGb3JMZXZlbChsZXZlbCkudG9Mb2NhbGVTdHJpbmcoKX0K4pSCCuKUgiDwn6qZIFdhbGxldCAgIDog8J+qmSAkeyh1c2VyLm1vbmV5ID8/IDApLnRvTG9jYWxlU3RyaW5nKCl9CuKUgiDwn4+mIEJhbmsgICAgIDog8J+qmSAkeyh1c2VyLmJhbmsgPz8gMCkudG9Mb2NhbGVTdHJpbmcoKX0K4pSCIPCfko4gRGlhbW9uZHMgOiAkeyh1c2VyLmRpYW1vbmRzID8/IDApLnRvTG9jYWxlU3RyaW5nKCl9CuKUgiDwn46SIEl0ZW1zICAgIDogJHt1c2VyLmludmVudG9yeT8ubGVuZ3RoID8/IDB9CuKUggrilIIg8J+TnSAqQmlvOiogJHt1c2VyLmJpbyB8fCAiTm8gYmlvIHNldC4ifQrilIIg4pqc77iPIENsYW4gOiAke3VzZXIuZ3VpbGQgfHwgIk5vbmUifQrilIIg8J+ThSBKb2luZWQgOiAke2ZtdERhdGUodXNlci5yZWdpc3RlcmVkQXQpfQrilbDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDinYBgOwoKICAgIHRyeSB7CiAgICAgIGNvbnN0IGltZ0J1ZmZlciA9IGF3YWl0IGdlbmVyYXRlUHJvZmlsZUltYWdlKHsKICAgICAgICB1c2VybmFtZTogICAgIHJlZ2lzdGVyZWROYW1lLAogICAgICAgIHRhZywKICAgICAgICByb2xlLAogICAgICAgIGxldmVsLAogICAgICAgIHhwLAogICAgICAgIHhwVGFyZ2V0OiAgICAgeHBGb3JMZXZlbChsZXZlbCksCiAgICAgICAgd2FsbGV0OiAgICAgICB1c2VyLm1vbmV5ICAgID8/IDAsCiAgICAgICAgYmFuazogICAgICAgICB1c2VyLmJhbmsgICAgID8/IDAsCiAgICAgICAgYmlvOiAgICAgICAgICB1c2VyLmJpbyAgICAgIHx8ICJObyBiaW8gc2V0LiIsCiAgICAgICAgZ3VpbGQ6ICAgICAgICB1c2VyLmd1aWxkICAgIHx8IG51bGwsCiAgICAgICAgam9pbmVkOiAgICAgICBmbXREYXRlKHVzZXIucmVnaXN0ZXJlZEF0KSwKICAgICAgICBzdHJlYWssCiAgICAgICAgaXRlbXM6ICAgICAgICB1c2VyLmludmVudG9yeT8ubGVuZ3RoID8/IDAsCiAgICAgICAgdHJhbnNhY3Rpb25zOiB1c2VyLmhpc3Rvcnk/Lmxlbmd0aCAgID8/IDAsCiAgICAgICAgcHJvZmlsZUltYWdlOiBwcm9maWxlUGljLAogICAgICAgIGxldmVsUm9sZSwKICAgICAgICBlYXJuZWRSb2xlcywKICAgICAgfSk7CgogICAgICBhd2FpdCBzb2NrLnNlbmRNZXNzYWdlKGppZCwgeyBpbWFnZTogaW1nQnVmZmVyLCBjYXB0aW9uIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICB9IGNhdGNoIChlcnIpIHsKICAgICAgY29uc29sZS5lcnJvcigiW3Byb2ZpbGVdIENhbnZhcyBlcnJvcjoiLCBlcnIubWVzc2FnZSk7CiAgICAgIGF3YWl0IHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7IHRleHQ6IGNhcHRpb24sIG1lbnRpb25zOiBbdGFyZ2V0XSB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQogIH0sCn07Cg==
+import { getUser, requireRegistration } from "./database.js";
+import { generateProfileImage, getProfilePic, resolveRole } from "../../lib/profileGen.mjs";
+import { getLevelRole, getAllEarnedRoles, getLevelRoleLabel } from "../../lib/levelRoles.mjs";
+import { getUser as getCardUser } from "../cards/db.js";
+
+const xpForLevel = (level) => level * 100;
+
+function fmtDate(iso) {
+  if (!iso) return "Unknown";
+  try {
+    return new Date(iso).toLocaleDateString("en-US", {
+      month: "short", day: "numeric", year: "numeric",
+    });
+  } catch { return "Unknown"; }
+}
+
+export default {
+  name: "profile",
+  description: "View your economy profile card",
+  category: "economy",
+  usage: ".profile [@user]",
+  aliases: ["me", "acc", "account", "p"],
+  cooldown: 5,
+
+  async run({ sock, msg, sender, isOwner, isMod, isStaff }) {
+    const jid = msg.key.remoteJid;
+
+    const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+    const target    = mentioned || sender;
+
+    if (target === sender && !await requireRegistration(sock, msg, sender)) return;
+
+    const [user, profilePic, cardUser] = await Promise.all([
+      getUser(target),
+      getProfilePic(sock, target),
+      getCardUser(target),
+    ]);
+
+    const tag   = target.split("@")[0].split(":")[0];
+    const level = user.level ?? 1;
+    const xp    = user.xp    ?? 0;
+    const registeredName = String(user.name || "User").trim() || "User";
+    const cardsOwned = Array.isArray(cardUser?.cards)
+      ? cardUser.cards.length
+      : (cardUser?.totalCards ?? 0);
+    const history = Array.isArray(user.history) ? user.history : [];
+    const gameTypes = new Set(["bet", "coinflip", "slots", "roulette", "scratch", "gamble"]);
+    const casinoTypes = new Set(["slots", "roulette", "scratch", "gamble"]);
+    const gamesPlayed = history.filter((entry) => gameTypes.has(entry.type)).length;
+    const casinoGames = history.filter((entry) => casinoTypes.has(entry.type)).length;
+
+    const role = resolveRole({
+      isOwner:    target === sender ? isOwner  : false,
+      isMod:      target === sender ? isMod    : (user.staffLevel >= 1),
+      isStaff:    target === sender ? isStaff  : (user.staffLevel >= 2),
+      isPremium:  user.isPremium,
+      staffLevel: user.staffLevel ?? 0,
+    });
+
+    const levelRole   = getLevelRole(level);
+    const earnedRoles = getAllEarnedRoles(level);
+    const roleLabel   = getLevelRoleLabel(level);
+
+    const lastDaily       = user.lastDaily ?? 0;
+    const hoursSinceDaily = (Date.now() - lastDaily) / 36e5;
+    const streak          = hoursSinceDaily < 48 ? (user.streak ?? 1) : 0;
+
+    const daysActive = user.registeredAt
+      ? Math.max(0, Math.floor((Date.now() - new Date(user.registeredAt).getTime()) / 86400000))
+      : 0;
+    const caption =
+`╭─❀「 ✨ *PROFILE* 」❀─╮
+│ 👤 *Profile : ${registeredName}*
+│ 🎭 *Role :* ${role} • ${roleLabel}
+│
+│ 🏅 *Achievements* 🏅
+│ 🌟 Days Active : ${daysActive}
+│ 🃏 Cards       : ${cardsOwned}
+│ 🎮 Games       : ${gamesPlayed}
+│ 💸 Casino      : ${casinoGames}
+│
+│ ⭐ Level : ${level}
+│ 📚 XP    : ${xp.toLocaleString()} / ${xpForLevel(level).toLocaleString()}
+│
+│ 💰 Wallet   : $${(user.money ?? 0).toLocaleString()}
+│ 🏦 Bank     : $${(user.bank ?? 0).toLocaleString()}
+│ 💎 Diamonds : ${(user.diamonds ?? 0).toLocaleString()}
+│ 🎒 Items    : ${user.inventory?.length ?? 0}
+│
+│ 📝 *Bio:* ${user.bio || "No bio set."}
+│ ⚜️ Clan : ${user.guild || "None"}
+│ 📅 Joined : ${fmtDate(user.registeredAt)}
+╰───────────────❀`;
+
+    try {
+      const imgBuffer = await generateProfileImage({
+        username:     registeredName,
+        tag,
+        role,
+        level,
+        xp,
+        xpTarget:     xpForLevel(level),
+        wallet:       user.money    ?? 0,
+        bank:         user.bank     ?? 0,
+        bio:          user.bio      || "No bio set.",
+        guild:        user.guild    || null,
+        joined:       fmtDate(user.registeredAt),
+        streak,
+        items:        user.inventory?.length ?? 0,
+        transactions: user.history?.length   ?? 0,
+        profileImage: profilePic,
+        levelRole,
+        earnedRoles,
+      });
+
+      await sock.sendMessage(jid, { image: imgBuffer, caption }, { quoted: msg });
+    } catch (err) {
+      console.error("[profile] Canvas error:", err.message);
+      await sock.sendMessage(jid, { text: caption, mentions: [target] }, { quoted: msg });
+    }
+  },
+};

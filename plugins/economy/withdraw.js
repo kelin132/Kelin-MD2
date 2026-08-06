@@ -1,1 +1,45 @@
-aW1wb3J0IHsgZ2V0VXNlciwgc2F2ZVVzZXIsIHJlcXVpcmVSZWdpc3RyYXRpb24sIGFkZEhpc3RvcnkgfSBmcm9tICIuL2RhdGFiYXNlLmpzIjsKaW1wb3J0IHsgcGFyc2VBbW91bnQgfSBmcm9tICIuL3BhcnNlQW1vdW50LmpzIjsKCmV4cG9ydCBkZWZhdWx0IHsKICBuYW1lOiAid2l0aGRyYXciLAogIGRlc2NyaXB0aW9uOiAiV2l0aGRyYXcgbW9uZXkgZnJvbSB5b3VyIGJhbmsiLAogIGNhdGVnb3J5OiAiZWNvbm9teSIsCiAgdXNhZ2U6ICIud2l0aGRyYXcgPGFtb3VudHxhbGw+ICDinKYgc2hvcnRoYW5kIE9LOiAxMGsgLyA1bSAvIDFiIiwKICBhbGlhc2VzOiBbIndkIiwgIndkcmF3Il0sCiAgY29vbGRvd246IDYsCiAgY2hlY2tKYWlsOiB0cnVlLAoKICBhc3luYyBydW4oeyBzb2NrLCBtc2csIHNlbmRlciwgYXJncyB9KSB7CiAgICBpZiAoIWF3YWl0IHJlcXVpcmVSZWdpc3RyYXRpb24oc29jaywgbXNnLCBzZW5kZXIpKSByZXR1cm47CgogICAgY29uc3QgdXNlciA9IGF3YWl0IGdldFVzZXIoc2VuZGVyKTsKCiAgICBpZiAoIWFyZ3NbMF0pIHsKICAgICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UobXNnLmtleS5yZW1vdGVKaWQsIHsKICAgICAgICB0ZXh0OiBg8J+PpiAqV2l0aGRyYXcqXG5cblVzYWdlOiAqLndpdGhkcmF3IDxhbW91bnQ+KiBvciAqLndpdGhkcmF3IGFsbCpcbuKcpiBTaG9ydGhhbmQ6IDEwayAvIDVtIC8gMWJcblxu8J+qmSBDYXNoIDog8J+qmSAke3VzZXIubW9uZXkudG9Mb2NhbGVTdHJpbmcoKX1cbvCfj6YgQmFuayA6IPCfqpkgJHt1c2VyLmJhbmsudG9Mb2NhbGVTdHJpbmcoKX1gCiAgICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICB9CgogICAgbGV0IGFtb3VudCA9IGFyZ3NbMF0udG9Mb3dlckNhc2UoKSA9PT0gImFsbCIgPyB1c2VyLmJhbmsgOiBwYXJzZUFtb3VudChhcmdzWzBdLnRvTG93ZXJDYXNlKCksIHVzZXIuYmFuayk7CgogICAgaWYgKGlzTmFOKGFtb3VudCkgfHwgYW1vdW50IDw9IDApIHsKICAgICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UobXNnLmtleS5yZW1vdGVKaWQsIHsgdGV4dDogIuKdjCBFbnRlciBhIHZhbGlkIGFtb3VudC4iIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICB9CgogICAgaWYgKGFtb3VudCA+IHVzZXIuYmFuaykgewogICAgICByZXR1cm4gc29jay5zZW5kTWVzc2FnZShtc2cua2V5LnJlbW90ZUppZCwgewogICAgICAgIHRleHQ6IGDinYwgWW91IG9ubHkgaGF2ZSAq8J+qmSAke3VzZXIuYmFuay50b0xvY2FsZVN0cmluZygpfSogaW4geW91ciBiYW5rIWAKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICB1c2VyLmJhbmsgIC09IGFtb3VudDsKICAgIHVzZXIubW9uZXkgKz0gYW1vdW50OwogICAgYXdhaXQgc2F2ZVVzZXIoc2VuZGVyLCB1c2VyKTsKICAgIGF3YWl0IGFkZEhpc3Rvcnkoc2VuZGVyLCAid2l0aGRyYXciLCBhbW91bnQsIGBXaXRoZHJldyDwn6qZICR7YW1vdW50LnRvTG9jYWxlU3RyaW5nKCl9IGZyb20gYmFua2ApOwoKICAgIGF3YWl0IHNvY2suc2VuZE1lc3NhZ2UobXNnLmtleS5yZW1vdGVKaWQsIHsKICAgICAgdGV4dDogYPCfqpkgKldpdGhkcmF3YWwgU3VjY2Vzc2Z1bCEqXG5cbvCfkrggV2l0aGRyYXduIDog8J+qmSAke2Ftb3VudC50b0xvY2FsZVN0cmluZygpfVxu8J+qmSBDYXNoICAgICAgOiDwn6qZICR7dXNlci5tb25leS50b0xvY2FsZVN0cmluZygpfVxu8J+PpiBCYW5rICAgICAgOiDwn6qZICR7dXNlci5iYW5rLnRvTG9jYWxlU3RyaW5nKCl9YAogICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICB9Cn07Cg==
+import { getUser, saveUser, requireRegistration, addHistory } from "./database.js";
+import { parseAmount } from "./parseAmount.js";
+
+export default {
+  name: "withdraw",
+  description: "Withdraw money from your bank",
+  category: "economy",
+  usage: ".withdraw <amount|all>  ✦ shorthand OK: 10k / 5m / 1b",
+  aliases: ["wd", "wdraw"],
+  cooldown: 6,
+  checkJail: true,
+
+  async run({ sock, msg, sender, args }) {
+    if (!await requireRegistration(sock, msg, sender)) return;
+
+    const user = await getUser(sender);
+
+    if (!args[0]) {
+      return sock.sendMessage(msg.key.remoteJid, {
+        text: `🏦 *Withdraw*\n\nUsage: *.withdraw <amount>* or *.withdraw all*\n✦ Shorthand: 10k / 5m / 1b\n\n💰 Cash : $${user.money.toLocaleString()}\n🏦 Bank : $${user.bank.toLocaleString()}`
+      }, { quoted: msg });
+    }
+
+    let amount = args[0].toLowerCase() === "all" ? user.bank : parseAmount(args[0].toLowerCase(), user.bank);
+
+    if (isNaN(amount) || amount <= 0) {
+      return sock.sendMessage(msg.key.remoteJid, { text: "❌ Enter a valid amount." }, { quoted: msg });
+    }
+
+    if (amount > user.bank) {
+      return sock.sendMessage(msg.key.remoteJid, {
+        text: `❌ You only have *$${user.bank.toLocaleString()}* in your bank!`
+      }, { quoted: msg });
+    }
+
+    user.bank  -= amount;
+    user.money += amount;
+    await saveUser(sender, user);
+    await addHistory(sender, "withdraw", amount, `Withdrew $${amount.toLocaleString()} from bank`);
+
+    await sock.sendMessage(msg.key.remoteJid, {
+      text: `💰 *Withdrawal Successful!*\n\n💸 Withdrawn : $${amount.toLocaleString()}\n💰 Cash      : $${user.money.toLocaleString()}\n🏦 Bank      : $${user.bank.toLocaleString()}`
+    }, { quoted: msg });
+  }
+};

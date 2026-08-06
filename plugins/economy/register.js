@@ -1,1 +1,57 @@
-aW1wb3J0IHsgaXNSZWdpc3RlcmVkLCByZWdpc3RlclVzZXIgfSBmcm9tICIuL2RhdGFiYXNlLmpzIjsKCmV4cG9ydCBkZWZhdWx0IHsKICBuYW1lOiAicmVnaXN0ZXIiLAogIGRlc2NyaXB0aW9uOiAiUmVnaXN0ZXIgeW91ciBhY2NvdW50IHRvIGFjY2VzcyBlY29ub215IGNvbW1hbmRzIiwKICBjYXRlZ29yeTogImVjb25vbXkiLAogIHVzYWdlOiAiLnJlZ2lzdGVyIDx5b3VyX25hbWU+IiwKICBhbGlhc2VzOiBbInJlZyIsICJzaWdudXAiXSwKICBjb29sZG93bjogNSwKCiAgYXN5bmMgcnVuKHsgc29jaywgbXNnLCBzZW5kZXIsIHRleHQgfSkgewogICAgY29uc3QgYWxyZWFkeSA9IGF3YWl0IGlzUmVnaXN0ZXJlZChzZW5kZXIpOwoKICAgIGlmIChhbHJlYWR5KSB7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKG1zZy5rZXkucmVtb3RlSmlkLCB7CiAgICAgICAgdGV4dDogIuKchSBZb3UgYXJlIGFscmVhZHkgcmVnaXN0ZXJlZCFcblxu8J+SoSBVc2UgKi5wcm9maWxlKiB0byB2aWV3IHlvdXIgYWNjb3VudC4iCiAgICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICB9CgogICAgY29uc3QgbmFtZSA9IHRleHQ/LnRyaW0oKTsKCiAgICAvLyBOYW1lIGlzIHJlcXVpcmVkIOKAlCBubyBhdXRvLWdlbmVyYXRpb24KICAgIGlmICghbmFtZSkgewogICAgICByZXR1cm4gc29jay5zZW5kTWVzc2FnZShtc2cua2V5LnJlbW90ZUppZCwgewogICAgICAgIHRleHQ6IFsKICAgICAgICAgIGDinYwgKllvdSBtdXN0IHByb3ZpZGUgYSBuYW1lIHRvIHJlZ2lzdGVyISpgLAogICAgICAgICAgYGAsCiAgICAgICAgICBgVXNhZ2U6ICoucmVnaXN0ZXIgPHlvdXJfbmFtZT4qYCwKICAgICAgICAgIGBFeGFtcGxlOiAqLnJlZ2lzdGVyIEtlbGluKmAsCiAgICAgICAgICBgYCwKICAgICAgICAgIGDigKIgTmFtZSBtdXN0IGJlIDLigJMyMCBjaGFyYWN0ZXJzYCwKICAgICAgICAgIGDigKIgTm8gc3BlY2lhbCBjaGFyYWN0ZXJzYCwKICAgICAgICBdLmpvaW4oIlxuIikKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICBpZiAobmFtZS5sZW5ndGggPCAyKSB7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKG1zZy5rZXkucmVtb3RlSmlkLCB7CiAgICAgICAgdGV4dDogIuKdjCBOYW1lIGlzIHRvbyBzaG9ydCEgTWluaW11bSAyIGNoYXJhY3RlcnMuXG5cbkV4YW1wbGU6ICoucmVnaXN0ZXIgS2VsaW4qIgogICAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQoKICAgIGlmIChuYW1lLmxlbmd0aCA+IDIwKSB7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKG1zZy5rZXkucmVtb3RlSmlkLCB7CiAgICAgICAgdGV4dDogIuKdjCBOYW1lIGlzIHRvbyBsb25nISBNYXhpbXVtIDIwIGNoYXJhY3RlcnMuXG5cbkV4YW1wbGU6ICoucmVnaXN0ZXIgS2VsaW4qIgogICAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQoKICAgIGF3YWl0IHJlZ2lzdGVyVXNlcihzZW5kZXIsIG5hbWUpOwoKICAgIGF3YWl0IHNvY2suc2VuZE1lc3NhZ2UobXNnLmtleS5yZW1vdGVKaWQsIHsKICAgICAgdGV4dDogYPCfjokgKldlbGNvbWUgdG8gQUtJUkEgRWNvbm9teSwgJHtuYW1lfSEqXG5cbuKchSBBY2NvdW50IGNyZWF0ZWQgc3VjY2Vzc2Z1bGx5IVxuXG5gICsKICAgICAgICAgICAgYPCfqpkgU3RhcnRpbmcgQmFsYW5jZSA6IPCfqpkgMTAwLDAwMFxu8J+PpiBCYW5rIEJhbGFuY2UgICAgIDog8J+qmSAwXG7wn5KOIERpYW1vbmRzICAgICAgICA6IDBcbuKtkCBMZXZlbCAgICAgICAgICAgIDogMVxuXG5gICsKICAgICAgICAgICAgYPCfk4sgKkdldCBzdGFydGVkOipcbuKAoiAqLmRhaWx5KiDigJQgQ2xhaW0gZGFpbHkgcmV3YXJkXG7igKIgKi53b3JrKiDigJQgRWFybiBtb25leSB3b3JraW5nXG7igKIgKi5iYWxhbmNlKiDigJQgQ2hlY2sgeW91ciB3YWxsZXRcbuKAoiAqLnNob3AqIOKAlCBCdXkgaXRlbXNcbuKAoiAqLmd1aWxkaGVscCog4oCUIEpvaW4gYSBndWlsZFxuXG5Hb29kIGx1Y2shIPCfjYBgCiAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogIH0KfTsK
+import { isRegistered, registerUser } from "./database.js";
+
+export default {
+  name: "register",
+  description: "Register your account to access economy commands",
+  category: "economy",
+  usage: ".register <your_name>",
+  aliases: ["reg", "signup"],
+  cooldown: 5,
+
+  async run({ sock, msg, sender, text }) {
+    const already = await isRegistered(sender);
+
+    if (already) {
+      return sock.sendMessage(msg.key.remoteJid, {
+        text: "✅ You are already registered!\n\n💡 Use *.profile* to view your account."
+      }, { quoted: msg });
+    }
+
+    const name = text?.trim();
+
+    // Name is required — no auto-generation
+    if (!name) {
+      return sock.sendMessage(msg.key.remoteJid, {
+        text: [
+          `❌ *You must provide a name to register!*`,
+          ``,
+          `Usage: *.register <your_name>*`,
+          `Example: *.register Kelin*`,
+          ``,
+          `• Name must be 2–20 characters`,
+          `• No special characters`,
+        ].join("\n")
+      }, { quoted: msg });
+    }
+
+    if (name.length < 2) {
+      return sock.sendMessage(msg.key.remoteJid, {
+        text: "❌ Name is too short! Minimum 2 characters.\n\nExample: *.register Kelin*"
+      }, { quoted: msg });
+    }
+
+    if (name.length > 20) {
+      return sock.sendMessage(msg.key.remoteJid, {
+        text: "❌ Name is too long! Maximum 20 characters.\n\nExample: *.register Kelin*"
+      }, { quoted: msg });
+    }
+
+    await registerUser(sender, name);
+
+    await sock.sendMessage(msg.key.remoteJid, {
+      text: `🎉 *Welcome to AKIRA Economy, ${name}!*\n\n✅ Account created successfully!\n\n` +
+            `💰 Starting Balance : $100,000\n🏦 Bank Balance     : $0\n💎 Diamonds        : 0\n⭐ Level            : 1\n\n` +
+            `📋 *Get started:*\n• *.daily* — Claim daily reward\n• *.work* — Earn money working\n• *.balance* — Check your wallet\n• *.shop* — Buy items\n• *.guildhelp* — Join a guild\n\nGood luck! 🍀`
+    }, { quoted: msg });
+  }
+};

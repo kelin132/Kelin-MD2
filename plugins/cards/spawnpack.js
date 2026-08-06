@@ -1,1 +1,213 @@
-LyoqCiAqIEtFTElOIE1EIOKAlCAuc3Bhd25wYWNrCiAqIEJ1eSBhIHNwYXduIHBhY2sgY29udGFpbmluZyBhIGJ1bmRsZSBvZiBjYXJkcyBhdCBhIGRpc2NvdW50ZWQgcHJpY2UuCiAqCiAqIFBhY2sgY29udGVudHM6CiAqICAgMiDDlyBUaWVyIDYgKE15dGhpY2FsKQogKiAgIDIgw5cgVGllciA1IChMZWdlbmRhcnkpCiAqICAgMyDDlyBUaWVyIDQgKEVwaWMpCiAqICAgNCDDlyBUaWVyIDMgKFJhcmUpCiAqICAgNCDDlyBUaWVyIDIgKFVuY29tbW9uKQogKgogKiBUb3RhbDogMTUgY2FyZHMg4oCUIGNvc3RzIDIsMDAwLDAwMCBjb2lucwogKi8KaW1wb3J0IHsgZmluZE9yQ3JlYXRlVXNlciB9IGZyb20gIi4vZGIuanMiOwppbXBvcnQgeyBnZXRVc2VyLCBzYXZlVXNlciwgcmVxdWlyZVJlZ2lzdHJhdGlvbiwgYWRkSGlzdG9yeSB9IGZyb20gIi4uL2Vjb25vbXkvZGF0YWJhc2UuanMiOwppbXBvcnQgewogIGdldENhcmRzQnlUaWVyLAogIHNlbmRDYXJkTWVkaWEsCiAgVElFUl9FTU9KSSwKICBUSUVSX05VTSwKICBUSUVSX05BTUUsCiAgY3JlYXRlU3Bhd25JZCwKfSBmcm9tICIuLi8uLi9saWIvY2FyZEFwaS5tanMiOwoKY29uc3QgUEFDS19DT1NUID0gMjBfMDAwXzAwMDsKCmNvbnN0IFBBQ0tfQ09OVEVOVFMgPSBbCiAgeyB0aWVyTmFtZTogIk15dGhpY2FsIiwgIGNvdW50OiAyIH0sCiAgeyB0aWVyTmFtZTogIkxlZ2VuZGFyeSIsIGNvdW50OiAyIH0sCiAgeyB0aWVyTmFtZTogIkVwaWMiLCAgICAgIGNvdW50OiAzIH0sCiAgeyB0aWVyTmFtZTogIlJhcmUiLCAgICAgIGNvdW50OiA0IH0sCiAgeyB0aWVyTmFtZTogIlVuY29tbW9uIiwgIGNvdW50OiA0IH0sCl07Cgpjb25zdCBUT1RBTF9DQVJEUyA9IFBBQ0tfQ09OVEVOVFMucmVkdWNlKChzLCBwKSA9PiBzICsgcC5jb3VudCwgMCk7Cgpjb25zdCBQQUNLX0NPT0xET1dOX01TID0gNjBfMDAwOyAvLyAxIG1pbnV0ZSBiZXR3ZWVuIHBhY2sgcHVyY2hhc2VzCmNvbnN0IHBhY2tDb29sZG93bnMgPSBuZXcgTWFwKCk7Cgphc3luYyBmdW5jdGlvbiBkcmF3Q2FyZHNGb3JUaWVyKHRpZXJOYW1lLCBjb3VudCkgewogIGNvbnN0IHRpZXJOdW0gPSBUSUVSX05VTVt0aWVyTmFtZS50b0xvd2VyQ2FzZSgpXSB8fCAiMSI7CiAgY29uc3QgcG9vbCAgICA9IGF3YWl0IGdldENhcmRzQnlUaWVyKHRpZXJOdW0pOwogIGlmICghcG9vbCB8fCBwb29sLmxlbmd0aCA9PT0gMCkgcmV0dXJuIFtdOwogIGNvbnN0IGRyYXduID0gW107CiAgZm9yIChsZXQgaSA9IDA7IGkgPCBjb3VudDsgaSsrKSB7CiAgICBkcmF3bi5wdXNoKHsgLi4ucG9vbFtNYXRoLmZsb29yKE1hdGgucmFuZG9tKCkgKiBwb29sLmxlbmd0aCldIH0pOwogIH0KICByZXR1cm4gZHJhd247Cn0KCmV4cG9ydCBkZWZhdWx0IHsKICBuYW1lOiAic3Bhd25wYWNrIiwKICBhbGlhc2VzOiBbInBhY2tzcGF3biIsICJidXlwYWNrIiwgImNhcmRwYWNrIiwgInNwYWNrIl0sCiAgY2F0ZWdvcnk6ICJjYXJkcyIsCiAgZGVzY3JpcHRpb246ICJCdXkgYSBzcGF3biBwYWNrIOKAlCAxNSBjYXJkcyAoMlQ2ICsgMlQ1ICsgM1Q0ICsgNFQzICsgNFQyKSBmb3IgMk0gY29pbnMiLAogIHVzYWdlOiAiLnNwYXducGFjayIsCiAgY29vbGRvd246IDYwLAoKICBhc3luYyBydW4oeyBzb2NrLCBtc2csIHNlbmRlciB9KSB7CiAgICBjb25zdCBqaWQgICA9IG1zZy5rZXkucmVtb3RlSmlkOwogICAgY29uc3QgcmVwbHkgPSAodGV4dCkgPT4gc29jay5zZW5kTWVzc2FnZShqaWQsIHsgdGV4dCB9LCB7IHF1b3RlZDogbXNnIH0pOwoKICAgIHRyeSB7CiAgICAgIC8vIOKUgOKUgCBDb29sZG93biBjaGVjayDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKICAgICAgY29uc3Qgbm93ID0gRGF0ZS5ub3coKTsKICAgICAgY29uc3QgbGFzdFBhY2sgPSBwYWNrQ29vbGRvd25zLmdldChzZW5kZXIpOwogICAgICBpZiAobGFzdFBhY2sgJiYgbm93IC0gbGFzdFBhY2sgPCBQQUNLX0NPT0xET1dOX01TKSB7CiAgICAgICAgY29uc3QgcmVtYWluaW5nID0gTWF0aC5jZWlsKChQQUNLX0NPT0xET1dOX01TIC0gKG5vdyAtIGxhc3RQYWNrKSkgLyAxMDAwKTsKICAgICAgICByZXR1cm4gcmVwbHkoCmDila3ilIHilIHilIHjgJQg4o+zIPCdkarwnZG28J2RtvCdkbPwnZGr8J2RtvCdkb7wnZG1IOOAleKUgeKUgeKUgeKVrgrilIMg4pymIFBhY2sgcHVyY2hhc2Ugb24gY29vbGRvd24hCuKUgwrilIMg4o+xIFdhaXQg4oC6IOOAjiAke3JlbWFpbmluZ31zIOOAjwrilbDilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHila9gCiAgICAgICAgKTsKICAgICAgfQoKICAgICAgLy8g4pSA4pSAIFJlZ2lzdHJhdGlvbiBjaGVjayDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKICAgICAgaWYgKCFhd2FpdCByZXF1aXJlUmVnaXN0cmF0aW9uKHNvY2ssIG1zZywgc2VuZGVyKSkgcmV0dXJuOwoKICAgICAgLy8g4pSA4pSAIEJhbGFuY2UgY2hlY2sg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACiAgICAgIGNvbnN0IGVjb1VzZXIgPSBhd2FpdCBnZXRVc2VyKHNlbmRlcik7CiAgICAgIGlmICgoZWNvVXNlci5tb25leSB8fCAwKSA8IFBBQ0tfQ09TVCkgewogICAgICAgIHJldHVybiByZXBseSgKYOKVreKUgeKUgeKUgeOAlCDwn5K4IPCdkbDwnZG18J2RuvCdkbzwnZGt8J2RrfCdkbDwnZGq8J2RsPCdkazwnZG18J2RuyDwnZGt8J2RvPCdkbXwnZGr8J2RuiDjgJXilIHilIHilIHila4K4pSDIOKcpiBOb3QgZW5vdWdoIGNvaW5zIGZvciBhIFNwYXduIFBhY2shCuKUgwrilIMg8J+SjiBQYWNrIENvc3QgIOKenCDjgI4g8J+qmSAke1BBQ0tfQ09TVC50b0xvY2FsZVN0cmluZygpfSDjgI8K4pSDIPCfkZsgWW91ciBDb2lucyDinpwg44COIPCfqpkgJHsoZWNvVXNlci5tb25leSB8fCAwKS50b0xvY2FsZVN0cmluZygpfSDjgI8K4pSDCuKUo+KUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgQrilIMg8J+TpiBQYWNrIENvbnRlbnRzICgke1RPVEFMX0NBUkRTfSBjYXJkcyk6CuKUgyAg8J+UtCAyIMOXIFRpZXIgNiBNeXRoaWNhbArilIMgIPCfn6EgMiDDlyBUaWVyIDUgTGVnZW5kYXJ5CuKUgyAg8J+foyAzIMOXIFRpZXIgNCBFcGljCuKUgyAg8J+UtSA0IMOXIFRpZXIgMyBSYXJlCuKUgyAg8J+foiA0IMOXIFRpZXIgMiBVbmNvbW1vbgrilKPilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIEK4pSDIPCfkqEgRWFybiB2aWEgLmRhaWx5IC53b3JrIC5jcmltZQrilbDilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHila9gCiAgICAgICAgKTsKICAgICAgfQoKICAgICAgLy8g4pSA4pSAIFNldCBjb29sZG93biBhbmQgZGVkdWN0IGNvaW5zIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAogICAgICBwYWNrQ29vbGRvd25zLnNldChzZW5kZXIsIG5vdyk7CiAgICAgIGVjb1VzZXIubW9uZXkgLT0gUEFDS19DT1NUOwogICAgICBhd2FpdCBzYXZlVXNlcihzZW5kZXIsIGVjb1VzZXIpOwogICAgICBhd2FpdCBhZGRIaXN0b3J5KHNlbmRlciwgInNwYXducGFjayIsIC1QQUNLX0NPU1QsICJQdXJjaGFzZWQgU3Bhd24gUGFjayAoMTUgY2FyZHMpIik7CgogICAgICAvLyDilIDilIAgRHJhdyBjYXJkcyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKICAgICAgY29uc3QgYWxsQ2FyZHMgICA9IFtdOwogICAgICBjb25zdCB0aWVyUmVzdWx0cyA9IFtdOwogICAgICBsZXQgICBoYXNBcGlFcnJvciA9IGZhbHNlOwoKICAgICAgZm9yIChjb25zdCB7IHRpZXJOYW1lLCBjb3VudCB9IG9mIFBBQ0tfQ09OVEVOVFMpIHsKICAgICAgICBjb25zdCBkcmF3biA9IGF3YWl0IGRyYXdDYXJkc0ZvclRpZXIodGllck5hbWUsIGNvdW50KTsKICAgICAgICBpZiAoZHJhd24ubGVuZ3RoID09PSAwKSB7CiAgICAgICAgICBoYXNBcGlFcnJvciA9IHRydWU7CiAgICAgICAgfQogICAgICAgIGFsbENhcmRzLnB1c2goLi4uZHJhd24pOwogICAgICAgIHRpZXJSZXN1bHRzLnB1c2goeyB0aWVyTmFtZSwgY291bnQsIGRyYXduIH0pOwogICAgICB9CgogICAgICBpZiAoYWxsQ2FyZHMubGVuZ3RoID09PSAwKSB7CiAgICAgICAgLy8gRnVsbCByZWZ1bmQg4oCUIG5vIGNhcmRzIGF0IGFsbAogICAgICAgIGVjb1VzZXIubW9uZXkgKz0gUEFDS19DT1NUOwogICAgICAgIGF3YWl0IHNhdmVVc2VyKHNlbmRlciwgZWNvVXNlcik7CiAgICAgICAgYXdhaXQgYWRkSGlzdG9yeShzZW5kZXIsICJzcGF3bnBhY2tfcmVmdW5kIiwgUEFDS19DT1NULCAiUmVmdW5kIOKAlCBzcGF3biBwYWNrIHVuYXZhaWxhYmxlIik7CiAgICAgICAgcmV0dXJuIHJlcGx5KApg4pWt4pSB4pSB4pSB44CUIOKdjCDwnZG38J2RqPCdkarwnZGyIPCdkbzwnZG18J2RqPCdkb3wnZGo8J2RsPCdkbPwnZGo8J2RqfCdkbPwnZGsIOOAleKUgeKUgeKUgeKVrgrilIMg4pymIFRoZSBjYXJkIHNlcnZlciBpcyB0ZW1wb3JhcmlseSBvZmZsaW5lIQrilIMK4pSDIPCflKcgVGhpcyBpcyBub3QgeW91ciBmYXVsdC4K4pSDIPCfqpkgQ29pbnMgZnVsbHkgcmVmdW5kZWQuCuKUgyDij7MgUGxlYXNlIHRyeSBhZ2FpbiBpbiBhIGZldyBtaW51dGVzLgrilbDilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHila9gCiAgICAgICAgKTsKICAgICAgfQoKICAgICAgLy8g4pSA4pSAIEFkZCBhbGwgY2FyZHMgdG8gY29sbGVjdGlvbiDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKICAgICAgY29uc3QgY2FyZFVzZXIgPSBhd2FpdCBmaW5kT3JDcmVhdGVVc2VyKHNlbmRlcik7CiAgICAgIGNhcmRVc2VyLmNhcmRzID0gY2FyZFVzZXIuY2FyZHMgfHwgW107CgogICAgICBmb3IgKGNvbnN0IGNhcmQgb2YgYWxsQ2FyZHMpIHsKICAgICAgICBjYXJkVXNlci5jYXJkcy5wdXNoKHsKICAgICAgICAgIGNhcmRJZDogICAgIGNhcmQuY2FyZElkLAogICAgICAgICAgbmFtZTogICAgICAgY2FyZC5uYW1lLAogICAgICAgICAgdGllcjogICAgICAgY2FyZC50aWVyLAogICAgICAgICAgdGllck51bTogICAgY2FyZC50aWVyTnVtIHx8IGNhcmQudGllciwKICAgICAgICAgIGluZGV4OiAgICAgIGNhcmQuaW5kZXggfHwgbnVsbCwKICAgICAgICAgIHNwYXduSWQ6ICAgIGNyZWF0ZVNwYXduSWQoKSwKICAgICAgICAgIHByaWNlOiAgICAgIGNhcmQucHJpY2UgIHx8IDAsCiAgICAgICAgICBzZXJpZXM6ICAgICBjYXJkLnNlcmllcyB8fCAiVW5rbm93biIsCiAgICAgICAgICBtZWRpYTogICAgICBjYXJkLm1lZGlhICB8fCBudWxsLAogICAgICAgICAgbWVkaWFUeXBlOiAgKGNhcmQudGllck51bSA9PT0gIjYiIHx8IGNhcmQudGllck51bSA9PT0gIlMiKSA/ICJnaWYiIDogImltYWdlIiwKICAgICAgICAgIG9idGFpbmVkQXQ6IG5ldyBEYXRlKCksCiAgICAgICAgfSk7CiAgICAgIH0KCiAgICAgIGNhcmRVc2VyLnRvdGFsQ2FyZHMgPSAoY2FyZFVzZXIudG90YWxDYXJkcyB8fCAwKSArIGFsbENhcmRzLmxlbmd0aDsKICAgICAgYXdhaXQgY2FyZFVzZXIuc2F2ZSgpOwoKICAgICAgLy8g4pSA4pSAIEJ1aWxkIHN1bW1hcnkgbGlzdGluZyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKICAgICAgY29uc3QgdGllckxpbmVzID0gdGllclJlc3VsdHMubWFwKCh7IHRpZXJOYW1lLCBkcmF3biB9KSA9PiB7CiAgICAgICAgY29uc3QgZW1vamkgPSBUSUVSX0VNT0pJW3RpZXJOYW1lXSB8fCAi4q2QIjsKICAgICAgICBjb25zdCBuYW1lcyA9IGRyYXduLm1hcChjID0+IGMubmFtZSB8fCAiVW5rbm93biIpLmpvaW4oIiwgIik7CiAgICAgICAgcmV0dXJuIGDilIMgJHtlbW9qaX0gKiR7dGllck5hbWV9KiAoJHtkcmF3bi5sZW5ndGh9KTogJHtuYW1lc31gOwogICAgICB9KS5qb2luKCJcbiIpOwoKICAgICAgY29uc3Qgc3VjY2Vzc01zZyA9CmDila3ilIHilIHjgJQg8J+TpiDwnZG68J2Rt/CdkajwnZG+8J2RtSDwnZG38J2RqPCdkarwnZGyIPCdkbbwnZG38J2RrPCdkbXwnZGs8J2RqyEg4pyoIOOAleKUgeKUgeKVrgrilIMg4pymIFlvdSByZWNlaXZlZCAqJHthbGxDYXJkcy5sZW5ndGh9IGNhcmRzKiEK4pSDCiR7dGllckxpbmVzfQrilIMK4pSj4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSBCuKUgyDwn5K4IENvc3QgICDigLog8J+qmSAke1BBQ0tfQ09TVC50b0xvY2FsZVN0cmluZygpfQrilIMg8J+RmyBXYWxsZXQg4oC6IPCfqpkgJHtlY29Vc2VyLm1vbmV5LnRvTG9jYWxlU3RyaW5nKCl9CuKUo+KUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgQrilIMg8J+OiSBBbGwgY2FyZHMgYWRkZWQgdG8geW91ciBjb2xsZWN0aW9uIQrilIMgVXNlICouY29sKiB0byB2aWV3IHlvdXIgY2FyZHMuCuKVsOKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKVr2A7CgogICAgICAvLyBUcnkgdG8gc2VuZCB0aGUgYmVzdCBjYXJkIChNeXRoaWNhbC9UaWVyNikgYXMgYSBtZWRpYSBwcmV2aWV3CiAgICAgIGNvbnN0IGJlc3RDYXJkID0gYWxsQ2FyZHMuZmluZChjID0+IGMudGllck51bSA9PT0gIjYiIHx8IGMudGllck51bSA9PT0gIlMiKSB8fCBhbGxDYXJkc1swXTsKICAgICAgaWYgKGJlc3RDYXJkPy5tZWRpYSkgewogICAgICAgIHRyeSB7CiAgICAgICAgICBhd2FpdCBzZW5kQ2FyZE1lZGlhKAogICAgICAgICAgICBzb2NrLCBqaWQsIGJlc3RDYXJkLAogICAgICAgICAgICBzdWNjZXNzTXNnLAogICAgICAgICAgICB7IHF1b3RlZDogbXNnLCBtZW50aW9uczogW3NlbmRlcl0gfQogICAgICAgICAgKTsKICAgICAgICAgIHJldHVybjsKICAgICAgICB9IGNhdGNoIHsgLyogZmFsbCB0aHJvdWdoIHRvIHRleHQgKi8gfQogICAgICB9CgogICAgICByZXR1cm4gc29jay5zZW5kTWVzc2FnZShqaWQsIHsKICAgICAgICB0ZXh0OiAgICAgc3VjY2Vzc01zZywKICAgICAgICBtZW50aW9uczogW3NlbmRlcl0sCiAgICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CgogICAgfSBjYXRjaCAoZXJyKSB7CiAgICAgIGNvbnNvbGUuZXJyb3IoIlNQQVdOUEFDSyBFUlJPUjoiLCBlcnIpOwogICAgICByZXR1cm4gcmVwbHkoCmDila3ilIHilIHilIHjgJQg4p2MIPCdkazwnZG58J2RufCdkbbwnZG5IOOAleKUgeKUgeKUgeKVrgrilIMg4pymIFNwYXduIFBhY2sgcHVyY2hhc2UgZmFpbGVkIQrilIMK4pSDIFBsZWFzZSB0cnkgYWdhaW4gbGF0ZXIuCuKVsOKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKUgeKVr2AKICAgICAgKTsKICAgIH0KICB9LAp9Owo=
+/**
+ * KELIN MD — .spawnpack
+ * Buy a spawn pack containing a bundle of cards at a discounted price.
+ *
+ * Pack contents:
+ *   2 × Tier 6 (Mythical)
+ *   2 × Tier 5 (Legendary)
+ *   3 × Tier 4 (Epic)
+ *   4 × Tier 3 (Rare)
+ *   4 × Tier 2 (Uncommon)
+ *
+ * Total: 15 cards — costs 2,000,000 coins
+ */
+import { findOrCreateUser } from "./db.js";
+import { getUser, saveUser, requireRegistration, addHistory } from "../economy/database.js";
+import {
+  getCardsByTier,
+  sendCardMedia,
+  TIER_EMOJI,
+  TIER_NUM,
+  TIER_NAME,
+  createSpawnId,
+} from "../../lib/cardApi.mjs";
+
+const PACK_COST = 20_000_000;
+
+const PACK_CONTENTS = [
+  { tierName: "Mythical",  count: 2 },
+  { tierName: "Legendary", count: 2 },
+  { tierName: "Epic",      count: 3 },
+  { tierName: "Rare",      count: 4 },
+  { tierName: "Uncommon",  count: 4 },
+];
+
+const TOTAL_CARDS = PACK_CONTENTS.reduce((s, p) => s + p.count, 0);
+
+const PACK_COOLDOWN_MS = 60_000; // 1 minute between pack purchases
+const packCooldowns = new Map();
+
+async function drawCardsForTier(tierName, count) {
+  const tierNum = TIER_NUM[tierName.toLowerCase()] || "1";
+  const pool    = await getCardsByTier(tierNum);
+  if (!pool || pool.length === 0) return [];
+  const drawn = [];
+  for (let i = 0; i < count; i++) {
+    drawn.push({ ...pool[Math.floor(Math.random() * pool.length)] });
+  }
+  return drawn;
+}
+
+export default {
+  name: "spawnpack",
+  aliases: ["packspawn", "buypack", "cardpack", "spack"],
+  category: "cards",
+  description: "Buy a spawn pack — 15 cards (2T6 + 2T5 + 3T4 + 4T3 + 4T2) for 2M coins",
+  usage: ".spawnpack",
+  cooldown: 60,
+
+  async run({ sock, msg, sender }) {
+    const jid   = msg.key.remoteJid;
+    const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
+
+    try {
+      // ── Cooldown check ─────────────────────────────────────────────────────
+      const now = Date.now();
+      const lastPack = packCooldowns.get(sender);
+      if (lastPack && now - lastPack < PACK_COOLDOWN_MS) {
+        const remaining = Math.ceil((PACK_COOLDOWN_MS - (now - lastPack)) / 1000);
+        return reply(
+`╭━━━〔 ⏳ 𝑪𝑶𝑶𝑳𝑫𝑶𝑾𝑵 〕━━━╮
+┃ ✦ Pack purchase on cooldown!
+┃
+┃ ⏱ Wait › 『 ${remaining}s 』
+╰━━━━━━━━━━━━━━━━━━━━╯`
+        );
+      }
+
+      // ── Registration check ─────────────────────────────────────────────────
+      if (!await requireRegistration(sock, msg, sender)) return;
+
+      // ── Balance check ──────────────────────────────────────────────────────
+      const ecoUser = await getUser(sender);
+      if ((ecoUser.money || 0) < PACK_COST) {
+        return reply(
+`╭━━━〔 💸 𝑰𝑵𝑺𝑼𝑭𝑭𝑰𝑪𝑰𝑬𝑵𝑻 𝑭𝑼𝑵𝑫𝑺 〕━━━╮
+┃ ✦ Not enough coins for a Spawn Pack!
+┃
+┃ 💎 Pack Cost  ➜ 『 $${PACK_COST.toLocaleString()} 』
+┃ 👛 Your Coins ➜ 『 $${(ecoUser.money || 0).toLocaleString()} 』
+┃
+┣━━━━━━━━━━━━━━━━━━━━
+┃ 📦 Pack Contents (${TOTAL_CARDS} cards):
+┃  🔴 2 × Tier 6 Mythical
+┃  🟡 2 × Tier 5 Legendary
+┃  🟣 3 × Tier 4 Epic
+┃  🔵 4 × Tier 3 Rare
+┃  🟢 4 × Tier 2 Uncommon
+┣━━━━━━━━━━━━━━━━━━━━
+┃ 💡 Earn via .daily .work .crime
+╰━━━━━━━━━━━━━━━━━━━━╯`
+        );
+      }
+
+      // ── Set cooldown and deduct coins ──────────────────────────────────────
+      packCooldowns.set(sender, now);
+      ecoUser.money -= PACK_COST;
+      await saveUser(sender, ecoUser);
+      await addHistory(sender, "spawnpack", -PACK_COST, "Purchased Spawn Pack (15 cards)");
+
+      // ── Draw cards ─────────────────────────────────────────────────────────
+      const allCards   = [];
+      const tierResults = [];
+      let   hasApiError = false;
+
+      for (const { tierName, count } of PACK_CONTENTS) {
+        const drawn = await drawCardsForTier(tierName, count);
+        if (drawn.length === 0) {
+          hasApiError = true;
+        }
+        allCards.push(...drawn);
+        tierResults.push({ tierName, count, drawn });
+      }
+
+      if (allCards.length === 0) {
+        // Full refund — no cards at all
+        ecoUser.money += PACK_COST;
+        await saveUser(sender, ecoUser);
+        await addHistory(sender, "spawnpack_refund", PACK_COST, "Refund — spawn pack unavailable");
+        return reply(
+`╭━━━〔 ❌ 𝑷𝑨𝑪𝑲 𝑼𝑵𝑨𝑽𝑨𝑰𝑳𝑨𝑩𝑳𝑬 〕━━━╮
+┃ ✦ The card server is temporarily offline!
+┃
+┃ 🔧 This is not your fault.
+┃ 💰 Coins fully refunded.
+┃ ⏳ Please try again in a few minutes.
+╰━━━━━━━━━━━━━━━━━━━━╯`
+        );
+      }
+
+      // ── Add all cards to collection ────────────────────────────────────────
+      const cardUser = await findOrCreateUser(sender);
+      cardUser.cards = cardUser.cards || [];
+
+      for (const card of allCards) {
+        cardUser.cards.push({
+          cardId:     card.cardId,
+          name:       card.name,
+          tier:       card.tier,
+          tierNum:    card.tierNum || card.tier,
+          index:      card.index || null,
+          spawnId:    createSpawnId(),
+          price:      card.price  || 0,
+          series:     card.series || "Unknown",
+          media:      card.media  || null,
+          mediaType:  (card.tierNum === "6" || card.tierNum === "S") ? "gif" : "image",
+          obtainedAt: new Date(),
+        });
+      }
+
+      cardUser.totalCards = (cardUser.totalCards || 0) + allCards.length;
+      await cardUser.save();
+
+      // ── Build summary listing ──────────────────────────────────────────────
+      const tierLines = tierResults.map(({ tierName, drawn }) => {
+        const emoji = TIER_EMOJI[tierName] || "⭐";
+        const names = drawn.map(c => c.name || "Unknown").join(", ");
+        return `┃ ${emoji} *${tierName}* (${drawn.length}): ${names}`;
+      }).join("\n");
+
+      const successMsg =
+`╭━━〔 📦 𝑺𝑷𝑨𝑾𝑵 𝑷𝑨𝑪𝑲 𝑶𝑷𝑬𝑵𝑬𝑫! ✨ 〕━━╮
+┃ ✦ You received *${allCards.length} cards*!
+┃
+${tierLines}
+┃
+┣━━━━━━━━━━━━━━━━━━━━
+┃ 💸 Cost   › $${PACK_COST.toLocaleString()}
+┃ 👛 Wallet › $${ecoUser.money.toLocaleString()}
+┣━━━━━━━━━━━━━━━━━━━━
+┃ 🎉 All cards added to your collection!
+┃ Use *.col* to view your cards.
+╰━━━━━━━━━━━━━━━━━━━━╯`;
+
+      // Try to send the best card (Mythical/Tier6) as a media preview
+      const bestCard = allCards.find(c => c.tierNum === "6" || c.tierNum === "S") || allCards[0];
+      if (bestCard?.media) {
+        try {
+          await sendCardMedia(
+            sock, jid, bestCard,
+            successMsg,
+            { quoted: msg, mentions: [sender] }
+          );
+          return;
+        } catch { /* fall through to text */ }
+      }
+
+      return sock.sendMessage(jid, {
+        text:     successMsg,
+        mentions: [sender],
+      }, { quoted: msg });
+
+    } catch (err) {
+      console.error("SPAWNPACK ERROR:", err);
+      return reply(
+`╭━━━〔 ❌ 𝑬𝑹𝑹𝑶𝑹 〕━━━╮
+┃ ✦ Spawn Pack purchase failed!
+┃
+┃ Please try again later.
+╰━━━━━━━━━━━━━━━━━━━━╯`
+      );
+    }
+  },
+};

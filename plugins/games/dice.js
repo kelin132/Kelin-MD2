@@ -1,1 +1,63 @@
-aW1wb3J0IHsgZ2V0VXNlciwgc2F2ZVVzZXIsIHJlcXVpcmVSZWdpc3RyYXRpb24gfSBmcm9tICIuLi9lY29ub215L2RhdGFiYXNlLmpzIjsKaW1wb3J0IHsgcmFuZG9tSW50IH0gZnJvbSAiLi4vLi4vbGliL2dhbWJsaW5nLm1qcyI7CmltcG9ydCB7IHBhcnNlQW1vdW50IH0gZnJvbSAiLi4vZWNvbm9teS9wYXJzZUFtb3VudC5qcyI7CgpleHBvcnQgZGVmYXVsdCB7CiAgbmFtZTogImRpY2VnYW1lIiwKICBkZXNjcmlwdGlvbjogIlJvbGwgZGljZSBhZ2FpbnN0IHRoZSBib3Qg4oCUIGhpZ2hlc3Qgcm9sbCB3aW5zIiwKICBjYXRlZ29yeTogImdhbWVzIiwKICB1c2FnZTogIi5kaWNlZ2FtZSA8YmV0PiIsCiAgYWxpYXNlczogWyJkaWNlYmV0IiwgInJvbGxiZXQiXSwKICBjb29sZG93bjogNSwKCiAgYXN5bmMgcnVuKHsgc29jaywgbXNnLCBzZW5kZXIsIGFyZ3MgfSkgewogICAgaWYgKCFhd2FpdCByZXF1aXJlUmVnaXN0cmF0aW9uKHNvY2ssIG1zZywgc2VuZGVyKSkgcmV0dXJuOwoKICAgIGNvbnN0IHVzZXIgPSBhd2FpdCBnZXRVc2VyKHNlbmRlcik7CiAgICBjb25zdCBiZXQgID0gcGFyc2VBbW91bnQoKGFyZ3NbMF0gfHwgIiIpLnRvTG93ZXJDYXNlKCksIHVzZXIubW9uZXkpOwoKICAgIGlmICghYmV0IHx8IGJldCA8IDUwKSB7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKG1zZy5rZXkucmVtb3RlSmlkLCB7CiAgICAgICAgdGV4dDogIvCfjrIgKkRpY2UgR2FtZSpcblxuVXNhZ2U6ICouZGljZWdhbWUgPGJldD4qICDigJQgZS5nLiAuZGljZWdhbWUgMTBrXG5NaW4gYmV0OiDwn6qZIDUwXG7inKYgU2hvcnRoYW5kOiBrID0gdGhvdXNhbmQgfCBtID0gbWlsbGlvbiB8IGIgPSBiaWxsaW9uXG5IaWdoZXN0IHJvbGwgd2lucyEiCiAgICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgICB9CgogICAgaWYgKHVzZXIubW9uZXkgPCBiZXQpIHsKICAgICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UobXNnLmtleS5yZW1vdGVKaWQsIHsKICAgICAgICB0ZXh0OiBg4p2MIE5vdCBlbm91Z2ggbW9uZXkhXG7wn6qZIEJhbGFuY2U6IPCfqpkgJHt1c2VyLm1vbmV5LnRvTG9jYWxlU3RyaW5nKCl9YAogICAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQoKICAgIGNvbnN0IHBsYXllclJvbGwgPSByYW5kb21JbnQoMSwgNik7CiAgICBjb25zdCBib3RSb2xsICAgID0gcmFuZG9tSW50KDEsIDYpOwogICAgY29uc3QgZGljZU1hcCAgICA9IFsi4pqAIiwi4pqBIiwi4pqCIiwi4pqDIiwi4pqEIiwi4pqFIl07CgogICAgLy8gT3V0Y29tZSBkZWNpZGVkIGJ5IGFjdHVhbCBkaWNlIHJvbGxzIOKAlCBubyBvdmVycmlkZQogICAgbGV0IHJlc3VsdCA9ICIiOwogICAgaWYgKHBsYXllclJvbGwgPT09IGJvdFJvbGwpIHsKICAgICAgcmVzdWx0ID0gIvCfpJ0gKlRJRSEgTm8gbW9uZXkgbG9zdC4qIjsKICAgICAgLy8gbm8gbW9uZXkgY2hhbmdlIG9uIHRpZQogICAgfSBlbHNlIGlmIChwbGF5ZXJSb2xsID4gYm90Um9sbCkgewogICAgICB1c2VyLm1vbmV5ICs9IGJldDsKICAgICAgcmVzdWx0ID0gIuKchSAqWU9VIFdJTiEqIjsKICAgIH0gZWxzZSB7CiAgICAgIHVzZXIubW9uZXkgPSBNYXRoLm1heCgwLCB1c2VyLm1vbmV5IC0gYmV0KTsKICAgICAgcmVzdWx0ID0gIuKdjCAqQm90IHdpbnMhKiI7CiAgICB9CgogICAgYXdhaXQgc2F2ZVVzZXIoc2VuZGVyLCB1c2VyKTsKCiAgICBhd2FpdCBzb2NrLnNlbmRNZXNzYWdlKG1zZy5rZXkucmVtb3RlSmlkLCB7CiAgICAgIHRleHQ6CmDwn46yICpESUNFIEdBTUUqCgrwn5GkIFlvdXIgcm9sbCA6ICR7ZGljZU1hcFtwbGF5ZXJSb2xsLTFdfSAoJHtwbGF5ZXJSb2xsfSkK8J+kliBCb3Qgcm9sbCAgOiAke2RpY2VNYXBbYm90Um9sbC0xXX0gKCR7Ym90Um9sbH0pCgoke3Jlc3VsdH0KCvCfqpkgQmV0ICAgIDog8J+qmSAke2JldC50b0xvY2FsZVN0cmluZygpfQrwn6qZIEJhbGFuY2U6IPCfqpkgJHt1c2VyLm1vbmV5LnRvTG9jYWxlU3RyaW5nKCl9YAogICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICB9Cn07Cg==
+import { getUser, saveUser, requireRegistration } from "../economy/database.js";
+import { randomInt } from "../../lib/gambling.mjs";
+import { parseAmount } from "../economy/parseAmount.js";
+
+export default {
+  name: "dicegame",
+  description: "Roll dice against the bot — highest roll wins",
+  category: "games",
+  usage: ".dicegame <bet>",
+  aliases: ["dicebet", "rollbet"],
+  cooldown: 5,
+
+  async run({ sock, msg, sender, args }) {
+    if (!await requireRegistration(sock, msg, sender)) return;
+
+    const user = await getUser(sender);
+    const bet  = parseAmount((args[0] || "").toLowerCase(), user.money);
+
+    if (!bet || bet < 50) {
+      return sock.sendMessage(msg.key.remoteJid, {
+        text: "🎲 *Dice Game*\n\nUsage: *.dicegame <bet>*  — e.g. .dicegame 10k\nMin bet: $50\n✦ Shorthand: k = thousand | m = million | b = billion\nHighest roll wins!"
+      }, { quoted: msg });
+    }
+
+    if (user.money < bet) {
+      return sock.sendMessage(msg.key.remoteJid, {
+        text: `❌ Not enough money!\n💰 Balance: $${user.money.toLocaleString()}`
+      }, { quoted: msg });
+    }
+
+    const playerRoll = randomInt(1, 6);
+    const botRoll    = randomInt(1, 6);
+    const diceMap    = ["⚀","⚁","⚂","⚃","⚄","⚅"];
+
+    // Outcome decided by actual dice rolls — no override
+    let result = "";
+    if (playerRoll === botRoll) {
+      result = "🤝 *TIE! No money lost.*";
+      // no money change on tie
+    } else if (playerRoll > botRoll) {
+      user.money += bet;
+      result = "✅ *YOU WIN!*";
+    } else {
+      user.money = Math.max(0, user.money - bet);
+      result = "❌ *Bot wins!*";
+    }
+
+    await saveUser(sender, user);
+
+    await sock.sendMessage(msg.key.remoteJid, {
+      text:
+`🎲 *DICE GAME*
+
+👤 Your roll : ${diceMap[playerRoll-1]} (${playerRoll})
+🤖 Bot roll  : ${diceMap[botRoll-1]} (${botRoll})
+
+${result}
+
+💰 Bet    : $${bet.toLocaleString()}
+💰 Balance: $${user.money.toLocaleString()}`
+    }, { quoted: msg });
+  }
+};

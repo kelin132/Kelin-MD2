@@ -1,1 +1,276 @@
-LyoqCiAqIC5oZWlzdCA8YW1vdW50PiAg4oCUIHN0YXJ0IGEgZ3JvdXAgaGVpc3QgKHN0YWtlIHRoYXQgYW1vdW50KQogKiAuaGVpc3Qgam9pbiAgICAgIOKAlCBqb2luIHRoZSBhY3RpdmUgaGVpc3QgaW4gdGhpcyBncm91cAogKiAuaGVpc3QgY2FuY2VsICAgIOKAlCBjYW5jZWwgaGVpc3QgKHN0YXJ0ZXIgb25seSkKICogLmhlaXN0IHN0YXR1cyAgICDigJQgY2hlY2sgd2hvJ3Mgam9pbmVkCiAqLwppbXBvcnQgeyBnZXRVc2VyLCBzYXZlVXNlciwgcmVxdWlyZVJlZ2lzdHJhdGlvbiwgaXNSZWdpc3RlcmVkLCBhZGRIaXN0b3J5IH0gZnJvbSAiLi9kYXRhYmFzZS5qcyI7Cgpjb25zdCBKT0lOX1dJTkRPVyAgICA9IDYwICogMTAwMDsgIC8vIDYwIHNlY29uZHMgdG8gam9pbgpjb25zdCBNSU5fU1RBS0UgICAgICA9IDUwMDsKY29uc3QgTUFYX1NUQUtFICAgICAgPSA1XzAwMDsKY29uc3QgTUlOX01FTUJFUlMgICAgPSAyOwpjb25zdCBXSU5fTVVMVElQTElFUiA9IDEuODsgICAgICAgIC8vIDgwJSBwcm9maXQgb24gZWFjaCBzdGFrZQpjb25zdCBTVUNDRVNTX1JBVEUgICA9IDAuNTU7ICAgICAgIC8vIDU1JSBzdWNjZXNzCgpjb25zdCBhY3RpdmVIZWlzdHMgPSBuZXcgTWFwKCk7ICAgIC8vIGppZCDihpIgeyBzdGFydGVyLCBzdGFrZSwgbWVtYmVycywgdGltZW91dCB9CgpmdW5jdGlvbiBmbXQobikgewogIGlmIChuID49IDFlOSkgcmV0dXJuIGDwn6qZICR7KG4vMWU5KS50b0ZpeGVkKDEpfUJgOwogIGlmIChuID49IDFlNikgcmV0dXJuIGDwn6qZICR7KG4vMWU2KS50b0ZpeGVkKDEpfU1gOwogIGlmIChuID49IDFlMykgcmV0dXJuIGDwn6qZICR7KG4vMWUzKS50b0ZpeGVkKDEpfUtgOwogIHJldHVybiBg8J+qmSAke24udG9Mb2NhbGVTdHJpbmcoKX1gOwp9CgpleHBvcnQgZGVmYXVsdCB7CiAgbmFtZTogImhlaXN0IiwKICBhbGlhc2VzOiBbInJvYmdyb3VwIiwgImNyZXciXSwKICBjYXRlZ29yeTogImVjb25vbXkiLAogIGNvb2xkb3duOiA2LAogIGRlc2NyaXB0aW9uOiAiU3RhcnQgYSBncm91cCBoZWlzdCDigJQgcmVjcnVpdCB5b3VyIGNyZXcgYW5kIHJvYiB0aGUgYmFuayB0b2dldGhlciEiLAogIHVzYWdlOiAiLmhlaXN0IDxhbW91bnQ+ICB8ICAuaGVpc3Qgam9pbiAgfCAgLmhlaXN0IHN0YXR1cyAgfCAgLmhlaXN0IGNhbmNlbCIsCiAgY2hlY2tKYWlsOiB0cnVlLAoKICBhc3luYyBydW4oeyBzb2NrLCBtc2csIHNlbmRlciwgYXJncyB9KSB7CiAgICBpZiAoIWF3YWl0IHJlcXVpcmVSZWdpc3RyYXRpb24oc29jaywgbXNnLCBzZW5kZXIpKSByZXR1cm47CgogICAgY29uc3QgamlkICAgPSBtc2cua2V5LnJlbW90ZUppZDsKICAgIGNvbnN0IHJlcGx5ID0gKHQpID0+IHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7IHRleHQ6IHQgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIGNvbnN0IHN1YiAgID0gKGFyZ3NbMF0gfHwgIiIpLnRvTG93ZXJDYXNlKCk7CgogICAgaWYgKCFqaWQuZW5kc1dpdGgoIkBnLnVzIikpIHJldHVybiByZXBseSgKYOKVreKUgOKdgOOAjCDwn4+mICrwnZCH8J2QhPCdkIjwnZCS8J2Qkyog44CN4p2A4pSA4pWuCuKUgiDinYwgKlJlc3VsdCogIDo6ICpHUk9VUCBPTkxZIPCflLQqCuKUggrilIIg4pqg77iPICpIZWlzdCBvbmx5IHdvcmtzIGluIGdyb3VwIGNoYXRzISoK4pWw4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4p2AYAogICAgKTsKCiAgICAvLyDilIDilIAgU1RBVFVTIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAogICAgaWYgKHN1YiA9PT0gInN0YXR1cyIpIHsKICAgICAgY29uc3QgaGVpc3QgPSBhY3RpdmVIZWlzdHMuZ2V0KGppZCk7CiAgICAgIGlmICghaGVpc3QpIHJldHVybiByZXBseSgKYOKVreKUgOKdgOOAjCDwn4+mICrwnZCH8J2QhPCdkIjwnZCS8J2Qkyog44CN4p2A4pSA4pWuCuKUgiDihLnvuI8gICpTdGF0dXMqICA6OiAqTk8gQUNUSVZFIEhFSVNUKgrilIIK4pSCIPCfkqEgU3RhcnQgb25lIHdpdGggKi5oZWlzdCA8YW1vdW50PioK4pWw4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4p2AYAogICAgICApOwogICAgICBjb25zdCBuYW1lcyA9IGhlaXN0Lm1lbWJlcnMubWFwKG0gPT4gYOKUgiAgIOKAoiBAJHttLmlkLnNwbGl0KCJAIilbMF19YCkuam9pbigiXG4iKTsKICAgICAgcmV0dXJuIGF3YWl0IHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgICAgdGV4dDoKYOKVreKUgOKdgOOAjCDwn4+mICrwnZCH8J2QhPCdkIjwnZCS8J2Qkyog44CN4p2A4pSA4pWuCuKUgiDwn4yZICpTdGF0dXMqICA6OiAqQUNUSVZFIPCfn6IqCuKUggrilIIg8J+qmSAqU3Rha2UqICAgOjogKiR7Zm10KGhlaXN0LnN0YWtlKX0gcGVyIHBlcnNvbioK4pSCIPCfkaUgKkNyZXcqICAgIDo6ICoke2hlaXN0Lm1lbWJlcnMubGVuZ3RofS8ke01JTl9NRU1CRVJTfSBtaW5pbXVtKgrilIIg4o+zICpTdGFydHMqICA6OiAqJHtNYXRoLm1heCgwLCBNYXRoLmNlaWwoKGhlaXN0LnN0YXJ0c0F0IC0gRGF0ZS5ub3coKSkgLyAxMDAwKSl9cyoK4pSCCuKUgiDwn6a5ICpDcmV3IE1lbWJlcnM6Kgoke25hbWVzfQrilIIK4pSCIPCfkqEgSm9pbiB3aXRoICouaGVpc3Qgam9pbioK4pWw4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4p2AYCwKICAgICAgICBtZW50aW9uczogaGVpc3QubWVtYmVycy5tYXAobSA9PiBtLmlkKSwKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICAvLyDilIDilIAgQ0FOQ0VMIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAogICAgaWYgKHN1YiA9PT0gImNhbmNlbCIpIHsKICAgICAgY29uc3QgaGVpc3QgPSBhY3RpdmVIZWlzdHMuZ2V0KGppZCk7CiAgICAgIGlmICghaGVpc3QpIHJldHVybiByZXBseSgi4p2MIE5vIGFjdGl2ZSBoZWlzdCB0byBjYW5jZWwuIik7CiAgICAgIGlmIChoZWlzdC5zdGFydGVyICE9PSBzZW5kZXIpIHJldHVybiByZXBseSgi4p2MIE9ubHkgdGhlIGhlaXN0IHN0YXJ0ZXIgY2FuIGNhbmNlbCBpdC4iKTsKCiAgICAgIGNsZWFyVGltZW91dChoZWlzdC50aW1lb3V0KTsKICAgICAgZm9yIChjb25zdCBtIG9mIGhlaXN0Lm1lbWJlcnMpIHsKICAgICAgICBjb25zdCB1ID0gYXdhaXQgZ2V0VXNlcihtLmlkKTsKICAgICAgICB1Lm1vbmV5ID0gKHUubW9uZXkgfHwgMCkgKyBtLnN0YWtlOwogICAgICAgIGF3YWl0IHNhdmVVc2VyKG0uaWQsIHUpOwogICAgICB9CiAgICAgIGFjdGl2ZUhlaXN0cy5kZWxldGUoamlkKTsKCiAgICAgIHJldHVybiBhd2FpdCBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgIHRleHQ6CmDila3ilIDinYDjgIwg8J+PpiAq8J2Qh/CdkITwnZCI8J2QkvCdkJMqIOOAjeKdgOKUgOKVrgrilIIg8J+MmSAqUmVzdWx0KiAgOjogKkNBTkNFTExFRCDwn5S0KgrilIIK4pSCIPCfqpkgQWxsIHN0YWtlcyBoYXZlIGJlZW4gKnJlZnVuZGVkKgrilbDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDinYBgLAogICAgICAgIG1lbnRpb25zOiBoZWlzdC5tZW1iZXJzLm1hcChtID0+IG0uaWQpLAogICAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQoKICAgIC8vIOKUgOKUgCBKT0lOIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAogICAgaWYgKHN1YiA9PT0gImpvaW4iKSB7CiAgICAgIGNvbnN0IGhlaXN0ID0gYWN0aXZlSGVpc3RzLmdldChqaWQpOwogICAgICBpZiAoIWhlaXN0KSByZXR1cm4gcmVwbHkoCmDila3ilIDinYDjgIwg8J+PpiAq8J2Qh/CdkITwnZCI8J2QkvCdkJMqIOOAjeKdgOKUgOKVrgrilIIg4p2MICpSZXN1bHQqICA6OiAqTk8gSEVJU1Qg8J+UtCoK4pSCCuKUgiDwn5KhIFN0YXJ0IG9uZSB3aXRoICouaGVpc3QgPGFtb3VudD4qCuKVsOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKdgGAKICAgICAgKTsKICAgICAgaWYgKGhlaXN0Lm1lbWJlcnMuZmluZChtID0+IG0uaWQgPT09IHNlbmRlcikpIHJldHVybiByZXBseSgi4p2MIFlvdSdyZSBhbHJlYWR5IGluIHRoaXMgaGVpc3QuIik7CgogICAgICBjb25zdCB1c2VyID0gYXdhaXQgZ2V0VXNlcihzZW5kZXIpOwogICAgICBpZiAodXNlci5tb25leSA8IGhlaXN0LnN0YWtlKSB7CiAgICAgICAgcmV0dXJuIHJlcGx5KApg4pWt4pSA4p2A44CMIPCfj6YgKvCdkIfwnZCE8J2QiPCdkJLwnZCTKiDjgI3inYDilIDila4K4pSCIOKdjCAqUmVzdWx0KiAgOjogKk5PVCBFTk9VR0gg8J+UtCoK4pSCCuKUgiDwn6qZICpOZWVkKiAgICA6OiAqJHtmbXQoaGVpc3Quc3Rha2UpfSoK4pSCIPCfqpkgKkhhdmUqICAgIDo6ICoke2ZtdCh1c2VyLm1vbmV5KX0qCuKVsOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKdgGAKICAgICAgICApOwogICAgICB9CgogICAgICB1c2VyLm1vbmV5IC09IGhlaXN0LnN0YWtlOwogICAgICBhd2FpdCBzYXZlVXNlcihzZW5kZXIsIHVzZXIpOwogICAgICBoZWlzdC5tZW1iZXJzLnB1c2goeyBpZDogc2VuZGVyLCBzdGFrZTogaGVpc3Quc3Rha2UgfSk7CgogICAgICByZXR1cm4gYXdhaXQgc29jay5zZW5kTWVzc2FnZShqaWQsIHsKICAgICAgICB0ZXh0Ogpg4pWt4pSA4p2A44CMIPCfj6YgKvCdkIfwnZCE8J2QiPCdkJLwnZCTKiDjgI3inYDilIDila4K4pSCIPCfjJkgKlJlc3VsdCogIDo6ICpKT0lORUQg8J+foioK4pSCIPCfjYMgKkZsYXZvdXIqIDo6IF/ku7LplpPjgavliqDjgo/jgaPjgZ/vvIFfCuKUggrilIIg8J+RpCAqTWVtYmVyKiAgOjogKkAke3NlbmRlci5zcGxpdCgiQCIpWzBdfSoK4pSCIPCfqpkgKlN0YWtlKiAgIDo6ICoke2ZtdChoZWlzdC5zdGFrZSl9KgrilIIg8J+RpSAqQ3JldyogICAgOjogKiR7aGVpc3QubWVtYmVycy5sZW5ndGh9IG1lbWJlcihzKSoK4pSCCuKUgiDwn5KhIFN0aWxsIHRpbWUgdG8gam9pbiB3aXRoICouaGVpc3Qgam9pbiohCuKVsOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKdgGAsCiAgICAgICAgbWVudGlvbnM6IFtzZW5kZXJdLAogICAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQoKICAgIC8vIOKUgOKUgCBTVEFSVCBIRUlTVCDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKICAgIGlmIChhY3RpdmVIZWlzdHMuaGFzKGppZCkpIHsKICAgICAgcmV0dXJuIHJlcGx5KCLinYwgVGhlcmUncyBhbHJlYWR5IGFuIGFjdGl2ZSBoZWlzdC5cblxuVXNlICouaGVpc3Qgam9pbiogdG8gam9pbiBpdC4iKTsKICAgIH0KCiAgICBjb25zdCBzdGFrZSA9IHBhcnNlSW50KGFyZ3NbMF0pOwogICAgaWYgKGlzTmFOKHN0YWtlKSB8fCBzdGFrZSA8IE1JTl9TVEFLRSkgcmV0dXJuIHJlcGx5KGDinYwgTWluaW11bSBzdGFrZSBpcyAqJHtmbXQoTUlOX1NUQUtFKX0qLmApOwogICAgaWYgKHN0YWtlID4gTUFYX1NUQUtFKSAgICAgICAgICAgICAgICAgIHJldHVybiByZXBseShg4p2MIE1heGltdW0gc3Rha2UgaXMgKiR7Zm10KE1BWF9TVEFLRSl9Ki5gKTsKCiAgICBjb25zdCB1c2VyID0gYXdhaXQgZ2V0VXNlcihzZW5kZXIpOwogICAgaWYgKHVzZXIubW9uZXkgPCBzdGFrZSkgewogICAgICByZXR1cm4gcmVwbHkoCmDila3ilIDinYDjgIwg8J+PpiAq8J2Qh/CdkITwnZCI8J2QkvCdkJMqIOOAjeKdgOKUgOKVrgrilIIg4p2MICpSZXN1bHQqICA6OiAqTk9UIEVOT1VHSCDwn5S0KgrilIIK4pSCIPCfqpkgKk5lZWQqICAgIDo6ICoke2ZtdChzdGFrZSl9KgrilIIg8J+qmSAqSGF2ZSogICAgOjogKiR7Zm10KHVzZXIubW9uZXkpfSoK4pWw4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4p2AYAogICAgICApOwogICAgfQoKICAgIHVzZXIubW9uZXkgLT0gc3Rha2U7CiAgICBhd2FpdCBzYXZlVXNlcihzZW5kZXIsIHVzZXIpOwoKICAgIGNvbnN0IGhlaXN0ID0gewogICAgICBzdGFydGVyOiAgc2VuZGVyLAogICAgICBzdGFrZSwKICAgICAgbWVtYmVyczogIFt7IGlkOiBzZW5kZXIsIHN0YWtlIH1dLAogICAgICBzdGFydHNBdDogRGF0ZS5ub3coKSArIEpPSU5fV0lORE9XLAogICAgICB0aW1lb3V0OiAgbnVsbCwKICAgIH07CgogICAgaGVpc3QudGltZW91dCA9IHNldFRpbWVvdXQoYXN5bmMgKCkgPT4gewogICAgICBjb25zdCBoID0gYWN0aXZlSGVpc3RzLmdldChqaWQpOwogICAgICBpZiAoIWgpIHJldHVybjsKICAgICAgYWN0aXZlSGVpc3RzLmRlbGV0ZShqaWQpOwogICAgICBhd2FpdCBleGVjdXRlSGVpc3Qoc29jaywgamlkLCBoKTsKICAgIH0sIEpPSU5fV0lORE9XKTsKCiAgICBhY3RpdmVIZWlzdHMuc2V0KGppZCwgaGVpc3QpOwoKICAgIGF3YWl0IHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgIHRleHQ6CmDila3ilIDinYDjgIwg8J+PpiAq8J2Qh/CdkITwnZCI8J2QkvCdkJMqIOOAjeKdgOKUgOKVrgrilIIg8J+MmSAqUmVzdWx0KiAgOjogKlNUQVJURUQg8J+foioK4pSCIPCfjYMgKkZsYXZvdXIqIDo6IF/lvLfnm5fplovlp4vvvIHku7LplpPjgpLpm4bjgoHjgo3vvIFfCuKUggrilIIg8J+qmSAqU3Rha2UqICAgOjogKiR7Zm10KHN0YWtlKX0gcGVyIHBlcnNvbioK4pSCIOKPsyAqV2luZG93KiAgOjogKjYwIHNlY29uZHMgdG8gam9pbioK4pSCIPCfkaUgKk1pbiogICAgIDo6ICoke01JTl9NRU1CRVJTfSBjcmV3IG1lbWJlcnMqCuKUggrilIIg8J+RpCBTdGFydGVyOiAqQCR7c2VuZGVyLnNwbGl0KCJAIilbMF19KgrilIIg8J+SoSBUeXBlICouaGVpc3Qgam9pbiogdG8gam9pbiB0aGUgY3JldyEK4pWw4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4p2AYCwKICAgICAgbWVudGlvbnM6IFtzZW5kZXJdLAogICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICB9LAp9OwoKYXN5bmMgZnVuY3Rpb24gZXhlY3V0ZUhlaXN0KHNvY2ssIGppZCwgaGVpc3QpIHsKICBjb25zdCB0b3RhbFBvdCA9IGhlaXN0Lm1lbWJlcnMucmVkdWNlKChzLCBtKSA9PiBzICsgbS5zdGFrZSwgMCk7CiAgY29uc3Qgd29uICAgICAgPSBNYXRoLnJhbmRvbSgpIDwgU1VDQ0VTU19SQVRFICYmIGhlaXN0Lm1lbWJlcnMubGVuZ3RoID49IE1JTl9NRU1CRVJTOwogIGNvbnN0IG1lbnRpb25zID0gaGVpc3QubWVtYmVycy5tYXAobSA9PiBtLmlkKTsKICBjb25zdCB0YWdzICAgICA9IGhlaXN0Lm1lbWJlcnMubWFwKG0gPT4gYEAke20uaWQuc3BsaXQoIkAiKVswXX1gKS5qb2luKCIgIik7CgogIGZ1bmN0aW9uIGZtdChuKSB7CiAgICBpZiAobiA+PSAxZTYpIHJldHVybiBg8J+qmSAkeyhuLzFlNikudG9GaXhlZCgxKX1NYDsKICAgIGlmIChuID49IDFlMykgcmV0dXJuIGDwn6qZICR7KG4vMWUzKS50b0ZpeGVkKDEpfUtgOwogICAgcmV0dXJuIGDwn6qZICR7bi50b0xvY2FsZVN0cmluZygpfWA7CiAgfQoKICBpZiAod29uKSB7CiAgICBjb25zdCBwYXlvdXQgPSBNYXRoLmZsb29yKCh0b3RhbFBvdCAqIFdJTl9NVUxUSVBMSUVSKSAvIGhlaXN0Lm1lbWJlcnMubGVuZ3RoKTsKICAgIGZvciAoY29uc3QgbSBvZiBoZWlzdC5tZW1iZXJzKSB7CiAgICAgIGNvbnN0IHUgPSBhd2FpdCBnZXRVc2VyKG0uaWQpOwogICAgICB1Lm1vbmV5ID0gKHUubW9uZXkgfHwgMCkgKyBwYXlvdXQ7CiAgICAgIGF3YWl0IHNhdmVVc2VyKG0uaWQsIHUpOwogICAgICBhd2FpdCBhZGRIaXN0b3J5KG0uaWQsICJyb2IiLCBwYXlvdXQgLSBtLnN0YWtlLCBgSGVpc3QgcGF5b3V0ICR7Zm10KHBheW91dCl9YCk7CiAgICB9CgogICAgYXdhaXQgc29jay5zZW5kTWVzc2FnZShqaWQsIHsKICAgICAgdGV4dDoKYOKVreKUgOKdgOOAjCDwn4+mICrwnZCH8J2QhPCdkIjwnZCS8J2Qkyog44CN4p2A4pSA4pWuCuKUgiDwn4yZICpSZXN1bHQqICAgOjogKlNVQ0NFU1Mg8J+foioK4pSCIPCfjYMgKkZsYXZvdXIqICA6OiBf5a6M55Kn44Gq5by355uX77yB6Kqw44KC6KaL44Gm44Gq44GE77yBXwrilIIK4pSCIPCfqpkgKlRvdGFsKiAgICA6OiAqJHtmbXQodG90YWxQb3QgKiBXSU5fTVVMVElQTElFUil9KgrilIIg8J+qmSAqUGVyIEhlYWQqIDo6ICorJHtmbXQocGF5b3V0KX0qCuKUggrilIIg8J+muSAqVGhlIHNlY3VyaXR5IG5ldmVyIHNhdyBpdCBjb21pbmchKgrilIIgJHt0YWdzfQrilbDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDinYBgLAogICAgICBtZW50aW9ucywKICAgIH0pOwogIH0gZWxzZSB7CiAgICBpZiAoaGVpc3QubWVtYmVycy5sZW5ndGggPCBNSU5fTUVNQkVSUykgewogICAgICBmb3IgKGNvbnN0IG0gb2YgaGVpc3QubWVtYmVycykgewogICAgICAgIGNvbnN0IHUgPSBhd2FpdCBnZXRVc2VyKG0uaWQpOwogICAgICAgIHUubW9uZXkgPSAodS5tb25leSB8fCAwKSArIG0uc3Rha2U7CiAgICAgICAgYXdhaXQgc2F2ZVVzZXIobS5pZCwgdSk7CiAgICAgIH0KCiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgIHRleHQ6CmDila3ilIDinYDjgIwg8J+PpiAq8J2Qh/CdkITwnZCI8J2QkvCdkJMqIOOAjeKdgOKUgOKVrgrilIIg8J+MmSAqUmVzdWx0KiAgOjogKkFCT1JURUQg8J+UtCoK4pSCIPCfjYMgKkZsYXZvdXIqIDo6IF/kurrmlbDkuI3otrPvvIHkvZzmiKbkuK3mraLvvIFfCuKUggrilIIg8J+RpSAqTmVlZCogICAgOjogKiR7TUlOX01FTUJFUlN9IG1lbWJlcnMqCuKUgiDwn6qZICpTdGFrZXMqICA6OiAqRnVsbHkgcmVmdW5kZWQqCuKVsOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKdgGAsCiAgICAgICAgbWVudGlvbnMsCiAgICAgIH0pOwogICAgfQoKICAgIGF3YWl0IHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgIHRleHQ6CmDila3ilIDinYDjgIwg8J+PpiAq8J2Qh/CdkITwnZCI8J2QkvCdkJMqIOOAjeKdgOKUgOKVrgrilIIg8J+MmSAqUmVzdWx0KiAgOjogKkZBSUxFRCDwn5S0KgrilIIg8J+NgyAqRmxhdm91ciogOjogX+itpuWvn+OBjOadpeOBn++8geWFqOWToemAg+OBkuOCje+8gV8K4pSCCuKUgiDwn5K4ICpMb3N0KiAgICA6OiAqJHtmbXQodG90YWxQb3QpfSAoYWxsIHN0YWtlcykqCuKUggrilIIg8J+aqCAqRXZlcnlvbmUgbG9zdCB0aGVpciBzdGFrZS4g5oKU44GX44GE77yBKgrilIIgJHt0YWdzfQrilbDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDinYBgLAogICAgICBtZW50aW9ucywKICAgIH0pOwogIH0KfQo=
+/**
+ * .heist <amount>  — start a group heist (stake that amount)
+ * .heist join      — join the active heist in this group
+ * .heist cancel    — cancel heist (starter only)
+ * .heist status    — check who's joined
+ */
+import { getUser, saveUser, requireRegistration, isRegistered, addHistory } from "./database.js";
+
+const JOIN_WINDOW    = 60 * 1000;  // 60 seconds to join
+const MIN_STAKE      = 500;
+const MAX_STAKE      = 5_000;
+const MIN_MEMBERS    = 2;
+const WIN_MULTIPLIER = 1.8;        // 80% profit on each stake
+const SUCCESS_RATE   = 0.55;       // 55% success
+
+const activeHeists = new Map();    // jid → { starter, stake, members, timeout }
+
+function fmt(n) {
+  if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `$${(n/1e3).toFixed(1)}K`;
+  return `$${n.toLocaleString()}`;
+}
+
+export default {
+  name: "heist",
+  aliases: ["robgroup", "crew"],
+  category: "economy",
+  cooldown: 6,
+  description: "Start a group heist — recruit your crew and rob the bank together!",
+  usage: ".heist <amount>  |  .heist join  |  .heist status  |  .heist cancel",
+  checkJail: true,
+
+  async run({ sock, msg, sender, args }) {
+    if (!await requireRegistration(sock, msg, sender)) return;
+
+    const jid   = msg.key.remoteJid;
+    const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
+    const sub   = (args[0] || "").toLowerCase();
+
+    if (!jid.endsWith("@g.us")) return reply(
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ ❌ *Result*  :: *GROUP ONLY 🔴*
+│
+│ ⚠️ *Heist only works in group chats!*
+╰───────────────❀`
+    );
+
+    // ── STATUS ─────────────────────────────────────────────────────────────────
+    if (sub === "status") {
+      const heist = activeHeists.get(jid);
+      if (!heist) return reply(
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ ℹ️  *Status*  :: *NO ACTIVE HEIST*
+│
+│ 💡 Start one with *.heist <amount>*
+╰───────────────❀`
+      );
+      const names = heist.members.map(m => `│   • @${m.id.split("@")[0]}`).join("\n");
+      return await sock.sendMessage(jid, {
+        text:
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ 🌙 *Status*  :: *ACTIVE 🟢*
+│
+│ 💰 *Stake*   :: *${fmt(heist.stake)} per person*
+│ 👥 *Crew*    :: *${heist.members.length}/${MIN_MEMBERS} minimum*
+│ ⏳ *Starts*  :: *${Math.max(0, Math.ceil((heist.startsAt - Date.now()) / 1000))}s*
+│
+│ 🦹 *Crew Members:*
+${names}
+│
+│ 💡 Join with *.heist join*
+╰───────────────❀`,
+        mentions: heist.members.map(m => m.id),
+      }, { quoted: msg });
+    }
+
+    // ── CANCEL ─────────────────────────────────────────────────────────────────
+    if (sub === "cancel") {
+      const heist = activeHeists.get(jid);
+      if (!heist) return reply("❌ No active heist to cancel.");
+      if (heist.starter !== sender) return reply("❌ Only the heist starter can cancel it.");
+
+      clearTimeout(heist.timeout);
+      for (const m of heist.members) {
+        const u = await getUser(m.id);
+        u.money = (u.money || 0) + m.stake;
+        await saveUser(m.id, u);
+      }
+      activeHeists.delete(jid);
+
+      return await sock.sendMessage(jid, {
+        text:
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ 🌙 *Result*  :: *CANCELLED 🔴*
+│
+│ 💰 All stakes have been *refunded*
+╰───────────────❀`,
+        mentions: heist.members.map(m => m.id),
+      }, { quoted: msg });
+    }
+
+    // ── JOIN ───────────────────────────────────────────────────────────────────
+    if (sub === "join") {
+      const heist = activeHeists.get(jid);
+      if (!heist) return reply(
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ ❌ *Result*  :: *NO HEIST 🔴*
+│
+│ 💡 Start one with *.heist <amount>*
+╰───────────────❀`
+      );
+      if (heist.members.find(m => m.id === sender)) return reply("❌ You're already in this heist.");
+
+      const user = await getUser(sender);
+      if (user.money < heist.stake) {
+        return reply(
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ ❌ *Result*  :: *NOT ENOUGH 🔴*
+│
+│ 💰 *Need*    :: *${fmt(heist.stake)}*
+│ 💰 *Have*    :: *${fmt(user.money)}*
+╰───────────────❀`
+        );
+      }
+
+      user.money -= heist.stake;
+      await saveUser(sender, user);
+      heist.members.push({ id: sender, stake: heist.stake });
+
+      return await sock.sendMessage(jid, {
+        text:
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ 🌙 *Result*  :: *JOINED 🟢*
+│ 🍃 *Flavour* :: _仲間に加わった！_
+│
+│ 👤 *Member*  :: *@${sender.split("@")[0]}*
+│ 💰 *Stake*   :: *${fmt(heist.stake)}*
+│ 👥 *Crew*    :: *${heist.members.length} member(s)*
+│
+│ 💡 Still time to join with *.heist join*!
+╰───────────────❀`,
+        mentions: [sender],
+      }, { quoted: msg });
+    }
+
+    // ── START HEIST ────────────────────────────────────────────────────────────
+    if (activeHeists.has(jid)) {
+      return reply("❌ There's already an active heist.\n\nUse *.heist join* to join it.");
+    }
+
+    const stake = parseInt(args[0]);
+    if (isNaN(stake) || stake < MIN_STAKE) return reply(`❌ Minimum stake is *${fmt(MIN_STAKE)}*.`);
+    if (stake > MAX_STAKE)                  return reply(`❌ Maximum stake is *${fmt(MAX_STAKE)}*.`);
+
+    const user = await getUser(sender);
+    if (user.money < stake) {
+      return reply(
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ ❌ *Result*  :: *NOT ENOUGH 🔴*
+│
+│ 💰 *Need*    :: *${fmt(stake)}*
+│ 💰 *Have*    :: *${fmt(user.money)}*
+╰───────────────❀`
+      );
+    }
+
+    user.money -= stake;
+    await saveUser(sender, user);
+
+    const heist = {
+      starter:  sender,
+      stake,
+      members:  [{ id: sender, stake }],
+      startsAt: Date.now() + JOIN_WINDOW,
+      timeout:  null,
+    };
+
+    heist.timeout = setTimeout(async () => {
+      const h = activeHeists.get(jid);
+      if (!h) return;
+      activeHeists.delete(jid);
+      await executeHeist(sock, jid, h);
+    }, JOIN_WINDOW);
+
+    activeHeists.set(jid, heist);
+
+    await sock.sendMessage(jid, {
+      text:
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ 🌙 *Result*  :: *STARTED 🟢*
+│ 🍃 *Flavour* :: _強盗開始！仲間を集めろ！_
+│
+│ 💰 *Stake*   :: *${fmt(stake)} per person*
+│ ⏳ *Window*  :: *60 seconds to join*
+│ 👥 *Min*     :: *${MIN_MEMBERS} crew members*
+│
+│ 👤 Starter: *@${sender.split("@")[0]}*
+│ 💡 Type *.heist join* to join the crew!
+╰───────────────❀`,
+      mentions: [sender],
+    }, { quoted: msg });
+  },
+};
+
+async function executeHeist(sock, jid, heist) {
+  const totalPot = heist.members.reduce((s, m) => s + m.stake, 0);
+  const won      = Math.random() < SUCCESS_RATE && heist.members.length >= MIN_MEMBERS;
+  const mentions = heist.members.map(m => m.id);
+  const tags     = heist.members.map(m => `@${m.id.split("@")[0]}`).join(" ");
+
+  function fmt(n) {
+    if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
+    if (n >= 1e3) return `$${(n/1e3).toFixed(1)}K`;
+    return `$${n.toLocaleString()}`;
+  }
+
+  if (won) {
+    const payout = Math.floor((totalPot * WIN_MULTIPLIER) / heist.members.length);
+    for (const m of heist.members) {
+      const u = await getUser(m.id);
+      u.money = (u.money || 0) + payout;
+      await saveUser(m.id, u);
+      await addHistory(m.id, "rob", payout - m.stake, `Heist payout ${fmt(payout)}`);
+    }
+
+    await sock.sendMessage(jid, {
+      text:
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ 🌙 *Result*   :: *SUCCESS 🟢*
+│ 🍃 *Flavour*  :: _完璧な強盗！誰も見てない！_
+│
+│ 💰 *Total*    :: *${fmt(totalPot * WIN_MULTIPLIER)}*
+│ 💰 *Per Head* :: *+${fmt(payout)}*
+│
+│ 🦹 *The security never saw it coming!*
+│ ${tags}
+╰───────────────❀`,
+      mentions,
+    });
+  } else {
+    if (heist.members.length < MIN_MEMBERS) {
+      for (const m of heist.members) {
+        const u = await getUser(m.id);
+        u.money = (u.money || 0) + m.stake;
+        await saveUser(m.id, u);
+      }
+
+      return sock.sendMessage(jid, {
+        text:
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ 🌙 *Result*  :: *ABORTED 🔴*
+│ 🍃 *Flavour* :: _人数不足！作戦中止！_
+│
+│ 👥 *Need*    :: *${MIN_MEMBERS} members*
+│ 💰 *Stakes*  :: *Fully refunded*
+╰───────────────❀`,
+        mentions,
+      });
+    }
+
+    await sock.sendMessage(jid, {
+      text:
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ 🌙 *Result*  :: *FAILED 🔴*
+│ 🍃 *Flavour* :: _警察が来た！全員逃げろ！_
+│
+│ 💸 *Lost*    :: *${fmt(totalPot)} (all stakes)*
+│
+│ 🚨 *Everyone lost their stake. 悔しい！*
+│ ${tags}
+╰───────────────❀`,
+      mentions,
+    });
+  }
+}

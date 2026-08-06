@@ -1,1 +1,88 @@
-aW1wb3J0IHsgZ2V0VXNlciwgc2F2ZVVzZXIsIHJlcXVpcmVSZWdpc3RyYXRpb24sIGFkZEhpc3RvcnkgfSBmcm9tICIuL2RhdGFiYXNlLmpzIjsKaW1wb3J0IHsgU0hPUF9JVEVNUyB9IGZyb20gIi4vX2l0ZW1zLmpzIjsKCmV4cG9ydCBkZWZhdWx0IHsKICBuYW1lOiAic2VsbCIsCiAgYWxpYXNlczogWyJzZWxsaXRlbSJdLAogIGNhdGVnb3J5OiAiZWNvbm9teSIsCiAgY29vbGRvd246IDYsCiAgZGVzY3JpcHRpb246ICJTZWxsIGFuIGl0ZW0gZnJvbSB5b3VyIGludmVudG9yeSBmb3IgY2FzaCIsCiAgdXNhZ2U6ICIuc2VsbCA8aXRlbT4gIHwgIC5zZWxsIGFsbCIsCgogIGFzeW5jIHJ1bih7IHNvY2ssIG1zZywgc2VuZGVyLCBhcmdzIH0pIHsKICAgIGlmICghYXdhaXQgcmVxdWlyZVJlZ2lzdHJhdGlvbihzb2NrLCBtc2csIHNlbmRlcikpIHJldHVybjsKCiAgICBjb25zdCBqaWQgICA9IG1zZy5rZXkucmVtb3RlSmlkOwogICAgY29uc3QgcmVwbHkgPSAodCkgPT4gc29jay5zZW5kTWVzc2FnZShqaWQsIHsgdGV4dDogdCB9LCB7IHF1b3RlZDogbXNnIH0pOwoKICAgIGNvbnN0IHVzZXIgPSBhd2FpdCBnZXRVc2VyKHNlbmRlcik7CiAgICBjb25zdCBpbnYgID0gdXNlci5pbnZlbnRvcnkgfHwgW107CgogICAgaWYgKCFhcmdzWzBdKSB7CiAgICAgIGlmICghaW52Lmxlbmd0aCkgcmV0dXJuIHJlcGx5KCLinYwgWW91ciBpbnZlbnRvcnkgaXMgZW1wdHkuIik7CgogICAgICBjb25zdCBjb3VudCA9IHt9OwogICAgICBpbnYuZm9yRWFjaChpID0+IHsgY291bnRbaV0gPSAoY291bnRbaV0gfHwgMCkgKyAxOyB9KTsKCiAgICAgIGxldCB0ZXh0ID0gIvCfqpkgKlNFTEwgUFJJQ0VTKlxuXG4iOwogICAgICBmb3IgKGNvbnN0IFtpdGVtLCBxdHldIG9mIE9iamVjdC5lbnRyaWVzKGNvdW50KSkgewogICAgICAgIGNvbnN0IGRlZiA9IFNIT1BfSVRFTVNbaXRlbV07CiAgICAgICAgaWYgKCFkZWYpIGNvbnRpbnVlOwogICAgICAgIGNvbnN0IHByaWNlID0gTWF0aC5mbG9vcihkZWYucHJpY2UgKiBkZWYuc2VsbFBjdCk7CiAgICAgICAgdGV4dCArPSBgJHtkZWYuZW1vaml9ICoke2l0ZW19KiB4JHtxdHl9IOKGkiDwn6qZICR7cHJpY2UudG9Mb2NhbGVTdHJpbmcoKX0gZWFjaFxuYDsKICAgICAgfQogICAgICB0ZXh0ICs9ICJcblVzYWdlOiAqLnNlbGwgPGl0ZW0+KiBvciAqLnNlbGwgYWxsKiI7CiAgICAgIHJldHVybiByZXBseSh0ZXh0KTsKICAgIH0KCiAgICBjb25zdCB0YXJnZXQgPSBhcmdzWzBdLnRvTG93ZXJDYXNlKCk7CgogICAgaWYgKHRhcmdldCA9PT0gImFsbCIpIHsKICAgICAgaWYgKCFpbnYubGVuZ3RoKSByZXR1cm4gcmVwbHkoIuKdjCBOb3RoaW5nIHRvIHNlbGwuIik7CgogICAgICBsZXQgdG90YWwgPSAwOwogICAgICBjb25zdCBzb2xkID0ge307CiAgICAgIHVzZXIuaW52ZW50b3J5ID0gaW52LmZpbHRlcihpdGVtID0+IHsKICAgICAgICBjb25zdCBkZWYgPSBTSE9QX0lURU1TW2l0ZW1dOwogICAgICAgIGlmICghZGVmKSByZXR1cm4gdHJ1ZTsgLy8ga2VlcCB1bmtub3duIGl0ZW1zCiAgICAgICAgY29uc3QgcHJpY2UgPSBNYXRoLmZsb29yKGRlZi5wcmljZSAqIGRlZi5zZWxsUGN0KTsKICAgICAgICB0b3RhbCArPSBwcmljZTsKICAgICAgICBzb2xkW2l0ZW1dID0gKHNvbGRbaXRlbV0gfHwgMCkgKyAxOwogICAgICAgIHJldHVybiBmYWxzZTsKICAgICAgfSk7CgogICAgICB1c2VyLm1vbmV5ID0gKHVzZXIubW9uZXkgfHwgMCkgKyB0b3RhbDsKICAgICAgYXdhaXQgc2F2ZVVzZXIoc2VuZGVyLCB1c2VyKTsKICAgICAgYXdhaXQgYWRkSGlzdG9yeShzZW5kZXIsICJzZWxsIiwgdG90YWwsIGBTb2xkIGFsbCBpdGVtcyBmb3Ig8J+qmSAke3RvdGFsLnRvTG9jYWxlU3RyaW5nKCl9YCk7CgogICAgICBsZXQgdGV4dCA9ICLwn6qZICpTT0xEIEFMTCBJVEVNUypcblxuIjsKICAgICAgZm9yIChjb25zdCBbaXRlbSwgcXR5XSBvZiBPYmplY3QuZW50cmllcyhzb2xkKSkgewogICAgICAgIGNvbnN0IGRlZiA9IFNIT1BfSVRFTVNbaXRlbV07CiAgICAgICAgdGV4dCArPSBgJHtkZWY/LmVtb2ppIHx8ICLwn5OmIn0gJHtpdGVtfSB4JHtxdHl9XG5gOwogICAgICB9CiAgICAgIHRleHQgKz0gYFxu8J+qmSBUb3RhbCBSZWNlaXZlZDog8J+qmSAke3RvdGFsLnRvTG9jYWxlU3RyaW5nKCl9YDsKICAgICAgcmV0dXJuIHJlcGx5KHRleHQpOwogICAgfQoKICAgIGNvbnN0IGRlZiA9IFNIT1BfSVRFTVNbdGFyZ2V0XTsKICAgIGlmICghZGVmKSByZXR1cm4gcmVwbHkoYOKdjCBVbmtub3duIGl0ZW06ICoke3RhcmdldH0qYCk7CgogICAgY29uc3QgaWR4ID0gaW52LmluZGV4T2YodGFyZ2V0KTsKICAgIGlmIChpZHggPT09IC0xKSByZXR1cm4gcmVwbHkoYOKdjCBZb3UgZG9uJ3QgaGF2ZSAqJHt0YXJnZXR9KiBpbiB5b3VyIGludmVudG9yeS5gKTsKCiAgICBjb25zdCBwcmljZSA9IE1hdGguZmxvb3IoZGVmLnByaWNlICogZGVmLnNlbGxQY3QpOwogICAgaW52LnNwbGljZShpZHgsIDEpOwogICAgdXNlci5pbnZlbnRvcnkgPSBpbnY7CiAgICB1c2VyLm1vbmV5ICAgICA9ICh1c2VyLm1vbmV5IHx8IDApICsgcHJpY2U7CgogICAgYXdhaXQgc2F2ZVVzZXIoc2VuZGVyLCB1c2VyKTsKICAgIGF3YWl0IGFkZEhpc3Rvcnkoc2VuZGVyLCAic2VsbCIsIHByaWNlLCBgU29sZCAke3RhcmdldH0gZm9yIPCfqpkgJHtwcmljZS50b0xvY2FsZVN0cmluZygpfWApOwoKICAgIHJldHVybiByZXBseSgKYOKchSAqSXRlbSBTb2xkISoKCiR7ZGVmLmVtb2ppfSAqJHt0YXJnZXR9KiDihpIg8J+qmSAke3ByaWNlLnRvTG9jYWxlU3RyaW5nKCl9CvCfqpkgQmFsYW5jZSA6IPCfqpkgJHt1c2VyLm1vbmV5LnRvTG9jYWxlU3RyaW5nKCl9YAogICAgKTsKICB9LAp9Owo=
+import { getUser, saveUser, requireRegistration, addHistory } from "./database.js";
+import { SHOP_ITEMS } from "./_items.js";
+
+export default {
+  name: "sell",
+  aliases: ["sellitem"],
+  category: "economy",
+  cooldown: 6,
+  description: "Sell an item from your inventory for cash",
+  usage: ".sell <item>  |  .sell all",
+
+  async run({ sock, msg, sender, args }) {
+    if (!await requireRegistration(sock, msg, sender)) return;
+
+    const jid   = msg.key.remoteJid;
+    const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
+
+    const user = await getUser(sender);
+    const inv  = user.inventory || [];
+
+    if (!args[0]) {
+      if (!inv.length) return reply("❌ Your inventory is empty.");
+
+      const count = {};
+      inv.forEach(i => { count[i] = (count[i] || 0) + 1; });
+
+      let text = "💰 *SELL PRICES*\n\n";
+      for (const [item, qty] of Object.entries(count)) {
+        const def = SHOP_ITEMS[item];
+        if (!def) continue;
+        const price = Math.floor(def.price * def.sellPct);
+        text += `${def.emoji} *${item}* x${qty} → $${price.toLocaleString()} each\n`;
+      }
+      text += "\nUsage: *.sell <item>* or *.sell all*";
+      return reply(text);
+    }
+
+    const target = args[0].toLowerCase();
+
+    if (target === "all") {
+      if (!inv.length) return reply("❌ Nothing to sell.");
+
+      let total = 0;
+      const sold = {};
+      user.inventory = inv.filter(item => {
+        const def = SHOP_ITEMS[item];
+        if (!def) return true; // keep unknown items
+        const price = Math.floor(def.price * def.sellPct);
+        total += price;
+        sold[item] = (sold[item] || 0) + 1;
+        return false;
+      });
+
+      user.money = (user.money || 0) + total;
+      await saveUser(sender, user);
+      await addHistory(sender, "sell", total, `Sold all items for $${total.toLocaleString()}`);
+
+      let text = "💰 *SOLD ALL ITEMS*\n\n";
+      for (const [item, qty] of Object.entries(sold)) {
+        const def = SHOP_ITEMS[item];
+        text += `${def?.emoji || "📦"} ${item} x${qty}\n`;
+      }
+      text += `\n💰 Total Received: $${total.toLocaleString()}`;
+      return reply(text);
+    }
+
+    const def = SHOP_ITEMS[target];
+    if (!def) return reply(`❌ Unknown item: *${target}*`);
+
+    const idx = inv.indexOf(target);
+    if (idx === -1) return reply(`❌ You don't have *${target}* in your inventory.`);
+
+    const price = Math.floor(def.price * def.sellPct);
+    inv.splice(idx, 1);
+    user.inventory = inv;
+    user.money     = (user.money || 0) + price;
+
+    await saveUser(sender, user);
+    await addHistory(sender, "sell", price, `Sold ${target} for $${price.toLocaleString()}`);
+
+    return reply(
+`✅ *Item Sold!*
+
+${def.emoji} *${target}* → $${price.toLocaleString()}
+💰 Balance : $${user.money.toLocaleString()}`
+    );
+  },
+};

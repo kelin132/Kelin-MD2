@@ -1,1 +1,99 @@
-LyoqCiAqIEtFTElOIE1EIOKAlCAubGVhZGVyYm9hcmQKICogVG9wIDEwIHBsYXllcnMgc29ydGVkIGJ5IG5ldCB3b3J0aCDigJQgYW5pbWUgYWVzdGhldGljIHRoZW1lLgogKi8KaW1wb3J0IHsgZ2V0QWxsVXNlcnMgfSBmcm9tICIuL2RhdGFiYXNlLmpzIjsKaW1wb3J0IHsgZ2V0RGIgfSBmcm9tICIuLi8uLi9saWIvbW9uZ28ubWpzIjsKCmNvbnN0IFJBTktfQkFER0VTID0gWwogICLjgI4g8J2fjyDjgI8iLCAi44COIPCdn5Ag44CPIiwgIuOAjiDwnZ+RIOOAjyIsCiAgIuOAjiDwnZ+SIOOAjyIsICLjgI4g8J2fkyDjgI8iLCAi44COIPCdn5Qg44CPIiwKICAi44COIPCdn5Ug44CPIiwgIuOAjiDwnZ+WIOOAjyIsICLjgI4g8J2flyDjgI8iLCAi44COIPCdn4/wnZ+OIOOAjyIsCl07Cgpjb25zdCBSQU5LX1RJVExFUyA9IFsKICAi4pqhIExlZ2VuZGFyeSBIZXJvIiwgICAgIvCfjLggRWxpdGUgV2FycmlvciIsICAi8J+Xoe+4jyBHcmFuZCBTd29yZHNtYW4iLAogICLinKggU2tpbGxlZCBGaWdodGVyIiwgICAi8J+MmSBSaXNpbmcgU3RhciIsICAgICAi8J+OtCBDYXJkIE1hc3RlciIsCiAgIvCflKUgRmxhbWUgQmVhcmVyIiwgICAgICAi8J+SpyBUaWRlIFR1cm5lciIsICAgICAi8J+MvyBGb3Jlc3QgU3Bpcml0IiwKICAi4q2QIENob3NlbiBPbmUiLApdOwoKZXhwb3J0IGRlZmF1bHQgewogIG5hbWU6ICJsZWFkZXJib2FyZCIsCiAgZGVzY3JpcHRpb246ICJWaWV3IHRoZSB0b3AgMTAgcmljaGVzdCBwbGF5ZXJzIiwKICBjYXRlZ29yeTogImVjb25vbXkiLAogIHVzYWdlOiAiLmxlYWRlcmJvYXJkIiwKICBhbGlhc2VzOiBbInJpY2giLCAidG9wIl0sCiAgY29vbGRvd246IDEwLAoKICBhc3luYyBydW4oeyBzb2NrLCBtc2cgfSkgewogICAgY29uc3QgamlkID0gbXNnLmtleS5yZW1vdGVKaWQ7CgogICAgY29uc3QgdXNlcnMgPSBhd2FpdCBnZXRBbGxVc2VycygpOwoKICAgIGlmICghdXNlcnMgfHwgdXNlcnMubGVuZ3RoID09PSAwKSB7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgIHRleHQ6ICLwn6qZIE5vIHJlZ2lzdGVyZWQgcGxheWVycyB5ZXQhIEJlIHRoZSBmaXJzdCB3aXRoICoucmVnaXN0ZXIqIiwKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICBjb25zdCBzb3J0ZWQgPSB1c2VycwogICAgICAubWFwKHUgPT4gKHsgLi4udSwgbmV0OiAodS5tb25leSB8fCAwKSArICh1LmJhbmsgfHwgMCkgfSkpCiAgICAgIC5zb3J0KChhLCBiKSA9PiBiLm5ldCAtIGEubmV0KQogICAgICAuc2xpY2UoMCwgMTApOwoKICAgIGNvbnN0IGRiID0gYXdhaXQgZ2V0RGIoKTsKICAgIGNvbnN0IHVzZXJJZHMgID0gc29ydGVkLm1hcCh1ID0+ICh1Ll9pZCB8fCAiIikuc3BsaXQoIkAiKVswXS5zcGxpdCgiOiIpWzBdKS5maWx0ZXIoQm9vbGVhbik7CiAgICBjb25zdCBvd25lckppZHMgPSBzb3J0ZWQubWFwKHUgPT4gdS5faWQpLmZpbHRlcihCb29sZWFuKTsKCiAgICBjb25zdCBbY2FyZERvY3MsIHBva2VDb3VudHMsIGNvbXBhbnlEb2NzXSA9IGF3YWl0IFByb21pc2UuYWxsKFsKICAgICAgZGIuY29sbGVjdGlvbigibW5fdXNlcnMiKQogICAgICAgIC5maW5kKHsgdXNlcklkOiB7ICRpbjogdXNlcklkcyB9IH0sIHsgcHJvamVjdGlvbjogeyB1c2VySWQ6IDEsIGNhcmRzOiAxIH0gfSkKICAgICAgICAudG9BcnJheSgpLAogICAgICBkYi5jb2xsZWN0aW9uKCJwb2tlbW9uX293bmVkIikuYWdncmVnYXRlKFsKICAgICAgICB7ICRtYXRjaDogeyBvd25lckppZDogeyAkaW46IG93bmVySmlkcyB9IH0gfSwKICAgICAgICB7ICRncm91cDogeyBfaWQ6ICIkb3duZXJKaWQiLCB0b3RhbDogeyAkc3VtOiAxIH0gfSB9LAogICAgICBdKS50b0FycmF5KCksCiAgICAgIGRiLmNvbGxlY3Rpb24oImNvbXBhbmllcyIpCiAgICAgICAgLmZpbmQoeyBvd25lcklkOiB7ICRpbjogb3duZXJKaWRzIH0gfSwgeyBwcm9qZWN0aW9uOiB7IG93bmVySWQ6IDEsIG5hbWU6IDEgfSB9KQogICAgICAgIC50b0FycmF5KCksCiAgICBdKTsKCiAgICBjb25zdCBjYXJkTWFwID0ge307CiAgICBmb3IgKGNvbnN0IGRvYyBvZiBjYXJkRG9jcykgY2FyZE1hcFtkb2MudXNlcklkXSA9IEFycmF5LmlzQXJyYXkoZG9jLmNhcmRzKSA/IGRvYy5jYXJkcy5sZW5ndGggOiAwOwogICAgY29uc3QgcG9rZU1hcCA9IHt9OwogICAgZm9yIChjb25zdCBkb2Mgb2YgcG9rZUNvdW50cykgcG9rZU1hcFtkb2MuX2lkXSA9IGRvYy50b3RhbDsKICAgIGNvbnN0IGNvbXBhbnlNYXAgPSB7fTsKICAgIGZvciAoY29uc3QgZG9jIG9mIGNvbXBhbnlEb2NzKSBjb21wYW55TWFwW2RvYy5vd25lcklkXSA9IGRvYzsKCiAgICAvLyDilIDilIAgSGVhZGVyIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAogICAgbGV0IHRleHQgPSBgYDsKICAgIHRleHQgKz0gYOKbqe+4jyAgKvCdl6rwnZeY8J2XlPCdl5/wnZen8J2XmyAg8J2XpfCdl5TwnZeh8J2XnvCdl5zwnZeh8J2XmvCdl6YqIOKbqe+4j1xuYDsKICAgIHRleHQgKz0gYOKUhOKUhOKUhOKUhOKUhOKUhOKUhOKUhOKUhOKUhOKUhOKUhOKUhOKUhOKUhOKUhOKUhOKUhOKUhOKUhFxuYDsKICAgIHRleHQgKz0gYCAg8J+MuCAqVG9wIDEwIFJpY2hlc3QgV2FycmlvcnMqXG5gOwogICAgdGV4dCArPSBgICDinKYg4pymIOKcpiDinKYg4pymIOKcpiDinKYg4pymIOKcpiDinKZcblxuYDsKCiAgICBmb3IgKGxldCBpID0gMDsgaSA8IHNvcnRlZC5sZW5ndGg7IGkrKykgewogICAgICBjb25zdCB1ICAgICAgID0gc29ydGVkW2ldOwogICAgICBjb25zdCB1c2VySWQgID0gKHUuX2lkIHx8ICIiKS5zcGxpdCgiQCIpWzBdLnNwbGl0KCI6IilbMF07CiAgICAgIGNvbnN0IG5hbWUgICAgPSB1Lm5hbWUgfHwgYFdhcnJpb3JfJHt1c2VySWQuc2xpY2UoLTQpfWA7CiAgICAgIGNvbnN0IGNhcmRzICAgPSBjYXJkTWFwW3VzZXJJZF0gfHwgMDsKICAgICAgY29uc3QgcG9rZSAgICA9IHBva2VNYXBbdS5faWRdICB8fCAwOwogICAgICBjb25zdCBjb21wYW55ID0gY29tcGFueU1hcFt1Ll9pZF07CiAgICAgIGNvbnN0IGJhZGdlICAgPSBSQU5LX0JBREdFU1tpXSAgfHwgYOOAjiR7aSArIDF944CPYDsKICAgICAgY29uc3QgdGl0bGUgICA9IFJBTktfVElUTEVTW2ldICB8fCAi4q2QIFdhcnJpb3IiOwoKICAgICAgdGV4dCArPSBgJHtiYWRnZX0gKiR7bmFtZX0qXG5gOwogICAgICB0ZXh0ICs9IGAgIOKUlyAke3RpdGxlfVxuYDsKICAgICAgdGV4dCArPSBgICDwn6qZICrwn6qZICR7dS5uZXQudG9Mb2NhbGVTdHJpbmcoKX0qYDsKICAgICAgdGV4dCArPSBgICDwn4OPICoke2NhcmRzfSogY2FyZHMgIPCfjq4gKiR7cG9rZX0qIHBrbVxuYDsKICAgICAgaWYgKGNvbXBhbnkpIHRleHQgKz0gYCAg8J+PryAqJHtjb21wYW55Lm5hbWV9KlxuYDsKICAgICAgdGV4dCArPSBpIDwgc29ydGVkLmxlbmd0aCAtIDEgPyBgICDilIjilIjilIjilIjilIjilIjilIjilIjilIjilIjilIjilIjilIjilIjilIjilIjilIhcbmAgOiBgYDsKICAgIH0KCiAgICB0ZXh0ICs9IGBcbuKcpiDinKYg4pymIOKcpiDinKYg4pymIOKcpiDinKYg4pymIOKcplxuYDsKICAgIHRleHQgKz0gYPCfjLogX01heSB5b3VyIHdlYWx0aCBncm93IGxpa2UgdGhlIHNha3VyYV9gOwoKICAgIGF3YWl0IHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7IHRleHQ6IHRleHQudHJpbSgpIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgfSwKfTsK
+/**
+ * KELIN MD — .leaderboard
+ * Top 10 players sorted by net worth — anime aesthetic theme.
+ */
+import { getAllUsers } from "./database.js";
+import { getDb } from "../../lib/mongo.mjs";
+
+const RANK_BADGES = [
+  "『 𝟏 』", "『 𝟐 』", "『 𝟑 』",
+  "『 𝟒 』", "『 𝟓 』", "『 𝟔 』",
+  "『 𝟕 』", "『 𝟖 』", "『 𝟗 』", "『 𝟏𝟎 』",
+];
+
+const RANK_TITLES = [
+  "⚡ Legendary Hero",    "🌸 Elite Warrior",  "🗡️ Grand Swordsman",
+  "✨ Skilled Fighter",   "🌙 Rising Star",     "🎴 Card Master",
+  "🔥 Flame Bearer",      "💧 Tide Turner",     "🌿 Forest Spirit",
+  "⭐ Chosen One",
+];
+
+export default {
+  name: "leaderboard",
+  description: "View the top 10 richest players",
+  category: "economy",
+  usage: ".leaderboard",
+  aliases: ["rich", "top"],
+  cooldown: 10,
+
+  async run({ sock, msg }) {
+    const jid = msg.key.remoteJid;
+
+    const users = await getAllUsers();
+
+    if (!users || users.length === 0) {
+      return sock.sendMessage(jid, {
+        text: "💰 No registered players yet! Be the first with *.register*",
+      }, { quoted: msg });
+    }
+
+    const sorted = users
+      .map(u => ({ ...u, net: (u.money || 0) + (u.bank || 0) }))
+      .sort((a, b) => b.net - a.net)
+      .slice(0, 10);
+
+    const db = await getDb();
+    const userIds  = sorted.map(u => (u._id || "").split("@")[0].split(":")[0]).filter(Boolean);
+    const ownerJids = sorted.map(u => u._id).filter(Boolean);
+
+    const [cardDocs, pokeCounts, companyDocs] = await Promise.all([
+      db.collection("mn_users")
+        .find({ userId: { $in: userIds } }, { projection: { userId: 1, cards: 1 } })
+        .toArray(),
+      db.collection("pokemon_owned").aggregate([
+        { $match: { ownerJid: { $in: ownerJids } } },
+        { $group: { _id: "$ownerJid", total: { $sum: 1 } } },
+      ]).toArray(),
+      db.collection("companies")
+        .find({ ownerId: { $in: ownerJids } }, { projection: { ownerId: 1, name: 1 } })
+        .toArray(),
+    ]);
+
+    const cardMap = {};
+    for (const doc of cardDocs) cardMap[doc.userId] = Array.isArray(doc.cards) ? doc.cards.length : 0;
+    const pokeMap = {};
+    for (const doc of pokeCounts) pokeMap[doc._id] = doc.total;
+    const companyMap = {};
+    for (const doc of companyDocs) companyMap[doc.ownerId] = doc;
+
+    // ── Header ────────────────────────────────────────────────────────────────
+    let text = ``;
+    text += `⛩️  *𝗪𝗘𝗔𝗟𝗧𝗛  𝗥𝗔𝗡𝗞𝗜𝗡𝗚𝗦* ⛩️\n`;
+    text += `┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄\n`;
+    text += `  🌸 *Top 10 Richest Warriors*\n`;
+    text += `  ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦\n\n`;
+
+    for (let i = 0; i < sorted.length; i++) {
+      const u       = sorted[i];
+      const userId  = (u._id || "").split("@")[0].split(":")[0];
+      const name    = u.name || `Warrior_${userId.slice(-4)}`;
+      const cards   = cardMap[userId] || 0;
+      const poke    = pokeMap[u._id]  || 0;
+      const company = companyMap[u._id];
+      const badge   = RANK_BADGES[i]  || `『${i + 1}』`;
+      const title   = RANK_TITLES[i]  || "⭐ Warrior";
+
+      text += `${badge} *${name}*\n`;
+      text += `  ┗ ${title}\n`;
+      text += `  💰 *$${u.net.toLocaleString()}*`;
+      text += `  🃏 *${cards}* cards  🎮 *${poke}* pkm\n`;
+      if (company) text += `  🏯 *${company.name}*\n`;
+      text += i < sorted.length - 1 ? `  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n` : ``;
+    }
+
+    text += `\n✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦\n`;
+    text += `🌺 _May your wealth grow like the sakura_`;
+
+    await sock.sendMessage(jid, { text: text.trim() }, { quoted: msg });
+  },
+};

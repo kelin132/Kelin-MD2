@@ -1,1 +1,68 @@
-aW1wb3J0IHsgZ3VpbGRTeXN0ZW0gfSBmcm9tICIuLi8uLi9saWIvZ3VpbGRTeXN0ZW0uanMiOwoKZXhwb3J0IGRlZmF1bHQgewogIG5hbWU6ICJndWlsZGNvbXAiLAogIGRlc2NyaXB0aW9uOiAiQ29tcGFyZSB0d28gZ3VpbGRzIGhlYWQgdG8gaGVhZCIsCiAgY2F0ZWdvcnk6ICJndWlsZCIsCiAgdXNhZ2U6ICIuZ3VpbGRjb21wIDxndWlsZDE+IHwgPGd1aWxkMj4iLAogIGFsaWFzZXM6IFsiZ2NvbXBhcmUiLCAiZ3ZzIl0sCiAgY29vbGRvd246IDUsCgogIGFzeW5jIHJ1bih7IHNvY2ssIG1zZywgdGV4dCB9KSB7CiAgICBjb25zdCBqaWQgPSBtc2cua2V5LnJlbW90ZUppZDsKCiAgICBpZiAoIXRleHQ/LmluY2x1ZGVzKCJ8IikpIHsKICAgICAgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7CiAgICAgICAgdGV4dDoKYOKVreKUgOOAlCDimpTvuI8gKvCdkIbwnZCU8J2QiPCdkIvwnZCDIPCdkILwnZCO8J2QjPCdkI8qIOOAlQrilIIg8J+TliAqVXNhZ2UqIDo6ICouZ3VpbGRjb21wIDxndWlsZDE+IHwgPGd1aWxkMj4qCuKUgiDwn5KhICpFeGFtcGxlKiA6OiAqLmd1aWxkY29tcCBXYXJyaW9ycyB8IERyYWdvbnMqCuKUlOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKXhmAKICAgICAgfSwgeyBxdW90ZWQ6IG1zZyB9KTsKICAgIH0KCiAgICBjb25zdCBwYXJ0cyA9IHRleHQuc3BsaXQoInwiKS5tYXAocyA9PiBzLnRyaW0oKSk7CiAgICBpZiAocGFydHMubGVuZ3RoIDwgMiB8fCAhcGFydHNbMF0gfHwgIXBhcnRzWzFdKSB7CiAgICAgIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICAgIHRleHQ6ICLinYwgVXNhZ2U6ICouZ3VpbGRjb21wIDxndWlsZDE+IHwgPGd1aWxkMj4qIgogICAgICB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgfQoKICAgIGNvbnN0IFtnMSwgZzJdID0gYXdhaXQgUHJvbWlzZS5hbGwoWwogICAgICBndWlsZFN5c3RlbS5nZXRHdWlsZChwYXJ0c1swXSksCiAgICAgIGd1aWxkU3lzdGVtLmdldEd1aWxkKHBhcnRzWzFdKSwKICAgIF0pOwoKICAgIGlmICghZzEpIHJldHVybiBzb2NrLnNlbmRNZXNzYWdlKGppZCwgeyB0ZXh0OiBg4p2MIEd1aWxkICoiJHtwYXJ0c1swXX0iKiBub3QgZm91bmQuYCB9LCB7IHF1b3RlZDogbXNnIH0pOwogICAgaWYgKCFnMikgcmV0dXJuIHNvY2suc2VuZE1lc3NhZ2UoamlkLCB7IHRleHQ6IGDinYwgR3VpbGQgKiIke3BhcnRzWzFdfSIqIG5vdCBmb3VuZC5gIH0sIHsgcXVvdGVkOiBtc2cgfSk7CgogICAgZnVuY3Rpb24gdnModmFsMSwgdmFsMiwgaGlnaGVyID0gdHJ1ZSkgewogICAgICBpZiAodmFsMSA9PT0gdmFsMikgcmV0dXJuIFsi8J+foSIsICLwn5+hIl07CiAgICAgIGNvbnN0IHdpbm5lciA9IGhpZ2hlciA/IHZhbDEgPiB2YWwyIDogdmFsMSA8IHZhbDI7CiAgICAgIHJldHVybiB3aW5uZXIgPyBbIvCfn6IiLCAi8J+UtCJdIDogWyLwn5S0IiwgIvCfn6IiXTsKICAgIH0KCiAgICBjb25zdCBbbHYxLCBsdjJdICAgPSB2cyhnMS5sZXZlbCwgICAgICAgICAgICAgIGcyLmxldmVsKTsKICAgIGNvbnN0IFttYjEsIG1iMl0gICA9IHZzKGcxLm1lbWJlcnMubGVuZ3RoLCAgICAgIGcyLm1lbWJlcnMubGVuZ3RoKTsKICAgIGNvbnN0IFt0cjEsIHRyMl0gICA9IHZzKGcxLnRyZWFzdXJ5LCAgICAgICAgICAgIGcyLnRyZWFzdXJ5KTsKCiAgICBjb25zdCBvdmVyYWxsMSA9IGcxLmxldmVsICogMTAwMCArIGcxLm1lbWJlcnMubGVuZ3RoICogMTAwICsgZzEudHJlYXN1cnkgLyAxMDA7CiAgICBjb25zdCBvdmVyYWxsMiA9IGcyLmxldmVsICogMTAwMCArIGcyLm1lbWJlcnMubGVuZ3RoICogMTAwICsgZzIudHJlYXN1cnkgLyAxMDA7CiAgICBjb25zdCB3aW5uZXIgICA9IG92ZXJhbGwxID4gb3ZlcmFsbDIgPyBnMS5uYW1lIDogb3ZlcmFsbDIgPiBvdmVyYWxsMSA/IGcyLm5hbWUgOiAiVElFIjsKCiAgICBhd2FpdCBzb2NrLnNlbmRNZXNzYWdlKGppZCwgewogICAgICB0ZXh0Ogpg4pWt4pSA44CUIOKalO+4jyAq8J2QhvCdkJTwnZCI8J2Qi/CdkIMg8J2QgvCdkI7wnZCM8J2Qj/CdkIDwnZCR8J2QiPCdkJLwnZCO8J2QjSog44CVCuKUggrilIIg4pqU77iPICoke2cxLm5hbWV9KiAgdnMgICoke2cyLm5hbWV9KiDimpTvuI8K4pSCCuKUgiDwn5OKICpTVEFUUyogICAgICAgICR7ZzEubmFtZS5zbGljZSgwLDEwKS5wYWRFbmQoMTApfSAgJHtnMi5uYW1lLnNsaWNlKDAsMTApfQrilJzil4Yg4q2QIExldmVsICAgICAgICR7bHYxfSAke1N0cmluZyhnMS5sZXZlbCkucGFkRW5kKDEyKX0gJHtsdjJ9ICR7ZzIubGV2ZWx9CuKUnOKXhiDwn5GlIE1lbWJlcnMgICAgICR7bWIxfSAke1N0cmluZyhnMS5tZW1iZXJzLmxlbmd0aCkucGFkRW5kKDEyKX0gJHttYjJ9ICR7ZzIubWVtYmVycy5sZW5ndGh9CuKUnOKXhiDwn6qZIFRyZWFzdXJ5ICAgICR7dHIxfSDwn6qZICR7U3RyaW5nKGcxLnRyZWFzdXJ5LnRvTG9jYWxlU3RyaW5nKCkpLnBhZEVuZCgxMSl9ICR7dHIyfSDwn6qZICR7ZzIudHJlYXN1cnkudG9Mb2NhbGVTdHJpbmcoKX0K4pSCCuKUnOKXhiDwn4+GICpXaW5uZXIqIDo6ICoke3dpbm5lcn0qCuKUlOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKXhmAKICAgIH0sIHsgcXVvdGVkOiBtc2cgfSk7CiAgfQp9Owo=
+import { guildSystem } from "../../lib/guildSystem.js";
+
+export default {
+  name: "guildcomp",
+  description: "Compare two guilds head to head",
+  category: "guild",
+  usage: ".guildcomp <guild1> | <guild2>",
+  aliases: ["gcompare", "gvs"],
+  cooldown: 5,
+
+  async run({ sock, msg, text }) {
+    const jid = msg.key.remoteJid;
+
+    if (!text?.includes("|")) {
+      return sock.sendMessage(jid, {
+        text:
+`╭─〔 ⚔️ *𝐆𝐔𝐈𝐋𝐃 𝐂𝐎𝐌𝐏* 〕
+│ 📖 *Usage* :: *.guildcomp <guild1> | <guild2>*
+│ 💡 *Example* :: *.guildcomp Warriors | Dragons*
+└───────────────◆`
+      }, { quoted: msg });
+    }
+
+    const parts = text.split("|").map(s => s.trim());
+    if (parts.length < 2 || !parts[0] || !parts[1]) {
+      return sock.sendMessage(jid, {
+        text: "❌ Usage: *.guildcomp <guild1> | <guild2>*"
+      }, { quoted: msg });
+    }
+
+    const [g1, g2] = await Promise.all([
+      guildSystem.getGuild(parts[0]),
+      guildSystem.getGuild(parts[1]),
+    ]);
+
+    if (!g1) return sock.sendMessage(jid, { text: `❌ Guild *"${parts[0]}"* not found.` }, { quoted: msg });
+    if (!g2) return sock.sendMessage(jid, { text: `❌ Guild *"${parts[1]}"* not found.` }, { quoted: msg });
+
+    function vs(val1, val2, higher = true) {
+      if (val1 === val2) return ["🟡", "🟡"];
+      const winner = higher ? val1 > val2 : val1 < val2;
+      return winner ? ["🟢", "🔴"] : ["🔴", "🟢"];
+    }
+
+    const [lv1, lv2]   = vs(g1.level,              g2.level);
+    const [mb1, mb2]   = vs(g1.members.length,      g2.members.length);
+    const [tr1, tr2]   = vs(g1.treasury,            g2.treasury);
+
+    const overall1 = g1.level * 1000 + g1.members.length * 100 + g1.treasury / 100;
+    const overall2 = g2.level * 1000 + g2.members.length * 100 + g2.treasury / 100;
+    const winner   = overall1 > overall2 ? g1.name : overall2 > overall1 ? g2.name : "TIE";
+
+    await sock.sendMessage(jid, {
+      text:
+`╭─〔 ⚔️ *𝐆𝐔𝐈𝐋𝐃 𝐂𝐎𝐌𝐏𝐀𝐑𝐈𝐒𝐎𝐍* 〕
+│
+│ ⚔️ *${g1.name}*  vs  *${g2.name}* ⚔️
+│
+│ 📊 *STATS*        ${g1.name.slice(0,10).padEnd(10)}  ${g2.name.slice(0,10)}
+├◆ ⭐ Level       ${lv1} ${String(g1.level).padEnd(12)} ${lv2} ${g2.level}
+├◆ 👥 Members     ${mb1} ${String(g1.members.length).padEnd(12)} ${mb2} ${g2.members.length}
+├◆ 💰 Treasury    ${tr1} $${String(g1.treasury.toLocaleString()).padEnd(11)} ${tr2} $${g2.treasury.toLocaleString()}
+│
+├◆ 🏆 *Winner* :: *${winner}*
+└───────────────◆`
+    }, { quoted: msg });
+  }
+};
