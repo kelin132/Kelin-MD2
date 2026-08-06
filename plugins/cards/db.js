@@ -84,6 +84,28 @@ export async function getUser(sender) {
   return user;
 }
 
+/**
+ * Append newly obtained cards atomically.
+ *
+ * Card commands can run at the same time as economy and other collection
+ * commands. A read-modify-save of the whole user document lets a stale
+ * command overwrite cards that another command just added. `$push` + `$inc`
+ * keeps each award intact even when commands overlap.
+ */
+export async function appendCards(sender, cards) {
+  if (!Array.isArray(cards) || cards.length === 0) return;
+
+  const col = await Col.users();
+  const userId = uid(sender);
+  await col.updateOne(
+    { userId },
+    {
+      $push: { cards: { $each: cards } },
+      $inc: { totalCards: cards.length },
+    },
+  );
+}
+
 function needsSeriesRepair(card) {
   const value = String(card?.series || "").trim();
   return !value || value.toLowerCase() === "unknown";
