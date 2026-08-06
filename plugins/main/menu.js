@@ -20,13 +20,13 @@ const PUBLIC_CATS = new Set([
 
 function renderCategory(layout, emoji, title, disabledTag, commandText) {
   if (layout === 2) {
-    return `\n┌─ ${emoji} *${title}*${disabledTag}\n│ ${commandText}\n└────────────────────────`;
+    return `\n╭━━━〔 ${emoji} *${title}*${disabledTag} 〕━━━╮\n┃ ${commandText}\n╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯`;
   }
   if (layout === 3) {
-    return `\n${emoji} *${title}*${disabledTag}\n${commandText}`;
+    return `\n╭─❀「 ${emoji} *${title}*${disabledTag} 」❀─╮\n│ ${commandText}\n╰───────────────❀`;
   }
   if (layout === 4) {
-    return `\n╭━━ ${emoji} *${title}*${disabledTag} ━━╮\n┃ ${commandText}\n╰━━━━━━━━━━━━━━━━━━━━━━╯`;
+    return `\n┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n┃ ${emoji} *${title}*${disabledTag}\n┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫\n┃ ${commandText}\n┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛`;
   }
   return `\n╭─${emoji}「 *${title}*${disabledTag} 」\n│ ${commandText}\n╰━━━━━━━━━━━━━━━━━━━━━━━━━━`;
 }

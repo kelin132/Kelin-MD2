@@ -192,7 +192,7 @@ export const SHOP_ITEMS = {
     useEffect: "xp+25",
   },
   diamond_shovel: {
-    price: 75_000,  orbCost: 75,  gemCost: 5,
+    price: 75_000,  orbCost: 75,  gemCost: 1,
     emoji: "🪏",   rarity: "rare",      xpBonus: 100, sellPct: 0.4,
     category: "tools",
     description: "A lucky shovel that doubles your chance of finding Diamonds while digging.",
