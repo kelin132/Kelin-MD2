@@ -147,7 +147,7 @@ export default {
       await Promise.all(
         allCards.map(async (card) => {
           if (!card.series || card.series === "Unknown") {
-            card.series = await getSeriesForCard(card, { timeout: 12000 });
+            card.series = await getSeriesForCard(card, { timeout: 2500 });
           }
         })
       );

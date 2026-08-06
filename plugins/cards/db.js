@@ -3,7 +3,7 @@
  * Collections: mn_users, mn_cards, mn_card_market, mn_spawn_settings
  */
 import { getDb } from "../../lib/mongo.mjs";
-import { getSeriesForCard } from "../../lib/seriesEnrich.mjs";
+import { getSeriesForCard, rememberSeries } from "../../lib/seriesEnrich.mjs";
 import { log } from "../../lib/logger.mjs";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -90,6 +90,28 @@ function needsSeriesRepair(card) {
 }
 
 /**
+ * Load already-correct series values from saved collections before card
+ * commands start. The series cache is runtime data, while MongoDB is durable.
+ */
+export async function primeKnownCardSeries() {
+  const col = await Col.users();
+  const users = await col.find(
+    { cards: { $exists: true, $ne: [] } },
+    { projection: { cards: 1 } }
+  ).toArray();
+
+  let primed = 0;
+  for (const user of users) {
+    if (!Array.isArray(user.cards)) continue;
+    for (const card of user.cards) {
+      if (rememberSeries(card?.name, card?.series)) primed++;
+    }
+  }
+  log("info", `[cards] Primed ${primed} saved series value(s) from MongoDB`);
+  return primed;
+}
+
+/**
  * Repair saved card objects that were created while series enrichment was
  * timing out. Updates are persisted per user so corrected values are visible
  * to collection, card-info, series, and trading commands.
@@ -126,7 +148,7 @@ export async function repairUnknownCardSeries() {
       const key = `${String(card.name || "").toLowerCase().trim()}|${String(card.media || "")}`;
       let series = resolvedByCard.get(key);
       if (series === undefined) {
-        series = await getSeriesForCard(card, { timeout: 12000 });
+        series = await getSeriesForCard(card, { timeout: 2500 });
         resolvedByCard.set(key, series);
       }
 

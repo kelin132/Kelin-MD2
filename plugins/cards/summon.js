@@ -211,7 +211,7 @@ export default {
 
       // Read the exact series from card metadata first, then fall back to AniList.
       if (!card.series || card.series === "Unknown") {
-        card.series = await getSeriesForCard(card, { timeout: 12000 });
+        card.series = await getSeriesForCard(card, { timeout: 2500 });
       }
 
       // ── Add card to collection ──────────────────────────────────────────────

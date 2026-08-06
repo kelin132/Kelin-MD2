@@ -39,7 +39,7 @@ Ask an admin to restart the bot, then wait for the next auto-spawn.`
       user.cards = user.cards || [];
 
       if (!card.series || card.series === "Unknown") {
-        card.series = await getSeriesForCard(card, { timeout: 12000 });
+        card.series = await getSeriesForCard(card, { timeout: 2500 });
       }
 
       user.cards.push({

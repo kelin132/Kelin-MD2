@@ -29,7 +29,7 @@ if (!global.__cardApiSpawnerRunning) {
 
     // Read the exact series from card artwork metadata before displaying.
     if (!card.series || card.series === "Unknown") {
-      card.series = await getSeriesForCard(card, { timeout: 12000 });
+      card.series = await getSeriesForCard(card, { timeout: 2500 });
     }
 
     const spawnId = createSpawnId();

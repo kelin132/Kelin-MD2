@@ -1,6 +1,6 @@
 import { findOrCreateUser, Col, uid } from "./db.js";
 import { fetchAllCards, getCard, searchCards } from "../../lib/cardApi.mjs";
-import { getSeries } from "../../lib/seriesEnrich.mjs";
+import { getSeriesForCard } from "../../lib/seriesEnrich.mjs";
 
 function normaliseQuery(value) {
   return String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -139,9 +139,9 @@ export default {
       }
       const issue = await getCardIssue(card.cardId, sender, collectionIndex);
 
-      // Enrich series if still unknown (AniList, 4 s timeout)
+      // Prefer the exact series embedded in the saved card artwork.
       if (!card.series || card.series === "Unknown") {
-        card.series = await getSeries(card.name, { timeout: 4000 });
+        card.series = await getSeriesForCard(card, { timeout: 2500 });
       }
 
       const collNum  = collectionIndex >= 0 ? collectionIndex + 1 : null;
