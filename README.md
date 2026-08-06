@@ -8,10 +8,24 @@ Premium WhatsApp Multi-Device Bot — pairing code login, 30+ plugins, 76+ comma
 
 ### 1. Install
 ```
-npm install
+npm run install:panel
 ```
 
-If your hosting panel keeps using an old or private npm mirror, run:
+This uses npm's public registry and disables package-lock generation, which is
+the most reliable option on Pterodactyl/Katabump.
+
+Do **not** use `npm install origin/main` as the install command. `origin/main`
+is a Git branch name, not an npm package or repository URL, and npm will try to
+clone the invalid repository `ssh://git@github.com/origin/main.git`.
+
+If your hosting panel has separate repository settings, use:
+
+```
+Repository: https://github.com/kelin132/Kelin-MD2.git
+Branch: main
+```
+
+If the panel keeps using an old or private npm mirror, run:
 ```
 npm run install:panel
 ```
@@ -32,12 +46,12 @@ On **Pterodactyl / katabump** you can paste these directly into the panel's **St
 
 ### 3. Start
 ```
-node index.mjs
+node index.js
 ```
 
 Or set your panel's **Start Command** to:
 ```
-node index.mjs
+node index.js
 ```
 
 ---
