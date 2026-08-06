@@ -1,0 +1,65 @@
+// plugins/pets/petleaderboard.js
+// .petlb — Top pet trainers leaderboard
+import { getPetLeaderboard } from "../../lib/petDatabase.js";
+import { RARITIES } from "../../lib/petData.js";
+import { getUser } from "../economy/database.js";
+
+export default {
+  name: "petlb",
+  description: "Top pet trainers leaderboard",
+  category: "pets",
+  usage: ".petlb",
+  aliases: ["petleaderboard", "pettop", "toppets"],
+
+  async run({ sock, msg }) {
+    const jid = msg.key.remoteJid;
+
+    const top = await getPetLeaderboard(10);
+
+    if (!top || top.length === 0) {
+      return sock.sendMessage(jid, {
+        text: `🏆 No pets registered yet!\n\nUse *.adopt* to be the first pet trainer!`,
+      }, { quoted: msg });
+    }
+
+    const medals = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
+
+    // Look up registered names for all owners in parallel
+    const ownerNames = await Promise.all(
+      top.map(async (pet) => {
+        try {
+          const user = await getUser(pet.owner);
+          return user?.name || `+${pet.owner.split("@")[0].split(":")[0]}`;
+        } catch {
+          return `+${pet.owner.split("@")[0].split(":")[0]}`;
+        }
+      })
+    );
+
+    const lines = top.map((pet, i) => {
+      const rarity  = RARITIES[pet.rarity] || RARITIES.common;
+      const trainer = ownerNames[i];
+      return [
+        `${medals[i]} *${pet.name}*`,
+        `   ${rarity.color} *${rarity.label}*  〔 ⭐ *Lv.${pet.level}* 〕  ⚔️ *${pet.attack}*`,
+        `   👤 *Trainer:* *${trainer}*`,
+      ].join("\n");
+    });
+
+    return sock.sendMessage(jid, {
+      text: [
+        `꧁━━〔 🏆 *P E T  L E A D E R B O A R D* 〕━━꧂`,
+        ``,
+        `  🌸 *Top Companions by Level*`,
+        `  ━━━━━━━━━━━━━━━━━━━━━━━`,
+        ``,
+        lines.join("\n\n"),
+        ``,
+        `  ━━━━━━━━━━━━━━━━━━━━━━━`,
+        `  ⚔️ *Train hard with* *.trainpet*!`,
+        ``,
+        `꧂━━━━━━━━━━━━━━━━━━━━━━━━━━━━꧁`,
+      ].join("\n"),
+    }, { quoted: msg });
+  },
+};

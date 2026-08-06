@@ -1,0 +1,114 @@
+/**
+ * KELIN MD — WhatsApp Multi-Device Bot
+ * Standalone entry point for panel hosting (Pterodactyl, katabump, bothosting, etc.)
+ *
+ * Setup:
+ *   1. Copy .env.example → .env and fill in your values
+ *   2. npm install
+ *   3. node index.js
+ *
+ * On first run a pairing code will appear in this console.
+ * Enter it in WhatsApp → Settings → Linked Devices → Link a Device.
+ * If the pairing code doesn't appear, a QR code will be shown instead — scan it.
+ */
+
+import "dotenv/config";
+import { readFileSync, existsSync } from "fs";
+import path from "path";
+import { createRequire } from "module";
+import { connectBot } from "./lib/bot.mjs";
+import { loadPlugins } from "./lib/pluginManager.mjs";
+import { log } from "./lib/logger.mjs";
+import { autoUpdate } from "./lib/updater.js";
+import { connectDb } from "./lib/mongo.mjs";
+import { initGroupSettings } from "./lib/groupSettings.js";
+import { startCardSpawner }  from "./lib/cardSpawner.mjs";
+import { startTaxScheduler } from "./lib/taxScheduler.mjs";
+import { getRuntimeSettings } from "./lib/runtimeSettings.mjs";
+import { repairUnknownCardSeries } from "./plugins/cards/db.js";
+
+// settings.js is CommonJS — import via createRequire
+const _require  = createRequire(import.meta.url);
+const _settings = _require("./settings.cjs");
+
+const RUNTIME      = getRuntimeSettings();
+const BOT_NAME     = RUNTIME.botName     || process.env.BOT_NAME    || _settings.botName    || "KELIN MD";
+const BOT_NUMBER   = process.env.BOT_NUMBER  || "";
+// OWNER_NUMBER: env var wins, then settings.js — NEVER falls back to BOT_NUMBER
+const OWNER_NUMBER = RUNTIME.ownerNumber || (process.env.OWNER_NUMBER || _settings.ownerNumber || "").replace(/\D/g, "");
+const PREFIX       = RUNTIME.prefix      || process.env.PREFIX      || ".";
+const BOT_VERSION = "1.0.0";
+
+// ── Banner ────────────────────────────────────────────────────────────────────
+console.log("\n" + "═".repeat(50));
+console.log(`  ${BOT_NAME} v${BOT_VERSION} — Starting`);
+console.log("═".repeat(50));
+console.log(`  Prefix  : ${PREFIX}`);
+console.log(`  Number  : ${BOT_NUMBER || "⚠  Not set — add BOT_NUMBER to .env"}`);
+console.log("═".repeat(50) + "\n");
+
+// ── Session check ─────────────────────────────────────────────────────────────
+const CREDS = path.resolve("sessions", "auth", "creds.json");
+function isRegistered() {
+  if (!existsSync(CREDS)) return false;
+  try {
+    return JSON.parse(readFileSync(CREDS, "utf8")).registered === true;
+  } catch { return false; }
+}
+
+if (!isRegistered()) {
+  if (!BOT_NUMBER) {
+    log("error", "No BOT_NUMBER set and no valid session found.");
+    log("error", "Add BOT_NUMBER=<number with country code, no +> to your .env / panel env vars.");
+    process.exit(1);
+  }
+  log("info", `No valid session found. Will request pairing code for +${BOT_NUMBER} ...`);
+} else {
+  log("info", "Existing session found — skipping pairing.");
+}
+
+// ── Connect to MongoDB ────────────────────────────────────────────────────────
+try {
+  await connectDb();
+  await initGroupSettings();   // load group settings (welcome, antilink, etc.) from MongoDB
+
+  // ── One-time migration: bump cardLimit from 100 → 250 for existing users ──
+  try {
+    const { getDb } = await import("./lib/mongo.mjs");
+    const db = await getDb();
+    const result = await db.collection("mn_users").updateMany(
+      { cardLimit: { $lt: 250 } },
+      { $set: { cardLimit: 250 } }
+    );
+    if (result.modifiedCount > 0) {
+      log("info", `[migration] Bumped cardLimit to 250 for ${result.modifiedCount} existing user(s)`);
+    }
+  } catch (migErr) {
+    log("warn", "[migration] cardLimit migration failed: " + String(migErr));
+  }
+
+  // Repair cards saved as "Unknown" by older summon/spawn builds without
+  // delaying bot startup or requiring users to resummon them.
+  void repairUnknownCardSeries().catch((repairErr) => {
+    log("warn", "[migration] card series repair failed: " + String(repairErr));
+  });
+} catch (err) {
+  log("warn", "MongoDB connection failed: " + String(err));
+  log("warn", "Economy/guild/staff features require MongoDB. Add MONGO_URI to your .env");
+}
+
+// ── Load plugins ──────────────────────────────────────────────────────────────
+const { totalPlugins, totalCommands } = await loadPlugins(PREFIX);
+log("info", `Plugins loaded: ${totalPlugins} plugins, ${totalCommands} commands`);
+
+// ── Connect bot ───────────────────────────────────────────────────────────────
+await connectBot(BOT_NUMBER || null, PREFIX);
+
+// ── Card auto-spawner (drops a card in enabled groups every 15 min) ───────────
+startCardSpawner();
+
+// ── Tax scheduler (deducts 30% of wallet + bank every 48 h) ──────────────────
+startTaxScheduler();
+
+// ── Auto-update check ─────────────────────────────────────────────────────────
+autoUpdate();
