@@ -1,1 +1,2 @@
 - [Native canvas dependency](native-canvas.md) — the bot’s canvas renderer needs a successful native `canvas` build; syntax and plugin loading can still pass while renderer plugins warn.
+- [Card series source](card-series.md) — prefer exact Series Name metadata embedded in card artwork; GitHub’s active bot files are at repository root.
