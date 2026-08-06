@@ -37,13 +37,12 @@ function unwrapMessage(message) {
  * reject an otherwise valid-looking sticker with "can't view sticker info".
  */
 async function toStickerBuffer(inputBuffer, memberName) {
-  const packName = memberName
-    ? `${memberName} | ${STICKER_PACK_NAME}`
-    : STICKER_PACK_NAME;
+  const packName = memberName || STICKER_PACK_NAME;
+  const publisher = memberName ? STICKER_PACK_NAME : "";
 
   return new Sticker(inputBuffer, {
     pack: packName,
-    author: "",
+    author: publisher,
     type: StickerTypes.FULL,
     quality: 80,
   }).toBuffer();
@@ -88,8 +87,8 @@ export default {
       const buffer = Buffer.concat(chunks);
 
       // WhatsApp shows the pack field first and the author field after a
-      // separator. Keep the complete requested label in the pack field so it
-      // appears as "USER NAME | 𝐀𝐈𝐃𝐎𝐑𝐔" instead of duplicating the name.
+      // separator. Keep the member name as the pack title and 𝐀𝐈𝐃𝐎𝐑𝐔 as
+      // the publisher so it appears as "USER NAME | 𝐀𝐈𝐃𝐎𝐑𝐔".
       const memberName = args
         .join(" ")
         .trim()
