@@ -3,6 +3,8 @@
  * Collections: mn_users, mn_cards, mn_card_market, mn_spawn_settings
  */
 import { getDb } from "../../lib/mongo.mjs";
+import { getSeriesForCard } from "../../lib/seriesEnrich.mjs";
+import { log } from "../../lib/logger.mjs";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -80,6 +82,72 @@ export async function getUser(sender) {
     await c.updateOne({ userId }, { $set: data });
   };
   return user;
+}
+
+function needsSeriesRepair(card) {
+  const value = String(card?.series || "").trim();
+  return !value || value.toLowerCase() === "unknown";
+}
+
+/**
+ * Repair saved card objects that were created while series enrichment was
+ * timing out. Updates are persisted per user so corrected values are visible
+ * to collection, card-info, series, and trading commands.
+ */
+export async function repairUnknownCardSeries() {
+  const col = await Col.users();
+  const users = await col.find(
+    {
+      cards: {
+        $elemMatch: {
+          $or: [
+            { series: { $exists: false } },
+            { series: null },
+            { series: "" },
+            { series: "Unknown" },
+          ],
+        },
+      },
+    },
+    { projection: { _id: 1, userId: 1, cards: 1 } }
+  ).toArray();
+
+  let repairedUsers = 0;
+  let repairedCards = 0;
+  const resolvedByCard = new Map();
+
+  for (const user of users) {
+    if (!Array.isArray(user.cards)) continue;
+    let changed = false;
+
+    for (const card of user.cards) {
+      if (!needsSeriesRepair(card)) continue;
+
+      const key = `${String(card.name || "").toLowerCase().trim()}|${String(card.media || "")}`;
+      let series = resolvedByCard.get(key);
+      if (series === undefined) {
+        series = await getSeriesForCard(card, { timeout: 12000 });
+        resolvedByCard.set(key, series);
+      }
+
+      if (series && series !== "Unknown") {
+        card.series = series;
+        changed = true;
+        repairedCards++;
+      }
+    }
+
+    if (changed) {
+      await col.updateOne({ _id: user._id }, { $set: { cards: user.cards } });
+      repairedUsers++;
+    }
+  }
+
+  log(
+    "info",
+    `[migration] Card series repair finished: ${repairedCards} card(s) across ${repairedUsers} user(s)`
+  );
+  return { repairedUsers, repairedCards, checkedUsers: users.length };
 }
 
 // ── Spawn settings (used by cardspawn.js + autoSpawn.js) ─────────────────────

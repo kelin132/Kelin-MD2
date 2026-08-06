@@ -21,6 +21,7 @@ import {
   TIER_NAME,
   createSpawnId,
 } from "../../lib/cardApi.mjs";
+import { getSeriesForCard } from "../../lib/seriesEnrich.mjs";
 
 const PACK_COST = 20_000_000;
 
@@ -140,6 +141,16 @@ export default {
       // ── Add all cards to collection ────────────────────────────────────────
       const cardUser = await findOrCreateUser(sender);
       cardUser.cards = cardUser.cards || [];
+
+      // Resolve every card before saving it so packs use the same enrichment
+      // path as .summon.
+      await Promise.all(
+        allCards.map(async (card) => {
+          if (!card.series || card.series === "Unknown") {
+            card.series = await getSeriesForCard(card, { timeout: 12000 });
+          }
+        })
+      );
 
       for (const card of allCards) {
         cardUser.cards.push({

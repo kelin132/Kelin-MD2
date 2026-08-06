@@ -25,6 +25,7 @@ import { initGroupSettings } from "./lib/groupSettings.js";
 import { startCardSpawner }  from "./lib/cardSpawner.mjs";
 import { startTaxScheduler } from "./lib/taxScheduler.mjs";
 import { getRuntimeSettings } from "./lib/runtimeSettings.mjs";
+import { repairUnknownCardSeries } from "./plugins/cards/db.js";
 
 // settings.js is CommonJS — import via createRequire
 const _require  = createRequire(import.meta.url);
@@ -85,6 +86,12 @@ try {
   } catch (migErr) {
     log("warn", "[migration] cardLimit migration failed: " + String(migErr));
   }
+
+  // Repair cards saved as "Unknown" by older summon/spawn builds without
+  // requiring users to resummon them.
+  void repairUnknownCardSeries().catch((repairErr) => {
+    log("warn", "[migration] card series repair failed: " + String(repairErr));
+  });
 } catch (err) {
   log("warn", "MongoDB connection failed: " + String(err));
   log("warn", "Economy/guild/staff features require MongoDB. Add MONGO_URI to your .env");

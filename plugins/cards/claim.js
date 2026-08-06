@@ -1,5 +1,6 @@
 import { findOrCreateUser } from "./db.js";
 import { sendCardMedia } from "../../lib/cardApi.mjs";
+import { getSeriesForCard } from "../../lib/seriesEnrich.mjs";
 
 const activeSpawns = global.activeSpawns || (global.activeSpawns = {});
 
@@ -37,7 +38,9 @@ Ask an admin to restart the bot, then wait for the next auto-spawn.`
       const user = await findOrCreateUser(sender);
       user.cards = user.cards || [];
 
-
+      if (!card.series || card.series === "Unknown") {
+        card.series = await getSeriesForCard(card, { timeout: 12000 });
+      }
 
       user.cards.push({
         cardId:     card.cardId,
