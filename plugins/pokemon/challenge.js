@@ -88,6 +88,8 @@ export default {
             shiny: opponentLead.shiny,
           },
           round: 1,
+           playerTrainer: battle.challengerTrainer,
+           enemyTrainer: battle.opponentTrainer,
           statusText: `${challengerTrainer.username} vs ${opponentTrainer.username || msg.pushName}!`,
         });
       } catch {}

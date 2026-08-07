@@ -85,6 +85,8 @@ export default {
           shiny: false,
         },
         round: 1,
+          playerTrainer: battle.challengerTrainer,
+          enemyTrainer: battle.opponentTrainer,
         statusText: `${lead.displayName || lead.name} vs Wild ${wild.pokemon.displayName || wild.pokemon.name}!`,
       });
     } catch {}

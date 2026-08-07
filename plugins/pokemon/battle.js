@@ -47,6 +47,8 @@ async function sendScene(sock, jid, msg, battle, statusText, hitSide, damage, cr
         primaryType: battle.opponentPokemon.primaryType || (battle.opponentPokemon.types || [])[0],
       },
       round: battle.round,
+      playerTrainer: battle.challengerTrainer,
+      enemyTrainer: battle.opponentTrainer,
       hitSide, damage, crit, statusText,
     });
     await sock.sendMessage(jid, { image: buf, caption: statusText, mentions }, { quoted: msg });
