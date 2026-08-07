@@ -59,17 +59,27 @@ export default {
       map.get(cat).push(plugin.name);
     }
 
-    const showStaff = isOwner || isStaff || isMod;
+    // Staff commands are visible only to staff-level users and the owner.
+    // Keep owner commands even narrower so moderators do not see either
+    // restricted section in the public menu.
+    const showStaff = isOwner || isStaff;
+    const showOwner = isOwner;
     const order = [
       "main", "economy", "company", "guild", "pets", "cards", "naruto",
       "pokemon", "dragonball", "games", "fun", "ai", "search", "media",
       "image", "utilities", "download", "group", "admin", "anime",
       ...(showStaff ? ["staff"] : []),
-      ...(showStaff ? ["owner"] : []),
+      ...(showOwner ? ["owner"] : []),
     ];
     const sortedCats = [
       ...order.filter((cat) => map.has(cat)),
-      ...[...map.keys()].filter((cat) => !order.includes(cat) && PUBLIC_CATS.has(cat)).sort(),
+      ...[...map.keys()]
+        .filter((cat) =>
+          !order.includes(cat) &&
+          !["staff", "owner"].includes(cat) &&
+          PUBLIC_CATS.has(cat)
+        )
+        .sort(),
     ];
 
     let text = `*Hello* senpai ${mention}, I am ${botName} 👋
