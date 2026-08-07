@@ -34,23 +34,21 @@ export default {
       }, { quoted: msg });
     }
 
-    // Clean up if already finished (shouldn't happen, but be safe)
-    if (game.finished) {
+    if (game.isExpired()) {
       games.delete(jid);
       return sock.sendMessage(jid, {
-        text: "❌ That game has already ended. Start a new one with *.ttt @user*",
+        text: "⌛ This game expired after 30 minutes of inactivity.\n\nStart a new one with *.ttt @user*",
       }, { quoted: msg });
     }
 
-    // Only the two players can move
-    if (sender !== game.playerX && sender !== game.playerO) {
+    if (!game.hasPlayer(sender)) {
       return sock.sendMessage(jid, {
         text: "❌ You are not a player in this game!",
       }, { quoted: msg });
     }
 
-    const pos = parseInt(args[0]);
-    if (!args[0] || isNaN(pos) || pos < 1 || pos > 9) {
+    const pos = args[0];
+    if (!/^[1-9]$/.test(pos || "")) {
       return sock.sendMessage(jid, {
         text: `❌ Pick a number from *1–9* by sending it directly.\n\n${game.render()}`,
         mentions: [game.turn],
@@ -60,6 +58,9 @@ export default {
     const result = game.move(sender, pos);
 
     if (!result.success) {
+      if (result.expired) {
+        games.delete(jid);
+      }
       return sock.sendMessage(jid, {
         text: `❌ ${result.message}`,
       }, { quoted: msg });
@@ -97,7 +98,9 @@ No coins this time. Rematch with *.ttt @user*`,
           rewardLine = `\n💰 @${winnerJid.split("@")[0]} earned *+$${WIN_REWARD}* coins!`;
         }
       } catch {
-        // Economy unavailable — still announce the win
+      // Keep the win announcement even if the economy service is unavailable,
+      // but make the missing payout visible instead of silently swallowing it.
+      rewardLine = "\n⚠️ The reward could not be credited right now.";
       }
 
       return sock.sendMessage(jid, {
