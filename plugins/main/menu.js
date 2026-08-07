@@ -14,7 +14,7 @@ const categoryEmojis = {
 
 const PUBLIC_CATS = new Set([
   "main", "economy", "company", "guild", "games", "fun", "ai", "search",
-  "media", "utilities", "download", "group", "anime", "cards", "staff",
+  "media", "utilities", "download", "group", "anime", "cards",
   "naruto", "pokemon", "pets", "image", "dragonball",
 ]);
 
@@ -66,7 +66,7 @@ export default {
     const order = [
       "main", "economy", "company", "guild", "pets", "cards", "naruto",
       "pokemon", "dragonball", "games", "fun", "ai", "search", "media",
-      "image", "utilities", "download", "group", "admin", "anime",
+      "image", "utilities", "download", "group", "admin", "anime","staff","owner"
       ...(showStaff ? ["staff"] : []),
       ...(showOwner ? ["owner"] : []),
     ];
