@@ -1,10 +1,9 @@
 /**
  * .flux <prompt>
- * Generate an AI image using the Flux v2 model via David Cyril API.
- * https://apis.davidcyril.name.ng/endpoints/imagegen/#flux-v2
+ * Generate an AI image using the PrinceTech Flux endpoint.
  */
 
-const BASE = "https://apis.davidcyril.name.ng";
+import { princeApiJson } from "../../lib/princeAPI.mjs";
 
 export default {
   name: "flux",
@@ -33,31 +32,17 @@ export default {
     await sock.sendPresenceUpdate("composing", jid);
 
     try {
-      const url = `${BASE}/imagegen/flux-v2?prompt=${encodeURIComponent(text)}`;
-      const res  = await fetch(url, { signal: AbortSignal.timeout(60_000) });
-
-      if (!res.ok) throw new Error(`API returned HTTP ${res.status}`);
-
-      const contentType = res.headers.get("content-type") || "";
-
-      let imageBuffer;
-      if (contentType.includes("application/json")) {
-        // Some endpoints return { url: "..." } or { image: "base64..." }
-        const data = await res.json();
-        const imgUrl = data?.url || data?.image_url || data?.data?.url;
-        if (imgUrl) {
-          const imgRes = await fetch(imgUrl, { signal: AbortSignal.timeout(30_000) });
-          if (!imgRes.ok) throw new Error("Failed to download generated image");
-          imageBuffer = Buffer.from(await imgRes.arrayBuffer());
-        } else if (data?.image && typeof data.image === "string") {
-          // base64 encoded
-          imageBuffer = Buffer.from(data.image.replace(/^data:image\/\w+;base64,/, ""), "base64");
-        } else {
-          throw new Error("Unexpected API response format");
-        }
-      } else {
-        imageBuffer = Buffer.from(await res.arrayBuffer());
+      const data = await princeApiJson("fluximg", { prompt: text }, 60_000);
+      const imgUrl = data?.result?.url || data?.result;
+      if (typeof imgUrl !== "string" || !imgUrl) {
+        throw new Error("Flux returned no image URL");
       }
+
+      const imgRes = await fetch(imgUrl, {
+        signal: AbortSignal.timeout(30_000),
+      });
+      if (!imgRes.ok) throw new Error("Failed to download generated image");
+      const imageBuffer = Buffer.from(await imgRes.arrayBuffer());
 
       await sock.sendMessage(jid, {
         image:   imageBuffer,
