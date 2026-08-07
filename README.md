@@ -39,10 +39,39 @@ Copy `.env.example` to `.env` and fill in your details:
 | `BOT_NUMBER` | ✅ | Your WhatsApp number with country code, no `+` (e.g. `2348012345678`) |
 | `OWNER_NUMBER` | ✅ | Your number for owner-only commands (same format) |
 | `BOT_NAME` | ❌ | Display name (default: `KELIN MD`) |
+| `AI_PERSONA` | ❌ | AI personality: `akira`, `zhongli`, or `tsaritsa` |
+| `AI_TRIGGER_NAMES` | ❌ | Optional comma-separated names that trigger the active persona |
 | `PREFIX` | ❌ | Command prefix (default: `.`) |
 | `TZ` | ❌ | Timezone (default: `Africa/Lagos`) |
 
 On **Pterodactyl / katabump** you can paste these directly into the panel's **Startup → Environment Variables** tab instead of using a `.env` file.
+
+### AI personalities
+
+All deployed bots can run from the same repository while using different personalities. Set these variables separately on each deployment:
+
+```env
+# Akira deployment
+BOT_NAME=AKIRA MD
+AI_PERSONA=akira
+AI_TRIGGER_NAMES=akira,akira md
+```
+
+```env
+# Zhongli deployment
+BOT_NAME=ZHONGLI MD
+AI_PERSONA=zhongli
+AI_TRIGGER_NAMES=zhongli,zhongli md,consultant
+```
+
+```env
+# Tsaritsa deployment
+BOT_NAME=TSARITSA MD
+AI_PERSONA=tsaritsa
+AI_TRIGGER_NAMES=tsaritsa,tsaritsa md,her majesty
+```
+
+The active persona responds when its name is written, when the bot is mentioned, or when someone replies to one of its messages. Conversation history is separated by persona and chat, so switching deployments does not mix character memories. Use `.akira info` to see the active persona and `.akira reset` to clear its conversation in the current chat; the legacy command name remains for compatibility.
 
 ### 3. Start
 ```
