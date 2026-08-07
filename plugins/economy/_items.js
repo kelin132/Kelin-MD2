@@ -277,6 +277,7 @@ export const SHOP_ITEMS = {
     price: 8_000,   orbCost: 8,   gemCost: 0,
     emoji: "📜",   rarity: "common",    xpBonus: 20,  sellPct: 0.3,
     category: "scrolls",
+    hidden: true,
     description: "Allows you to rename your bot profile or pet.",
     useEffect: "rename:1",
   },
@@ -341,9 +342,11 @@ export const SHOP_ITEMS = {
   armor:   { price: 6000,  orbCost: 0, gemCost: 0, emoji: "🦾", rarity: "rare",      xpBonus: 30,  sellPct: 0.5, category: "armor" },
 
   // Charms (kept)
-  rob_charm:    { price: 75_000,  orbCost: 0, gemCost: 0, emoji: "🧿", rarity: "rare",    xpBonus: 0, sellPct: 0.3, category: "consumables", useEffect: "rob_shield:86400000",  description: "Shields you from being robbed for 1 day." },
+  rob_charm:    { price: 30_000,  orbCost: 0, gemCost: 0, emoji: "🧿", rarity: "rare",    xpBonus: 0, sellPct: 0.3, category: "consumables", useEffect: "rob_shield:86400000",  description: "Protects you from being robbed for 24 hours." },
   stealth_hood: { price: 40_000,  orbCost: 0, gemCost: 0, emoji: "🪄", rarity: "common",  xpBonus: 0, sellPct: 0.3, category: "consumables", useEffect: "stealth:3600000",      description: "Halves your fine if caught robbing for 1 hour." },
   vault_guard:  { price: 100_000, orbCost: 0, gemCost: 0, emoji: "🔒", rarity: "rare",    xpBonus: 0, sellPct: 0.3, category: "consumables", useEffect: "vault_shield:7200000", description: "Locks your vault against forced withdrawals for 2 hours." },
+  lucky_coin:   { price: 25_000,  orbCost: 0, gemCost: 0, emoji: "🪙", rarity: "rare",    xpBonus: 0, sellPct: 0.3, category: "consumables", useEffect: "coin_boost:1800000", description: "Doubles coin rewards from supported activities for 30 minutes." },
+  xp_charm:     { price: 25_000,  orbCost: 0, gemCost: 0, emoji: "🌟", rarity: "rare",    xpBonus: 0, sellPct: 0.3, category: "consumables", useEffect: "xp_boost:3600000",   description: "Doubles XP rewards from supported activities for 1 hour." },
   xp_bomb:      { price: 30_000,  orbCost: 0, gemCost: 0, emoji: "💥", rarity: "common",  xpBonus: 0, sellPct: 0.4, category: "consumables", useEffect: "xp+500",               description: "Instantly grants 500 XP." },
 };
 

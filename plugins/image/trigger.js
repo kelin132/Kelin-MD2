@@ -1,6 +1,7 @@
 // plugins/image/trigger.js — Gun/triggered meme via PopCat API
 
-import { getQuotedImageUrl, noQuoteText } from "./_imageHelper.js";
+import { getQuotedImageBuffer, noQuoteText } from "./_imageHelper.js";
+import { renderTrigger } from "../../lib/imageCanvas.mjs";
 
 export default {
   name: "trigger",
@@ -13,9 +14,8 @@ export default {
   async run({ sock, msg }) {
     const jid = msg.key.remoteJid;
     try {
-      const imgUrl = await getQuotedImageUrl(sock, msg);
-      const url    = `https://api.popcat.xyz/gun?image=${encodeURIComponent(imgUrl)}`;
-      await sock.sendMessage(jid, { image: { url }, caption: "🔫 *TRIGGERED!!*" }, { quoted: msg });
+      const image = await renderTrigger(await getQuotedImageBuffer(sock, msg));
+      await sock.sendMessage(jid, { image, mimetype: "image/png", caption: "🔫 *TRIGGERED!!*" }, { quoted: msg });
     } catch (err) {
       if (err.message === "NOQUOTE" || err.message === "NOIMAGE") {
         return sock.sendMessage(jid, { text: noQuoteText() }, { quoted: msg });

@@ -1,6 +1,6 @@
 // plugins/games/ttmove.js
 // Process moves in an active Tic Tac Toe game.
-// Usage: .m <1-9>
+// Usage: send only a number from 1-9 while a game is active.
 //
 // Rewards the winner with coins. No penalty for the loser.
 
@@ -13,7 +13,7 @@ export default {
   name: "m",
   description: "Make a move in the active Tic Tac Toe game (1–9)",
   category: "games",
-  usage: ".m <1-9>",
+  usage: "1-9 during an active .ttt game",
   aliases: ["move"],
   cooldown: 1,
 
@@ -52,7 +52,7 @@ export default {
     const pos = parseInt(args[0]);
     if (!args[0] || isNaN(pos) || pos < 1 || pos > 9) {
       return sock.sendMessage(jid, {
-        text: `❌ Pick a number from *1–9*.\n\n${game.render()}`,
+        text: `❌ Pick a number from *1–9* by sending it directly.\n\n${game.render()}`,
         mentions: [game.turn],
       }, { quoted: msg });
     }
@@ -115,11 +115,11 @@ Rematch: *.ttt @user*`,
     // ── Game continues ────────────────────────────────────────────────────────
     const nextTurn = game.turn;
     return sock.sendMessage(jid, {
-      text:
+        text:
 `${board}
 🎯 Turn: @${nextTurn.split("@")[0]}
 
-Use *.m <1-9>* to make your move.`,
+ Send only a number from *1-9* to make your move.`,
       mentions: [nextTurn],
     }, { quoted: msg });
   },

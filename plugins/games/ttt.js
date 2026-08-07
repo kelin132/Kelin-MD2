@@ -1,6 +1,6 @@
 // plugins/games/ttt.js
 // Challenge someone to Tic Tac Toe. Winner earns $200 coins.
-// Moves are made with: .m <1-9>
+// Once a game starts, players make moves by sending only a number from 1-9.
 
 import { games, TicTacToe } from "../../lib/tictactoe.js";
 
@@ -26,7 +26,7 @@ export default {
 
     if (games.has(jid)) {
       return sock.sendMessage(jid, {
-        text: "🎮 A Tic Tac Toe game is already running here.\n\nMake your move with *.m <1-9>*",
+        text: "🎮 A Tic Tac Toe game is already running here.\n\nMake your move by sending only a number from *1-9*.",
       }, { quoted: msg });
     }
 
@@ -62,7 +62,7 @@ ${game.render()}
 
 🎯 First move: @${challenger.split("@")[0]}
 
-Use *.m <1-9>* to place your symbol.
+ Send only the number (*1-9*) to place your symbol.
 Winner takes *$200 coins*! 🏆`,
       mentions: [challenger, opponent],
     }, { quoted: msg });
