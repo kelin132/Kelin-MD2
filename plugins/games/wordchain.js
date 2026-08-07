@@ -1,6 +1,6 @@
 /**
  * Word Chain Game — adapted from Kord-Ai (Mirage / GPLv3)
- * Use .wcg play <word> to submit your word during a game.
+ * Use .wcg play <word> or type the word directly during a game.
  */
 
 const games = new Map(); // jid → game state
@@ -46,7 +46,7 @@ export default {
   aliases: ["wordchain", "wordgame"],
   description: "Word Chain Game — each word must start with the last letter of the previous word",
   category: "games",
-  usage: ".wcg [easy|medium|hard] · .wcg join · .wcg start · .wcg play <word> · .wcg end · .wcg status",
+  usage: ".wcg [easy|medium|hard] · .wcg join · .wcg start · type a word · .wcg end · .wcg status",
   cooldown: 2,
 
   async run({ sock, msg, args, sender }) {
@@ -110,8 +110,18 @@ export default {
     // ── create new game / show existing lobby ─────────────────────────────────
     const existing = games.get(jid);
     if (existing?.status === "playing") {
+      if (/^[a-z]+$/i.test(sub)) {
+        if (current(existing) !== sender) {
+          return sock.sendMessage(jid, {
+            text: `⚠️ It's @${current(existing).split("@")[0]}'s turn, not yours!`,
+            mentions: [current(existing)],
+          }, { quoted: msg });
+        }
+        return handleWord(sock, jid, msg, existing, sender, sub);
+      }
+
       return sock.sendMessage(jid, {
-        text: `⚠️ A Word Chain game is already running!\n\n🎯 Turn: @${current(existing).split("@")[0]}\n📝 Start with: "${existing.prevWord.slice(-1)}"\n\n• *.wcg play <word>* — submit a word\n• *.wcg status* — check game state\n• *.wcg end* — stop the game`,
+        text: `⚠️ A Word Chain game is already running!\n\n🎯 Turn: @${current(existing).split("@")[0]}\n📝 Start with: "${existing.prevWord.slice(-1)}"\n\n• Type your word directly when it is your turn\n• *.wcg play <word>* — alternative command\n• *.wcg status* — check game state\n• *.wcg end* — stop the game`,
         mentions: [current(existing)],
       }, { quoted: msg });
     }
@@ -148,13 +158,37 @@ export default {
   },
 };
 
+/**
+ * Accept a plain word during an active game, like Truth or Dare's
+ * non-prefixed text handler. Commands such as .wcg join and .wcg play
+ * continue to use the normal command router.
+ */
+export async function handleWordChainText(sock, msg, prefix = ".") {
+  const body =
+    msg.message?.conversation ||
+    msg.message?.extendedTextMessage?.text ||
+    "";
+  const word = body.trim().toLowerCase();
+
+  if (!word || word.startsWith(prefix) || !/^[a-z]+$/.test(word)) return false;
+
+  const jid = msg.key.remoteJid;
+  const sender = msg.key.participant || msg.key.remoteJid;
+  const game = games.get(jid);
+
+  if (!game || game.status !== "playing" || current(game) !== sender) return false;
+
+  await handleWord(sock, jid, msg, game, sender, word);
+  return true;
+}
+
 async function beginGame(sock, jid, g) {
   g.status  = "playing";
   g.idx     = 0;
   g.players.forEach(p => { g.attempts[p] = 0; });
   const list = g.players.map((p, i) => `${i + 1}. @${p.split("@")[0]}`).join("\n");
   await sock.sendMessage(jid, {
-    text: `\`\`\`🚀 WORD CHAIN STARTED!\`\`\`\n\n${g.cfg.label}\n\n👥 *Players (${g.players.length}):*\n${list}\n\n🎯 *First turn:* @${current(g).split("@")[0]}\n📝 *Start letter:* "${g.prevWord}"\n📏 *Min length:* ${g.wordLen} letters\n\n📖 Submit your word with:\n*.wcg play <word>*\n\n_Max ${g.cfg.maxAttempts} wrong attempts per player before elimination!_`,
+    text: `\`\`\`🚀 WORD CHAIN STARTED!\`\`\`\n\n${g.cfg.label}\n\n👥 *Players (${g.players.length}):*\n${list}\n\n🎯 *First turn:* @${current(g).split("@")[0]}\n📝 *Start letter:* "${g.prevWord}"\n📏 *Min length:* ${g.wordLen} letters\n\n📖 Type your word directly, or use:\n*.wcg <word>*\n\n_Max ${g.cfg.maxAttempts} wrong attempts per player before elimination!_`,
     mentions: g.players,
   });
 }
@@ -191,7 +225,7 @@ async function handleWord(sock, jid, msg, g, sender, word) {
 
   await sock.sendMessage(jid, { react: { text: "✅", key: msg.key } });
   await sock.sendMessage(jid, {
-    text: `✅ *"${word}"* accepted!\n\n🎯 *Turn:* @${current(g).split("@")[0]}\n📝 *Start with:* "${word.slice(-1)}"\n📏 *Min length:* ${g.wordLen} letters\n📊 *Words played:* ${g.count}\n\n_Submit with:_ *.wcg play <word>*`,
+    text: `✅ *"${word}"* accepted!\n\n🎯 *Turn:* @${current(g).split("@")[0]}\n📝 *Start with:* "${word.slice(-1)}"\n📏 *Min length:* ${g.wordLen} letters\n📊 *Words played:* ${g.count}\n\n_Type your next word directly, or use:_ *.wcg <word>*`,
     mentions: [current(g)],
   });
 }
