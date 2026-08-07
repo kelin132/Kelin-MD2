@@ -71,7 +71,7 @@ AI_PERSONA=tsaritsa
 AI_TRIGGER_NAMES=tsaritsa,tsaritsa md,her majesty
 ```
 
-The active persona responds when its name is written, when the bot is mentioned, or when someone replies to one of its messages. Conversation history is separated by persona and chat, so switching deployments does not mix character memories. Use `.akira info` to see the active persona and `.akira reset` to clear its conversation in the current chat; the legacy command name remains for compatibility.
+The active persona responds when its name is written, when the bot is mentioned, or when someone replies to one of its messages. Conversation history is separated by persona and chat, so switching deployments does not mix character memories. Persona replies use `FREEMODEL_API_KEY` exclusively; they never fall back to Gemini. If the key is missing or FreeModel returns an error, the bot reports that error instead of switching providers. Use `.akira info` to see the active persona and `.akira reset` to clear its conversation in the current chat; the legacy command name remains for compatibility.
 
 ### 3. Start
 ```
