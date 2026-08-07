@@ -9,7 +9,7 @@ import { updatePokemon, addPokemonXP, buildPokemon, savePokemon, getTrainerParty
 import { addToParty, addToPC, updateTrainer } from "../../lib/pokemon/players.mjs";
 import { calcDamage, tryCatch, xpReward, pvpXpReward, coinReward, getMovesForType, getLearnableMoveAtLevel, getLevelEvolution, TYPE_EMOJIS, TYPE_MOVES, getTypeEffectiveness, effectivenessText } from "../../lib/pokemon/gameLogic.mjs";
 import { generateBattleScene, generateCatchScene, generateBattleResult } from "../../lib/pokemon/canvas.mjs";
-import { fetchPokemon } from "../../lib/pokemon/api.mjs";
+import { fetchPokemon, getBattleSpriteUrls } from "../../lib/pokemon/api.mjs";
 import { setPendingLearn } from "../../lib/pokemon/moveLearnState.mjs";
 import { MART_ITEMS } from "../../lib/pokemon/martItems.mjs";
 
@@ -26,10 +26,12 @@ async function sendScene(sock, jid, msg, battle, statusText, hitSide, damage, cr
         level: battle.challengerPokemon.level,
         hp: battle.challengerPokemon.hp,
         maxHp: battle.challengerPokemon.maxHp,
-        // Pass both so the canvas can fall back from back-sprite → front-sprite
-        // (special forms like Necrozma-ultra lack back sprites on the CDN)
-        imageUrl: battle.challengerPokemon.backImageUrl || battle.challengerPokemon.imageUrl,
+        pixelBackImageUrl: getBattleSpriteUrls(battle.challengerPokemon, "player")[0],
+        pixelImageUrl: getBattleSpriteUrls(battle.challengerPokemon, "player")[1],
+        imageUrl: battle.challengerPokemon.imageUrl,
+        backImageUrl: battle.challengerPokemon.backImageUrl,
         fallbackImageUrl: battle.challengerPokemon.imageUrl,
+        pokedexId: battle.challengerPokemon.pokedexId,
         shiny: battle.challengerPokemon.shiny,
         primaryType: battle.challengerPokemon.primaryType || (battle.challengerPokemon.types || [])[0],
       },
@@ -38,8 +40,11 @@ async function sendScene(sock, jid, msg, battle, statusText, hitSide, damage, cr
         level: battle.opponentPokemon.level,
         hp: battle.opponentPokemon.hp,
         maxHp: battle.opponentPokemon.maxHp,
+        pixelImageUrl: getBattleSpriteUrls(battle.opponentPokemon, "enemy")[0],
         imageUrl: battle.opponentPokemon.imageUrl,
+        pokedexId: battle.opponentPokemon.pokedexId,
         shiny: battle.opponentPokemon.shiny,
+        primaryType: battle.opponentPokemon.primaryType || (battle.opponentPokemon.types || [])[0],
       },
       round: battle.round,
       hitSide, damage, crit, statusText,
