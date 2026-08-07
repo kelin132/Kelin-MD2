@@ -59,10 +59,9 @@ export default {
       map.get(cat).push(plugin.name);
     }
 
-    // Staff commands are visible only to staff-level users and the owner.
-    // Keep owner commands even narrower so moderators do not see either
-    // restricted section in the public menu.
-    const showStaff = isOwner || isStaff;
+    // Staff commands are visible to staff-level users, moderators, and the owner.
+    // Keep owner commands even narrower so moderators do not see owner commands.
+    const showStaff = isOwner || isStaff || isMod;
     const showOwner = isOwner;
     const order = [
       "main", "economy", "company", "guild", "pets", "cards", "naruto",
