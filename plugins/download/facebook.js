@@ -3,6 +3,7 @@
  * Downloads Facebook videos using multiple API sources with auto-fallback.
  */
 import { get, davidGet } from "../../lib/gifted.js";
+import { princeApiJson } from "../../lib/princeAPI.mjs";
 
 // ── Pick the best video URL from an API result ────────────────────────────────
 
@@ -13,6 +14,8 @@ function pickVideo(result) {
   for (const obj of candidates) {
     if (!obj || typeof obj !== "object") continue;
     const url =
+      obj.hd_video     ||
+      obj.sd_video     ||
       obj.hd           ||
       obj.sd           ||
       obj.hd_url       ||
@@ -49,6 +52,7 @@ function pickTitle(result) {
 
 async function fetchFacebook(url) {
   const attempts = [
+    () => princeApiJson("download/facebook", { url }, 45_000),
     () => get("/download/facebook",  { url }),
     () => get("/download/fb",        { url }),
     () => get("/download/fbvideo",   { url }),
