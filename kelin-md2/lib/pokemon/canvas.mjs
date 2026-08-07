@@ -36,6 +36,28 @@ async function loadImageWithFallbacks(urls, label = "pokemon") {
   return null;
 }
 
+/**
+ * Battle sprites should stay in the same compact pixel-art language as the
+ * classic battle canvas. Stored Pokémon usually have official artwork in
+ * imageUrl, so derive the standard front/back sprite from the Pokédex ID
+ * before falling back to those stored URLs.
+ */
+function getBattleSpriteCandidates(pokemon, side) {
+  const id = pokemon?.pokedexId ?? pokemon?.id;
+  const pixelSprite = id
+    ? side === "player"
+      ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/${id}.png`
+      : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`
+    : null;
+
+  return [
+    pixelSprite,
+    pokemon?.battleImageUrl,
+    side === "player" ? pokemon?.backImageUrl : pokemon?.imageUrl,
+    side === "player" ? pokemon?.imageUrl : pokemon?.fallbackImageUrl,
+  ].filter(Boolean);
+}
+
 function roundRect(ctx, x, y, w, h, r = 8) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -453,17 +475,11 @@ export async function generateBattleScene({ player, enemy, round = 1, hitSide = 
     ctx.fillRect(W * 0.5, 0, W * 0.5, H * 0.55);
   }
 
-  // Load both sprites in parallel — player tries back sprite first, then
-  // falls back to front sprite (special forms lack CDN back sprites)
+  // Load standard pixel sprites first. Special forms that do not have a
+  // matching PokéAPI pixel sprite fall back to their stored artwork.
   const [playerImg, enemyImg] = await Promise.all([
-    loadImageWithFallbacks(
-      [player.imageUrl, player.fallbackImageUrl, player.backImageUrl].filter(Boolean),
-      player.name
-    ),
-    loadImageWithFallbacks(
-      [enemy.imageUrl, enemy.fallbackImageUrl].filter(Boolean),
-      enemy.name
-    ),
+    loadImageWithFallbacks(getBattleSpriteCandidates(player, "player"), player.name),
+    loadImageWithFallbacks(getBattleSpriteCandidates(enemy, "enemy"), enemy.name),
   ]);
 
   // ── ENEMY sprite — top-right platform, flipped to face LEFT toward player ──

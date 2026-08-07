@@ -23,6 +23,7 @@ async function sendScene(sock, jid, msg, battle, statusText, hitSide, damage, cr
     const buf = await generateBattleScene({
       player: {
         name: battle.challengerPokemon.displayName || battle.challengerPokemon.name,
+        pokedexId: battle.challengerPokemon.pokedexId,
         level: battle.challengerPokemon.level,
         hp: battle.challengerPokemon.hp,
         maxHp: battle.challengerPokemon.maxHp,
@@ -35,6 +36,7 @@ async function sendScene(sock, jid, msg, battle, statusText, hitSide, damage, cr
       },
       enemy: {
         name: battle.opponentPokemon.displayName || battle.opponentPokemon.name,
+        pokedexId: battle.opponentPokemon.pokedexId,
         level: battle.opponentPokemon.level,
         hp: battle.opponentPokemon.hp,
         maxHp: battle.opponentPokemon.maxHp,
