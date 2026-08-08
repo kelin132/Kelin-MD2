@@ -28,9 +28,7 @@ if (!global.__cardApiSpawnerRunning) {
     if (spawns[chatId]) return; // don't overwrite unclaimed spawn
 
     // Read the exact series from card artwork metadata before displaying.
-    if (!card.series || card.series === "Unknown") {
-      card.series = await getSeriesForCard(card, { timeout: 2500 });
-    }
+    card.series = await getSeriesForCard(card, { timeout: 2500 });
 
     const spawnId = createSpawnId();
     spawns[chatId] = { cardId: card.cardId, spawnId, card };

@@ -21,10 +21,8 @@ async function spawnCardInChat(sock, chatId, card) {
   // Don't overwrite an unclaimed spawn
   if (activeSpawns[chatId]) return;
 
-  // Read the exact series from card artwork metadata before displaying.
-  if (!card.series || card.series === "Unknown") {
-    card.series = await getSeriesForCard(card, { timeout: 12000 });
-  }
+  // Resolve artwork metadata before displaying: the API series can be wrong.
+  card.series = await getSeriesForCard(card, { timeout: 12000 });
 
   // Store the full card object so claim.js doesn't need a DB lookup
   const spawnId = createSpawnId();

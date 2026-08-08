@@ -209,10 +209,8 @@ export default {
 
       const card = pool[Math.floor(Math.random() * pool.length)];
 
-      // Read the exact series from card metadata first, then fall back to AniList.
-      if (!card.series || card.series === "Unknown") {
-        card.series = await getSeriesForCard(card, { timeout: 2500 });
-      }
+      // Resolve artwork metadata before saving: the API series can be wrong.
+      card.series = await getSeriesForCard(card, { timeout: 2500 });
 
       // ── Add card to collection ──────────────────────────────────────────────
       const cardUser = await findOrCreateUser(sender);

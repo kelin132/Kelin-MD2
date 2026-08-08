@@ -38,9 +38,8 @@ Ask an admin to restart the bot, then wait for the next auto-spawn.`
       const user = await findOrCreateUser(sender);
       user.cards = user.cards || [];
 
-      if (!card.series || card.series === "Unknown") {
-        card.series = await getSeriesForCard(card, { timeout: 2500 });
-      }
+      // Resolve artwork metadata before saving: the API series can be wrong.
+      card.series = await getSeriesForCard(card, { timeout: 2500 });
 
       user.cards.push({
         cardId:     card.cardId,

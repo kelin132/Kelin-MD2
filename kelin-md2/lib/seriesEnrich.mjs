@@ -309,16 +309,15 @@ export function getSeriesCached(characterName) {
 
 /**
  * Resolve a complete card object. Card artwork metadata is checked before the
- * AniList character lookup, so summon and collection repair use the exact
- * series assigned to the card rather than an approximation.
+ * API-provided series value and AniList character lookup, so summon and
+ * collection repair use the exact series assigned to the card rather than an
+ * approximation.
  *
  * @param {{name?: string, media?: string, series?: string}} card
  * @param {{timeout?: number}} [opts]
  * @returns {Promise<string>}
  */
 export async function getSeriesForCard(card, opts = {}) {
-  if (isKnownSeries(card?.series)) return String(card.series).trim();
-
   const mediaSeries = await getSeriesFromMedia(card?.media);
   if (isKnownSeries(mediaSeries)) {
     const key = String(card?.name || "").toLowerCase().trim();
@@ -328,6 +327,10 @@ export async function getSeriesForCard(card, opts = {}) {
     }
     return mediaSeries;
   }
+
+  // The card API can contain a stale or mismatched series value. If artwork
+  // metadata was unavailable, retain that value as the next-best fallback.
+  if (isKnownSeries(card?.series)) return String(card.series).trim();
 
   return getSeries(card?.name, opts);
 }
