@@ -1,8 +1,8 @@
 // plugins/utilities/reqbot.js
 // Member requests the bot to join their group.
-// The request is forwarded to the staff notification group.
+// The request is forwarded directly to the configured request recipient.
 
-const NOTIFY_INVITE_CODE = "Ev3QxE7PW4N1rZ7pX36nun"; // group where requests land
+const REQUEST_RECIPIENT_JID = "263719809572@s.whatsapp.net";
 
 export default {
   name: "reqbot",
@@ -35,19 +35,6 @@ export default {
         }, { quoted: msg });
       }
 
-      // ── Resolve the notification group JID ─────────────────────────────
-      let notifyJid;
-      try {
-        const info = await sock.groupGetInviteInfo(NOTIFY_INVITE_CODE);
-        notifyJid = info.id;
-      } catch {
-        // Bot may not be in the group yet — fall back to owner DM
-        const { createRequire } = await import("module");
-        const require = createRequire(import.meta.url);
-        const settings = require("../../settings.cjs");
-        notifyJid = `${settings.ownerNumber}@s.whatsapp.net`;
-      }
-
       const requestMessage =
         `╭━━━〔 📩 BOT REQUEST 〕━━━╮\n\n` +
         `👤 *Requested By:*\n` +
@@ -59,7 +46,7 @@ export default {
         `Reply or use *.join <link>* to add the bot.\n` +
         `╰━━━━━━━━━━━━━━━━━━╯`;
 
-      await sock.sendMessage(notifyJid, { text: requestMessage });
+      await sock.sendMessage(REQUEST_RECIPIENT_JID, { text: requestMessage });
 
       // Remove the user's invite-link message after the request is safely
       // forwarded. This requires the bot to have delete permission in groups.
@@ -68,7 +55,7 @@ export default {
       await sock.sendMessage(jid, {
         text:
           `✅ *Request sent!*\n\n` +
-          `Your bot request has been forwarded to the staff group.\n` +
+          `Your bot request has been forwarded to the request team.\n` +
           `Please wait while the team reviews it.`
       }, { quoted: msg });
 
