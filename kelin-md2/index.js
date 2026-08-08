@@ -25,7 +25,7 @@ import { initGroupSettings } from "./lib/groupSettings.js";
 import { startCardSpawner }  from "./lib/cardSpawner.mjs";
 import { startTaxScheduler } from "./lib/taxScheduler.mjs";
 import { getRuntimeSettings } from "./lib/runtimeSettings.mjs";
-import { repairUnknownCardSeries } from "./plugins/cards/db.js";
+import { repairCardSeries } from "./plugins/cards/db.js";
 
 // settings.js is CommonJS — import via createRequire
 const _require  = createRequire(import.meta.url);
@@ -87,9 +87,9 @@ try {
     log("warn", "[migration] cardLimit migration failed: " + String(migErr));
   }
 
-  // Repair cards saved as "Unknown" by older summon/spawn builds without
-  // delaying bot startup or requiring users to resummon them.
-  void repairUnknownCardSeries().catch((repairErr) => {
+  // Re-check every saved card so stale or incorrect series values are repaired
+  // without delaying bot startup or requiring users to resummon them.
+  void repairCardSeries().catch((repairErr) => {
     log("warn", "[migration] card series repair failed: " + String(repairErr));
   });
 } catch (err) {

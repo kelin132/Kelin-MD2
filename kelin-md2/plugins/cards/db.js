@@ -84,36 +84,22 @@ export async function getUser(sender) {
   return user;
 }
 
-function needsSeriesRepair(card) {
-  const value = String(card?.series || "").trim();
-  return !value || value.toLowerCase() === "unknown";
-}
-
 /**
- * Repair saved card objects that were created while series enrichment was
- * timing out. Updates are persisted per user so the corrected value is
- * immediately visible to collection, card-info, series, and trading commands.
+ * Repair every saved card's series value. The saved value cannot be trusted
+ * here because older summons could persist the API's wrong series. Artwork
+ * metadata is forced first, then a fresh character lookup is used as fallback.
  */
-export async function repairUnknownCardSeries() {
+export async function repairCardSeries() {
   const col = await Col.users();
   const users = await col.find(
-    {
-      cards: {
-        $elemMatch: {
-          $or: [
-            { series: { $exists: false } },
-            { series: null },
-            { series: "" },
-            { series: "Unknown" },
-          ],
-        },
-      },
-    },
+    { cards: { $exists: true, $ne: [] } },
     { projection: { _id: 1, userId: 1, cards: 1 } }
   ).toArray();
 
   let repairedUsers = 0;
   let repairedCards = 0;
+  let checkedCards = 0;
+  let unresolvedCards = 0;
   const resolvedByCard = new Map();
 
   for (const user of users) {
@@ -121,19 +107,27 @@ export async function repairUnknownCardSeries() {
     let changed = false;
 
     for (const card of user.cards) {
-      if (!needsSeriesRepair(card)) continue;
+      checkedCards++;
 
       const key = `${String(card.name || "").toLowerCase().trim()}|${String(card.media || "")}`;
       let series = resolvedByCard.get(key);
       if (series === undefined) {
-        series = await getSeriesForCard(card, { timeout: 12000 });
+        series = await getSeriesForCard(
+          { ...card, series: undefined },
+          { timeout: 12000, ignoreStoredSeries: true, force: true }
+        );
         resolvedByCard.set(key, series);
       }
 
       if (series && series !== "Unknown") {
-        card.series = series;
-        changed = true;
-        repairedCards++;
+        const current = String(card.series || "").trim();
+        if (current !== series) {
+          card.series = series;
+          changed = true;
+          repairedCards++;
+        }
+      } else {
+        unresolvedCards++;
       }
     }
 
@@ -145,10 +139,14 @@ export async function repairUnknownCardSeries() {
 
   log(
     "info",
-    `[migration] Card series repair finished: ${repairedCards} card(s) across ${repairedUsers} user(s)`
+    `[migration] Card series repair finished: ${repairedCards}/${checkedCards} card(s) across ` +
+    `${repairedUsers} user(s); ${unresolvedCards} unresolved`
   );
-  return { repairedUsers, repairedCards, checkedUsers: users.length };
+  return { repairedUsers, repairedCards, checkedUsers: users.length, checkedCards, unresolvedCards };
 }
+
+// Backwards-compatible name for callers from older builds.
+export const repairUnknownCardSeries = repairCardSeries;
 
 // ── Spawn settings (used by cardspawn.js + autoSpawn.js) ─────────────────────
 

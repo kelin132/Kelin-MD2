@@ -258,7 +258,7 @@ export async function getSeries(characterName, opts = {}) {
 
   // Only known values are useful cache hits. Do not permanently cache a
   // transient AniList failure as "Unknown".
-  if (cache.has(key)) {
+  if (!opts.force && cache.has(key)) {
     const cached = cache.get(key);
     if (isKnownSeries(cached)) return cached;
     cache.delete(key);
@@ -318,6 +318,8 @@ export function getSeriesCached(characterName) {
  * @returns {Promise<string>}
  */
 export async function getSeriesForCard(card, opts = {}) {
+  const ignoreStoredSeries = opts.ignoreStoredSeries === true;
+  const forceLookup = opts.force === true;
   const mediaSeries = await getSeriesFromMedia(card?.media);
   if (isKnownSeries(mediaSeries)) {
     const key = String(card?.name || "").toLowerCase().trim();
@@ -330,9 +332,11 @@ export async function getSeriesForCard(card, opts = {}) {
 
   // The card API can contain a stale or mismatched series value. If artwork
   // metadata was unavailable, retain that value as the next-best fallback.
-  if (isKnownSeries(card?.series)) return String(card.series).trim();
+  if (!ignoreStoredSeries && isKnownSeries(card?.series)) {
+    return String(card.series).trim();
+  }
 
-  return getSeries(card?.name, opts);
+  return getSeries(card?.name, { ...opts, force: forceLookup });
 }
 
 /**
