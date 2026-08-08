@@ -10,6 +10,8 @@
  *   .gojo reset
  */
 
+import { randomUUID } from "node:crypto";
+
 const META_ENDPOINT = "https://omegatech-api.dixonomega.tech/api/ai/Meta";
 const CATALOG_CACHE_MS = 10 * 60 * 1000;
 const MAX_PROMPT_LENGTH = 1_000;
@@ -114,12 +116,13 @@ async function fetchCatalog() {
 }
 
 async function chatWithBot(botId, prompt, sessionId) {
+  const activeSessionId = sessionId || randomUUID();
   const params = new URLSearchParams({
     action: "chat",
+    sessionId: activeSessionId,
+    prompt: String(prompt),
     botId: String(botId),
-    prompt,
   });
-  if (sessionId) params.set("sessionId", sessionId);
 
   const { response, payload } = await requestMeta(params, 90_000);
 
@@ -130,7 +133,7 @@ async function chatWithBot(botId, prompt, sessionId) {
 
   return {
     reply: String(reply),
-    sessionId: payload.data.sessionId || sessionId || null,
+    sessionId: payload.data.sessionId || activeSessionId,
   };
 }
 
