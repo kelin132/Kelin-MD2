@@ -107,6 +107,7 @@ export default {
   usage: ".sora <video prompt> (or reply to a text message)",
   aliases: ["txt2video", "aivideo"],
   cooldown: 30,
+  isPremium: true,
 
   async run({ sock, msg, text }) {
     const jid = msg.key.remoteJid;
