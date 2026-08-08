@@ -71,6 +71,8 @@ function getPrompt(msg, text) {
   return getMessageText(contextInfo?.quotedMessage);
 }
 
+export { getPrompt };
+
 async function generateVideo(prompt) {
   const params = new URLSearchParams({
     action: "generate",
