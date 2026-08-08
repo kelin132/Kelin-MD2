@@ -12,6 +12,7 @@ import { getPrompt } from "./sora.js";
 
 const VEO_ENDPOINT = "https://omegatech-api.dixonomega.tech/api/ai/Ai-video";
 const MAX_PROMPT_LENGTH = 500;
+const MAX_VIDEO_BYTES = 80 * 1024 * 1024;
 
 async function generateVideo(prompt) {
   const params = new URLSearchParams({ prompt });
@@ -36,7 +37,36 @@ async function generateVideo(prompt) {
     throw new Error(message);
   }
 
-  return videoUrl;
+  return {
+    videoUrl,
+    frameUrl: payload?.frameUrl || payload?.thumbUrl || null,
+  };
+}
+
+async function downloadVideo(videoUrl) {
+  const response = await fetch(videoUrl, {
+    redirect: "follow",
+    headers: { "User-Agent": "Mozilla/5.0 (KELIN-MD Veo)" },
+    signal: AbortSignal.timeout(120_000),
+  });
+
+  if (!response.ok) {
+    throw new Error(`The generated video could not be downloaded (HTTP ${response.status}).`);
+  }
+
+  const contentLength = Number(response.headers.get("content-length") || 0);
+  if (contentLength > MAX_VIDEO_BYTES) {
+    throw new Error("The generated video is too large to send through WhatsApp.");
+  }
+
+  const contentType = response.headers.get("content-type") || "";
+  const buffer = Buffer.from(await response.arrayBuffer());
+  if (!buffer.length) throw new Error("The generated video file was empty.");
+  if (/text\/html|application\/json/i.test(contentType)) {
+    throw new Error("The generated video link expired before it could be downloaded.");
+  }
+
+  return buffer;
 }
 
 export default {
@@ -80,12 +110,33 @@ export default {
         { quoted: msg },
       );
 
-      const videoUrl = await generateVideo(prompt);
+      const { videoUrl, frameUrl } = await generateVideo(prompt);
+      const downloadPromise = downloadVideo(videoUrl);
+
+      if (frameUrl) {
+        await sock.sendMessage(
+          jid,
+          {
+            image: { url: frameUrl },
+            caption: "✅ Video generated. Uploading it now…",
+          },
+          { quoted: msg },
+        );
+      } else {
+        await sock.sendMessage(
+          jid,
+          { text: "✅ Video generated. Uploading it now…" },
+          { quoted: msg },
+        );
+      }
+
+      const videoBuffer = await downloadPromise;
       await sock.sendMessage(
         jid,
         {
-          video: { url: videoUrl },
+          video: videoBuffer,
           mimetype: "video/webm",
+          fileName: "kelin-veo.webm",
           caption: `🎥 *Veo video*\n\n_Prompt: ${prompt}_`,
         },
         { quoted: msg },
