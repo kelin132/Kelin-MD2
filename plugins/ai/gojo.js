@@ -13,6 +13,9 @@
 const META_ENDPOINT = "https://omegatech-api.dixonomega.tech/api/ai/Meta";
 const CATALOG_CACHE_MS = 10 * 60 * 1000;
 const MAX_PROMPT_LENGTH = 1_000;
+const MAX_REQUEST_ATTEMPTS = 3;
+const RETRY_DELAY_MS = [1_000, 2_500];
+const TRANSIENT_STATUS_CODES = new Set([408, 425, 429, 500, 502, 503, 504]);
 
 const sessions = new Map();
 let catalogCache = { expiresAt: 0, categories: [] };
@@ -27,6 +30,67 @@ function getSession(jid, sender) {
   return sessions.get(key);
 }
 
+function isTransientStatus(status) {
+  return TRANSIENT_STATUS_CODES.has(Number(status));
+}
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function requestMeta(params, timeoutMs) {
+  let lastError;
+
+  for (let attempt = 0; attempt < MAX_REQUEST_ATTEMPTS; attempt += 1) {
+    try {
+      const response = await fetch(`${META_ENDPOINT}?${params.toString()}`, {
+        headers: { accept: "application/json" },
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      const body = await response.text();
+      let payload = null;
+
+      try {
+        payload = body ? JSON.parse(body) : null;
+      } catch {
+        // Some upstream failures are HTML or empty bodies. Keep the status so
+        // callers can report the real failure instead of a JSON parse error.
+      }
+
+      const payloadStatus = payload?.statusCode;
+      const transient =
+        isTransientStatus(response.status) ||
+        isTransientStatus(payloadStatus);
+
+      if (transient && attempt < MAX_REQUEST_ATTEMPTS - 1) {
+        await wait(RETRY_DELAY_MS[attempt] || RETRY_DELAY_MS.at(-1));
+        continue;
+      }
+
+      return { response, payload };
+    } catch (error) {
+      lastError = error;
+      if (attempt < MAX_REQUEST_ATTEMPTS - 1) {
+        await wait(RETRY_DELAY_MS[attempt] || RETRY_DELAY_MS.at(-1));
+        continue;
+      }
+    }
+  }
+
+  if (lastError?.name === "TimeoutError") {
+    throw new Error("The character service timed out. Please try again.");
+  }
+  throw new Error("The character service could not be reached. Please try again.");
+}
+
+function serviceError(response, payload) {
+  return (
+    payload?.error ||
+    payload?.message ||
+    `The character service returned status ${response.status}.`
+  );
+}
+
 async function fetchCatalog() {
   if (catalogCache.expiresAt > Date.now() && catalogCache.categories.length) {
     return catalogCache.categories;
@@ -36,24 +100,10 @@ async function fetchCatalog() {
     action: "categories",
     prompt: "characters",
   });
-  const response = await fetch(`${META_ENDPOINT}?${params.toString()}`, {
-    headers: { accept: "application/json" },
-    signal: AbortSignal.timeout(30_000),
-  });
-
-  let payload;
-  try {
-    payload = await response.json();
-  } catch {
-    throw new Error(`The character service returned an invalid response (${response.status}).`);
-  }
+  const { response, payload } = await requestMeta(params, 30_000);
 
   if (!response.ok || payload?.success !== true || !Array.isArray(payload?.data)) {
-    throw new Error(
-      payload?.error ||
-        payload?.message ||
-        `The character service returned status ${response.status}.`,
-    );
+    throw new Error(serviceError(response, payload));
   }
 
   catalogCache = {
@@ -71,25 +121,11 @@ async function chatWithBot(botId, prompt, sessionId) {
   });
   if (sessionId) params.set("sessionId", sessionId);
 
-  const response = await fetch(`${META_ENDPOINT}?${params.toString()}`, {
-    headers: { accept: "application/json" },
-    signal: AbortSignal.timeout(90_000),
-  });
-
-  let payload;
-  try {
-    payload = await response.json();
-  } catch {
-    throw new Error(`The character service returned an invalid response (${response.status}).`);
-  }
+  const { response, payload } = await requestMeta(params, 90_000);
 
   const reply = payload?.data?.reply;
   if (!response.ok || payload?.success !== true || !reply) {
-    throw new Error(
-      payload?.error ||
-        payload?.message ||
-        `The character service returned status ${response.status}.`,
-    );
+    throw new Error(serviceError(response, payload));
   }
 
   return {
