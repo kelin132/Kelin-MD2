@@ -100,7 +100,7 @@ await connectBot(BOT_NUMBER || null, PREFIX);
 // ── Card auto-spawner (drops a card in enabled groups every 15 min) ───────────
 startCardSpawner();
 
-// ── Tax scheduler (deducts 30% of wallet + bank every 48 h) ──────────────────
+// ── Tax scheduler (deducts 10% of wallet + bank every 48 h) ──────────────────
 startTaxScheduler();
 
 // ── Auto-update check ─────────────────────────────────────────────────────────
