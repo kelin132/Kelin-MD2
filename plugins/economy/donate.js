@@ -5,7 +5,6 @@
  * Aliases: gift, give, givemoney
  */
 import { getUser, saveUser, requireRegistration, isRegistered, addHistory } from "./database.js";
-import { parseAmount, formatShorthand } from "./parseAmount.js";
 
 function resolveTarget(msg) {
   // 1. Direct @mention
@@ -57,17 +56,20 @@ export default {
       return reply("❌ You can't donate to yourself!");
     }
 
-    // ── Checks + amount parsing ────────────────────────────────────────────
-    const giver = await getUser(sender);
-    const rawAmount = args[args.length - 1];
-    const amount = parseAmount(rawAmount, giver.money);
+    // ── Parse amount ───────────────────────────────────────────────────────
+    // Amount is the last numeric argument
+    const numericArgs = args.filter(a => /^[0-9]+$/.test(a));
+    const amount = parseInt(numericArgs[numericArgs.length - 1], 10);
 
     if (!amount || amount <= 0 || isNaN(amount)) {
-      return reply("❌ Please provide a valid donation amount.\nExample: *.donate @user 5m*\nShortcuts: `5k` `5m` `5b` `5t`");
+      return reply("❌ Please provide a valid donation amount.\nExample: *.donate @user 500*");
     }
 
+    // ── Checks ─────────────────────────────────────────────────────────────
+    const giver = await getUser(sender);
+
     if (giver.money < amount) {
-      return reply(`❌ You don't have enough cash!\n\n💰 Your balance: $${formatShorthand(giver.money)}`);
+      return reply(`❌ You don't have enough cash!\n\n💰 Your balance: $${giver.money.toLocaleString()}`);
     }
 
     if (!await isRegistered(targetJid)) {
@@ -82,15 +84,15 @@ export default {
 
     await saveUser(sender, giver);
     await saveUser(targetJid, receiver);
-    await addHistory(sender,    "donate_out", -amount, `Donated $${formatShorthand(amount)} to ${receiver.name}`);
-    await addHistory(targetJid, "donate_in",   amount, `Received $${formatShorthand(amount)} from ${giver.name}`);
+    await addHistory(sender,    "donate_out", -amount, `Donated $${amount.toLocaleString()} to ${receiver.name}`);
+    await addHistory(targetJid, "donate_in",   amount, `Received $${amount.toLocaleString()} from ${giver.name}`);
 
     await sock.sendMessage(jid, {
       text:
         `✅ *Donation Sent!*\n\n` +
-        `💸 Amount     : $${formatShorthand(amount)}\n` +
+        `💸 Amount     : $${amount.toLocaleString()}\n` +
         `👤 Recipient  : @${targetJid.split("@")[0]} (${receiver.name})\n` +
-        `💰 Your Balance: $${formatShorthand(giver.money)}`,
+        `💰 Your Balance: $${giver.money.toLocaleString()}`,
       mentions: [targetJid],
     }, { quoted: msg });
   },

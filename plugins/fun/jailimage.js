@@ -4,8 +4,9 @@
  * https://apis.davidcyril.name.ng/endpoints/canvas/#jail
  */
 
-import { getQuotedImageBuffer, noQuoteText } from "../image/_imageHelper.js";
-import { renderPrison } from "../../lib/imageCanvas.mjs";
+import { getQuotedImageUrl, noQuoteText } from "../image/_imageHelper.js";
+
+const BASE = "https://apis.davidcyril.name.ng";
 
 export default {
   name: "prison",
@@ -19,8 +20,28 @@ export default {
     const jid = msg.key.remoteJid;
 
     try {
+      const imgUrl = await getQuotedImageUrl(sock, msg);
+
       await sock.sendMessage(jid, { react: { text: "⏳", key: msg.key } });
-      const imageBuffer = await renderPrison(await getQuotedImageBuffer(sock, msg));
+
+      const apiUrl = `${BASE}/canvas/jail?image=${encodeURIComponent(imgUrl)}`;
+      const res    = await fetch(apiUrl, { signal: AbortSignal.timeout(20_000) });
+
+      if (!res.ok) throw new Error(`Canvas API returned HTTP ${res.status}`);
+
+      const contentType = res.headers.get("content-type") || "";
+      let imageBuffer;
+
+      if (contentType.includes("application/json")) {
+        const data = await res.json();
+        const url  = data?.url || data?.image_url || data?.data?.url;
+        if (!url) throw new Error("No image URL in API response");
+        const imgRes = await fetch(url, { signal: AbortSignal.timeout(20_000) });
+        if (!imgRes.ok) throw new Error("Failed to download result image");
+        imageBuffer = Buffer.from(await imgRes.arrayBuffer());
+      } else {
+        imageBuffer = Buffer.from(await res.arrayBuffer());
+      }
 
       await sock.sendMessage(jid, {
         image:   imageBuffer,

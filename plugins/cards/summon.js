@@ -17,7 +17,7 @@ import {
   TIER_NAME,
   createSpawnId,
 } from "../../lib/cardApi.mjs";
-import { getSeriesForCard } from "../../lib/seriesEnrich.mjs";
+import { getSeries } from "../../lib/seriesEnrich.mjs";
 
 // ── Summon costs by tier ──────────────────────────────────────────────────────
 // Higher tiers cost more coins from the user's card balance.
@@ -209,8 +209,10 @@ export default {
 
       const card = pool[Math.floor(Math.random() * pool.length)];
 
-      // Resolve artwork metadata before saving: the API series can be wrong.
-      card.series = await getSeriesForCard(card, { timeout: 2500 });
+      // Enrich series from AniList (cache-first; 4 s timeout so summon stays snappy)
+      if (!card.series || card.series === "Unknown") {
+        card.series = await getSeries(card.name, { timeout: 4000 });
+      }
 
       // ── Add card to collection ──────────────────────────────────────────────
       const cardUser = await findOrCreateUser(sender);

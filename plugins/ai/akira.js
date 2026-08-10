@@ -1,41 +1,23 @@
 /**
- * KELIN MD — legacy persona command metadata.
- * The active persona auto-responds when its name is mentioned or it is tagged.
- * This hidden compatibility plugin is kept for older installations.
+ * KELIN MD — Akira command plugin
+ * DISABLED — Akira now auto-responds when her name is mentioned or she is @tagged.
+ * The .akira command is turned off; this file is kept so the reset/info
+ * logic is preserved if needed in future.
  */
-import {
-  getActivePersona,
-  getPersonaTriggerNames,
-} from "../../lib/aiPersonas.mjs";
-import { resetPersonaSession } from "../../lib/akiraAI.mjs";
+import { callAkira, resetAkiraSession } from "../../lib/akiraAI.mjs";
 
 export default {
   name: "akira",
-  description: "Chat with the active AI persona",
+  description: "Chat with Akira — your anime girl AI companion",
   category: "ai",
-  usage: ".akira reset | .akira info",
+  usage: ".akira <message> | .akira reset | .akira info",
   aliases: ["ak"],
   cooldown: 5,
+  hidden: true,  // hidden from all users — command is disabled
 
-  async run({ sock, msg, args }) {
-    const persona = getActivePersona();
-    if (args[0]?.toLowerCase() === "reset") {
-      resetPersonaSession(msg.key.remoteJid);
-      return sock.sendMessage(
-        msg.key.remoteJid,
-        { text: `${persona.displayName}'s conversation has been reset.` },
-        { quoted: msg },
-      );
-    }
-
-    if (args[0]?.toLowerCase() === "info") {
-      return sock.sendMessage(
-        msg.key.remoteJid,
-        {
-          text: `Active AI persona: *${persona.displayName}*\nMention ${getPersonaTriggerNames().map((alias) => `*${alias}*`).join(", ")} to get a response.`,
-        },
-        { quoted: msg },
-      );
-    }
+  async run({ sock, msg, text, args }) {
+    // Command is disabled — Akira responds automatically when mentioned or tagged.
+    // Return silently so nothing happens.
+    return;
   }
 };

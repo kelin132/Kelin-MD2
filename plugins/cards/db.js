@@ -3,8 +3,6 @@
  * Collections: mn_users, mn_cards, mn_card_market, mn_spawn_settings
  */
 import { getDb } from "../../lib/mongo.mjs";
-import { getSeriesForCard, rememberSeries } from "../../lib/seriesEnrich.mjs";
-import { log } from "../../lib/logger.mjs";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -83,114 +81,6 @@ export async function getUser(sender) {
   };
   return user;
 }
-
-/**
- * Append newly obtained cards atomically.
- *
- * Card commands can run at the same time as economy and other collection
- * commands. A read-modify-save of the whole user document lets a stale
- * command overwrite cards that another command just added. `$push` + `$inc`
- * keeps each award intact even when commands overlap.
- */
-export async function appendCards(sender, cards) {
-  if (!Array.isArray(cards) || cards.length === 0) return;
-
-  const col = await Col.users();
-  const userId = uid(sender);
-  await col.updateOne(
-    { userId },
-    {
-      $push: { cards: { $each: cards } },
-      $inc: { totalCards: cards.length },
-    },
-  );
-}
-
-/**
- * Load already-correct series values from saved collections before card
- * commands start. The series cache is runtime data, while MongoDB is durable.
- */
-export async function primeKnownCardSeries() {
-  const col = await Col.users();
-  const users = await col.find(
-    { cards: { $exists: true, $ne: [] } },
-    { projection: { cards: 1 } }
-  ).toArray();
-
-  let primed = 0;
-  for (const user of users) {
-    if (!Array.isArray(user.cards)) continue;
-    for (const card of user.cards) {
-      if (rememberSeries(card?.name, card?.series)) primed++;
-    }
-  }
-  log("info", `[cards] Primed ${primed} saved series value(s) from MongoDB`);
-  return primed;
-}
-
-/**
- * Repair every saved card's series value. The saved value cannot be trusted
- * here because older summons could persist the API's wrong series. Artwork
- * metadata is forced first, then a fresh character lookup is used as fallback.
- */
-export async function repairCardSeries() {
-  const col = await Col.users();
-  const users = await col.find(
-    { cards: { $exists: true, $ne: [] } },
-    { projection: { _id: 1, userId: 1, cards: 1 } }
-  ).toArray();
-
-  let repairedUsers = 0;
-  let repairedCards = 0;
-  let checkedCards = 0;
-  let unresolvedCards = 0;
-  const resolvedByCard = new Map();
-
-  for (const user of users) {
-    if (!Array.isArray(user.cards)) continue;
-    let changed = false;
-
-    for (const card of user.cards) {
-      checkedCards++;
-
-      const key = `${String(card.name || "").toLowerCase().trim()}|${String(card.media || "")}`;
-      let series = resolvedByCard.get(key);
-      if (series === undefined) {
-        series = await getSeriesForCard(
-          { ...card, series: undefined },
-          { timeout: 6000, ignoreStoredSeries: true, force: true }
-        );
-        resolvedByCard.set(key, series);
-      }
-
-      if (series && series !== "Unknown") {
-        const current = String(card.series || "").trim();
-        if (current !== series) {
-          card.series = series;
-          changed = true;
-          repairedCards++;
-        }
-      } else {
-        unresolvedCards++;
-      }
-    }
-
-    if (changed) {
-      await col.updateOne({ _id: user._id }, { $set: { cards: user.cards } });
-      repairedUsers++;
-    }
-  }
-
-  log(
-    "info",
-    `[migration] Card series repair finished: ${repairedCards}/${checkedCards} card(s) across ` +
-    `${repairedUsers} user(s); ${unresolvedCards} unresolved`
-  );
-  return { repairedUsers, repairedCards, checkedUsers: users.length, checkedCards, unresolvedCards };
-}
-
-// Backwards-compatible name for callers from older builds.
-export const repairUnknownCardSeries = repairCardSeries;
 
 // ── Spawn settings (used by cardspawn.js + autoSpawn.js) ─────────────────────
 

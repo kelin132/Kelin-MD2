@@ -1,6 +1,5 @@
 import { findOrCreateUser } from "./db.js";
 import { sendCardMedia } from "../../lib/cardApi.mjs";
-import { getSeriesForCard } from "../../lib/seriesEnrich.mjs";
 
 const activeSpawns = global.activeSpawns || (global.activeSpawns = {});
 
@@ -38,8 +37,7 @@ Ask an admin to restart the bot, then wait for the next auto-spawn.`
       const user = await findOrCreateUser(sender);
       user.cards = user.cards || [];
 
-      // Resolve artwork metadata before saving: the API series can be wrong.
-      card.series = await getSeriesForCard(card, { timeout: 2500 });
+
 
       user.cards.push({
         cardId:     card.cardId,
@@ -60,17 +58,20 @@ Ask an admin to restart the bot, then wait for the next auto-spawn.`
       delete activeSpawns[jid];
 
       const claimText =
-`╭─❀「 🎴 *𝐂𝐀𝐑𝐃 𝐂𝐋𝐀𝐈𝐌* 」❀─╮
-│ 🌙 *Claimed by* :: @${sender.split("@")[0]}
-│ 🍃 *Status*     :: *SUCCESS* 🟢
-│
-│ ✨ *Card*       :: *${card.name}*
-│ ⭐ *Tier*       :: *${card.tier}*
-│ 📺 *Series*     :: *${card.series}*
-│
-│ 🃏 *Added to your collection!*
-│ Use *.col* to view it.
-╰───────────────❀`;
+`꧁━━〔 🎴 *C A R D  C L A I M E D!* 〕━━꧂
+
+  「 *@${sender.split("@")[0]} snagged it first!* 」 🎉
+
+  ━━━━━━━━━━━━━━━━━━━━━━━
+  ✨ *${card.name}*
+  ⭐ *Tier*    *${card.tier}*
+  📺 *Series*  *${card.series}*
+  ━━━━━━━━━━━━━━━━━━━━━━━
+
+  🃏 *Added to your collection!*
+  Use *.col* to view it.
+
+꧂━━━━━━━━━━━━━━━━━━━━━━━━━━꧁`;
 
       if (card.media) {
         try {

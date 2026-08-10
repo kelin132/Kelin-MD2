@@ -1,7 +1,6 @@
 // plugins/image/wanted2.js — WANTED poster via PopCat API
 
-import { getQuotedImageBuffer, noQuoteText } from "./_imageHelper.js";
-import { renderWanted } from "../../lib/imageCanvas.mjs";
+import { getQuotedImageUrl, noQuoteText } from "./_imageHelper.js";
 
 export default {
   name: "wantedmeme",
@@ -14,8 +13,9 @@ export default {
   async run({ sock, msg }) {
     const jid = msg.key.remoteJid;
     try {
-      const image = await renderWanted(await getQuotedImageBuffer(sock, msg));
-      await sock.sendMessage(jid, { image, mimetype: "image/png", caption: "🤠 *WANTED — Dead or Alive!*" }, { quoted: msg });
+      const imgUrl = await getQuotedImageUrl(sock, msg);
+      const url    = `https://api.popcat.xyz/wanted?image=${encodeURIComponent(imgUrl)}`;
+      await sock.sendMessage(jid, { image: { url }, caption: "🤠 *WANTED — Dead or Alive!*" }, { quoted: msg });
     } catch (err) {
       if (err.message === "NOQUOTE" || err.message === "NOIMAGE") {
         return sock.sendMessage(jid, { text: noQuoteText() }, { quoted: msg });

@@ -14,19 +14,19 @@ const categoryEmojis = {
 
 const PUBLIC_CATS = new Set([
   "main", "economy", "company", "guild", "games", "fun", "ai", "search",
-  "media", "utilities", "download", "group", "anime", "cards",
+  "media", "utilities", "download", "group", "anime", "cards", "staff",
   "naruto", "pokemon", "pets", "image", "dragonball",
 ]);
 
 function renderCategory(layout, emoji, title, disabledTag, commandText) {
   if (layout === 2) {
-    return `\n╭━━━〔 ${emoji} *${title}*${disabledTag} 〕━━━╮\n┃ ${commandText}\n╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯`;
+    return `\n┌─ ${emoji} *${title}*${disabledTag}\n│ ${commandText}\n└────────────────────────`;
   }
   if (layout === 3) {
-    return `\n╭─❀「 ${emoji} *${title}*${disabledTag} 」❀─╮\n│ ${commandText}\n╰───────────────❀`;
+    return `\n${emoji} *${title}*${disabledTag}\n${commandText}`;
   }
   if (layout === 4) {
-    return `\n┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n┃ ${emoji} *${title}*${disabledTag}\n┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫\n┃ ${commandText}\n┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛`;
+    return `\n╭━━ ${emoji} *${title}*${disabledTag} ━━╮\n┃ ${commandText}\n╰━━━━━━━━━━━━━━━━━━━━━━╯`;
   }
   return `\n╭─${emoji}「 *${title}*${disabledTag} 」\n│ ${commandText}\n╰━━━━━━━━━━━━━━━━━━━━━━━━━━`;
 }
@@ -59,26 +59,17 @@ export default {
       map.get(cat).push(plugin.name);
     }
 
-    // Staff commands are visible to staff-level users, moderators, and the owner.
-    // Keep owner commands even narrower so moderators do not see owner commands.
     const showStaff = isOwner || isStaff || isMod;
-    const showOwner = isOwner;
     const order = [
       "main", "economy", "company", "guild", "pets", "cards", "naruto",
       "pokemon", "dragonball", "games", "fun", "ai", "search", "media",
-      "image", "utilities", "download", "group", "admin", "anime","owner",
+      "image", "utilities", "download", "group", "admin", "anime",
       ...(showStaff ? ["staff"] : []),
-      ...(showOwner ? ["owner"] : []),
+      ...(showStaff ? ["owner"] : []),
     ];
     const sortedCats = [
       ...order.filter((cat) => map.has(cat)),
-      ...[...map.keys()]
-        .filter((cat) =>
-          !order.includes(cat) &&
-          !["staff", "owner"].includes(cat) &&
-          PUBLIC_CATS.has(cat)
-        )
-        .sort(),
+      ...[...map.keys()].filter((cat) => !order.includes(cat) && PUBLIC_CATS.has(cat)).sort(),
     ];
 
     let text = `*Hello* senpai ${mention}, I am ${botName} 👋

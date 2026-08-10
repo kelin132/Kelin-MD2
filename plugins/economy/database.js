@@ -3,11 +3,6 @@
  * All economy / staff plugins import from here.
  */
 import { getDb } from "../../lib/mongo.mjs";
-import {
-  jidNumber,
-  phoneJid,
-  userJidFilter,
-} from "../../lib/whatsappIdentity.mjs";
 
 export const DEFAULTS = {
   name:          "User",
@@ -58,56 +53,9 @@ export const DEFAULTS = {
 
 // ─── Core CRUD ────────────────────────────────────────────────────────────────
 
-export function canonicalUserId(id = "") {
-  const value = String(id || "").trim();
-  if (!value || /@(lid|g\.us|broadcast)$/.test(value)) return value;
-
-  const number = jidNumber(value);
-  if (!number) return value;
-  if (/@(?:s\.whatsapp\.net|c\.us)$/.test(value) || /^\+?\d[\d\s().:-]*$/.test(value)) {
-    return phoneJid(number);
-  }
-  return value;
-}
-
-async function findUserDocument(db, id) {
-  const collection = db.collection("users");
-  const requestedId = String(id || "");
-  const canonicalId = canonicalUserId(requestedId);
-
-  // Prefer the current canonical id whenever both old and new records exist.
-  let user = await collection.findOne({ _id: canonicalId });
-  if (!user && requestedId && requestedId !== canonicalId) {
-    user = await collection.findOne({ _id: requestedId });
-  }
-  if (!user && canonicalId) {
-    user = await collection.findOne(userJidFilter(canonicalId));
-  }
-  if (!user) return null;
-
-  // Move legacy device/c.us records to the current phone-JID key on first use.
-  // This preserves the document contents, including balances, levels and rank.
-  if (canonicalId && user._id !== canonicalId) {
-    const { _id, ...legacyData } = user;
-    const result = await collection.updateOne(
-      { _id: canonicalId },
-      { $setOnInsert: legacyData },
-      { upsert: true }
-    );
-    if (result.upsertedCount > 0) {
-      await collection.deleteOne({ _id });
-      user = { _id: canonicalId, ...legacyData };
-    } else {
-      user = await collection.findOne({ _id: canonicalId }) || user;
-    }
-  }
-
-  return user;
-}
-
 export async function getUser(id) {
   const db   = await getDb();
-  const user = await findUserDocument(db, id);
+  const user = await db.collection("users").findOne({ _id: id });
   if (!user) return { ...DEFAULTS };
   const { _id, ...rest } = user;
   const merged = { ...DEFAULTS, ...rest };
@@ -154,7 +102,6 @@ const MONOTONIC_FIELDS = new Set(["level"]);
 
 export async function saveUser(id, data) {
   const db = await getDb();
-  const userId = canonicalUserId(id);
   // Strip _id and _snap — neither should be stored in MongoDB
   const { _id, _snap, ...safeData } = data;
 
@@ -198,13 +145,13 @@ export async function saveUser(id, data) {
     if (Object.keys(setOp).length > 0) update.$set = setOp;
     if (Object.keys(update).length === 0) return; // nothing changed
 
-    await db.collection("users").updateOne({ _id: userId }, update, { upsert: true });
+    await db.collection("users").updateOne({ _id: id }, update, { upsert: true });
 
     // Clamp any balance that went negative due to concurrent bets both losing.
     // The aggregation pipeline syntax ($max) is available in MongoDB 4.2+.
     await db.collection("users").updateOne(
       {
-        _id: userId,
+        _id: id,
         $or: [{ money: { $lt: 0 } }, { bank: { $lt: 0 } }, { vault: { $lt: 0 } }],
       },
       [{ $set: {
@@ -216,7 +163,7 @@ export async function saveUser(id, data) {
   } else {
     // New user (no snapshot) — safe to $set everything since nobody else has this doc yet
     await db.collection("users").updateOne(
-      { _id: userId },
+      { _id: id },
       { $set: safeData },
       { upsert: true }
     );
@@ -230,10 +177,9 @@ export async function saveUser(id, data) {
  */
 export async function startInvestment(id, investment, amount) {
   const db = await getDb();
-  const userId = canonicalUserId(id);
   return db.collection("users").findOneAndUpdate(
     {
-      _id: userId,
+      _id: id,
       money: { $gte: amount },
       $or: [
         { activeInvestment: { $exists: false } },
@@ -255,10 +201,9 @@ export async function startInvestment(id, investment, amount) {
  */
 export async function collectInvestment(id, investment, payout) {
   const db = await getDb();
-  const userId = canonicalUserId(id);
   return db.collection("users").findOneAndUpdate(
     {
-      _id: userId,
+      _id: id,
       "activeInvestment.plan": investment.plan,
       "activeInvestment.amount": investment.amount,
       "activeInvestment.startedAt": investment.startedAt,
@@ -280,27 +225,19 @@ export async function getAllUsers() {
 
 export async function isRegistered(id) {
   const db   = await getDb();
-  const user = await findUserDocument(db, id);
+  const user = await db.collection("users").findOne({ _id: id }, { projection: { registered: 1 } });
   return !!(user?.registered);
 }
 
 export async function registerUser(id, name) {
   const db = await getDb();
-  const existing = await findUserDocument(db, id);
-  const userId = canonicalUserId(id);
   const { name: _n, registered: _r, registeredAt: _ra, ...insertDefaults } = DEFAULTS;
-  const update = {};
-  if (!existing) update.$setOnInsert = { ...insertDefaults, money: 100_000 };
-  if (!existing?.registered) {
-    update.$set = {
-      name: name || "User",
-      registered: true,
-      registeredAt: new Date().toISOString(),
-    };
-  }
   await db.collection("users").updateOne(
-    { _id: userId },
-    update,
+    { _id: id },
+    {
+      $setOnInsert: { ...insertDefaults, money: 100_000 },
+      $set: { name: name || "User", registered: true, registeredAt: new Date().toISOString() },
+    },
     { upsert: true }
   );
 }
@@ -329,10 +266,9 @@ export async function requireRegistration(sock, msg, sender) {
  */
 export async function addHistory(id, type, amount, desc) {
   const db = await getDb();
-  const userId = canonicalUserId(id);
   const entry = { type, amount, desc, ts: Date.now() };
   await db.collection("users").updateOne(
-    { _id: userId },
+    { _id: id },
     {
       $push: {
         history: {
@@ -350,9 +286,8 @@ export async function addHistory(id, type, amount, desc) {
  */
 export async function addMoney(id, amount) {
   const db = await getDb();
-  const userId = canonicalUserId(id);
   await db.collection("users").updateOne(
-    { _id: userId },
+    { _id: id },
     { $inc: { money: amount } }
   );
 }
@@ -424,12 +359,8 @@ export function levelFromTotalXp(totalXp) {
  * Returns { oldLevel, newLevel, changed }.
  */
 export async function repairUserLevel(id) {
-  const db     = await getDb();
-  const userId = canonicalUserId(id);
-  const doc    = await db.collection("users").findOne(
-    { _id: userId },
-    { projection: { level: 1, xp: 1 } },
-  );
+  const db   = await getDb();
+  const doc  = await db.collection("users").findOne({ _id: id }, { projection: { level: 1, xp: 1 } });
   if (!doc) return null;
 
   const storedLevel = doc.level ?? 1;
@@ -450,7 +381,7 @@ export async function repairUserLevel(id) {
   }
 
   await db.collection("users").updateOne(
-    { _id: userId },
+    { _id: id },
     { $set: { level: correctLevel, xp: correctXp } }
   );
   return { oldLevel: storedLevel, newLevel: correctLevel, changed: true };
@@ -479,9 +410,8 @@ export async function repairAllLevels() {
  */
 export async function setStaffLevel(id, level) {
   const db = await getDb();
-  const userId = canonicalUserId(id);
   await db.collection("users").updateOne(
-    { _id: userId },
+    { _id: id },
     { $set: { staffLevel: level } },
     { upsert: true }
   );
@@ -503,9 +433,8 @@ export async function getStaffMembers() {
 
 export async function setPremium(id, value) {
   const db = await getDb();
-  const userId = canonicalUserId(id);
   await db.collection("users").updateOne(
-    { _id: userId },
+    { _id: id },
     { $set: { isPremium: value } },
     { upsert: true }
   );
@@ -519,10 +448,9 @@ export async function setPremium(id, value) {
  */
 export async function jailUser(id, durationMs = 0) {
   const db       = await getDb();
-  const userId   = canonicalUserId(id);
   const jailUntil = durationMs > 0 ? Date.now() + durationMs : null;
   await db.collection("users").updateOne(
-    { _id: userId },
+    { _id: id },
     { $set: { jailed: true, jailUntil } },
     { upsert: true }
   );
@@ -530,9 +458,8 @@ export async function jailUser(id, durationMs = 0) {
 
 export async function unjailUser(id) {
   const db = await getDb();
-  const userId = canonicalUserId(id);
   await db.collection("users").updateOne(
-    { _id: userId },
+    { _id: id },
     { $set: { jailed: false, jailUntil: null } }
   );
 }
@@ -541,9 +468,8 @@ export async function unjailUser(id) {
 
 export async function setStaffImmunity(id, value) {
   const db = await getDb();
-  const userId = canonicalUserId(id);
   await db.collection("users").updateOne(
-    { _id: userId },
+    { _id: id },
     { $set: { staffImmunity: value } },
     { upsert: true }
   );
@@ -553,18 +479,16 @@ export async function setStaffImmunity(id, value) {
 
 export async function deletePlayer(id) {
   const db = await getDb();
-  const userId = canonicalUserId(id);
-  await db.collection("users").deleteOne({ _id: userId });
+  await db.collection("users").deleteOne({ _id: id });
 }
 
 export async function resetPlayer(id) {
   const db   = await getDb();
   const user = await getUser(id);
-  const userId = canonicalUserId(id);
   const { name, registered, registeredAt, staffLevel, isPremium, staffImmunity } = user;
   // Preserve identity fields, wipe economy
   await db.collection("users").updateOne(
-    { _id: userId },
+    { _id: id },
     {
       $set: {
         ...DEFAULTS,
@@ -582,9 +506,8 @@ export async function resetPlayer(id) {
  */
 export async function setPlayerFields(id, fields) {
   const db = await getDb();
-  const userId = canonicalUserId(id);
   await db.collection("users").updateOne(
-    { _id: userId },
+    { _id: id },
     { $set: fields },
     { upsert: true }
   );
@@ -595,9 +518,8 @@ export async function setPlayerFields(id, fields) {
 /** Ban a user — blocks all bot commands. */
 export async function banUser(id, reason = "No reason given", bannedBy = "Owner") {
   const db = await getDb();
-  const userId = canonicalUserId(id);
   await db.collection("users").updateOne(
-    { _id: userId },
+    { _id: id },
     { $set: { banned: true, bannedReason: reason, bannedBy, bannedAt: new Date().toISOString() } },
     { upsert: true }
   );
@@ -606,9 +528,8 @@ export async function banUser(id, reason = "No reason given", bannedBy = "Owner"
 /** Lift a ban. */
 export async function unbanUser(id) {
   const db = await getDb();
-  const userId = canonicalUserId(id);
   await db.collection("users").updateOne(
-    { _id: userId },
+    { _id: id },
     { $set: { banned: false, bannedReason: null, bannedBy: null, bannedAt: null } }
   );
 }
@@ -629,9 +550,6 @@ export async function findUserByName(name) {
 /** Quick banned check (projection-only — no full user load). */
 export async function isBanned(id) {
   const db   = await getDb();
-  const user = await db.collection("users").findOne(
-    { _id: canonicalUserId(id) },
-    { projection: { banned: 1 } },
-  );
+  const user = await db.collection("users").findOne({ _id: id }, { projection: { banned: 1 } });
   return !!(user?.banned);
 }

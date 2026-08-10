@@ -4,7 +4,6 @@
 
 import { getModsData, saveModsData, getMods } from '../../lib/permissions.mjs';
 import { getStaffMembers } from '../economy/database.js';
-import { resolveDisplayNumber } from '../../lib/whatsappIdentity.mjs';
 
 const LEVEL_LABEL = {
   1:  'MOD',
@@ -42,7 +41,7 @@ export default {
   usage:       '.mods | .addmod @user | .removemod @user',
   aliases:     ['addmod', 'removemod', 'modlist'],
   cooldown:    5,
-  isOwner:     true,
+  isOwner:     false,
 
   async run({ sock, msg, cmd }) {
     const jid  = msg.key.remoteJid;
@@ -60,7 +59,7 @@ export default {
 
       // DB staff first (authoritative level)
       for (const u of dbStaff) {
-        const num = await resolveDisplayNumber(sock, u._id, jid);
+        const num = u._id.split('@')[0].split(':')[0];
         staffMap.set(num, {
           jid:   u._id,
           name:  u.name || `+${num}`,
@@ -99,7 +98,7 @@ export default {
         try {
           const meta = await sock.groupMetadata(jid);
           for (const p of meta.participants) {
-            const pNum = await resolveDisplayNumber(sock, p.id, jid); // clean phone number
+            const pNum = p.id.split('@')[0].split(':')[0]; // clean phone number
             // Direct match
             cleanNumMap[pNum] = pNum;
             // Also index by any stored num that starts with pNum (device-ID suffix)

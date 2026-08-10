@@ -25,7 +25,6 @@ import { initGroupSettings } from "./lib/groupSettings.js";
 import { startCardSpawner }  from "./lib/cardSpawner.mjs";
 import { startTaxScheduler } from "./lib/taxScheduler.mjs";
 import { getRuntimeSettings } from "./lib/runtimeSettings.mjs";
-import { primeKnownCardSeries, repairCardSeries } from "./plugins/cards/db.js";
 
 // settings.js is CommonJS — import via createRequire
 const _require  = createRequire(import.meta.url);
@@ -72,10 +71,6 @@ try {
   await connectDb();
   await initGroupSettings();   // load group settings (welcome, antilink, etc.) from MongoDB
 
-  // Make previously repaired values available to the card API immediately
-  // after restart; the slower Unknown-series repair continues in background.
-  await primeKnownCardSeries();
-
   // ── One-time migration: bump cardLimit from 100 → 250 for existing users ──
   try {
     const { getDb } = await import("./lib/mongo.mjs");
@@ -90,12 +85,6 @@ try {
   } catch (migErr) {
     log("warn", "[migration] cardLimit migration failed: " + String(migErr));
   }
-
-  // Re-check every saved card so stale or incorrect series values are repaired
-  // without requiring users to resummon them.
-  void repairCardSeries().catch((repairErr) => {
-    log("warn", "[migration] card series repair failed: " + String(repairErr));
-  });
 } catch (err) {
   log("warn", "MongoDB connection failed: " + String(err));
   log("warn", "Economy/guild/staff features require MongoDB. Add MONGO_URI to your .env");

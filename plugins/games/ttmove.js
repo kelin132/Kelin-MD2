@@ -1,6 +1,6 @@
 // plugins/games/ttmove.js
 // Process moves in an active Tic Tac Toe game.
-// Usage: send only a number from 1-9 while a game is active.
+// Usage: .m <1-9>
 //
 // Rewards the winner with coins. No penalty for the loser.
 
@@ -13,7 +13,7 @@ export default {
   name: "m",
   description: "Make a move in the active Tic Tac Toe game (1–9)",
   category: "games",
-  usage: "1-9 during an active .ttt game",
+  usage: ".m <1-9>",
   aliases: ["move"],
   cooldown: 1,
 
@@ -34,23 +34,25 @@ export default {
       }, { quoted: msg });
     }
 
-    if (game.isExpired()) {
+    // Clean up if already finished (shouldn't happen, but be safe)
+    if (game.finished) {
       games.delete(jid);
       return sock.sendMessage(jid, {
-        text: "⌛ This game expired after 30 minutes of inactivity.\n\nStart a new one with *.ttt @user*",
+        text: "❌ That game has already ended. Start a new one with *.ttt @user*",
       }, { quoted: msg });
     }
 
-    if (!game.hasPlayer(sender)) {
+    // Only the two players can move
+    if (sender !== game.playerX && sender !== game.playerO) {
       return sock.sendMessage(jid, {
         text: "❌ You are not a player in this game!",
       }, { quoted: msg });
     }
 
-    const pos = args[0];
-    if (!/^[1-9]$/.test(pos || "")) {
+    const pos = parseInt(args[0]);
+    if (!args[0] || isNaN(pos) || pos < 1 || pos > 9) {
       return sock.sendMessage(jid, {
-        text: `❌ Pick a number from *1–9* by sending it directly.\n\n${game.render()}`,
+        text: `❌ Pick a number from *1–9*.\n\n${game.render()}`,
         mentions: [game.turn],
       }, { quoted: msg });
     }
@@ -58,9 +60,6 @@ export default {
     const result = game.move(sender, pos);
 
     if (!result.success) {
-      if (result.expired) {
-        games.delete(jid);
-      }
       return sock.sendMessage(jid, {
         text: `❌ ${result.message}`,
       }, { quoted: msg });
@@ -98,9 +97,7 @@ No coins this time. Rematch with *.ttt @user*`,
           rewardLine = `\n💰 @${winnerJid.split("@")[0]} earned *+$${WIN_REWARD}* coins!`;
         }
       } catch {
-      // Keep the win announcement even if the economy service is unavailable,
-      // but make the missing payout visible instead of silently swallowing it.
-      rewardLine = "\n⚠️ The reward could not be credited right now.";
+        // Economy unavailable — still announce the win
       }
 
       return sock.sendMessage(jid, {
@@ -118,11 +115,11 @@ Rematch: *.ttt @user*`,
     // ── Game continues ────────────────────────────────────────────────────────
     const nextTurn = game.turn;
     return sock.sendMessage(jid, {
-        text:
+      text:
 `${board}
 🎯 Turn: @${nextTurn.split("@")[0]}
 
- Send only a number from *1-9* to make your move.`,
+Use *.m <1-9>* to make your move.`,
       mentions: [nextTurn],
     }, { quoted: msg });
   },

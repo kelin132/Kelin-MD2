@@ -67,7 +67,6 @@ export default {
           await sock.sendMessage(jid, {
             video:    buffer,
             mimetype: 'video/mp4',
-            fileName: 'instagram.mp4',
             caption,
           }, { quoted: msg });
         } finally {

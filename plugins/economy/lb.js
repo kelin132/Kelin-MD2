@@ -11,17 +11,6 @@
 import { getDb } from "../../lib/mongo.mjs";
 
 const MEDALS = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
-const RANK_BADGES = [
-  "『 𝟏 』", "『 𝟐 』", "『 𝟑 』",
-  "『 𝟒 』", "『 𝟓 』", "『 𝟔 』",
-  "『 𝟕 』", "『 𝟖 』", "『 𝟗 』", "『 𝟏𝟎 』",
-];
-const RANK_TITLES = [
-  "⚡ Legendary Hero",    "🌸 Elite Warrior",  "🗡️ Grand Swordsman",
-  "✨ Skilled Fighter",   "🌙 Rising Star",     "🎴 Card Master",
-  "🔥 Flame Bearer",      "💧 Tide Turner",     "🌿 Forest Spirit",
-  "⭐ Chosen One",
-];
 
 export default {
   name: "lb",
@@ -73,28 +62,24 @@ export default {
       const pokeMap = {};
       for (const doc of pokeCounts) pokeMap[doc._id] = doc.total;
 
-      let text = "⛩️  *𝗪𝗘𝗔𝗟𝗧𝗛  𝗥𝗔𝗡𝗞𝗜𝗡𝗚𝗦* ⛩️\n";
-      text += "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄\n";
-      text += "  🌸 *Top 10 Richest Warriors*\n";
-      text += "  ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦\n\n";
+      let text = "🏆 *LEADERBOARD — TOP 10*\n";
+      text += "━".repeat(28) + "\n\n";
 
       for (let i = 0; i < sorted.length; i++) {
         const u      = sorted[i];
         const userId = (u._id || "").split("@")[0].split(":")[0];
-        const badge  = RANK_BADGES[i] || `『${i + 1}』`;
-        const title  = RANK_TITLES[i] || "⭐ Warrior";
-        const name   = u.name || `Warrior_${userId.slice(-4)}`;
+        const medal  = MEDALS[i] || `${i + 1}.`;
+        const name   = u.name || `User_${userId.slice(-4)}`;
         const cards  = cardMap[userId] || 0;
         const poke   = pokeMap[u._id]  || 0;
-        text += `${badge} *${name}*\n`;
-        text += `  ┗ ${title}\n`;
-        text += `  💰 *$${u.net.toLocaleString()}*`;
-        text += `  🃏 *${cards}* cards  🎮 *${poke}* pkm\n`;
-        text += i < sorted.length - 1 ? "  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n" : "";
+        text += `${medal} *${name}*\n`;
+        text += `   💰 Money: $${u.net.toLocaleString()}\n`;
+        text += `   🃏 Cards: ${cards}\n`;
+        text += `   🎮 Pokémon: ${poke}\n\n`;
       }
 
-      text += "\n✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦\n";
-      text += "🌺 _May your wealth grow like the sakura_";
+      text += `━━━━━━━━━━━━━━━━━━━━\n`;
+      text += `🃏 *.lb --cards* | 🎮 *.lb --pokemon* | ⭐ *.lb --level*`;
 
       return sock.sendMessage(jid, { text: text.trim() }, { quoted: msg });
     }

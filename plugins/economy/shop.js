@@ -23,10 +23,6 @@ function costLine(item) {
   return parts.join("  ·  ") || "🆓 Free";
 }
 
-function availableItems() {
-  return Object.entries(shopItems).filter(([, item]) => !item.hidden);
-}
-
 function rarityBadge(r) {
   return { common: "⚪ Common", rare: "🔵 Rare", legendary: "🟡 Legendary" }[r] ?? r ?? "";
 }
@@ -37,7 +33,7 @@ const DIV = "╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌�
 
 function buildMainMenu(coins, orbs, gems) {
   const catLines = Object.entries(SHOP_CATEGORIES).map(([key, cat]) => {
-    const count = availableItems().filter(([, i]) => i.category === key).length;
+    const count = Object.values(shopItems).filter(i => i.category === key).length;
     return `${cat.emoji} *.shop ${key}*\n┃   └ _${cat.label}_ (${count} items)`;
   }).join("\n");
 
@@ -66,13 +62,13 @@ function buildMainMenu(coins, orbs, gems) {
 
 function buildCategoryList(catKey) {
   const cat   = SHOP_CATEGORIES[catKey];
-  const items = availableItems().filter(([, i]) => i.category === catKey);
+  const items = Object.entries(shopItems).filter(([, i]) => i.category === catKey);
 
   if (items.length === 0) {
     return `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮\n┃  ❌ No items in this category\n╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`;
   }
 
-  const allKeys = availableItems().map(([name]) => name);
+  const allKeys = Object.keys(shopItems);
 
   const itemLines = items.map(([name, item]) => {
     const num  = allKeys.indexOf(name) + 1;
@@ -107,7 +103,7 @@ async function handleBuy(sock, msg, jid, sender, args) {
   const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
 
   const itemNumber  = Number(args[1]);
-   const orderedItems = availableItems();
+  const orderedItems = Object.entries(shopItems);
   const selected    = Number.isInteger(itemNumber) && itemNumber >= 1
     ? orderedItems[itemNumber - 1]
     : null;

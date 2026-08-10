@@ -19,8 +19,6 @@ const TIMED_EFFECTS = {
   rob_shield:    (user, ms) => { user.robShieldExpiry   = Date.now() + ms; return `🧿 Rob Shield: ${ms / 60000} min`; },
   stealth:       (user, ms) => { user.stealthExpiry     = Date.now() + ms; return `🪄 Stealth: ${ms / 60000} min`; },
   vault_shield:  (user, ms) => { user.vaultShieldExpiry = Date.now() + ms; return `🔒 Vault Shield: ${ms / 60000} min`; },
-  coin_boost:    (user, ms) => { user.coinBoostExpiry    = Date.now() + ms; return `🪙 Coin Boost: ${ms / 60000} min`; },
-  xp_boost:      (user, ms) => { user.xpBoostExpiry      = Date.now() + ms; return `🌟 XP Boost: ${ms / 60000} min`; },
 };
 
 export default {

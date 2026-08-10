@@ -39,39 +39,10 @@ Copy `.env.example` to `.env` and fill in your details:
 | `BOT_NUMBER` | ✅ | Your WhatsApp number with country code, no `+` (e.g. `2348012345678`) |
 | `OWNER_NUMBER` | ✅ | Your number for owner-only commands (same format) |
 | `BOT_NAME` | ❌ | Display name (default: `KELIN MD`) |
-| `AI_PERSONA` | ❌ | AI personality: `akira`, `zhongli`, or `tsaritsa` |
-| `AI_TRIGGER_NAMES` | ❌ | Optional comma-separated names that trigger the active persona |
 | `PREFIX` | ❌ | Command prefix (default: `.`) |
 | `TZ` | ❌ | Timezone (default: `Africa/Lagos`) |
 
 On **Pterodactyl / katabump** you can paste these directly into the panel's **Startup → Environment Variables** tab instead of using a `.env` file.
-
-### AI personalities
-
-All deployed bots can run from the same repository while using different personalities. Set these variables separately on each deployment:
-
-```env
-# Akira deployment
-BOT_NAME=AKIRA MD
-AI_PERSONA=akira
-AI_TRIGGER_NAMES=akira,akira md
-```
-
-```env
-# Zhongli deployment
-BOT_NAME=ZHONGLI MD
-AI_PERSONA=zhongli
-AI_TRIGGER_NAMES=zhongli,zhongli md,consultant
-```
-
-```env
-# Tsaritsa deployment
-BOT_NAME=TSARITSA MD
-AI_PERSONA=tsaritsa
-AI_TRIGGER_NAMES=tsaritsa,tsaritsa md,her majesty
-```
-
-The active persona responds when its name is written, when the bot is mentioned, or when someone replies to one of its messages. Conversation history is separated by persona and chat, so switching deployments does not mix character memories. Persona replies use `FREEMODEL_API_KEY` as the fast primary provider and fall back to the PrinceTech Gemini endpoint when the primary is missing, unavailable, or times out. Set `PRINCE_API_KEY` in the deployment environment for `.flux` image generation and the Akira fallback. Use `.akira info` to see the active persona and `.akira reset` to clear its conversation in the current chat; the legacy command name remains for compatibility.
 
 ### 3. Start
 ```
@@ -161,26 +132,6 @@ export default {
 6. `.dbzchallenge @user` — start a PvP battle.
 7. `.dbzbattle fight <move number>` or `.dbzbattle run` — take a turn or flee.
 8. `.dbzsync` — owner-only roster refresh from the Dragon Ball API.
-
-### Recovering users after a JID/LID migration
-
-If a user's profile was saved under a legacy JID, the owner can preview and
-restore it into the user's current identity:
-
-```text
-.restoreuser <old_jid> <new_jid>
-.restoreuser <old_jid> <new_jid> confirm
-.restoreuser all
-.restoreuser all confirm
-```
-
-The first command is a dry run. The second merges missing legacy profile data,
-moves linked game records when there is no conflicting current record, updates
-the card system's stored phone identity, and writes an audit record. The old
-user document is kept as a backup; the command never deletes it. Use
-`.restoreuser all` to preview every legacy phone/device identity at once, then
-`.restoreuser all confirm` to apply the batch. LID-only records are skipped
-because they require WhatsApp runtime mapping.
 
 Battle, transformation, villain-arrival, victory, and roster-selection images now crop transparent character art to its visible silhouette and anchor it to the arena floor for consistent cutouts.
 

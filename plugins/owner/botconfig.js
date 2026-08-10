@@ -44,7 +44,6 @@ function help(prefix, settings) {
     `│ ${prefix}botconfig image <https://...>`,
     `│ ${prefix}botconfig prefix <prefix>`,
     `│ ${prefix}botconfig layout <1-4>`,
-    `│   1 classic  •  2 anime  •  3 horizontal  •  4 bordered`,
     `╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
   ].join("\n");
 }

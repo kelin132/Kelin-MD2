@@ -1,6 +1,6 @@
 import { fetchAllCards, getCard, sendCardMedia, TIER_NAME, TIER_EMOJI } from "../../lib/cardApi.mjs";
 import { Col, uid } from "./db.js";
-import { getSeriesForCard } from "../../lib/seriesEnrich.mjs";
+import { getSeries } from "../../lib/seriesEnrich.mjs";
 
 function normaliseQuery(value) {
   return String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -165,9 +165,9 @@ export default {
         }
 
         const card = tierCards[0];
-        // Prefer the exact series embedded in the card artwork.
+        // Enrich series if still unknown (AniList, 4 s timeout)
         if (!card.series || card.series === "Unknown") {
-          card.series = await getSeriesForCard(card, { timeout: 2500 });
+          card.series = await getSeries(card.name, { timeout: 4000 });
         }
 
         const owners = await getOwners(card.cardId);
@@ -193,7 +193,7 @@ export default {
         const card = byTier.get(sortedTiers[0])[0];
         // Enrich series if still unknown
         if (!card.series || card.series === "Unknown") {
-          card.series = await getSeriesForCard(card, { timeout: 2500 });
+          card.series = await getSeries(card.name, { timeout: 4000 });
         }
         const owners = await getOwners(card.cardId);
         const mentions = owners.map((o) => o.jid);
@@ -221,7 +221,7 @@ export default {
       // Enrich series on the representative card (same character, so one lookup suffices)
       const repCard = byTier.get(sortedTiers[0])[0];
       if (!repCard.series || repCard.series === "Unknown") {
-        repCard.series = await getSeriesForCard(repCard, { timeout: 2500 });
+        repCard.series = await getSeries(repCard.name, { timeout: 4000 });
         // Propagate to all tiers since it's the same character
         for (const t of sortedTiers) { byTier.get(t)[0].series = repCard.series; }
       }

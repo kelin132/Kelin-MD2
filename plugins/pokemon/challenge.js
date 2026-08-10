@@ -70,11 +70,7 @@ export default {
             level: challengerLead.level,
             hp: challengerLead.hp,
             maxHp: challengerLead.maxHp,
-            pokedexId: challengerLead.pokedexId,
-            pixelBackImageUrl: challengerLead.pixelBackImageUrl,
-            pixelImageUrl: challengerLead.pixelImageUrl,
-            imageUrl: challengerLead.imageUrl,
-            backImageUrl: challengerLead.backImageUrl,
+            imageUrl: challengerLead.backImageUrl || challengerLead.imageUrl,
             shiny: challengerLead.shiny,
           },
           enemy: {
@@ -82,14 +78,10 @@ export default {
             level: opponentLead.level,
             hp: opponentLead.hp,
             maxHp: opponentLead.maxHp,
-            pokedexId: opponentLead.pokedexId,
-            pixelImageUrl: opponentLead.pixelImageUrl,
             imageUrl: opponentLead.imageUrl,
             shiny: opponentLead.shiny,
           },
           round: 1,
-           playerTrainer: battle.challengerTrainer,
-           enemyTrainer: battle.opponentTrainer,
           statusText: `${challengerTrainer.username} vs ${opponentTrainer.username || msg.pushName}!`,
         });
       } catch {}

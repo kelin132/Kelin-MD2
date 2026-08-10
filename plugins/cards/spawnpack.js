@@ -11,7 +11,7 @@
  *
  * Total: 15 cards — costs 2,000,000 coins
  */
-import { appendCards } from "./db.js";
+import { findOrCreateUser } from "./db.js";
 import { getUser, saveUser, requireRegistration, addHistory } from "../economy/database.js";
 import {
   getCardsByTier,
@@ -21,7 +21,6 @@ import {
   TIER_NAME,
   createSpawnId,
 } from "../../lib/cardApi.mjs";
-import { getSeriesForCard } from "../../lib/seriesEnrich.mjs";
 
 const PACK_COST = 20_000_000;
 
@@ -139,15 +138,11 @@ export default {
       }
 
       // ── Add all cards to collection ────────────────────────────────────────
-      // Resolve every card before saving it so packs use the same enrichment
-      // path as .summon.
-      await Promise.all(
-        allCards.map(async (card) => {
-          card.series = await getSeriesForCard(card, { timeout: 2500 });
-        })
-      );
+      const cardUser = await findOrCreateUser(sender);
+      cardUser.cards = cardUser.cards || [];
 
-      const cardsToSave = allCards.map((card) => ({
+      for (const card of allCards) {
+        cardUser.cards.push({
           cardId:     card.cardId,
           name:       card.name,
           tier:       card.tier,
@@ -159,8 +154,11 @@ export default {
           media:      card.media  || null,
           mediaType:  (card.tierNum === "6" || card.tierNum === "S") ? "gif" : "image",
           obtainedAt: new Date(),
-      }));
-      await appendCards(sender, cardsToSave);
+        });
+      }
+
+      cardUser.totalCards = (cardUser.totalCards || 0) + allCards.length;
+      await cardUser.save();
 
       // ── Build summary listing ──────────────────────────────────────────────
       const tierLines = tierResults.map(({ tierName, drawn }) => {

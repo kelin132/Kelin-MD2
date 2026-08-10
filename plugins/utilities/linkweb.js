@@ -5,12 +5,7 @@
  * Kelin MD player profile to Kelin Hub.
  */
 import { isRegistered } from "../economy/database.js";
-import {
-  createWebLinkCode,
-  findRegisteredWebIdentity,
-  WEB_LINK_CODE_TTL_MS,
-} from "../../lib/webLink.mjs";
-import { phoneJid } from "../../lib/whatsappIdentity.mjs";
+import { createWebLinkCode, WEB_LINK_CODE_TTL_MS } from "../../lib/webLink.mjs";
 
 const minutes = Math.floor(WEB_LINK_CODE_TTL_MS / 60_000);
 
@@ -21,44 +16,23 @@ export default {
   usage: ".linkweb",
   cooldown: 15,
 
-  async run({ sock, msg, sender, phoneNumber, formattedNumber, identity }) {
+  async run({ sock, msg, sender }) {
     const chatId = msg.key.remoteJid;
-    const identityCandidates = [
-      sender,
-      ...(identity?.aliases || []),
-      msg.key.participant,
-      msg.key.participantAlt,
-      msg.key.participantPn,
-      msg.key.remoteJid,
-      msg.key.remoteJidAlt,
-    ].filter(Boolean);
-    const registeredJid = await findRegisteredWebIdentity(identityCandidates);
 
-    if (!phoneNumber) {
-      return sock.sendMessage(chatId, {
-        text: "❌ WhatsApp did not provide a real phone number for this message. Please send *.linkweb* again from your private chat.",
-      }, { quoted: msg });
-    }
-
-    if (!registeredJid && !await isRegistered(sender)) {
+    if (!await isRegistered(sender)) {
       return sock.sendMessage(chatId, {
         text: "❌ You need to register first.\n\nUse *.register <your_name>*, then run *.linkweb* again.",
       }, { quoted: msg });
     }
 
     try {
-      const canonicalJid = phoneJid(phoneNumber);
-      const { code } = await createWebLinkCode(
-        canonicalJid,
-        [registeredJid, sender, ...identityCandidates],
-      );
+      const { code } = await createWebLinkCode(sender);
       await sock.sendMessage(chatId, {
         text: [
           "🔐 *KELIN HUB LINK CODE*",
           "",
           `Your code is: *${code}*`,
           "",
-          `Use your real WhatsApp number: *${formattedNumber || `+${phoneNumber}`}*.`,
           "Open the Kelin Hub login page and enter this code with your WhatsApp number.",
           `This code expires in ${minutes} minutes and can only be used once.`,
           "",
