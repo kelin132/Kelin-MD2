@@ -170,12 +170,17 @@ restore it into the user's current identity:
 ```text
 .restoreuser <old_jid> <new_jid>
 .restoreuser <old_jid> <new_jid> confirm
+.restoreuser all
+.restoreuser all confirm
 ```
 
 The first command is a dry run. The second merges missing legacy profile data,
 moves linked game records when there is no conflicting current record, updates
 the card system's stored phone identity, and writes an audit record. The old
-user document is kept as a backup; the command never deletes it.
+user document is kept as a backup; the command never deletes it. Use
+`.restoreuser all` to preview every legacy phone/device identity at once, then
+`.restoreuser all confirm` to apply the batch. LID-only records are skipped
+because they require WhatsApp runtime mapping.
 
 Battle, transformation, villain-arrival, victory, and roster-selection images now crop transparent character art to its visible silhouette and anchor it to the arena floor for consistent cutouts.
 

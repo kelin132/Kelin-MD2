@@ -1,5 +1,7 @@
 import {
+  previewAllUserIdentityRecoveries,
   previewUserIdentityRecovery,
+  restoreAllUserIdentities,
   restoreUserIdentity,
 } from "../../lib/userIdentityRecovery.mjs";
 
@@ -40,12 +42,22 @@ function linkedLines(items) {
     });
 }
 
+function batchLines(candidates, { limit = 20 } = {}) {
+  const lines = candidates.slice(0, limit).map((item) =>
+    `  ${idLabel(item.sourceId)} → ${idLabel(item.targetId)}`
+  );
+  if (candidates.length > limit) {
+    lines.push(`  … and ${candidates.length - limit} more`);
+  }
+  return lines;
+}
+
 export default {
   name: "restoreuser",
-  aliases: ["recoveruser", "restorejid"],
-  description: "Recover a user's legacy JID/LID data into their current identity",
+  aliases: ["recoveruser", "restorejid", "restoruser"],
+  description: "Recover one user or every legacy user identity",
   category: "owner",
-  usage: ".restoreuser <old_jid> <new_jid> [confirm]",
+  usage: ".restoreuser <old_jid> <new_jid> [confirm] | .restoreuser all [confirm]",
   isOwner: true,
   cooldown: 10,
 
@@ -53,6 +65,66 @@ export default {
     const chatId = msg.key.remoteJid;
     const confirm = args.at(-1)?.toLowerCase() === "confirm";
     const values = confirm ? args.slice(0, -1) : args;
+
+    if (values[0]?.toLowerCase() === "all") {
+      try {
+        const result = confirm
+          ? await restoreAllUserIdentities()
+          : await previewAllUserIdentityRecoveries();
+
+        if (!result.total) {
+          return sock.sendMessage(chatId, {
+            text: [
+              confirm ? "✅ *Batch user recovery finished*" : "🔎 *Batch user recovery preview*",
+              "",
+              "No legacy phone/device user records were found.",
+              "LID-only records are skipped because they need WhatsApp runtime mapping.",
+            ].join("\n"),
+          }, { quoted: msg });
+        }
+
+        const lines = [
+          confirm ? "✅ *Batch user identity recovery complete*" : "🔎 *Batch user identity recovery preview*",
+          "",
+          `Legacy records found: ${result.total}`,
+        ];
+
+        if (confirm) {
+          lines.push(
+            `Restored: ${result.restoredCount}`,
+            `Failed: ${result.failedCount}`,
+          );
+          if (result.failedCount) {
+            lines.push(
+              "",
+              "*Failures*",
+              ...result.failed.map((item) =>
+                `  ${idLabel(item.sourceId)} → ${idLabel(item.targetId)}: ${item.error}`
+              ).slice(0, 20),
+            );
+          }
+          lines.push(
+            "",
+            "Legacy records were kept as backups. Each successful recovery has its own audit record.",
+          );
+        } else {
+          lines.push(
+            "",
+            "*Mappings to be recovered*",
+            ...batchLines(result.candidates),
+            "",
+            "Nothing has been changed.",
+            "Run `.restoreuser all confirm` to restore every listed legacy identity.",
+          );
+        }
+
+        return sock.sendMessage(chatId, { text: lines.join("\n") }, { quoted: msg });
+      } catch (error) {
+        return sock.sendMessage(chatId, {
+          text: `❌ Batch recovery stopped: ${error.message || "unknown error"}`,
+        }, { quoted: msg });
+      }
+    }
 
     const oldId = values[0];
     const newId = values[1] || referencedJid(msg);
@@ -63,6 +135,8 @@ export default {
           "Usage:",
           "`.restoreuser <old_jid> <new_jid>` — preview the recovery",
           "`.restoreuser <old_jid> <new_jid> confirm` — apply it",
+          "`.restoreuser all` — preview every legacy user recovery",
+          "`.restoreuser all confirm` — apply every legacy user recovery",
           "",
           "You can replace `<new_jid>` by replying to or mentioning the user.",
           "The old record is kept as a backup; recovery is never automatic.",
