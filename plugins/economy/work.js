@@ -1,249 +1,285 @@
-import { getUser, saveUser, requireRegistration, addHistory, checkLevelUp } from "./database.js";
-import { generateWorkImage } from "../../lib/economyCanvas.mjs";
+import {
+  getUser,
+  saveUser,
+  requireRegistration,
+  addHistory,
+  checkLevelUp,
+  claimWorkShift,
+  restoreWorkEnergy,
+} from "./database.js";
+import {
+  SHIFT_COOLDOWN_MS,
+  REST_COOLDOWN_MS,
+  JOB_CHANGE_COOLDOWN_MS,
+  MAX_ENERGY,
+  PAYROLL_TAX_RATE,
+  buildJobBoard,
+  buildPaystub,
+  buildStatus,
+  clampEnergy,
+  formatMoney,
+  formatRemaining,
+  getEnergyItem,
+  getJob,
+  getMissingRequirements,
+  normalizeJobKey,
+  resolveJob,
+  rollWorkEvent,
+} from "./workSystem.mjs";
 
-const WORK_COOLDOWN  = 9 * 60 * 1000;
-const JOB_CHANGE_CD  = 24 * 60 * 60 * 1000;
-const FIRE_CHANCE    = 0.30;
+const replyWith = (sock, jid, msg) => (text) =>
+  sock.sendMessage(jid, { text }, { quoted: msg });
 
-const jobs = {
-  programmer:   { pay: 3500,  emoji: "👨‍💻", xp: 80,  tier: "Regular" },
-  hacker:       { pay: 5500,  emoji: "🎭", xp: 120, tier: "Regular" },
-  farmer:       { pay: 2000,  emoji: "👨‍🌾", xp: 40,  tier: "Regular" },
-  doctor:       { pay: 4500,  emoji: "⚕️",  xp: 100, tier: "Regular" },
-  teacher:      { pay: 2800,  emoji: "👨‍🏫", xp: 60,  tier: "Regular" },
-  police:       { pay: 3800,  emoji: "👮",  xp: 90,  tier: "Regular" },
-  artist:       { pay: 3200,  emoji: "🎨", xp: 70,  tier: "Regular" },
-  chef:         { pay: 3600,  emoji: "👨‍🍳", xp: 80,  tier: "Regular" },
-  trader:       { pay: 7000,  emoji: "📈", xp: 150, tier: "Regular" },
-  mechanic:     { pay: 3900,  emoji: "🔧", xp: 85,  tier: "Regular" },
-  assassin:     { pay: 12000, emoji: "🗡️",  xp: 200, tier: "Elite" },
-  kingpin:      { pay: 15000, emoji: "👑", xp: 250, tier: "Elite" },
-  spy:          { pay: 9000,  emoji: "🕵️",  xp: 180, tier: "Elite" },
-  bountyHunter: { pay: 10500, emoji: "🎯", xp: 190, tier: "Elite" },
-  dragonTamer:  { pay: 8500,  emoji: "🐉", xp: 170, tier: "Elite" },
-  alchemist:    { pay: 7500,  emoji: "⚗️",  xp: 160, tier: "Elite" },
-  warlord:      { pay: 13500, emoji: "⚔️",  xp: 220, tier: "Elite" },
-  hiredGun:     { pay: 11000, emoji: "🔫", xp: 195, tier: "Elite" },
-  cryptoWhale:  { pay: 18000, emoji: "🐋", xp: 300, tier: "Elite" },
-  overlord:     { pay: 20000, emoji: "😈", xp: 350, tier: "Elite" },
-};
-
-function resolveJob(input) {
-  const key = input.toLowerCase().replace(/\s+/g, "");
-  return Object.keys(jobs).find(k => k.toLowerCase() === key) || null;
+function jobDisplay(jobKey) {
+  const job = getJob(jobKey);
+  return job ? `${job.emoji} ${job.name}` : "Unknown job";
 }
 
-function fmtTime(ms) {
-  const m = Math.floor(ms / 60000);
-  if (m < 60) return `${m}m`;
-  return `${Math.floor(m / 60)}h ${m % 60}m`;
+function usageText() {
+  return [
+    `💼 *WORK SYSTEM*`,
+    ``,
+    `*.work* — take your next shift`,
+    `*.work jobs* — browse careers and promotions`,
+    `*.work <job>* — apply or promote`,
+    `*.work status* — energy, XP, and shift count`,
+    `*.work rest* — recover 25 energy`,
+    `*.work eat <item>* — consume food or an energy item`,
+  ].join("\n");
 }
 
-function fmt(n) { return `$${n.toLocaleString()}`; }
+async function handleJobSelection({ sock, msg, sender, user, jid, args }) {
+  const reply = replyWith(sock, jid, msg);
+  const isChange = args[0]?.toLowerCase() === "change" || args[0]?.toLowerCase() === "apply";
+  const input = (isChange ? args.slice(1) : args).join(" ");
+  const jobKey = resolveJob(input);
+  if (!jobKey) return reply(`❌ Career not found.\n\n${usageText()}`);
 
-function buildBoard() {
-  const reg  = Object.entries(jobs).filter(([, v]) => v.tier === "Regular");
-  const elit = Object.entries(jobs).filter(([, v]) => v.tier === "Elite");
-  const line = ([n, j]) => `│  ${j.emoji} *${n}* :: $${j.pay.toLocaleString()} (+${j.xp} xp)`;
+  const currentJob = normalizeJobKey(user.job);
+  if (currentJob === jobKey) {
+    return reply(`✅ You already work as *${jobDisplay(jobKey)}*.\n\nUse *.work* to take a shift.`);
+  }
 
-  return (
-`╭─❀「 💼 *𝐉𝐎𝐁𝐒 𝐁𝐎𝐀𝐑𝐃* 」❀─╮
-│ 〔 🔹 *Regular Jobs* 〕
-${reg.map(line).join("\n")}
-│
-│ 〔 💎 *Elite Jobs* 〕
-${elit.map(line).join("\n")}
-│
-│ 📝 *.work <jobname>* to apply
-│ 🔄 *.work change <jobname>* to switch
-│ ⚠️ Every shift has a *30%* fire risk!
-╰───────────────❀`
-  );
+  const missing = getMissingRequirements(user, jobKey);
+  if (missing.length) {
+    return reply([
+      `╭───〔 🔒 *CAREER LOCKED* 〕───╮`,
+      `│ ${jobDisplay(jobKey)}`,
+      `│`,
+      `│ Missing:`,
+      ...missing.map((item) => `│ • ${item}`),
+      `│`,
+      `│ Complete more shifts, earn career XP,`,
+      `│ or buy the required education/gear.`,
+      `╰────────────────────────────`,
+    ].join("\n"));
+  }
+
+  const now = Date.now();
+  const sinceChange = now - Number(user.lastJobChange || 0);
+  if (currentJob && sinceChange < JOB_CHANGE_COOLDOWN_MS) {
+    return reply([
+      `🔒 *Career change on cooldown*`,
+      ``,
+      `Current: ${jobDisplay(currentJob)}`,
+      `Switch again in: ${formatRemaining(JOB_CHANGE_COOLDOWN_MS - sinceChange)}`,
+      ``,
+      `_Promotion is faster when you keep completing shifts._`,
+    ].join("\n"));
+  }
+
+  user.job = jobKey;
+  user.fired = false;
+  user.lastJobChange = now;
+  await saveUser(sender, user);
+  const job = getJob(jobKey);
+  return reply([
+    `╭───〔 ✅ *CAREER UPDATED* 〕───╮`,
+    `│ ${job.emoji} *${job.name}*`,
+    `│ Tier: ${job.tier}`,
+    `│ Base pay: ${formatMoney(job.pay)} / shift`,
+    `│ Energy cost: ${job.energy}%`,
+    `│`,
+    `│ Your next shift is ready now.`,
+    `│ Use *.work* every 10 minutes.`,
+    `╰────────────────────────────`,
+  ].join("\n"));
+}
+
+async function handleRest({ sock, msg, sender, user, jid }) {
+  const reply = replyWith(sock, jid, msg);
+  const now = Date.now();
+  const energy = clampEnergy(user.energy);
+  if (energy >= MAX_ENERGY) return reply(`🛌 Your energy is already full.\n\n${"█".repeat(10)} 100%`);
+
+  const sinceRest = now - Number(user.lastRest || 0);
+  if (sinceRest < REST_COOLDOWN_MS) {
+    return reply(`🛌 You are already resting.\n\nTry again in *${formatRemaining(REST_COOLDOWN_MS - sinceRest)}*.`);
+  }
+
+  const updated = await restoreWorkEnergy(sender, now, REST_COOLDOWN_MS, 25);
+  if (!updated) return reply(`🛌 Rest was already used or your energy changed. Check *.work status*.`);
+  return reply([
+    `🛌 *REST COMPLETE*`,
+    ``,
+    `Energy restored: *+25%*`,
+    `Energy: ${updated.energyBar}`,
+    ``,
+    `_Food and energy items can restore more at once._`,
+  ].join("\n"));
+}
+
+async function handleEat({ sock, msg, sender, user, jid, args }) {
+  const reply = replyWith(sock, jid, msg);
+  const item = getEnergyItem(args.join(" "));
+  if (!item) {
+    return reply([
+      `🍱 *WORK RECOVERY ITEMS*`,
+      ``,
+      `*.work eat work_meal* +35%`,
+      `*.work eat protein_bar* +15%`,
+      `*.work eat energy_drink* +25%`,
+      `*.work eat premium_meal* +60%`,
+      ``,
+      `Buy them in *.shop consumables* and check *.inventory*.`,
+    ].join("\n"));
+  }
+
+  const index = (user.inventory || []).indexOf(item.key);
+  if (index === -1) return reply(`❌ You do not have *${item.label}*.\n\nBuy one from *.shop consumables*.`);
+  if (clampEnergy(user.energy) >= MAX_ENERGY) return reply(`⚡ Your energy is already full.`);
+
+  user.inventory.splice(index, 1);
+  const before = clampEnergy(user.energy);
+  user.energy = Math.min(MAX_ENERGY, before + item.energy);
+  await saveUser(sender, user);
+  return reply([
+    `🍱 *RECOVERY USED*`,
+    ``,
+    `${item.label}: *+${item.energy}% energy*`,
+    `Energy: ${user.energy >= MAX_ENERGY ? "██████████ 100%" : `${"█".repeat(Math.round(user.energy / 10))}${"░".repeat(10 - Math.round(user.energy / 10))} ${Math.round(user.energy)}%`}`,
+    `Restored: +${Math.round(user.energy - before)}%`,
+  ].join("\n"));
 }
 
 export default {
   name: "work",
-  description: "Pick a job, clock in, and earn money — but watch out for the pink slip!",
+  description: "Take a 10-minute shift, build a career, and earn a taxed paycheck",
   category: "economy",
   cooldown: 5,
-  usage: ".work | .work jobs | .work <job> | .work change <job>",
+  usage: ".work | .work jobs | .work <job> | .work status | .work rest | .work eat <item>",
   checkJail: true,
 
   async run({ sock, msg, sender, args }) {
     if (!await requireRegistration(sock, msg, sender)) return;
 
-    const jid  = msg.key.remoteJid;
+    const jid = msg.key.remoteJid;
     const user = await getUser(sender);
-    const now  = Date.now();
+    const sub = (args[0] || "").toLowerCase();
 
-    // ── .work jobs ────────────────────────────────────────────────────────────
-    if (args[0]?.toLowerCase() === "jobs") {
-      return sock.sendMessage(jid, { text: buildBoard() }, { quoted: msg });
+    if (sub === "jobs" || sub === "careers" || sub === "board") {
+      return sock.sendMessage(jid, { text: buildJobBoard(user) }, { quoted: msg });
+    }
+    if (sub === "status" || sub === "energy" || sub === "profile") {
+      return sock.sendMessage(jid, { text: buildStatus(user) }, { quoted: msg });
+    }
+    if (sub === "rest" || sub === "sleep") {
+      return handleRest({ sock, msg, sender, user, jid });
+    }
+    if (sub === "eat" || sub === "food" || sub === "refill") {
+      return handleEat({ sock, msg, sender, user, jid, args: args.slice(1) });
+    }
+    if (sub === "help") {
+      return sock.sendMessage(jid, { text: usageText() }, { quoted: msg });
+    }
+    if (args.length > 0) {
+      return handleJobSelection({ sock, msg, sender, user, jid, args });
     }
 
-    // ── .work [change] <jobname> ──────────────────────────────────────────────
-    const isChange = args[0]?.toLowerCase() === "change";
-    const jobInput = isChange ? args[1] : args[0];
-
-    if (jobInput) {
-      const jobKey = resolveJob(jobInput);
-      if (!jobKey) {
-        return sock.sendMessage(jid, {
-          text:
-`╭─❀「 💼 *𝐖𝐎𝐑𝐊* 」❀─╮
-│ ❌ *Error* :: *Job not found*
-│
-│ 📋 Use *.work jobs* to see all positions
-╰───────────────❀`
-        }, { quoted: msg });
-      }
-
-      const sinceChange = now - (user.lastJobChange || 0);
-      const hasJob      = !!user.job;
-      const fired       = user.fired === true;
-
-      if (hasJob && !fired && sinceChange < JOB_CHANGE_CD) {
-        const remaining = JOB_CHANGE_CD - sinceChange;
-        return sock.sendMessage(jid, {
-          text:
-`╭─❀「 💼 *𝐖𝐎𝐑𝐊* 」❀─╮
-│ 🔒 *Result* :: *JOB LOCKED 🔴*
-│
-│ ${jobs[user.job]?.emoji || "❓"} *Current* :: *${user.job}*
-│ ⏳ *Unlock*  :: *${fmtTime(remaining)}*
-│
-│ _(Job changes limited to once per day)_
-╰───────────────❀`
-        }, { quoted: msg });
-      }
-
-      user.job           = jobKey;
-      user.fired         = false;
-      user.lastJobChange = now;
+    const jobKey = normalizeJobKey(user.job);
+    const job = getJob(jobKey);
+    if (!job || user.fired) {
+      return sock.sendMessage(jid, {
+        text: `🌙 You are currently unemployed.\n\n${buildJobBoard(user)}`,
+      }, { quoted: msg });
+    }
+    if (user.job !== jobKey) {
+      user.job = jobKey;
       await saveUser(sender, user);
+    }
 
-      const j = jobs[jobKey];
+    const now = Date.now();
+    const lastWork = Number(user.lastWork || 0);
+    if (now - lastWork < SHIFT_COOLDOWN_MS) {
       return sock.sendMessage(jid, {
-        text:
-`╭─❀「 💼 *𝐖𝐎𝐑𝐊* 」❀─╮
-│ ✅ *Result*  :: *HIRED 🟢*
-│
-│ ${j.emoji} *Position* :: *${jobKey}*
-│ 💰 *Base Pay* :: *$${j.pay.toLocaleString()} / shift*
-│ 🔮 *XP Bonus* :: *+${j.xp} xp*
-│
-│ ⚔️ Use *.work* every 9 min to collect pay
-│ ⚠️ Each shift carries a *30% fire risk!*
-╰───────────────❀`
+        text: [
+          `⏳ *SHIFT NOT READY*`,
+          ``,
+          `${job.emoji} ${job.name}`,
+          `Next shift in: *${formatRemaining(SHIFT_COOLDOWN_MS - (now - lastWork))}*`,
+          `Energy: ${clampEnergy(user.energy)}%`,
+        ].join("\n"),
       }, { quoted: msg });
     }
 
-    // ── No job / fired ────────────────────────────────────────────────────────
-    if (!user.job || user.fired) {
+    const energy = clampEnergy(user.energy);
+    if (energy < job.energy) {
       return sock.sendMessage(jid, {
-        text:
-`╭─❀「 💼 *𝐖𝐎𝐑𝐊* 」❀─╮
-│ 🌙 *Result*  :: *${user.fired ? "NO JOB 🔴" : "NO JOB 🔴"}*
-│
-│ 📋 Use *.work jobs* to see all positions
-│ 📝 Use *.work <jobname>* to apply
-╰───────────────❀
-
-${buildBoard()}`
+        text: [
+          `⚡ *TOO TIRED TO CLOCK IN*`,
+          ``,
+          `This shift needs *${job.energy}%* energy.`,
+          `Your energy: *${energy}%*`,
+          ``,
+          `Use *.work rest* or *.work eat work_meal*.`,
+        ].join("\n"),
       }, { quoted: msg });
     }
 
-    // ── Cooldown ──────────────────────────────────────────────────────────────
-    const sinceWork = now - (user.lastWork || 0);
-    if (sinceWork < WORK_COOLDOWN) {
-      const remaining = WORK_COOLDOWN - sinceWork;
-      const j = jobs[user.job];
+    const event = rollWorkEvent(job);
+    const gross = Math.max(0, job.pay + event.amount);
+    const tax = Math.floor(gross * PAYROLL_TAX_RATE);
+    const net = gross - tax;
+    const updated = await claimWorkShift(sender, {
+      jobKey,
+      now,
+      cooldownMs: SHIFT_COOLDOWN_MS,
+      energyCost: job.energy,
+      netPay: net,
+      xp: job.xp,
+      workXp: job.xp,
+      gross,
+      tax,
+      eventKey: event.key,
+      eventLabel: event.label,
+      eventAmount: event.amount,
+      historyDescription: `${job.name}: ${event.label}`,
+    });
+
+    if (!updated) {
       return sock.sendMessage(jid, {
-        text:
-`╭─❀「 💼 *𝐖𝐎𝐑𝐊* 」❀─╮
-│ ⏳ *Result*  :: *SHIFT NOT READY 🔴*
-│
-│ ${j.emoji} *Job*    :: *${user.job}*
-│ 🕒 *Next*   :: *${fmtTime(remaining)}*
-╰───────────────❀`
+        text: `⚠️ Your shift was just claimed or your energy changed.\n\nUse *.work status* to refresh your career panel.`,
       }, { quoted: msg });
     }
 
-    // ── Process shift ─────────────────────────────────────────────────────────
-    const jobKey = user.job;
-    const j      = jobs[jobKey];
-    const fired  = Math.random() < FIRE_CHANCE;
+    const { leveled } = checkLevelUp(updated);
+    if (leveled) await saveUser(sender, updated);
+    await addHistory(sender, "work", net, `${job.name} — ${event.label}; tax ${formatMoney(tax)}`);
 
-    user.lastWork = now;
-
-    if (fired) {
-      const severance = Math.floor(j.pay * 0.5);
-      user.money     += severance;
-      user.xp         = (user.xp || 0) + Math.floor(j.xp * 0.5);
-      user.job        = null;
-      user.fired      = true;
-
-      const { leveled, newLevel } = checkLevelUp(user);
-
-      await saveUser(sender, user);
-      await addHistory(sender, "work", severance, `Fired from ${jobKey} — severance pay`);
-
-      const caption =
-`╭─❀「 💼 *𝐖𝐎𝐑𝐊* 」❀─╮
-│ 🌙 *Result*     :: *FIRED 🔴*
-│
-│ ${j.emoji} *Role*      :: *${jobKey}*
-│ 💸 *Severance*  :: *${fmt(severance)}*
-│ 🔮 *XP*         :: *+${Math.floor(j.xp * 0.5)}*
-│ 💰 *Wallet*     :: *${fmt(user.money)}*
-│
-│ 📋 Use *.work jobs* to find a new position!${leveled ? `\n│\n│ 🎉 *LEVEL UP!* — Now Level ${user.level}` : ""}
-╰───────────────❀`;
-
-      try {
-        const imgBuffer = await generateWorkImage({
-          fired: true, jobKey, jobEmoji: j.emoji,
-          earned: severance, bonus: 0, xpGained: Math.floor(j.xp * 0.5),
-          balance: user.money, leveled, level: user.level,
-        });
-        return sock.sendMessage(jid, { image: imgBuffer, caption }, { quoted: msg });
-      } catch {
-        return sock.sendMessage(jid, { text: caption }, { quoted: msg });
-      }
-    }
-
-    // ── Successful shift ──────────────────────────────────────────────────────
-    const bonus  = Math.floor(Math.random() * Math.floor(j.pay * 0.15));
-    const total  = j.pay + bonus;
-    user.money  += total;
-    user.xp      = (user.xp || 0) + j.xp;
-
-    const { leveled, newLevel } = checkLevelUp(user);
-
-    await saveUser(sender, user);
-    await addHistory(sender, "work", total, `Worked as ${jobKey}`);
-
-    const caption =
-`╭─❀「 💼 *𝐖𝐎𝐑𝐊* 」❀─╮
-│ 🌙 *Result*  :: *PAYDAY 🟢*
-│
-│ ${j.emoji} *Job*     :: *${jobKey}*
-│ 💰 *Earned*  :: *+${fmt(total)}*${bonus > 0 ? `  _(+${fmt(bonus)} bonus!)_` : ""}
-│ 🔮 *XP*      :: *+${j.xp}*
-│ 💰 *Wallet*  :: *${fmt(user.money)}*
-│
-│ ⚠️ *30% fire risk* each shift — stay sharp!${leveled ? `\n│\n│ 🎉 *LEVEL UP!* — Now Level ${user.level}` : ""}
-╰───────────────❀`;
-
-    try {
-      const imgBuffer = await generateWorkImage({
-        fired: false, jobKey, jobEmoji: j.emoji,
-        earned: total, bonus, xpGained: j.xp,
-        balance: user.money, leveled, level: user.level,
-      });
-      return sock.sendMessage(jid, { image: imgBuffer, caption }, { quoted: msg });
-    } catch {
-      return sock.sendMessage(jid, { text: caption }, { quoted: msg });
-    }
+    const caption = buildPaystub({
+      user: updated,
+      jobKey,
+      job,
+      event,
+      gross,
+      tax,
+      net,
+      xpGained: job.xp,
+      energyAfter: updated.energy,
+      now,
+    });
+    return sock.sendMessage(jid, {
+      text: `${caption}${leveled ? `\n\n🎉 *LEVEL UP!* You are now Level ${updated.level}.` : ""}`,
+    }, { quoted: msg });
   },
 };

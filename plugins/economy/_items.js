@@ -345,6 +345,22 @@ export const SHOP_ITEMS = {
   stealth_hood: { price: 40_000,  orbCost: 0, gemCost: 0, emoji: "🪄", rarity: "common",  xpBonus: 0, sellPct: 0.3, category: "consumables", useEffect: "stealth:3600000",      description: "Halves your fine if caught robbing for 1 hour." },
   vault_guard:  { price: 100_000, orbCost: 0, gemCost: 0, emoji: "🔒", rarity: "rare",    xpBonus: 0, sellPct: 0.3, category: "consumables", useEffect: "vault_shield:7200000", description: "Locks your vault against forced withdrawals for 2 hours." },
   xp_bomb:      { price: 30_000,  orbCost: 0, gemCost: 0, emoji: "💥", rarity: "common",  xpBonus: 0, sellPct: 0.4, category: "consumables", useEffect: "xp+500",               description: "Instantly grants 500 XP." },
+
+  // Work recovery and career requirements
+  work_meal:       { price: 1_200,  orbCost: 0, gemCost: 0, emoji: "🍱", rarity: "common", xpBonus: 0, sellPct: 0.4, category: "consumables", description: "Restores 35 work energy. Use with .work eat work_meal." },
+  protein_bar:     { price: 700,    orbCost: 0, gemCost: 0, emoji: "🥜", rarity: "common", xpBonus: 0, sellPct: 0.4, category: "consumables", description: "Restores 15 work energy. Use with .work eat protein_bar." },
+  energy_drink:    { price: 950,    orbCost: 0, gemCost: 0, emoji: "🥤", rarity: "common", xpBonus: 0, sellPct: 0.4, category: "consumables", description: "Restores 25 work energy. Use with .work eat energy_drink." },
+  premium_meal:    { price: 2_000,  orbCost: 0, gemCost: 0, emoji: "🍛", rarity: "rare", xpBonus: 0, sellPct: 0.4, category: "consumables", description: "Restores 60 work energy. Use with .work eat premium_meal." },
+  coding_bootcamp: { price: 38_000, orbCost: 0, gemCost: 0, emoji: "🧑‍💻", rarity: "rare", xpBonus: 100, sellPct: 0.4, category: "scrolls", description: "Career requirement for Software Developer." },
+  nursing_license:  { price: 42_000, orbCost: 0, gemCost: 0, emoji: "📜", rarity: "rare", xpBonus: 100, sellPct: 0.4, category: "scrolls", description: "Career requirement for Registered Nurse." },
+  engineering_degree: { price: 48_000, orbCost: 0, gemCost: 0, emoji: "🎓", rarity: "rare", xpBonus: 100, sellPct: 0.4, category: "scrolls", description: "Career requirement for Project Engineer." },
+  finance_degree:   { price: 55_000, orbCost: 0, gemCost: 0, emoji: "📊", rarity: "rare", xpBonus: 100, sellPct: 0.4, category: "scrolls", description: "Career requirement for finance careers." },
+  business_degree:  { price: 65_000, orbCost: 0, gemCost: 0, emoji: "🧾", rarity: "rare", xpBonus: 100, sellPct: 0.4, category: "scrolls", description: "Career requirement for executive careers." },
+  executive_suit:   { price: 75_000, orbCost: 0, gemCost: 0, emoji: "🤵", rarity: "rare", xpBonus: 80, sellPct: 0.4, category: "cosmetics", description: "Career requirement for Chief Executive Officer." },
+  trading_license:  { price: 80_000, orbCost: 0, gemCost: 0, emoji: "📑", rarity: "rare", xpBonus: 100, sellPct: 0.4, category: "scrolls", description: "Career requirement for Investment Trader." },
+  medical_degree:   { price: 85_000, orbCost: 0, gemCost: 0, emoji: "🩻", rarity: "rare", xpBonus: 100, sellPct: 0.4, category: "scrolls", description: "Career requirement for Trauma Surgeon." },
+  surgeon_kit:      { price: 90_000, orbCost: 0, gemCost: 0, emoji: "🧰", rarity: "rare", xpBonus: 80, sellPct: 0.4, category: "tools", description: "Career requirement for Trauma Surgeon." },
+  founder_capital:  { price: 120_000, orbCost: 0, gemCost: 0, emoji: "💼", rarity: "legendary", xpBonus: 150, sellPct: 0.4, category: "bases", description: "Career requirement for Company Founder." },
 };
 
 export const RARITY_COLORS = { common: "⚪", rare: "🔵", legendary: "🟡" };

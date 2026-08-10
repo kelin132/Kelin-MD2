@@ -4,7 +4,7 @@ const COOLDOWNS = [
   { key: "lastDaily",   label: "🌅 Daily",    ms: 24 * 60 * 60 * 1000         },
   { key: "lastWeekly",  label: "🗓️  Weekly",   ms: 7  * 24 * 60 * 60 * 1000    },
   { key: "lastMonthly", label: "📅 Monthly",  ms: 30 * 24 * 60 * 60 * 1000    },
-  { key: "lastWork",    label: "💼 Work",     ms:  9 * 60 * 1000               },
+  { key: "lastWork",    label: "💼 Work",     ms: 10 * 60 * 1000               },
   { key: "lastCrime",   label: "🔪 Crime",    ms: 20 * 60 * 1000               },
   { key: "lastRob",     label: "🦹 Rob",      ms: 45 * 60 * 1000               },
   { key: "lastDig",     label: "⛏️  Dig",      ms: 30 * 60 * 1000               },

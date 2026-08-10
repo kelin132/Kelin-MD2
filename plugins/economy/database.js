@@ -21,9 +21,15 @@ export const DEFAULTS = {
   lastWeekly:    0,
   lastMonthly:   0,
   lastWork:      0,
+  lastRest:      0,
   job:           null,        // current job key, null = unemployed
   fired:         false,       // true when fired, must pick new job
   lastJobChange: 0,           // timestamp of last job pick/change
+  energy:        100,         // work stamina, clamped to 0..100
+  workXp:        0,           // career-only XP, separate from RPG XP
+  completedShifts: 0,
+  workLastEvent: null,
+  lastWorkPaystub: null,
   lastCrime:     0,
   lastRob:       0,
   lastDig:       0,
@@ -70,6 +76,8 @@ export async function getUser(id) {
     xp:       merged.xp       ?? 0,
     diamonds: merged.diamonds ?? 0,
     orbs:     merged.orbs     ?? 0,
+    workXp:   merged.workXp   ?? 0,
+    completedShifts: merged.completedShifts ?? 0,
   };
   return merged;
 }
@@ -78,7 +86,10 @@ const WALLET_CAP = 500_000_000_000; // 500 Billion max in wallet
 
 // Fields that must be updated atomically with $inc to prevent race conditions.
 // Every other field is safe to $set because it isn't modified by concurrent commands.
-const ATOMIC_FIELDS = new Set(["money", "bank", "vault", "xp", "diamonds", "orbs"]);
+const ATOMIC_FIELDS = new Set([
+  "money", "bank", "vault", "xp", "diamonds", "orbs",
+  "completedShifts", "workXp",
+]);
 
 // Cooldown timestamp fields — updated with $max so a stale save from a concurrent
 // command can never overwrite a more-recent timestamp written by the command that
@@ -88,6 +99,7 @@ const ATOMIC_FIELDS = new Set(["money", "bank", "vault", "xp", "diamonds", "orbs
 const COOLDOWN_FIELDS = new Set([
   "lastDaily", "lastWeekly", "lastMonthly",
   "lastWork", "lastJobChange",
+  "lastRest",
   "lastCrime", "lastRob",
   "lastDig", "lastFish",
   "lastGamble", "lastBet",
@@ -168,6 +180,124 @@ export async function saveUser(id, data) {
       { upsert: true }
     );
   }
+}
+
+/**
+ * Atomically claim a work shift.
+ *
+ * The cooldown, energy requirement, wallet payout, career XP, and shift count
+ * are all part of one conditional update. This prevents duplicate paychecks
+ * when a user sends .work twice before the first database write finishes.
+ */
+export async function claimWorkShift(id, {
+  jobKey,
+  now,
+  cooldownMs,
+  energyCost,
+  netPay,
+  xp,
+  workXp,
+  gross,
+  tax,
+  eventKey,
+  eventLabel,
+  eventAmount,
+  historyDescription,
+}) {
+  const db = await getDb();
+  const result = await db.collection("users").findOneAndUpdate(
+    {
+      _id: id,
+      registered: true,
+      job: jobKey,
+      $or: [
+        { lastWork: { $exists: false } },
+        { lastWork: { $lte: now - cooldownMs } },
+      ],
+      $and: [
+        {
+          $or: [
+            { energy: { $exists: false } },
+            { energy: { $gte: energyCost } },
+          ],
+        },
+      ],
+    },
+    [
+      {
+        $set: {
+          money: { $add: [{ $ifNull: ["$money", 0] }, netPay] },
+          xp: { $add: [{ $ifNull: ["$xp", 0] }, xp] },
+          workXp: { $add: [{ $ifNull: ["$workXp", 0] }, workXp] },
+          completedShifts: { $add: [{ $ifNull: ["$completedShifts", 0] }, 1] },
+          lastWork: now,
+          energy: { $subtract: [{ $ifNull: ["$energy", 100] }, energyCost] },
+          workLastEvent: { key: eventKey, label: eventLabel, amount: eventAmount, ts: now },
+          lastWorkPaystub: {
+            jobKey,
+            gross,
+            net: netPay,
+            tax,
+            event: eventLabel,
+            description: historyDescription,
+            ts: now,
+          },
+        },
+      },
+    ],
+    {
+      returnDocument: "after",
+      includeResultMetadata: false,
+    }
+  );
+  return result || null;
+}
+
+/**
+ * Atomically consume a rest cooldown and restore work energy.
+ */
+export async function restoreWorkEnergy(id, now, cooldownMs, amount) {
+  const db = await getDb();
+  const result = await db.collection("users").findOneAndUpdate(
+    {
+      _id: id,
+      registered: true,
+      $and: [
+        {
+          $or: [
+            { energy: { $exists: false } },
+            { energy: { $lt: 100 } },
+          ],
+        },
+        {
+          $or: [
+            { lastRest: { $exists: false } },
+            { lastRest: { $lte: now - cooldownMs } },
+          ],
+        },
+      ],
+    },
+    [
+      {
+        $set: {
+          energy: { $min: [{ $add: [{ $ifNull: ["$energy", 100] }, amount] }, 100] },
+          lastRest: now,
+        },
+      },
+    ],
+    {
+      returnDocument: "after",
+      includeResultMetadata: false,
+    }
+  );
+  if (!result) return null;
+  const energy = Math.max(0, Math.min(100, Number(result.energy ?? 100)));
+  const filled = Math.round(energy / 10);
+  return {
+    ...result,
+    energy,
+    energyBar: `${"█".repeat(filled)}${"░".repeat(10 - filled)} ${Math.round(energy)}%`,
+  };
 }
 
 /**
