@@ -162,6 +162,21 @@ export default {
 7. `.dbzbattle fight <move number>` or `.dbzbattle run` — take a turn or flee.
 8. `.dbzsync` — owner-only roster refresh from the Dragon Ball API.
 
+### Recovering users after a JID/LID migration
+
+If a user's profile was saved under a legacy JID, the owner can preview and
+restore it into the user's current identity:
+
+```text
+.restoreuser <old_jid> <new_jid>
+.restoreuser <old_jid> <new_jid> confirm
+```
+
+The first command is a dry run. The second merges missing legacy profile data,
+moves linked game records when there is no conflicting current record, updates
+the card system's stored phone identity, and writes an audit record. The old
+user document is kept as a backup; the command never deletes it.
+
 Battle, transformation, villain-arrival, victory, and roster-selection images now crop transparent character art to its visible silhouette and anchor it to the arena floor for consistent cutouts.
 
 ## 🗂 File Structure
