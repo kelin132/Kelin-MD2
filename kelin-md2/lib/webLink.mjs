@@ -14,6 +14,43 @@ export function normalizeWhatsAppNumber(value) {
     .replace(/^00/, "");
 }
 
+function unique(values) {
+  return [...new Set(values.map(normalizeJid).filter(Boolean))];
+}
+
+function jidNumber(jid) {
+  return normalizeWhatsAppNumber(String(jid).split("@")[0].split(":")[0]);
+}
+
+/**
+ * Baileys can expose a sender as a phone JID, device JID, or LID depending on
+ * the message. Resolve all available aliases back to the bot's registered
+ * phone-JID user before issuing a web code.
+ */
+export async function findRegisteredWebIdentity(jids) {
+  const candidates = unique(jids);
+  if (candidates.length === 0) return null;
+
+  const db = await getDb();
+  const users = db.collection("users");
+  const exact = await users.findOne({
+    _id: { $in: candidates },
+    registered: true,
+  });
+  if (exact?._id) return String(exact._id);
+
+  const numbers = unique(candidates.map(jidNumber)).filter(Boolean);
+  for (const number of numbers) {
+    const byNumber = await users.findOne({
+      registered: true,
+      _id: { $regex: `^${number}(?::\\d+)?@` },
+    });
+    if (byNumber?._id) return String(byNumber._id);
+  }
+
+  return null;
+}
+
 function createCode() {
   return String(randomInt(0, 1_000_000)).padStart(6, "0");
 }
@@ -25,9 +62,10 @@ function createCode() {
  * contains both the complete JID and normalized number so the website can
  * accept the number format shown in its login form without guessing a JID.
  */
-export async function createWebLinkCode(jid) {
+export async function createWebLinkCode(jid, aliases = []) {
   const normalizedJid = normalizeJid(jid);
-  const identifier = normalizeWhatsAppNumber(normalizedJid.split("@")[0].split(":")[0]);
+  const jids = unique([normalizedJid, ...aliases]);
+  const identifier = jidNumber(normalizedJid) || jids.map(jidNumber).find(Boolean) || "";
 
   if (!normalizedJid || !identifier) {
     throw new Error("A valid WhatsApp sender is required.");
@@ -43,6 +81,8 @@ export async function createWebLinkCode(jid) {
       { jid: normalizedJid },
       { userId: normalizedJid },
       { identifier },
+      { identifiers: identifier },
+      { identifiers: { $in: [identifier] } },
     ],
   });
 
@@ -62,6 +102,9 @@ export async function createWebLinkCode(jid) {
     userId: normalizedJid,
     identifier,
     whatsapp: identifier,
+    identifiers: [...new Set(jids.map(jidNumber).filter(Boolean))],
+    jids,
+    jidAliases: jids.filter((candidate) => candidate !== normalizedJid),
     createdAt: now,
     expiresAt,
     usedAt: null,

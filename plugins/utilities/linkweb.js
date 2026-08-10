@@ -5,7 +5,11 @@
  * Kelin MD player profile to Kelin Hub.
  */
 import { isRegistered } from "../economy/database.js";
-import { createWebLinkCode, WEB_LINK_CODE_TTL_MS } from "../../lib/webLink.mjs";
+import {
+  createWebLinkCode,
+  findRegisteredWebIdentity,
+  WEB_LINK_CODE_TTL_MS,
+} from "../../lib/webLink.mjs";
 
 const minutes = Math.floor(WEB_LINK_CODE_TTL_MS / 60_000);
 
@@ -18,15 +22,24 @@ export default {
 
   async run({ sock, msg, sender }) {
     const chatId = msg.key.remoteJid;
+    const identityCandidates = [
+      sender,
+      msg.key.participant,
+      msg.key.participantAlt,
+      msg.key.participantPn,
+      msg.key.remoteJid,
+      msg.key.remoteJidAlt,
+    ].filter(Boolean);
+    const registeredJid = await findRegisteredWebIdentity(identityCandidates);
 
-    if (!await isRegistered(sender)) {
+    if (!registeredJid && !await isRegistered(sender)) {
       return sock.sendMessage(chatId, {
         text: "❌ You need to register first.\n\nUse *.register <your_name>*, then run *.linkweb* again.",
       }, { quoted: msg });
     }
 
     try {
-      const { code } = await createWebLinkCode(sender);
+      const { code } = await createWebLinkCode(registeredJid || sender, identityCandidates);
       await sock.sendMessage(chatId, {
         text: [
           "🔐 *KELIN HUB LINK CODE*",
