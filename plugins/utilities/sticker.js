@@ -67,16 +67,27 @@ function buildExif(pack = "Kelin MD", author = "Bot") {
 }
 
 /**
- * Convert a media buffer to a WhatsApp-compatible animated or static WebP sticker.
+ * Convert a media buffer to a WhatsApp-compatible animated or static WebP
+ * sticker with a branded label beneath the media.
  */
-async function toStickerBuffer(inputBuffer, isVideo, pack, author) {
+async function toStickerBuffer(inputBuffer, isVideo, labelText) {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "kelin-sticker-"));
   const ext = isVideo ? "mp4" : "png";
   const inputPath = path.join(tempDir, `input.${ext}`);
   const outputPath = path.join(tempDir, "sticker.webp");
+  const labelPath = path.join(tempDir, "label.txt");
 
   try {
     await fs.writeFile(inputPath, inputBuffer);
+    // textfile keeps user input out of the FFmpeg filter expression, so
+    // punctuation such as :, ', and | cannot break the filter.
+    await fs.writeFile(labelPath, labelText, "utf8");
+
+    const videoFilter = [
+      "scale=512:448:force_original_aspect_ratio=decrease",
+      "pad=512:512:(ow-iw)/2:0:color=0x00000000",
+      `drawtext=textfile=${labelPath}:fontcolor=white:fontsize=32:x=(w-text_w)/2:y=h-text_h-12:borderw=4:bordercolor=black`,
+    ].join(",");
 
     if (isVideo) {
       // Animated sticker: max 3 seconds, 512x512, looping WebP
@@ -84,7 +95,7 @@ async function toStickerBuffer(inputBuffer, isVideo, pack, author) {
         "-hide_banner", "-loglevel", "error", "-y",
         "-i", inputPath,
         "-t", "3",
-        "-vf", "fps=15,scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=0x00000000,format=rgba",
+        "-vf", `fps=15,${videoFilter},format=rgba`,
         "-loop", "0",
         "-preset", "default",
         "-an", "-vsync", "0",
@@ -95,7 +106,7 @@ async function toStickerBuffer(inputBuffer, isVideo, pack, author) {
       await execFileAsync(FFMPEG, [
         "-hide_banner", "-loglevel", "error", "-y",
         "-i", inputPath,
-        "-vf", "scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=0x00000000,format=rgba",
+        "-vf", `${videoFilter},format=rgba`,
         "-quality", "80",
         outputPath,
       ], { maxBuffer: 20 * 1024 * 1024 });
@@ -111,7 +122,7 @@ export default {
   name: "sticker",
   description: "Convert a replied image/video to a WhatsApp sticker",
   category: "utilities",
-  usage: ".sticker (reply to an image)",
+  usage: ".s [word] (reply to an image or video)",
   aliases: ["s", "stiker", "toSticker"],
   cooldown: 5,
 
@@ -122,7 +133,7 @@ export default {
 
     if (!quoted) {
       return sock.sendMessage(jid, {
-        text: `🖼️ *STICKER MAKER*\n\nReply to an *image* or *video* with *.sticker*`,
+        text: `🖼️ *STICKER MAKER*\n\nReply to an *image* or *video* with *.s [word]*\nExample: *.s hello* → hello | AIDORU`,
       }, { quoted: msg });
     }
 
@@ -145,12 +156,12 @@ export default {
       for await (const chunk of stream) chunks.push(chunk);
       const buffer = Buffer.concat(chunks);
 
-      // Parse pack/author from args: .sticker <pack> | <author>
-      const parts  = args.join(" ").split(/[|,;]/);
-      const pack   = parts[0]?.trim() || "Kelin MD";
-      const author = parts[1]?.trim() || "Bot";
+      // The optional argument is the visible word next to the AIDORU brand.
+      // Keep it bounded so an unusually long command cannot cover the image.
+      const word = args.join(" ").trim().replace(/\s+/g, " ").slice(0, 42);
+      const stickerLabel = word ? `${word} | AIDORU` : "AIDORU";
 
-      const stickerBuffer = await toStickerBuffer(buffer, !!vidMsg, pack, author);
+      const stickerBuffer = await toStickerBuffer(buffer, !!vidMsg, stickerLabel);
 
       await sock.sendMessage(jid, { sticker: stickerBuffer }, { quoted: msg });
       await sock.sendMessage(jid, { react: { text: "✅", key: msg.key } });

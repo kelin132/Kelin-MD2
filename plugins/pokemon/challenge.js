@@ -67,6 +67,7 @@ export default {
         buf = await generateBattleScene({
           player: {
             name: challengerLead.displayName || challengerLead.name,
+            pokedexId: challengerLead.pokedexId,
             level: challengerLead.level,
             hp: challengerLead.hp,
             maxHp: challengerLead.maxHp,
@@ -76,6 +77,7 @@ export default {
           },
           enemy: {
             name: opponentLead.displayName || opponentLead.name,
+            pokedexId: opponentLead.pokedexId,
             level: opponentLead.level,
             hp: opponentLead.hp,
             maxHp: opponentLead.maxHp,

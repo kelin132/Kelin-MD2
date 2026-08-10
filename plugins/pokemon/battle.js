@@ -26,6 +26,7 @@ async function sendScene(sock, jid, msg, battle, statusText, hitSide, damage, cr
         level: battle.challengerPokemon.level,
         hp: battle.challengerPokemon.hp,
         maxHp: battle.challengerPokemon.maxHp,
+        pokedexId: battle.challengerPokemon.pokedexId,
         // Pass both so the canvas can fall back from back-sprite → front-sprite
         // (special forms like Necrozma-ultra lack back sprites on the CDN)
         imageUrl: battle.challengerPokemon.backImageUrl || battle.challengerPokemon.imageUrl,
@@ -39,6 +40,7 @@ async function sendScene(sock, jid, msg, battle, statusText, hitSide, damage, cr
         level: battle.opponentPokemon.level,
         hp: battle.opponentPokemon.hp,
         maxHp: battle.opponentPokemon.maxHp,
+        pokedexId: battle.opponentPokemon.pokedexId,
         imageUrl: battle.opponentPokemon.imageUrl,
         shiny: battle.opponentPokemon.shiny,
         trainer: battle.opponentTrainer,
