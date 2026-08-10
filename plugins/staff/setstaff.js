@@ -13,7 +13,7 @@ export default {
   description: "Grant a user mod/staff/admin rank",
   category: "staff",
   usage: ".setstaff @user [1|2|3]",
-  aliases: ["addmod", "setmod", "addstaff", "grantstaff"],
+  aliases: ["setmod", "addstaff", "grantstaff"],
   isMod: true,
 
   async run({ sock, msg, args, sender, isOwner, isStaff, staffLevel }) {

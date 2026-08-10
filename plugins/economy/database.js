@@ -3,6 +3,11 @@
  * All economy / staff plugins import from here.
  */
 import { getDb } from "../../lib/mongo.mjs";
+import {
+  jidNumber,
+  phoneJid,
+  userJidFilter,
+} from "../../lib/whatsappIdentity.mjs";
 
 export const DEFAULTS = {
   name:          "User",
@@ -53,9 +58,49 @@ export const DEFAULTS = {
 
 // ─── Core CRUD ────────────────────────────────────────────────────────────────
 
+function canonicalUserId(id = "") {
+  const number = jidNumber(id);
+  return number ? phoneJid(number) : String(id || "");
+}
+
+async function findUserDocument(db, id) {
+  const collection = db.collection("users");
+  const requestedId = String(id || "");
+  const canonicalId = canonicalUserId(requestedId);
+
+  // Prefer the current canonical id whenever both old and new records exist.
+  let user = await collection.findOne({ _id: canonicalId });
+  if (!user && requestedId && requestedId !== canonicalId) {
+    user = await collection.findOne({ _id: requestedId });
+  }
+  if (!user && canonicalId) {
+    user = await collection.findOne(userJidFilter(canonicalId));
+  }
+  if (!user) return null;
+
+  // Move legacy device/c.us records to the current phone-JID key on first use.
+  // This preserves the document contents, including balances, levels and rank.
+  if (canonicalId && user._id !== canonicalId) {
+    const { _id, ...legacyData } = user;
+    const result = await collection.updateOne(
+      { _id: canonicalId },
+      { $setOnInsert: legacyData },
+      { upsert: true }
+    );
+    if (result.upsertedCount > 0) {
+      await collection.deleteOne({ _id });
+      user = { _id: canonicalId, ...legacyData };
+    } else {
+      user = await collection.findOne({ _id: canonicalId }) || user;
+    }
+  }
+
+  return user;
+}
+
 export async function getUser(id) {
   const db   = await getDb();
-  const user = await db.collection("users").findOne({ _id: id });
+  const user = await findUserDocument(db, id);
   if (!user) return { ...DEFAULTS };
   const { _id, ...rest } = user;
   const merged = { ...DEFAULTS, ...rest };
@@ -225,19 +270,27 @@ export async function getAllUsers() {
 
 export async function isRegistered(id) {
   const db   = await getDb();
-  const user = await db.collection("users").findOne({ _id: id }, { projection: { registered: 1 } });
+  const user = await findUserDocument(db, id);
   return !!(user?.registered);
 }
 
 export async function registerUser(id, name) {
   const db = await getDb();
+  const existing = await findUserDocument(db, id);
+  const userId = canonicalUserId(id);
   const { name: _n, registered: _r, registeredAt: _ra, ...insertDefaults } = DEFAULTS;
+  const update = {};
+  if (!existing) update.$setOnInsert = { ...insertDefaults, money: 100_000 };
+  if (!existing?.registered) {
+    update.$set = {
+      name: name || "User",
+      registered: true,
+      registeredAt: new Date().toISOString(),
+    };
+  }
   await db.collection("users").updateOne(
-    { _id: id },
-    {
-      $setOnInsert: { ...insertDefaults, money: 100_000 },
-      $set: { name: name || "User", registered: true, registeredAt: new Date().toISOString() },
-    },
+    { _id: userId },
+    update,
     { upsert: true }
   );
 }
