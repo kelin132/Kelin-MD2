@@ -58,20 +58,17 @@ Ask an admin to restart the bot, then wait for the next auto-spawn.`
       delete activeSpawns[jid];
 
       const claimText =
-`꧁━━〔 🎴 *C A R D  C L A I M E D!* 〕━━꧂
-
-  「 *@${sender.split("@")[0]} snagged it first!* 」 🎉
-
-  ━━━━━━━━━━━━━━━━━━━━━━━
-  ✨ *${card.name}*
-  ⭐ *Tier*    *${card.tier}*
-  📺 *Series*  *${card.series}*
-  ━━━━━━━━━━━━━━━━━━━━━━━
-
-  🃏 *Added to your collection!*
-  Use *.col* to view it.
-
-꧂━━━━━━━━━━━━━━━━━━━━━━━━━━꧁`;
+`╭─❀「 🃏 *𝐂𝐀𝐑𝐃 𝐂𝐋𝐀𝐈𝐌𝐄𝐃* 」❀─╮
+│ 👤 *Claimed by* :: @${sender.split("@")[0]}
+│
+│ 🃏 *Name*      :: *${card.name}*
+│ ⭐ *Tier*      :: *${card.tier}*
+│ 📺 *Series*    :: *${card.series}*
+│ 🆔 *ID*        :: \`${card.cardId}\`
+│
+│ ✅ Added to your collection!
+│ 💬 Use *.col* to view it.
+╰───────────────❀`;
 
       if (card.media) {
         try {
