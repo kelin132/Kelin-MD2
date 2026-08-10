@@ -1,5 +1,5 @@
 import { getUser, saveUser, isRegistered, requireRegistration } from "./database.js";
-import { parseAmount, hasAmountShorthand } from "./parseAmount.js";
+import { parseAmount } from "./parseAmount.js";
 
 export default {
   name: "transfer",
@@ -16,13 +16,7 @@ export default {
 
     if (!mentionedJid || !args[1]) {
       return sock.sendMessage(msg.key.remoteJid, {
-        text: "❌ Usage: *.transfer @user <amount>*\n\nExample: .transfer @user 500  or  .transfer @user 5m\n✦ Shorthand: k = thousand | m = million | b = billion"
-      }, { quoted: msg });
-    }
-
-    if (hasAmountShorthand(args)) {
-      return sock.sendMessage(msg.key.remoteJid, {
-        text: "❌ Please use the full amount when giving money. Example: *.give @user 40000000*",
+        text: "❌ Usage: *.transfer @user <amount>*\n\nExample: .transfer @user 500  or  .transfer @user 25k\n✦ Shorthand: k = thousand | m = million | b = billion | t = trillion"
       }, { quoted: msg });
     }
 

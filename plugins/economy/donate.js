@@ -5,7 +5,7 @@
  * Aliases: gift, give, givemoney
  */
 import { getUser, saveUser, requireRegistration, isRegistered, addHistory } from "./database.js";
-import { hasAmountShorthand } from "./parseAmount.js";
+import { parseAmount } from "./parseAmount.js";
 
 function resolveTarget(msg) {
   // 1. Direct @mention
@@ -53,21 +53,16 @@ export default {
       );
     }
 
-    if (hasAmountShorthand(args)) {
-      return reply("❌ Please use the full amount when giving money. Example: *.give @user 40000000*");
-    }
-
     if (targetJid === sender) {
       return reply("❌ You can't donate to yourself!");
     }
 
     // ── Parse amount ───────────────────────────────────────────────────────
-    // Amount is the last numeric argument
-    const numericArgs = args.filter(a => /^[0-9]+$/.test(a));
-    const amount = parseInt(numericArgs[numericArgs.length - 1], 10);
+    // Amount is the last argument. Supports 25k, 2.5m, 1b, and 1t.
+    const amount = parseAmount(args[args.length - 1], 0);
 
     if (!amount || amount <= 0 || isNaN(amount)) {
-      return reply("❌ Please provide a valid donation amount.\nExample: *.donate @user 500*");
+      return reply("❌ Please provide a valid amount.\nExamples: *.give @user 500* or *.give @user 25k*");
     }
 
     // ── Checks ─────────────────────────────────────────────────────────────

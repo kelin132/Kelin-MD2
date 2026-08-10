@@ -6,6 +6,7 @@
  *   "half"          → half of wallet balance
  *   Plain numbers   → "5000", "5,000"
  *   Shorthand       → "10k" (10,000) | "10m" (10,000,000) | "1b" (1,000,000,000)
+ *                     "1t" (1,000,000,000,000)
  *                     Decimal shorthands also work: "1.5k", "2.5m"
  *
  * Returns the resolved integer amount, or NaN if the input is unrecognisable.
@@ -23,8 +24,13 @@ export function parseAmount(raw, userMoney = 0) {
   if (input === "half") return Math.floor(userMoney / 2);
 
   // Shorthand suffixes
-  const SUFFIXES = { k: 1_000, m: 1_000_000, b: 1_000_000_000 };
-  const match = input.match(/^(\d+(?:\.\d+)?)([kmb])$/);
+  const SUFFIXES = {
+    k: 1_000,
+    m: 1_000_000,
+    b: 1_000_000_000,
+    t: 1_000_000_000_000,
+  };
+  const match = input.match(/^(\d+(?:\.\d+)?)\s*([kmbt])$/);
   if (match) {
     const num    = parseFloat(match[1]);
     const mult   = SUFFIXES[match[2]];
@@ -38,8 +44,7 @@ export function parseAmount(raw, userMoney = 0) {
 
 /**
  * Detect abbreviated amount input for commands that require full numbers.
- * Handles both "40m" and spaced forms such as "40 m", plus the unsupported
- * trillion form "4t" so it cannot be accidentally parsed as just "4".
+ * Handles both "40m" and spaced forms such as "40 m", including trillions.
  */
 export function hasAmountShorthand(args = []) {
   const tokens = Array.isArray(args) ? args.map(value => String(value ?? "").trim().toLowerCase()) : [];
@@ -61,6 +66,7 @@ export function hasAmountShorthand(args = []) {
  * @returns {string}
  */
 export function formatShorthand(n) {
+  if (n >= 1_000_000_000_000) return `${+(n / 1_000_000_000_000).toFixed(2).replace(/\.?0+$/, "")}t`;
   if (n >= 1_000_000_000) return `${+(n / 1_000_000_000).toFixed(2).replace(/\.?0+$/, "")}b`;
   if (n >= 1_000_000)     return `${+(n / 1_000_000).toFixed(2).replace(/\.?0+$/, "")}m`;
   if (n >= 1_000)         return `${+(n / 1_000).toFixed(2).replace(/\.?0+$/, "")}k`;

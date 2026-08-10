@@ -1,5 +1,5 @@
 import { readData, writeData } from "../../lib/store.mjs";
-import { parseAmount, formatShorthand, hasAmountShorthand } from "./parseAmount.js";
+import { parseAmount, formatShorthand } from "./parseAmount.js";
 
 export default {
   name: "pay",
@@ -35,14 +35,6 @@ export default {
     const sender    = eco[senderNum] ?? { coins: 0, bank: 0 };
     const rawAmount = args[args.length - 1];
 
-    if (hasAmountShorthand(args)) {
-      return sock.sendMessage(
-        jid,
-        { text: "❌ Please use the full amount when giving money. Example: *.give @user 40000000*" },
-        { quoted: msg }
-      );
-    }
-
     const amount    = parseAmount(rawAmount, sender.coins ?? 0);
 
     if (!targetJid || isNaN(amount) || amount <= 0) {
@@ -53,7 +45,7 @@ export default {
             "Usage:\n" +
             "• *.pay @user <amount>* — mention the person\n" +
             "• Reply to their message then *.pay <amount>*\n\n" +
-            "💡 *Shortcuts:* `1k` `5m` `1b` `all` `half`",
+            "💡 *Shortcuts:* `1k` `5m` `1b` `1t` `all` `half`",
         },
         { quoted: msg }
       );
