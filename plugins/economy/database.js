@@ -58,9 +58,16 @@ export const DEFAULTS = {
 
 // ─── Core CRUD ────────────────────────────────────────────────────────────────
 
-function canonicalUserId(id = "") {
-  const number = jidNumber(id);
-  return number ? phoneJid(number) : String(id || "");
+export function canonicalUserId(id = "") {
+  const value = String(id || "").trim();
+  if (!value || /@(lid|g\.us|broadcast)$/.test(value)) return value;
+
+  const number = jidNumber(value);
+  if (!number) return value;
+  if (/@(?:s\.whatsapp\.net|c\.us)$/.test(value) || /^\+?\d[\d\s().:-]*$/.test(value)) {
+    return phoneJid(number);
+  }
+  return value;
 }
 
 async function findUserDocument(db, id) {
@@ -147,6 +154,7 @@ const MONOTONIC_FIELDS = new Set(["level"]);
 
 export async function saveUser(id, data) {
   const db = await getDb();
+  const userId = canonicalUserId(id);
   // Strip _id and _snap — neither should be stored in MongoDB
   const { _id, _snap, ...safeData } = data;
 
@@ -190,13 +198,13 @@ export async function saveUser(id, data) {
     if (Object.keys(setOp).length > 0) update.$set = setOp;
     if (Object.keys(update).length === 0) return; // nothing changed
 
-    await db.collection("users").updateOne({ _id: id }, update, { upsert: true });
+    await db.collection("users").updateOne({ _id: userId }, update, { upsert: true });
 
     // Clamp any balance that went negative due to concurrent bets both losing.
     // The aggregation pipeline syntax ($max) is available in MongoDB 4.2+.
     await db.collection("users").updateOne(
       {
-        _id: id,
+        _id: userId,
         $or: [{ money: { $lt: 0 } }, { bank: { $lt: 0 } }, { vault: { $lt: 0 } }],
       },
       [{ $set: {
@@ -208,7 +216,7 @@ export async function saveUser(id, data) {
   } else {
     // New user (no snapshot) — safe to $set everything since nobody else has this doc yet
     await db.collection("users").updateOne(
-      { _id: id },
+      { _id: userId },
       { $set: safeData },
       { upsert: true }
     );
@@ -222,9 +230,10 @@ export async function saveUser(id, data) {
  */
 export async function startInvestment(id, investment, amount) {
   const db = await getDb();
+  const userId = canonicalUserId(id);
   return db.collection("users").findOneAndUpdate(
     {
-      _id: id,
+      _id: userId,
       money: { $gte: amount },
       $or: [
         { activeInvestment: { $exists: false } },
@@ -246,9 +255,10 @@ export async function startInvestment(id, investment, amount) {
  */
 export async function collectInvestment(id, investment, payout) {
   const db = await getDb();
+  const userId = canonicalUserId(id);
   return db.collection("users").findOneAndUpdate(
     {
-      _id: id,
+      _id: userId,
       "activeInvestment.plan": investment.plan,
       "activeInvestment.amount": investment.amount,
       "activeInvestment.startedAt": investment.startedAt,
@@ -319,9 +329,10 @@ export async function requireRegistration(sock, msg, sender) {
  */
 export async function addHistory(id, type, amount, desc) {
   const db = await getDb();
+  const userId = canonicalUserId(id);
   const entry = { type, amount, desc, ts: Date.now() };
   await db.collection("users").updateOne(
-    { _id: id },
+    { _id: userId },
     {
       $push: {
         history: {
@@ -339,8 +350,9 @@ export async function addHistory(id, type, amount, desc) {
  */
 export async function addMoney(id, amount) {
   const db = await getDb();
+  const userId = canonicalUserId(id);
   await db.collection("users").updateOne(
-    { _id: id },
+    { _id: userId },
     { $inc: { money: amount } }
   );
 }
@@ -412,8 +424,12 @@ export function levelFromTotalXp(totalXp) {
  * Returns { oldLevel, newLevel, changed }.
  */
 export async function repairUserLevel(id) {
-  const db   = await getDb();
-  const doc  = await db.collection("users").findOne({ _id: id }, { projection: { level: 1, xp: 1 } });
+  const db     = await getDb();
+  const userId = canonicalUserId(id);
+  const doc    = await db.collection("users").findOne(
+    { _id: userId },
+    { projection: { level: 1, xp: 1 } },
+  );
   if (!doc) return null;
 
   const storedLevel = doc.level ?? 1;
@@ -434,7 +450,7 @@ export async function repairUserLevel(id) {
   }
 
   await db.collection("users").updateOne(
-    { _id: id },
+    { _id: userId },
     { $set: { level: correctLevel, xp: correctXp } }
   );
   return { oldLevel: storedLevel, newLevel: correctLevel, changed: true };
@@ -463,8 +479,9 @@ export async function repairAllLevels() {
  */
 export async function setStaffLevel(id, level) {
   const db = await getDb();
+  const userId = canonicalUserId(id);
   await db.collection("users").updateOne(
-    { _id: id },
+    { _id: userId },
     { $set: { staffLevel: level } },
     { upsert: true }
   );
@@ -486,8 +503,9 @@ export async function getStaffMembers() {
 
 export async function setPremium(id, value) {
   const db = await getDb();
+  const userId = canonicalUserId(id);
   await db.collection("users").updateOne(
-    { _id: id },
+    { _id: userId },
     { $set: { isPremium: value } },
     { upsert: true }
   );
@@ -501,9 +519,10 @@ export async function setPremium(id, value) {
  */
 export async function jailUser(id, durationMs = 0) {
   const db       = await getDb();
+  const userId   = canonicalUserId(id);
   const jailUntil = durationMs > 0 ? Date.now() + durationMs : null;
   await db.collection("users").updateOne(
-    { _id: id },
+    { _id: userId },
     { $set: { jailed: true, jailUntil } },
     { upsert: true }
   );
@@ -511,8 +530,9 @@ export async function jailUser(id, durationMs = 0) {
 
 export async function unjailUser(id) {
   const db = await getDb();
+  const userId = canonicalUserId(id);
   await db.collection("users").updateOne(
-    { _id: id },
+    { _id: userId },
     { $set: { jailed: false, jailUntil: null } }
   );
 }
@@ -521,8 +541,9 @@ export async function unjailUser(id) {
 
 export async function setStaffImmunity(id, value) {
   const db = await getDb();
+  const userId = canonicalUserId(id);
   await db.collection("users").updateOne(
-    { _id: id },
+    { _id: userId },
     { $set: { staffImmunity: value } },
     { upsert: true }
   );
@@ -532,16 +553,18 @@ export async function setStaffImmunity(id, value) {
 
 export async function deletePlayer(id) {
   const db = await getDb();
-  await db.collection("users").deleteOne({ _id: id });
+  const userId = canonicalUserId(id);
+  await db.collection("users").deleteOne({ _id: userId });
 }
 
 export async function resetPlayer(id) {
   const db   = await getDb();
   const user = await getUser(id);
+  const userId = canonicalUserId(id);
   const { name, registered, registeredAt, staffLevel, isPremium, staffImmunity } = user;
   // Preserve identity fields, wipe economy
   await db.collection("users").updateOne(
-    { _id: id },
+    { _id: userId },
     {
       $set: {
         ...DEFAULTS,
@@ -559,8 +582,9 @@ export async function resetPlayer(id) {
  */
 export async function setPlayerFields(id, fields) {
   const db = await getDb();
+  const userId = canonicalUserId(id);
   await db.collection("users").updateOne(
-    { _id: id },
+    { _id: userId },
     { $set: fields },
     { upsert: true }
   );
@@ -571,8 +595,9 @@ export async function setPlayerFields(id, fields) {
 /** Ban a user — blocks all bot commands. */
 export async function banUser(id, reason = "No reason given", bannedBy = "Owner") {
   const db = await getDb();
+  const userId = canonicalUserId(id);
   await db.collection("users").updateOne(
-    { _id: id },
+    { _id: userId },
     { $set: { banned: true, bannedReason: reason, bannedBy, bannedAt: new Date().toISOString() } },
     { upsert: true }
   );
@@ -581,8 +606,9 @@ export async function banUser(id, reason = "No reason given", bannedBy = "Owner"
 /** Lift a ban. */
 export async function unbanUser(id) {
   const db = await getDb();
+  const userId = canonicalUserId(id);
   await db.collection("users").updateOne(
-    { _id: id },
+    { _id: userId },
     { $set: { banned: false, bannedReason: null, bannedBy: null, bannedAt: null } }
   );
 }
@@ -603,6 +629,9 @@ export async function findUserByName(name) {
 /** Quick banned check (projection-only — no full user load). */
 export async function isBanned(id) {
   const db   = await getDb();
-  const user = await db.collection("users").findOne({ _id: id }, { projection: { banned: 1 } });
+  const user = await db.collection("users").findOne(
+    { _id: canonicalUserId(id) },
+    { projection: { banned: 1 } },
+  );
   return !!(user?.banned);
 }
