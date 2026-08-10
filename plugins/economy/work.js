@@ -12,6 +12,7 @@ import {
   REST_COOLDOWN_MS,
   JOB_CHANGE_COOLDOWN_MS,
   MAX_ENERGY,
+  MAX_SHIFT_GROSS_PAY,
   PAYROLL_TAX_RATE,
   buildJobBoard,
   buildPaystub,
@@ -237,7 +238,7 @@ export default {
     }
 
     const event = rollWorkEvent(job);
-    const gross = Math.max(0, job.pay + event.amount);
+    const gross = Math.min(MAX_SHIFT_GROSS_PAY, Math.max(0, job.pay + event.amount));
     const tax = Math.floor(gross * PAYROLL_TAX_RATE);
     const net = gross - tax;
     const updated = await claimWorkShift(sender, {

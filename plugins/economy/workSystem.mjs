@@ -11,6 +11,7 @@ export const REST_COOLDOWN_MS = 5 * 60 * 1000;
 export const JOB_CHANGE_COOLDOWN_MS = 60 * 60 * 1000;
 export const MAX_ENERGY = 100;
 export const PAYROLL_TAX_RATE = 0.10;
+export const MAX_SHIFT_GROSS_PAY = 29_999;
 
 const ITEM_LABELS = {
   work_meal: "Work meal",
@@ -39,58 +40,58 @@ export const ENERGY_ITEMS = {
 const JOBS = {
   fastFoodWorker: {
     name: "Fast Food Worker", tier: "Entry-Level", tierKey: "entry",
-    emoji: "🍔", pay: 1_600, xp: 55, energy: 16,
+    emoji: "🍔", pay: 4_000, xp: 55, energy: 16,
   },
   deliveryRider: {
     name: "Delivery Rider", tier: "Entry-Level", tierKey: "entry",
-    emoji: "🛵", pay: 1_850, xp: 65, energy: 18,
+    emoji: "🛵", pay: 4_500, xp: 65, energy: 18,
   },
   farmWorker: {
     name: "Farm Worker", tier: "Entry-Level", tierKey: "entry",
-    emoji: "🌾", pay: 1_500, xp: 50, energy: 17,
+    emoji: "🌾", pay: 3_800, xp: 50, energy: 17,
   },
   teacher: {
     name: "Teacher", tier: "Entry-Level", tierKey: "entry",
-    emoji: "📚", pay: 2_100, xp: 75, energy: 18,
+    emoji: "📚", pay: 5_200, xp: 75, energy: 18,
   },
   softwareDeveloper: {
     name: "Software Developer", tier: "Mid-Level", tierKey: "mid",
-    emoji: "💻", pay: 3_900, xp: 120, energy: 22,
+    emoji: "💻", pay: 9_000, xp: 120, energy: 22,
     requirements: { shifts: 12, workXp: 900, items: ["coding_bootcamp"] },
   },
   registeredNurse: {
     name: "Registered Nurse", tier: "Mid-Level", tierKey: "mid",
-    emoji: "🩺", pay: 4_200, xp: 130, energy: 24,
+    emoji: "🩺", pay: 9_800, xp: 130, energy: 24,
     requirements: { shifts: 15, workXp: 1_050, items: ["nursing_license"] },
   },
   engineer: {
     name: "Project Engineer", tier: "Mid-Level", tierKey: "mid",
-    emoji: "🧰", pay: 4_600, xp: 140, energy: 23,
+    emoji: "🧰", pay: 10_500, xp: 140, energy: 23,
     requirements: { shifts: 18, workXp: 1_250, items: ["engineering_degree"] },
   },
   wallStreetTrader: {
     name: "Wall Street Trader", tier: "Mid-Level", tierKey: "mid",
-    emoji: "📈", pay: 5_300, xp: 155, energy: 26,
+    emoji: "📈", pay: 12_000, xp: 155, energy: 26,
     requirements: { shifts: 20, workXp: 1_500, items: ["finance_degree"] },
   },
   chiefExecutive: {
     name: "Chief Executive Officer", tier: "High-Tier", tierKey: "high",
-    emoji: "🏢", pay: 8_500, xp: 220, energy: 30,
+    emoji: "🏢", pay: 16_000, xp: 220, energy: 30,
     requirements: { shifts: 35, workXp: 3_500, items: ["business_degree", "executive_suit"] },
   },
   investmentTrader: {
     name: "Investment Trader", tier: "High-Tier", tierKey: "high",
-    emoji: "💹", pay: 9_500, xp: 240, energy: 32,
+    emoji: "💹", pay: 18_000, xp: 240, energy: 32,
     requirements: { shifts: 40, workXp: 4_000, items: ["finance_degree", "trading_license"] },
   },
   traumaSurgeon: {
     name: "Trauma Surgeon", tier: "High-Tier", tierKey: "high",
-    emoji: "⚕️", pay: 10_500, xp: 260, energy: 34,
+    emoji: "⚕️", pay: 19_000, xp: 260, energy: 34,
     requirements: { shifts: 45, workXp: 4_500, items: ["medical_degree", "surgeon_kit"] },
   },
   companyFounder: {
     name: "Company Founder", tier: "High-Tier", tierKey: "high",
-    emoji: "🚀", pay: 12_000, xp: 300, energy: 35,
+    emoji: "🚀", pay: 20_000, xp: 300, energy: 35,
     requirements: { shifts: 55, workXp: 5_500, items: ["business_degree", "founder_capital"] },
   },
 };
@@ -247,6 +248,7 @@ export function buildJobBoard(user) {
     `╭───〔 📋 *CAREER BOARD* 〕───╮`,
     `│ Cooldown: 10 minutes  •  Tax: 10%`,
     `│ Energy cost is paid per shift.`,
+    `│ Start unemployed: choose an entry job first.`,
     `├────────────────────────────`,
   ];
   for (const tierKey of groups) {

@@ -18,7 +18,7 @@ These fields live on the existing `users` document:
 
 ```js
 {
-  job: "fastFoodWorker",
+  job: null,              // new players choose an entry-level job first
   lastWork: 0,            // epoch milliseconds; 10-minute shift cooldown
   lastRest: 0,            // epoch milliseconds; 5-minute rest cooldown
   energy: 100,             // clamped to 0..100
@@ -32,9 +32,9 @@ These fields live on the existing `users` document:
   },
   lastWorkPaystub: {
     jobKey: "fastFoodWorker",
-    gross: 1600,
-    net: 1440,
-    tax: 160,
+    gross: 4000,
+    net: 3600,
+    tax: 400,
     event: "Standard shift",
     description: "Fast Food Worker: Standard shift",
     ts: 0
@@ -49,9 +49,9 @@ create duplicate paychecks.
 ## Economy balancing notes
 
 1. **Balance by hourly output, not per-shift output.** Six shifts per hour is
-   the practical maximum. Entry-level jobs should cover routine shop purchases;
-   high-tier jobs should feel rewarding but not outpace the rest of the bot's
-   economy.
+   the practical maximum. Current base pay ranges from $3,800–$5,200 for
+   entry-level, $9,000–$12,000 for mid-level, and $16,000–$20,000 for high-tier
+   jobs. Positive events are capped so gross pay always stays below $30,000.
 2. **Keep the 10% payroll tax visible.** The paystub shows gross pay, tax, and
    net pay so the deduction feels fair instead of surprising.
 3. **Use energy as a soft limit.** Current jobs consume 16–35 energy, rest
