@@ -32,6 +32,7 @@ async function sendScene(sock, jid, msg, battle, statusText, hitSide, damage, cr
         fallbackImageUrl: battle.challengerPokemon.imageUrl,
         shiny: battle.challengerPokemon.shiny,
         primaryType: battle.challengerPokemon.primaryType || (battle.challengerPokemon.types || [])[0],
+        trainer: battle.challengerTrainer,
       },
       enemy: {
         name: battle.opponentPokemon.displayName || battle.opponentPokemon.name,
@@ -40,6 +41,7 @@ async function sendScene(sock, jid, msg, battle, statusText, hitSide, damage, cr
         maxHp: battle.opponentPokemon.maxHp,
         imageUrl: battle.opponentPokemon.imageUrl,
         shiny: battle.opponentPokemon.shiny,
+        trainer: battle.opponentTrainer,
       },
       round: battle.round,
       hitSide, damage, crit, statusText,

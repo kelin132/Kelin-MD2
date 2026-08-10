@@ -72,6 +72,7 @@ export default {
             maxHp: challengerLead.maxHp,
             imageUrl: challengerLead.backImageUrl || challengerLead.imageUrl,
             shiny: challengerLead.shiny,
+            trainer: battle.challengerTrainer,
           },
           enemy: {
             name: opponentLead.displayName || opponentLead.name,
@@ -80,6 +81,7 @@ export default {
             maxHp: opponentLead.maxHp,
             imageUrl: opponentLead.imageUrl,
             shiny: opponentLead.shiny,
+            trainer: battle.opponentTrainer,
           },
           round: 1,
           statusText: `${challengerTrainer.username} vs ${opponentTrainer.username || msg.pushName}!`,

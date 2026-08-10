@@ -62,8 +62,8 @@ export default {
     let sceneBuffer;
     try {
       sceneBuffer = await generateBattleScene({
-        player: { name: lead.displayName || lead.name, level: lead.level, hp: lead.hp, maxHp: lead.maxHp, imageUrl: lead.backImageUrl || lead.imageUrl, shiny: lead.shiny },
         enemy: { name: wild.pokemon.displayName || wild.pokemon.name, level: wild.pokemon.level, hp: wild.pokemon.hp, maxHp: wild.pokemon.maxHp, imageUrl: wild.pokemon.imageUrl, shiny: false },
+        player: { name: lead.displayName || lead.name, level: lead.level, hp: lead.hp, maxHp: lead.maxHp, imageUrl: lead.backImageUrl || lead.imageUrl, shiny: lead.shiny, trainer: battle.challengerTrainer },
         round: 1,
         statusText: `${lead.displayName || lead.name} vs Wild ${wild.pokemon.displayName || wild.pokemon.name}!`,
       });
