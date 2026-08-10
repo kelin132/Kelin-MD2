@@ -16,7 +16,7 @@ export default {
   isPremium: false,
   version: "1.1.0",
 
-  async run({ sock, msg, sender, text }) {
+  async run({ sock, msg, sender, phoneNumber, formattedNumber, text }) {
     const jid = msg.key.remoteJid;
 
     try {
@@ -38,8 +38,7 @@ export default {
       const requestMessage =
         `╭━━━〔 📩 BOT REQUEST 〕━━━╮\n\n` +
         `👤 *Requested By:*\n` +
-        `• JID: ${sender}\n` +
-        `• Number: +${sender.split("@")[0]}\n\n` +
+        `• Number: ${formattedNumber || (phoneNumber ? `+${phoneNumber}` : "Unavailable")}\n\n` +
         `📎 *Group Link:*\n${text.trim()}\n\n` +
         `🕒 *Time:* ${new Date().toLocaleString()}\n\n` +
         `━━━━━━━━━━━━━━━━━━\n` +
