@@ -37,6 +37,22 @@ export function parseAmount(raw, userMoney = 0) {
 }
 
 /**
+ * Detect abbreviated amount input for commands that require full numbers.
+ * Handles both "40m" and spaced forms such as "40 m", plus the unsupported
+ * trillion form "4t" so it cannot be accidentally parsed as just "4".
+ */
+export function hasAmountShorthand(args = []) {
+  const tokens = Array.isArray(args) ? args.map(value => String(value ?? "").trim().toLowerCase()) : [];
+  const compact = /^\d+(?:\.\d+)?[kmbt]$/;
+  const number = /^\d+(?:\.\d+)?$/;
+  const suffix = /^[kmbt]$/;
+
+  return tokens.some((token, index) =>
+    compact.test(token) || (number.test(token) && suffix.test(tokens[index + 1] || ""))
+  );
+}
+
+/**
  * Formats a number back into the most readable shorthand.
  * e.g. 10000 → "10k", 2500000 → "2.5m"
  * Used in help text so users see examples in the same notation they type.

@@ -5,6 +5,7 @@
  * Aliases: gift, give, givemoney
  */
 import { getUser, saveUser, requireRegistration, isRegistered, addHistory } from "./database.js";
+import { hasAmountShorthand } from "./parseAmount.js";
 
 function resolveTarget(msg) {
   // 1. Direct @mention
@@ -50,6 +51,10 @@ export default {
         "• Mention the person: *.donate @user 500*\n" +
         "• Reply to their message: *.donate 500*"
       );
+    }
+
+    if (hasAmountShorthand(args)) {
+      return reply("❌ Please use the full amount when giving money. Example: *.give @user 40000000*");
     }
 
     if (targetJid === sender) {

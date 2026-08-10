@@ -8,7 +8,7 @@
  * Runs independently of (and duplicates) cardSpawner.mjs if both are active;
  * the guard `global.__cardApiSpawnerRunning` prevents double-spawning.
  */
-import { pickRandomCard, resolveMediaUrl, createSpawnId, sendCardMedia } from "../../lib/cardApi.mjs";
+import { pickRandomCard, createSpawnId, buildCardSpawnCaption, sendCardMedia } from "../../lib/cardApi.mjs";
 import { getSeries } from "../../lib/seriesEnrich.mjs";
 import { getEnabledSpawnChats }            from "./db.js";
 import { log }                             from "../../lib/logger.mjs";
@@ -35,17 +35,7 @@ if (!global.__cardApiSpawnerRunning) {
     const spawnId = createSpawnId();
     spawns[chatId] = { cardId: card.cardId, spawnId, card };
 
-    const caption =
-`✨ *A CARD HAS APPEARED!* ✨
-
-🃏 *${card.name}*
-⭐ Tier: *${card.tier}*
-📺 Series: *${card.series}*
-🆔 ID: \`${card.cardId}\`
-🔹 Spawn ID: \`${spawnId}\`
-
-> Type *${getPrefix()}claim ${card.cardId}* to grab it!
-> First come, first served — expires in 10 min~`;
+    const caption = buildCardSpawnCaption(card, spawnId, getPrefix());
 
     try {
       await sendCardMedia(sock, chatId, card, caption);

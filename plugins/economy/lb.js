@@ -28,60 +28,10 @@ export default {
 
     const db = await getDb();
 
-    // ── Default: top 10 richest players (economy leaderboard) ────────────────
+    // ── Default: use the same wealth-ranking layout as .rich/.leaderboard ────
     if (!flag) {
-      const { getAllUsers } = await import("./database.js");
-      const users = await getAllUsers();
-
-      if (!users || users.length === 0) {
-        return sock.sendMessage(jid, {
-          text: "💰 No registered players yet! Be the first with *.register*",
-        }, { quoted: msg });
-      }
-
-      const sorted = users
-        .map(u => ({ ...u, net: (u.money || 0) + (u.bank || 0) }))
-        .sort((a, b) => b.net - a.net)
-        .slice(0, 10);
-
-      const userIds  = sorted.map(u => (u._id || "").split("@")[0].split(":")[0]).filter(Boolean);
-      const ownerJids = sorted.map(u => u._id).filter(Boolean);
-
-      const [cardDocs, pokeCounts] = await Promise.all([
-        db.collection("mn_users")
-          .find({ userId: { $in: userIds } }, { projection: { userId: 1, cards: 1 } })
-          .toArray(),
-        db.collection("pokemon_owned").aggregate([
-          { $match: { ownerJid: { $in: ownerJids } } },
-          { $group: { _id: "$ownerJid", total: { $sum: 1 } } },
-        ]).toArray(),
-      ]);
-
-      const cardMap = {};
-      for (const doc of cardDocs) cardMap[doc.userId] = Array.isArray(doc.cards) ? doc.cards.length : 0;
-      const pokeMap = {};
-      for (const doc of pokeCounts) pokeMap[doc._id] = doc.total;
-
-      let text = "🏆 *LEADERBOARD — TOP 10*\n";
-      text += "━".repeat(28) + "\n\n";
-
-      for (let i = 0; i < sorted.length; i++) {
-        const u      = sorted[i];
-        const userId = (u._id || "").split("@")[0].split(":")[0];
-        const medal  = MEDALS[i] || `${i + 1}.`;
-        const name   = u.name || `User_${userId.slice(-4)}`;
-        const cards  = cardMap[userId] || 0;
-        const poke   = pokeMap[u._id]  || 0;
-        text += `${medal} *${name}*\n`;
-        text += `   💰 Money: $${u.net.toLocaleString()}\n`;
-        text += `   🃏 Cards: ${cards}\n`;
-        text += `   🎮 Pokémon: ${poke}\n\n`;
-      }
-
-      text += `━━━━━━━━━━━━━━━━━━━━\n`;
-      text += `🃏 *.lb --cards* | 🎮 *.lb --pokemon* | ⭐ *.lb --level*`;
-
-      return sock.sendMessage(jid, { text: text.trim() }, { quoted: msg });
+      const { default: richLeaderboard } = await import("./leaderboard.js");
+      return richLeaderboard.run({ sock, msg });
     }
 
     // ── TOP LEVELS ────────────────────────────────────────────────────────────
