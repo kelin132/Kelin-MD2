@@ -12,23 +12,43 @@ const categoryEmojis = {
   owner: "👑",
 };
 
+const categoryTitles = {
+  main: "𝗠𝗔𝗜𝗡",
+  economy: "𝗘𝗖𝗢𝗡𝗢𝗠𝗬",
+  guild: "𝗚𝗨𝗜𝗟𝗗",
+  pets: "𝗣𝗘𝗧𝗦",
+  cards: "𝗖𝗔𝗥𝗗𝗦",
+  pokemon: "𝗣𝗢𝗞𝗘𝗠𝗢𝗡",
+  dragonball: "𝗗𝗥𝗔𝗚𝗢𝗡 𝗕𝗔𝗟𝗟",
+  games: "𝗚𝗔𝗠𝗘𝗦",
+  fun: "𝗙𝗨𝗡",
+  ai: "𝗔𝗜",
+  search: "𝗦𝗘𝗔𝗥𝗖𝗛",
+  image: "𝗜𝗠𝗔𝗚𝗘",
+  utilities: "𝗨𝗧𝗜𝗟𝗜𝗧𝗜𝗘𝗦",
+  download: "𝗗𝗢𝗪𝗡𝗟𝗢𝗔𝗗",
+  group: "𝗚𝗥𝗢𝗨𝗣",
+  anime: "𝗔𝗡𝗜𝗠𝗘",
+  staff: "𝗦𝗧𝗔𝗙𝗙",
+  owner: "𝗢𝗪𝗡𝗘𝗥",
+  company: "𝗖𝗢𝗠𝗣𝗔𝗡𝗬",
+  naruto: "𝗡𝗔𝗥𝗨𝗧𝗢",
+  media: "𝗠𝗘𝗗𝗜𝗔",
+  admin: "𝗔𝗗𝗠𝗜𝗡",
+};
+
 const PUBLIC_CATS = new Set([
   "main", "economy", "company", "guild", "games", "fun", "ai", "search",
   "media", "utilities", "download", "group", "anime", "cards", "staff",
   "naruto", "pokemon", "pets", "image", "dragonball",
 ]);
 
-function renderCategory(layout, emoji, title, disabledTag, commandText) {
-  if (layout === 2) {
-    return `\n┌─ ${emoji} *${title}*${disabledTag}\n│ ${commandText}\n└────────────────────────`;
-  }
-  if (layout === 3) {
-    return `\n${emoji} *${title}*${disabledTag}\n${commandText}`;
-  }
-  if (layout === 4) {
-    return `\n╭━━ ${emoji} *${title}*${disabledTag} ━━╮\n┃ ${commandText}\n╰━━━━━━━━━━━━━━━━━━━━━━╯`;
-  }
-  return `\n╭─${emoji}「 *${title}*${disabledTag} 」\n│ ${commandText}\n╰━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+function renderCategory(emoji, title, disabledTag, commands) {
+  const commandLines = commands
+    .map((command) => `│ ꕥ ${command}`)
+    .join("\n");
+
+  return `\n╭─${emoji}「 ${title}${disabledTag} 」\n│\n${commandLines}\n╰━━━━━━━━━━━━━━━━━━━━`;
 }
 
 export default {
@@ -49,8 +69,6 @@ export default {
     const disabledCats = new Set(gs.disabledCategories || []);
     const runtime = getRuntimeSettings();
     const menuPrefix = runtime.prefix || prefix;
-    const layout = runtime.layout || 1;
-    const botName = runtime.botName || "KELIN MD";
 
     const map = new Map();
     for (const plugin of allPlugins) {
@@ -72,12 +90,13 @@ export default {
       ...[...map.keys()].filter((cat) => !order.includes(cat) && PUBLIC_CATS.has(cat)).sort(),
     ];
 
-    let text = `*Hello* senpai ${mention}, I am ${botName} 👋
+    let text = `𝗛𝗲𝗹𝗹𝗼 𝘀𝗲𝗻𝗽𝗮𝗶 ${mention}, 𝗜 𝗮𝗺 𝗭𝗵𝗼𝗻𝗴𝗹𝗶 👋
 ╭━━━━━━━━━━━━━━━━━━━━╮
-|ꕥ ${menuPrefix}reg to use economy cmds
-|ꕥ ${menuPrefix}rules to see bot rules
-|ꕥ ${menuPrefix}support for official group
-|ꕥ ${menuPrefix}reqbot for adding in your group
+│ ✦ 𝗥𝗘𝗚𝗜𝗦𝗧𝗘𝗥
+│ ├─ 🌸 ꕥ ${menuPrefix}𝗿𝗲𝗴 › 𝗨𝘀𝗲 𝗲𝗰𝗼𝗻𝗼𝗺𝘆 𝗰𝗼𝗺𝗺𝗮𝗻𝗱𝘀
+│ ├─ 📜 ꕥ ${menuPrefix}𝗿𝘂𝗹𝗲𝘀 › 𝗕𝗼𝘁 𝗿𝘂𝗹𝗲𝘀
+│ ├─ 🌐 ꕥ ${menuPrefix}𝘀𝘂𝗽𝗽𝗼𝗿𝘁 › 𝗢𝗳𝗳𝗶𝗰𝗶𝗮𝗹 𝗴𝗿𝗼𝘂𝗽
+│ └─ ⚡ ꕥ ${menuPrefix}𝗿𝗲𝗾𝗯𝗼𝘁 › 𝗔𝗱𝗱 𝗺𝗲 𝘁𝗼 𝘆𝗼𝘂𝗿 𝗴𝗿𝗼𝘂𝗽
 ╰━━━━━━━━━━━━━━━━━━━━╯
 \n${READMORE}\n`;
 
@@ -85,17 +104,21 @@ export default {
       const isCatDisabled = isGroup && disabledCats.has(cat) && !showStaff;
       if (isCatDisabled) continue;
       const emoji = categoryEmojis[cat] || "📌";
-      const title = cat.charAt(0).toUpperCase() + cat.slice(1);
+      const title = categoryTitles[cat] || cat.toUpperCase();
       const disabledTag = isGroup && disabledCats.has(cat) && showStaff ? " _(disabled)_" : "";
-      const commandText = map.get(cat).sort().map((command) => `\`${menuPrefix}${command}\``).join(" • ");
-      text += renderCategory(layout, emoji, title, disabledTag, commandText);
+      const displayCommands = map.get(cat).sort().map((command) => {
+        const styledCommand = command
+          .replace(/[a-z]/g, (letter) => String.fromCodePoint(0x1d5ee + letter.charCodeAt(0) - 97))
+          .replace(/[A-Z]/g, (letter) => String.fromCodePoint(0x1d5d4 + letter.charCodeAt(0) - 65));
+        return `${menuPrefix}${styledCommand}`;
+      });
+      text += renderCategory(emoji, title, disabledTag, displayCommands);
     }
 
     if (isGroup && !showStaff && disabledCats.size > 0) {
       text += `\n\n🔒 *Disabled in this group:* ${[...disabledCats].join(", ")}\n_Ask a staff member to enable them._`;
     }
 
-    text += `\n\n> © ${botName}  •  Layout ${layout}/4`;
     return sock.sendMessage(jid, {
       image: { url: runtime.botImage },
       caption: text,
