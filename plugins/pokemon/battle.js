@@ -79,7 +79,7 @@ async function sendBattlePrompt(sock, jid, msg, myPokemon, enemyPokemon, battleT
   const enemyLabel = isWild ? `Wild` : `Opponent`;
   const enemyLine  = `${enemyTypeEmoji} ${enemyLabel} *${enemyName}*\n(❤️ HP: ${enemyPokemon.hp} / ${enemyPokemon.maxHp} | ⭐ Level: ${enemyPokemon.level} | 🎯 Moves: ${enmMovesCt} | ${enemyTypeEmoji} Type: ${enemyType})`;
 
-  const ballLine  = isWild ? `\n• 🔴 Throw Poké Ball\n  ↳ \`.battle pokeballs\`` : "";
+  const ballLine  = isWild ? `\n• 🔴 Throw Poké Ball\n  ↳ \`.battle pokeball (type)\`` : "";
   const mentions  = trainerJid ? [trainerJid] : [];
 
   await sock.sendMessage(jid, {
