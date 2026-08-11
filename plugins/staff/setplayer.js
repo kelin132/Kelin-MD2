@@ -1,7 +1,7 @@
 /**
  * .setplayer @user <field> <value>
  * Directly set a specific economy field on a player.
- * Fields: money, bank, vault, xp, level
+ * Fields: money, bank, vault, diamonds, xp, level
  */
 import { setPlayerFields, getUser, isRegistered } from "../economy/database.js";
 
@@ -9,6 +9,7 @@ const ALLOWED_FIELDS = {
   money:  "number",
   bank:   "number",
   vault:  "number",
+  diamonds: "number",
   xp:     "number",
   level:  "number",
 };
