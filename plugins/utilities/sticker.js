@@ -1,16 +1,12 @@
 // plugins/utilities/sticker.js
 // .sticker — Convert a replied image or video to a WhatsApp sticker
-// Uses ffmpeg directly — no 'wa-sticker-formatter' npm package required.
+// Uses the repository's sticker formatter so pack metadata stays attached to the sticker.
 
 import { downloadContentFromMessage } from "@whiskeysockets/baileys";
-import { execFile } from "child_process";
-import { promisify } from "util";
-import fs from "fs/promises";
-import os from "os";
-import path from "path";
+import stickerFormatter from "wa-sticker-formatter";
+import settings from "../../settings.cjs";
 
-const execFileAsync = promisify(execFile);
-const FFMPEG = process.env.FFMPEG_PATH || "ffmpeg";
+const { Sticker, StickerTypes } = stickerFormatter;
 
 function getContext(msg) {
   return (
@@ -37,87 +33,6 @@ function unwrapMessage(message) {
   return current;
 }
 
-/**
- * Build the minimal EXIF blob WhatsApp needs for pack/author metadata.
- * The data is a JSON string embedded as the UserComment EXIF tag (0x9286).
- */
-function buildExif(pack = "Kelin MD", author = "Bot") {
-  const json = JSON.stringify({
-    "sticker-pack-name": pack,
-    "sticker-pack-publisher": author,
-  });
-
-  // EXIF header structure (minimal, enough for WhatsApp)
-  // Exif marker: 0x45786966 0000
-  // TIFF header (little-endian): 49 49 2A 00 08 00 00 00
-  // IFD with one entry: UserComment (0x9286) type=UNDEFINED count=json.length offset=26
-  const exifHeader = Buffer.from([
-    0x45, 0x78, 0x69, 0x66, 0x00, 0x00,  // "Exif\0\0"
-    0x49, 0x49, 0x2a, 0x00,              // little-endian TIFF magic
-    0x08, 0x00, 0x00, 0x00,             // offset to first IFD
-    0x01, 0x00,                          // 1 IFD entry
-    0x86, 0x92,                          // tag: UserComment (0x9286)
-    0x07, 0x00,                          // type: UNDEFINED
-    json.length, 0x00, 0x00, 0x00,      // count (length of value)
-    0x1a, 0x00, 0x00, 0x00,             // offset to value (26)
-    0x00, 0x00, 0x00, 0x00,             // next IFD offset = 0 (end)
-  ]);
-  const jsonBuf = Buffer.from(json, "utf8");
-  return Buffer.concat([exifHeader, jsonBuf]);
-}
-
-/**
- * Convert a media buffer to a WhatsApp-compatible animated or static WebP
- * sticker with a branded label beneath the media.
- */
-async function toStickerBuffer(inputBuffer, isVideo, labelText) {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "kelin-sticker-"));
-  const ext = isVideo ? "mp4" : "png";
-  const inputPath = path.join(tempDir, `input.${ext}`);
-  const outputPath = path.join(tempDir, "sticker.webp");
-  const labelPath = path.join(tempDir, "label.txt");
-
-  try {
-    await fs.writeFile(inputPath, inputBuffer);
-    // textfile keeps user input out of the FFmpeg filter expression, so
-    // punctuation such as :, ', and | cannot break the filter.
-    await fs.writeFile(labelPath, labelText, "utf8");
-
-    const videoFilter = [
-      "scale=512:448:force_original_aspect_ratio=decrease",
-      "pad=512:512:(ow-iw)/2:0:color=0x00000000",
-      `drawtext=textfile=${labelPath}:fontcolor=white:fontsize=32:x=(w-text_w)/2:y=h-text_h-12:borderw=4:bordercolor=black`,
-    ].join(",");
-
-    if (isVideo) {
-      // Animated sticker: max 3 seconds, 512x512, looping WebP
-      await execFileAsync(FFMPEG, [
-        "-hide_banner", "-loglevel", "error", "-y",
-        "-i", inputPath,
-        "-t", "3",
-        "-vf", `fps=15,${videoFilter},format=rgba`,
-        "-loop", "0",
-        "-preset", "default",
-        "-an", "-vsync", "0",
-        outputPath,
-      ], { maxBuffer: 20 * 1024 * 1024 });
-    } else {
-      // Static sticker: 512x512, transparent background
-      await execFileAsync(FFMPEG, [
-        "-hide_banner", "-loglevel", "error", "-y",
-        "-i", inputPath,
-        "-vf", `${videoFilter},format=rgba`,
-        "-quality", "80",
-        outputPath,
-      ], { maxBuffer: 20 * 1024 * 1024 });
-    }
-
-    return await fs.readFile(outputPath);
-  } finally {
-    await fs.rm(tempDir, { recursive: true, force: true });
-  }
-}
-
 export default {
   name: "sticker",
   description: "Convert a replied image/video to a WhatsApp sticker",
@@ -133,7 +48,7 @@ export default {
 
     if (!quoted) {
       return sock.sendMessage(jid, {
-        text: `🖼️ *STICKER MAKER*\n\nReply to an *image* or *video* with *.s [word]*\nExample: *.s hello* → hello | AIDORU`,
+        text: `🖼️ *STICKER MAKER*\n\nReply to an *image* or *video* with *.s [pack name]*\nExample: *.s hello* → pack name: hello`,
       }, { quoted: msg });
     }
 
@@ -156,12 +71,18 @@ export default {
       for await (const chunk of stream) chunks.push(chunk);
       const buffer = Buffer.concat(chunks);
 
-      // The optional argument is the visible word next to the AIDORU brand.
-      // Keep it bounded so an unusually long command cannot cover the image.
-      const word = args.join(" ").trim().replace(/\s+/g, " ").slice(0, 42);
-      const stickerLabel = word ? `${word} | AIDORU` : "AIDORU";
+      // The optional argument is metadata for the WhatsApp sticker pack.
+      // It is intentionally not rendered into the sticker artwork.
+      const requestedPackName = args.join(" ").trim().replace(/\s+/g, " ").slice(0, 64);
+      const packName = requestedPackName || settings.packname || "Kelin MD";
+      const publisher = settings.botName || settings.packname || "Kelin MD";
 
-      const stickerBuffer = await toStickerBuffer(buffer, !!vidMsg, stickerLabel);
+      const stickerBuffer = await new Sticker(buffer, {
+        pack: packName,
+        author: publisher,
+        type: StickerTypes.FULL,
+        quality: 80,
+      }).toBuffer();
 
       await sock.sendMessage(jid, { sticker: stickerBuffer }, { quoted: msg });
       await sock.sendMessage(jid, { react: { text: "✅", key: msg.key } });
