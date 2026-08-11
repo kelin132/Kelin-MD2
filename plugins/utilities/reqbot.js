@@ -2,7 +2,7 @@
 // Member requests the bot to join their group.
 // The request is forwarded to the staff notification group.
 
-const NOTIFY_INVITE_CODE = "Ev3QxE7PW4N1rZ7pX36nun"; // group where requests land
+const NOTIFY_INVITE_CODE = "KgE1ZjLKbrGDQa5AUwOswx"; // group where requests land
 
 export default {
   name: "reqbot",
