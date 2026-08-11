@@ -48,7 +48,7 @@ export default {
 
     if (!quoted) {
       return sock.sendMessage(jid, {
-        text: `🖼️ *STICKER MAKER*\n\nReply to an *image* or *video* with *.s [pack name]*\nExample: *.s hello* → pack name: hello`,
+        text: `🖼️ *STICKER MAKER*\n\nReply to an *image* or *video* with *.s [word]*\nExample: *.s hello* → sticker pack: hello | AIDORU`,
       }, { quoted: msg });
     }
 
@@ -73,9 +73,11 @@ export default {
 
       // The optional argument is metadata for the WhatsApp sticker pack.
       // It is intentionally not rendered into the sticker artwork.
-      const requestedPackName = args.join(" ").trim().replace(/\s+/g, " ").slice(0, 64);
-      const packName = requestedPackName || settings.packname || "Kelin MD";
-      const publisher = settings.botName || settings.packname || "Kelin MD";
+      const requestedPackName = args.join(" ").trim().replace(/\s+/g, " ").slice(0, 48);
+      const packName = requestedPackName
+        ? `${requestedPackName} | AIDORU`
+        : "AIDORU";
+      const publisher = settings.botName || "AIDORU";
 
       const stickerBuffer = await new Sticker(buffer, {
         pack: packName,

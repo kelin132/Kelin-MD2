@@ -2,6 +2,7 @@ import { getUser, requireRegistration } from "./database.js";
 import { generateProfileImage, getProfilePic, resolveRole } from "../../lib/profileGen.mjs";
 import { getLevelRole, getAllEarnedRoles, getLevelRoleLabel } from "../../lib/levelRoles.mjs";
 import { getUser as getCardUser } from "../cards/db.js";
+import { countTrainerPokemon } from "../../lib/pokemon/pokemonDb.mjs";
 
 const xpForLevel = (level) => level * 100;
 
@@ -30,10 +31,11 @@ export default {
 
     if (target === sender && !await requireRegistration(sock, msg, sender)) return;
 
-    const [user, profilePic, cardUser] = await Promise.all([
+    const [user, profilePic, cardUser, pokemonCount] = await Promise.all([
       getUser(target),
       getProfilePic(sock, target),
       getCardUser(target),
+      countTrainerPokemon(target),
     ]);
 
     const tag   = target.split("@")[0].split(":")[0];
@@ -68,29 +70,37 @@ export default {
     const daysActive = user.registeredAt
       ? Math.max(0, Math.floor((Date.now() - new Date(user.registeredAt).getTime()) / 86400000))
       : 0;
+    const displayName = registeredName.toUpperCase();
     const caption =
-`╭─❀「 ✨ *PROFILE* 」❀─╮
-│ 👤 *Profile : ${registeredName}*
-│ 🎭 *Role :* ${role} • ${roleLabel}
+`╭─「 🌸 𝗣𝗥𝗢𝗙𝗜𝗟𝗘 」─╮
 │
-│ 🏅 *Achievements* 🏅
-│ 🌟 Days Active : ${daysActive}
-│ 🃏 Cards       : ${cardsOwned}
-│ 🎮 Games       : ${gamesPlayed}
-│ 💸 Casino      : ${casinoGames}
+│ ${displayName} 「 ${registeredName} 」
+│ ${role.toUpperCase()} • ${roleLabel.toUpperCase()}
 │
-│ ⭐ Level : ${level}
-│ 📚 XP    : ${xp.toLocaleString()} / ${xpForLevel(level).toLocaleString()}
+│ ⟡ 𝗦𝗧𝗔𝗧𝗨𝗦
+│ ├─ 🌟 𝗔𝗖𝗧𝗜𝗩𝗘 ─ ${daysActive}
+│ ├─ 🃏 𝗖𝗔𝗥𝗗𝗦 ── ${cardsOwned}
+│ ├─ 🎮 𝗚𝗔𝗠𝗘𝗦 ── ${gamesPlayed}
+│ ├─ 💸 𝗖𝗔𝗦𝗜𝗡𝗢 ── ${casinoGames}
+│ └─ 🐾 𝗣𝗢𝗞𝗘𝗠𝗢𝗡 ─ ${pokemonCount}
 │
-│ 💰 Wallet   : $${(user.money ?? 0).toLocaleString()}
-│ 🏦 Bank     : $${(user.bank ?? 0).toLocaleString()}
-│ 💎 Diamonds : ${(user.diamonds ?? 0).toLocaleString()}
-│ 🎒 Items    : ${user.inventory?.length ?? 0}
+│ ⟡ 𝗟𝗘𝗩𝗘𝗟
+│ ├─ ⭐ 𝗟𝗩𝗟 ── ${level}
+│ └─ 📚 𝗫𝗣 ─── ${xp.toLocaleString()} / ${xpForLevel(level).toLocaleString()}
 │
-│ 📝 *Bio:* ${user.bio || "No bio set."}
-│ ⚜️ Clan : ${user.guild || "None"}
-│ 📅 Joined : ${fmtDate(user.registeredAt)}
-╰───────────────❀`;
+│ ⟡ 𝗪𝗘𝗔𝗟𝗧𝗛
+│ ├─ 💰 $${(user.money ?? 0).toLocaleString()}
+│ ├─ 🏦 $${(user.bank ?? 0).toLocaleString()}
+│ ├─ 💎 ${(
+  user.diamonds ?? 0
+).toLocaleString()}
+│ └─ 🎒 ${user.inventory?.length ?? 0}
+│
+│ 𝗕𝗜𝗢 「 ${user.bio || "None"} 」
+│ 𝗖𝗟𝗔𝗡 「 ${user.guild || "None"} 」
+│ 𝗝𝗢𝗜𝗡𝗘𝗗 「 ${fmtDate(user.registeredAt).toUpperCase()} 」
+│
+╰─「 ✦ 𝗘𝗡𝗗 ✦ 」─╯`;
 
     try {
       const imgBuffer = await generateProfileImage({
