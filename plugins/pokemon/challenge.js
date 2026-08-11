@@ -9,6 +9,7 @@ import {
   clearPendingChallenge, startPvPBattle, hasBattle,
 } from "../../lib/pokemon/battleState.mjs";
 import { generateBattleScene } from "../../lib/pokemon/canvas.mjs";
+import { generateChallengeCanvas } from "../../lib/pokemon/challengeCanvas.mjs";
 
 export default {
   name: "challenge",
@@ -160,9 +161,44 @@ export default {
 
     setPendingChallenge(sender, targetJid, jid, lead);
 
-    await sock.sendMessage(jid, {
-      text: `⚔️ *BATTLE CHALLENGE!*\n\n*${challenger.username}* challenges @${targetJid.split("@")[0]} to a Pokémon battle!\n\n🐉 Their lead: *${lead.displayName}* Lv.${lead.level}\n\nType *.ch accept* to accept within 2 minutes!`,
-      mentions: [targetJid],
-    }, { quoted: msg });
+    const [challengerAvatarUrl, opponentAvatarUrl] = await Promise.all([
+      sock.profilePictureUrl(sender, "image").catch(() => null),
+      sock.profilePictureUrl(targetJid, "image").catch(() => null),
+    ]);
+
+    let challengeImage;
+    try {
+      challengeImage = await generateChallengeCanvas({
+        challenger: {
+          name: challenger.username || msg.pushName || sender.split("@")[0],
+          avatarUrl: challengerAvatarUrl,
+        },
+        opponent: {
+          name: `@${targetJid.split("@")[0]}`,
+          avatarUrl: opponentAvatarUrl,
+        },
+      });
+    } catch {
+      challengeImage = null;
+    }
+
+    const caption =
+      `⚔️ *BATTLE CHALLENGE!*\n\n` +
+      `*${challenger.username}* challenges @${targetJid.split("@")[0]} to a Pokémon battle!\n\n` +
+      `🐉 Their lead: *${lead.displayName}* Lv.${lead.level}\n\n` +
+      `Type *.ch accept* to accept within 2 minutes!`;
+
+    if (challengeImage) {
+      await sock.sendMessage(jid, {
+        image: challengeImage,
+        caption,
+        mentions: [targetJid],
+      }, { quoted: msg });
+    } else {
+      await sock.sendMessage(jid, {
+        text: caption,
+        mentions: [targetJid],
+      }, { quoted: msg });
+    }
   },
 };
