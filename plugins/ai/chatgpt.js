@@ -1,8 +1,8 @@
-import { askChatGPT } from "../../lib/davidcyrilAPI.mjs";
+import { askKimi } from "../../lib/omegatechKimi.mjs";
 
 export default {
   name: "chatgpt",
-  description: "Chat with ChatGPT (GPT-4o)",
+  description: "Chat with Kimi AI via OmegaTech",
   category: "ai",
   usage: ".chatgpt <question>",
   aliases: ["gpt", "ai"],
@@ -13,8 +13,8 @@ export default {
     await sock.sendPresenceUpdate("composing", jid);
     try {
       const uid = sender?.split("@")[0] || jid;
-      const reply = await askChatGPT(text, uid);
-      await sock.sendMessage(jid, { text: `💬 *ChatGPT:*\n\n${reply}` }, { quoted: msg });
+      const reply = await askKimi(text, { uid });
+      await sock.sendMessage(jid, { text: `💬 *Kimi:*\n\n${reply}` }, { quoted: msg });
     } catch (err) {
       await sock.sendMessage(jid, { text: `❌ ${err.message}` }, { quoted: msg });
     } finally {

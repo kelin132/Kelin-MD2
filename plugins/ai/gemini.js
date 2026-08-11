@@ -1,8 +1,8 @@
-import { askGemini } from "../../lib/gemini.mjs";
+import { askKimi } from "../../lib/omegatechKimi.mjs";
 
 export default {
   name: "gemini",
-  description: "Chat with Google Gemini AI",
+  description: "Chat with Kimi AI via OmegaTech",
   category: "ai",
   usage: ".gemini <question>",
   aliases: ["gem"],
@@ -13,8 +13,8 @@ export default {
     await sock.sendPresenceUpdate("composing", jid);
     try {
       const uid = sender?.split("@")[0] || jid;
-      const reply = await askGemini(text, { uid });
-      await sock.sendMessage(jid, { text: `🤖 *Gemini:*\n\n${reply}` }, { quoted: msg });
+      const reply = await askKimi(text, { uid });
+      await sock.sendMessage(jid, { text: `🤖 *Kimi:*\n\n${reply}` }, { quoted: msg });
     } catch (err) {
       await sock.sendMessage(jid, { text: `❌ ${err.message}` }, { quoted: msg });
     } finally {

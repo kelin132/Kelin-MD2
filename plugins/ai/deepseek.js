@@ -1,8 +1,8 @@
-import { askDeepSeek } from "../../lib/davidcyrilAPI.mjs";
+import { askKimi } from "../../lib/omegatechKimi.mjs";
 
 export default {
   name: "deepseek",
-  description: "Deep analytical AI (DeepSeek R1)",
+  description: "Deep analytical AI via OmegaTech Kimi",
   category: "ai",
   usage: ".deepseek <question>",
   aliases: ["deep", "ds"],
@@ -13,8 +13,8 @@ export default {
     await sock.sendPresenceUpdate("composing", jid);
     try {
       const uid = sender?.split("@")[0] || jid;
-      const reply = await askDeepSeek(text, uid);
-      await sock.sendMessage(jid, { text: `🔬 *DeepSeek R1:*\n\n${reply}` }, { quoted: msg });
+      const reply = await askKimi(text, { uid });
+      await sock.sendMessage(jid, { text: `🔬 *Kimi:*\n\n${reply}` }, { quoted: msg });
     } catch (err) {
       await sock.sendMessage(jid, { text: `❌ ${err.message}` }, { quoted: msg });
     } finally {

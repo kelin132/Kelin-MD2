@@ -174,7 +174,7 @@ sessions/
 - **Session persistence**: `sessions/auth/` is created automatically. Keep it backed up.
 - **Re-pairing**: Delete `sessions/auth/` and restart to re-pair.
 - **Owner commands**: Set `OWNER_NUMBER` — without it owner plugins won't work.
-- **AI commands** (`.chatgpt`, `.gemini`): Require API keys — set them in `.env` (see plugin files for variable names).
+- **AI commands** (`.chatgpt`, `.gemini`, `.deepseek`, and Akira auto-replies): use OmegaTech's public Kimi endpoint and do not require an API key.
 
 ---
 
