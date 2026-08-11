@@ -247,7 +247,7 @@ async function searchComics(query) {
   const { data } = await requestComic({
     action: "search",
     query,
-    includeDoujin: true,
+    includeDoujin: false,
   });
   return resultItems(data)
     .map((item) => ({
