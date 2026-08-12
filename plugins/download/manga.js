@@ -99,7 +99,8 @@ async function findManga(query) {
         status: manga.status,
         synopsis: manga.synopsis,
         url: manga.url,
-        imageUrl: manga.images?.jpg?.large_image_url || manga.images?.jpg?.image_url,
+        imageUrl:
+          manga.images?.jpg?.large_image_url || manga.images?.jpg?.image_url,
       };
     }
   } catch (error) {
@@ -129,29 +130,49 @@ export default {
   name: "mangainfo",
   aliases: ["mng"],
   description: "Search manga information from MyAnimeList",
-  category: "anime",
+  category: "download",
   usage: ".mangainfo <manga name>",
   cooldown: 5,
 
   async run({ sock, msg, text }) {
     const jid = msg.key.remoteJid;
-    if (!text) return sock.sendMessage(jid, { text: "❌ Provide a manga name.\n\nExample: .manga One Piece" }, { quoted: msg });
+    if (!text) {
+      return sock.sendMessage(
+        jid,
+        {
+          text: "❌ Provide a manga name.\n\nExample: .mangainfo One Piece",
+        },
+        { quoted: msg }
+      );
+    }
 
     try {
       const manga = await findManga(text.trim());
       if (!manga) {
-        return sock.sendMessage(jid, { text: "❌ No manga found with that name." }, { quoted: msg });
+        return sock.sendMessage(
+          jid,
+          { text: "❌ No manga found with that name." },
+          { quoted: msg }
+        );
       }
 
       const caption = mangaCaption(manga);
       if (manga.imageUrl) {
-        await sock.sendMessage(jid, { image: { url: manga.imageUrl }, caption }, { quoted: msg });
+        await sock.sendMessage(
+          jid,
+          { image: { url: manga.imageUrl }, caption },
+          { quoted: msg }
+        );
       } else {
         await sock.sendMessage(jid, { text: caption }, { quoted: msg });
       }
     } catch (err) {
       console.error("[manga] all providers failed:", err.message);
-      await sock.sendMessage(jid, { text: "❌ Failed to fetch manga info. Try again later." }, { quoted: msg });
+      await sock.sendMessage(
+        jid,
+        { text: "❌ Failed to fetch manga info. Try again later." },
+        { quoted: msg }
+      );
     }
   },
 };

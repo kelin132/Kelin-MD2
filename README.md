@@ -108,7 +108,7 @@ export default {
 |----------|----------|
 | `main` | `.ping` `.alive` `.menu` `.info` `.runtime` |
 | `ai` | `.chatgpt` `.gemini` `.deepseek` |
-| `download` | `.ytdl` `.ytmp3` `.tiktok` |
+| `download` | `.ytdl` `.ytmp3` `.tiktok` `.comic` `.manga` `.manhwa` `.mangainfo` |
 | `fun` | `.joke` `.dare` `.truth` `.quote` |
 | `games` | `.ttt` |
 | `group` | `.welcome` `.goodbye` `.antilink` |
@@ -147,7 +147,7 @@ lib/
 plugins/
   main/               ← Core commands
   ai/                 ← AI commands
-  download/           ← Media download
+  download/           ← Media, comic, and manga downloads
   fun/                ← Fun & games
   group/              ← Group management
   admin/              ← Admin commands
