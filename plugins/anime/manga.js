@@ -126,11 +126,11 @@ ${cleanText(manga.synopsis, "No synopsis available.")}
 }
 
 export default {
-  name: "manga",
-  aliases: ["mangainfo", "mng"],
+  name: "mangainfo",
+  aliases: ["mng"],
   description: "Search manga information from MyAnimeList",
   category: "anime",
-  usage: ".manga <manga name>",
+  usage: ".mangainfo <manga name>",
   cooldown: 5,
 
   async run({ sock, msg, text }) {

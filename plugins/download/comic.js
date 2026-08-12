@@ -1,10 +1,11 @@
 /**
- * KELIN MD — .comic
+ * KELIN MD — .comic / .manga
  *
  * Flow:
- *   .comic <search terms>       Search comic series
+ *   .comic <search terms>       Search comic or manga series
+ *   .manga <search terms>       Search manga series
  *   .comic info <number|url>    Show series details and chapters
- *   .comic pdf <number|url>     Generate and send a chapter PDF
+ *   .manga pdf <number|url>     Generate and send a chapter PDF
  *
  * The API returns different shapes for different comic sources, so the
  * normalizers below intentionally accept the common nested variants.
@@ -210,6 +211,7 @@ function usageText() {
   return menuBox("", [
     "𝗨𝗦𝗔𝗚𝗘",
     "ꕥ .comic <title> — search comics",
+    "ꕥ .manga <title> — search manga",
     "ꕥ .comic info <number|url> — show details",
     "ꕥ .comic pdf <number|url> — send chapter PDF",
     "",
@@ -637,7 +639,7 @@ async function sendDetails(sock, msg, details) {
 export default {
   name: "comic",
   aliases: ["manga", "manhwa"],
-  description: "Search comics, view details, and download chapters as PDF",
+  description: "Search comics or manga, view details, and download chapters as PDF",
   category: "download",
   usage: ".comic <title> | .comic info <number|url> | .comic pdf <number|url>",
   cooldown: 12,
