@@ -11,9 +11,12 @@
  */
 
 const API_URL = "https://omegatech-api.dixonomega.tech/api/Fun/Comic";
+const MANGADEX_API_URL = "https://api.mangadex.org";
 const sessions = new Map();
 const MAX_RESULTS = 8;
 const MAX_CHAPTERS = 40;
+const MAX_PDF_PAGES = 60;
+const MAX_PDF_BYTES = 45 * 1024 * 1024;
 
 function cleanText(value, fallback = "") {
   if (value === undefined || value === null) return fallback;
@@ -22,6 +25,17 @@ function cleanText(value, fallback = "") {
 
 function isHttpUrl(value) {
   return typeof value === "string" && /^https?:\/\//i.test(value);
+}
+
+function isComicSelection(value) {
+  return isHttpUrl(value) || /^mangadex:\/\//i.test(value);
+}
+
+function mangaSelectionId(value, type) {
+  const prefix = `mangadex://${type}/`;
+  return typeof value === "string" && value.startsWith(prefix)
+    ? value.slice(prefix.length)
+    : null;
 }
 
 function safeFileName(value) {
@@ -106,6 +120,40 @@ function itemDescription(item) {
   );
 }
 
+function mangaTitle(attributes, fallback = "Untitled comic") {
+  const titles = attributes?.title || {};
+  return cleanText(
+    titles.en ||
+    titles["ja-ro"] ||
+    titles.ja ||
+    titles.ko ||
+    Object.values(titles)[0] ||
+    fallback,
+    fallback
+  );
+}
+
+function mangaDescription(attributes) {
+  const descriptions = attributes?.description || {};
+  return cleanText(
+    descriptions.en ||
+    descriptions.id ||
+    descriptions["pt-br"] ||
+    Object.values(descriptions)[0] ||
+    "No description available.",
+    "No description available."
+  );
+}
+
+function mangaCover(item) {
+  const cover = item?.relationships?.find((relationship) =>
+    relationship.type === "cover_art" && relationship.attributes?.fileName
+  );
+  return cover
+    ? `https://uploads.mangadex.org/covers/${item.id}/${cover.attributes.fileName}.512.jpg`
+    : null;
+}
+
 function chapterItems(data) {
   const root = resultRoot(data);
   const candidates = [
@@ -183,7 +231,7 @@ function getSession(jid) {
 
 function resolveSelection(value, items, getUrl) {
   if (!value) return null;
-  if (isHttpUrl(value)) return value;
+  if (isComicSelection(value)) return value;
 
   const index = Number.parseInt(value, 10);
   if (!Number.isInteger(index) || index < 1 || index > items.length) return null;
@@ -243,24 +291,115 @@ async function requestComic(params, { expectBinary = false } = {}) {
   return { data, contentType, raw };
 }
 
-async function searchComics(query) {
-  const { data } = await requestComic({
-    action: "search",
-    query,
-    includeDoujin: false,
+async function requestMangaDex(path, params = {}) {
+  const url = new URL(`${MANGADEX_API_URL}${path}`);
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null) {
+      url.searchParams.append(key, String(value));
+    }
+  }
+
+  const response = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+      "User-Agent": "Kelin-MD2/1.0",
+    },
+    signal: AbortSignal.timeout(45_000),
   });
-  return resultItems(data)
-    .map((item) => ({
-      title: itemTitle(item),
-      url: itemUrl(item),
-      cover: itemCover(item),
-      item,
-    }))
-    .filter((item) => item.url)
-    .slice(0, MAX_RESULTS);
+  const raw = await response.text();
+  let data;
+  try {
+    data = raw ? JSON.parse(raw) : null;
+  } catch {
+    data = null;
+  }
+
+  if (!response.ok || data?.result === "error") {
+    throw new Error(`MangaDex API error (${response.status})`);
+  }
+  return data;
+}
+
+async function searchMangaDex(query) {
+  const data = await requestMangaDex("/manga", {
+    title: query,
+    limit: MAX_RESULTS,
+    "contentRating[]": "safe",
+    "includes[]": "cover_art",
+    "order[relevance]": "desc",
+  });
+
+  return (data?.data || []).map((item) => ({
+    title: mangaTitle(item.attributes),
+    url: `mangadex://manga/${item.id}`,
+    cover: mangaCover(item),
+    source: "mangadex",
+    item,
+  }));
+}
+
+async function searchComics(query) {
+  try {
+    const { data } = await requestComic({
+      action: "search",
+      query,
+      includeDoujin: false,
+    });
+    const results = resultItems(data)
+      .map((item) => ({
+        title: itemTitle(item),
+        url: itemUrl(item),
+        cover: itemCover(item),
+        source: "omegatech",
+        item,
+      }))
+      .filter((item) => item.url)
+      .slice(0, MAX_RESULTS);
+    if (results.length) return results;
+  } catch (error) {
+    console.error("[comic] OmegaTech search failed:", error.message);
+  }
+
+  return searchMangaDex(query);
 }
 
 async function getDetails(url) {
+  const mangaId = mangaSelectionId(url, "manga");
+  if (mangaId) {
+    const [mangaResponse, feedResponse] = await Promise.all([
+      requestMangaDex(`/manga/${mangaId}`, { "includes[]": "cover_art" }),
+      requestMangaDex(`/manga/${mangaId}/feed`, {
+        limit: MAX_CHAPTERS,
+        "translatedLanguage[]": "en",
+        "order[volume]": "asc",
+        "order[chapter]": "asc",
+        "includeEmptyPages": "0",
+      }),
+    ]);
+    const manga = mangaResponse?.data;
+    const chapters = (feedResponse?.data || [])
+      .filter((chapter) => !chapter.attributes?.isUnavailable && chapter.attributes?.pages > 0)
+      .map((chapter, index) => {
+        const attributes = chapter.attributes || {};
+        const number = attributes.chapter ? `Chapter ${attributes.chapter}` : `Chapter ${index + 1}`;
+        const title = cleanText(attributes.title);
+        return {
+          title: title ? `${number}: ${title}` : number,
+          url: `mangadex://chapter/${chapter.id}`,
+        };
+      });
+
+    return {
+      title: mangaTitle(manga?.attributes),
+      description: mangaDescription(manga?.attributes),
+      author: "MangaDex",
+      status: cleanText(manga?.attributes?.status, "Unknown"),
+      chapters,
+      cover: mangaCover(manga),
+      source: "mangadex",
+    };
+  }
+
   const { data } = await requestComic({ action: "detail", url });
   const root = resultRoot(data);
   const source = root?.comic || root?.series || root;
@@ -278,6 +417,9 @@ async function getDetails(url) {
 }
 
 async function getPdf(url) {
+  const chapterId = mangaSelectionId(url, "chapter");
+  if (chapterId) return getMangaDexPdf(chapterId);
+
   const result = await requestComic({ action: "pdf", url }, { expectBinary: true });
   if (result.binary?.length) return result.binary;
 
@@ -304,6 +446,147 @@ async function getPdf(url) {
   const buffer = Buffer.from(await pdfResponse.arrayBuffer());
   if (!buffer.length) throw new Error("The returned PDF was empty.");
   return buffer;
+}
+
+function jpegDimensions(buffer) {
+  if (buffer.length < 4 || buffer[0] !== 0xff || buffer[1] !== 0xd8) {
+    throw new Error("MangaDex returned a non-JPEG page.");
+  }
+
+  let offset = 2;
+  while (offset + 9 < buffer.length) {
+    if (buffer[offset] !== 0xff) {
+      offset += 1;
+      continue;
+    }
+    const marker = buffer[offset + 1];
+    offset += 2;
+    if (marker === 0xd8 || marker === 0xd9) continue;
+    if (offset + 2 > buffer.length) break;
+    const segmentLength = buffer.readUInt16BE(offset);
+    if (segmentLength < 2 || offset + segmentLength > buffer.length) break;
+    const isSizeMarker =
+      (marker >= 0xc0 && marker <= 0xc3) ||
+      (marker >= 0xc5 && marker <= 0xc7) ||
+      (marker >= 0xc9 && marker <= 0xcb) ||
+      (marker >= 0xcd && marker <= 0xcf);
+    if (isSizeMarker && segmentLength >= 7) {
+      return {
+        width: buffer.readUInt16BE(offset + 5),
+        height: buffer.readUInt16BE(offset + 3),
+      };
+    }
+    offset += segmentLength;
+  }
+  throw new Error("Could not read MangaDex page dimensions.");
+}
+
+function buildJpegPdf(images) {
+  const objects = [];
+  const pageObjectNumbers = [];
+  let nextObjectNumber = 3;
+
+  for (const image of images) {
+    const pageObjectNumber = nextObjectNumber++;
+    const imageObjectNumber = nextObjectNumber++;
+    const contentObjectNumber = nextObjectNumber++;
+    pageObjectNumbers.push(pageObjectNumber);
+    image.pageObjectNumber = pageObjectNumber;
+    image.imageObjectNumber = imageObjectNumber;
+    image.contentObjectNumber = contentObjectNumber;
+  }
+
+  objects[1] = Buffer.from("<< /Type /Catalog /Pages 2 0 R >>");
+  objects[2] = Buffer.from(
+    `<< /Type /Pages /Kids [${pageObjectNumbers.map((number) => `${number} 0 R`).join(" ")}] /Count ${images.length} >>`
+  );
+
+  for (const image of images) {
+    const { width, height } = jpegDimensions(image.buffer);
+    image.width = width;
+    image.height = height;
+    objects[image.pageObjectNumber] = Buffer.from(
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${width} ${height}] ` +
+      `/Resources << /XObject << /Im  ${image.imageObjectNumber} 0 R >> >> ` +
+      `/Contents ${image.contentObjectNumber} 0 R >>`
+    );
+    const content = Buffer.from(`q\n${width} 0 0 ${height} 0 0 cm\n/Im Do\nQ\n`);
+    objects[image.contentObjectNumber] = {
+      dictionary: Buffer.from(`<< /Length ${content.length} >>`),
+      stream: content,
+    };
+    objects[image.imageObjectNumber] = {
+      dictionary: Buffer.from(
+        `<< /Type /XObject /Subtype /Image /Width ${width} /Height ${height} ` +
+        `/ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${image.buffer.length} >>`
+      ),
+      stream: image.buffer,
+    };
+  }
+
+  const chunks = [Buffer.from("%PDF-1.4\n%\xff\xff\xff\xff\n")];
+  const offsets = Array(nextObjectNumber).fill(0);
+  let position = chunks[0].length;
+  for (let number = 1; number < nextObjectNumber; number += 1) {
+    offsets[number] = position;
+    const value = objects[number];
+    const body = Buffer.isBuffer(value)
+      ? Buffer.concat([value, Buffer.from("\n")])
+      : Buffer.concat([value.dictionary, Buffer.from("\nstream\n"), value.stream, Buffer.from("\nendstream\n")]);
+    const object = Buffer.concat([
+      Buffer.from(`${number} 0 obj\n`),
+      body,
+      Buffer.from("endobj\n"),
+    ]);
+    chunks.push(object);
+    position += object.length;
+  }
+
+  const xrefOffset = position;
+  const xref = [
+    `xref\n0 ${nextObjectNumber}\n`,
+    "0000000000 65535 f \n",
+    ...offsets.slice(1).map((offset) => `${String(offset).padStart(10, "0")} 00000 n \n`),
+    `trailer\n<< /Size ${nextObjectNumber} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF\n`,
+  ];
+  chunks.push(Buffer.from(xref.join("")));
+  return Buffer.concat(chunks);
+}
+
+async function getMangaDexPdf(chapterId) {
+  const server = await requestMangaDex(`/at-home/server/${chapterId}`);
+  const baseUrl = server?.baseUrl;
+  const chapter = server?.chapter;
+  // dataSaver keeps the source format normalized to JPEG, which lets the
+  // lightweight PDF writer embed pages without requiring an image library.
+  const useDataSaver = Array.isArray(chapter?.dataSaver) && chapter.dataSaver.length > 0;
+  const pageNames = useDataSaver ? chapter.dataSaver : chapter?.data || [];
+  const pagePath = useDataSaver ? "data-saver" : "data";
+  if (!baseUrl || !chapter?.hash || !pageNames.length) {
+    throw new Error("No readable pages were returned for this chapter.");
+  }
+
+  const selectedPages = pageNames.slice(0, MAX_PDF_PAGES);
+  const images = [];
+  let totalBytes = 0;
+  for (const pageName of selectedPages) {
+    const response = await fetch(
+      `${baseUrl}/${pagePath}/${chapter.hash}/${encodeURIComponent(pageName)}`,
+      {
+        headers: { "User-Agent": "Kelin-MD2/1.0" },
+        signal: AbortSignal.timeout(60_000),
+      }
+    );
+    if (!response.ok) throw new Error(`MangaDex page download failed (HTTP ${response.status}).`);
+    const buffer = Buffer.from(await response.arrayBuffer());
+    totalBytes += buffer.length;
+    if (totalBytes > MAX_PDF_BYTES) {
+      throw new Error("This chapter is too large to send as one PDF.");
+    }
+    images.push({ buffer });
+  }
+
+  return buildJpegPdf(images);
 }
 
 async function sendSearchResults(sock, msg, query, results) {
