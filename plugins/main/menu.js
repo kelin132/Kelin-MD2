@@ -39,7 +39,7 @@ const categoryTitles = {
 
 const PUBLIC_CATS = new Set([
   "main", "economy", "company", "guild", "games", "fun", "ai", "search",
-  "media", "utilities", "download", "group", "anime", "cards", "staff",
+  "media", "utilities", "download", "group", "anime", "cards",
   "naruto", "pokemon", "pets", "image", "dragonball",
 ]);
 
