@@ -12,7 +12,7 @@ import { getAkiraMemory } from "../../lib/akiraMemory.mjs";
 
 export default {
   name: "akira",
-  description: "Chat with Akira — your anime girl AI companion",
+  description: "Chat with Akira — a short, mixed-personality anime girl companion",
   category: "ai",
   usage: ".akira <message> | .akira reset | .akira info",
   aliases: ["ak"],
