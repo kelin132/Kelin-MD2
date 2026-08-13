@@ -1,3 +1,5 @@
+import { downloadContentFromMessage } from "@whiskeysockets/baileys";
+
 /**
  * Image helper — downloads a quoted WhatsApp image and uploads it to
  * tmpfiles.org so external APIs (popcat etc.) can access it by URL.
@@ -9,25 +11,7 @@
  * Throws if no quoted image is found.
  */
 export async function getQuotedImageUrl(sock, msg) {
-  const ctx     = msg.message?.extendedTextMessage?.contextInfo;
-  const quoted  = ctx?.quotedMessage;
-  if (!quoted) throw new Error("NOQUOTE");
-
-  const imgMsg =
-    quoted.imageMessage ||
-    quoted.viewOnceMessageV2?.message?.imageMessage ||
-    quoted.viewOnceMessage?.message?.imageMessage;
-
-  if (!imgMsg) throw new Error("NOIMAGE");
-
-  const buffer = await sock.downloadMediaMessage({
-    key: {
-      remoteJid:   msg.key.remoteJid,
-      id:          ctx.stanzaId,
-      participant: ctx.participant,
-    },
-    message: quoted,
-  });
+  const buffer = await getQuotedImageBuffer(sock, msg);
 
   // Upload to tmpfiles.org — returns a public URL valid for 60 minutes
   const form = new FormData();
@@ -49,27 +33,47 @@ export async function getQuotedImageUrl(sock, msg) {
   return url.replace("tmpfiles.org/", "tmpfiles.org/dl/");
 }
 
+function unwrapMessage(message) {
+  let current = message;
+  for (let i = 0; i < 4 && current; i += 1) {
+    const wrapped =
+      current.ephemeralMessage ||
+      current.viewOnceMessage ||
+      current.viewOnceMessageV2 ||
+      current.viewOnceMessageV2Extension;
+    if (!wrapped?.message) break;
+    current = wrapped.message;
+  }
+  return current;
+}
+
+function getContext(msg) {
+  const message = unwrapMessage(msg.message || {});
+  return (
+    message.extendedTextMessage?.contextInfo ||
+    message.imageMessage?.contextInfo ||
+    message.videoMessage?.contextInfo ||
+    message.documentMessage?.contextInfo ||
+    message.buttonsResponseMessage?.contextInfo ||
+    message.templateButtonReplyMessage?.contextInfo ||
+    message.listResponseMessage?.contextInfo ||
+    null
+  );
+}
+
 /** Return the raw buffer of a quoted image (for local canvas processing). */
 export async function getQuotedImageBuffer(sock, msg) {
-  const ctx     = msg.message?.extendedTextMessage?.contextInfo;
-  const quoted  = ctx?.quotedMessage;
+  const ctx = getContext(msg);
+  const quoted = unwrapMessage(ctx?.quotedMessage);
   if (!quoted) throw new Error("NOQUOTE");
 
-  const imgMsg =
-    quoted.imageMessage ||
-    quoted.viewOnceMessageV2?.message?.imageMessage ||
-    quoted.viewOnceMessage?.message?.imageMessage;
-
+  const imgMsg = quoted.imageMessage;
   if (!imgMsg) throw new Error("NOIMAGE");
 
-  return sock.downloadMediaMessage({
-    key: {
-      remoteJid:   msg.key.remoteJid,
-      id:          ctx.stanzaId,
-      participant: ctx.participant,
-    },
-    message: quoted,
-  });
+  const stream = await downloadContentFromMessage(imgMsg, "image");
+  const chunks = [];
+  for await (const chunk of stream) chunks.push(chunk);
+  return Buffer.concat(chunks);
 }
 
 export function noQuoteText() {
