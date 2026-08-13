@@ -128,26 +128,27 @@ ${cleanText(manga.synopsis, "No synopsis available.")}
 
 export default {
   name: "mangainfo",
-  aliases: ["mng"],
+  aliases: ["mng", "manga"],
   description: "Search manga information from MyAnimeList",
   category: "download",
-  usage: ".mangainfo <manga name>",
+  usage: ".manga info <manga name> | .mangainfo <manga name>",
   cooldown: 5,
 
   async run({ sock, msg, text }) {
     const jid = msg.key.remoteJid;
-    if (!text) {
+    const query = String(text || "").trim().replace(/^info(?:\s+|$)/i, "").trim();
+    if (!query) {
       return sock.sendMessage(
         jid,
         {
-          text: "❌ Provide a manga name.\n\nExample: .mangainfo One Piece",
+          text: "❌ Provide a manga name.\n\nExample: .manga info One Piece",
         },
         { quoted: msg }
       );
     }
 
     try {
-      const manga = await findManga(text.trim());
+      const manga = await findManga(query);
       if (!manga) {
         return sock.sendMessage(
           jid,
