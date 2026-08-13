@@ -1,4 +1,5 @@
 import { getUser, requireRegistration } from "./database.js";
+import { formatAccountBalance } from "./balanceFormat.js";
 
 export default {
   name: "ebal",
@@ -20,27 +21,24 @@ export default {
     const net   = cash + bank + vault;
     const loan  = user.loan?.active ? user.loan.amount : 0;
 
-    const levelPct = Math.min(100, Math.floor(((user.xp ?? 0) % 1000) / 10));
-    const bar      = "█".repeat(Math.floor(levelPct / 10)) + "░".repeat(10 - Math.floor(levelPct / 10));
+    const extraRows = [
+      `⭐ 𝗟𝗲𝘃𝗲𝗹   ୨୧ ${user.level ?? 1}`,
+      `🔮 𝗫𝗣      ୨୧ ${(user.xp ?? 0).toLocaleString()}`,
+      `🎒 𝗜𝘁𝗲𝗺𝘀   ୨୧ ${(user.inventory ?? []).length}`,
+    ];
+
+    if (loan > 0) extraRows.push(`⚠️ 𝗟𝗼𝗮𝗻    ୨୧ $${loan.toLocaleString()}`);
 
     await sock.sendMessage(msg.key.remoteJid, {
-      text:
-`💰 *FULL ACCOUNT BALANCE*
-
-👤 *${user.name || "User"}*  •  Level ${user.level ?? 1}
-[${bar}] ${levelPct}%
-
-━━━━━━━━━━━━━━━
-💰 Cash    : $${cash.toLocaleString()}
-🏦 Bank    : $${bank.toLocaleString()}
-🔒 Vault   : $${vault.toLocaleString()}
-🔮 Orbs    : ${orbs.toLocaleString()} 🔮
-💎 Diamonds: ${diamonds.toLocaleString()}
-━━━━━━━━━━━━━━━
-💎 Net Worth: $${net.toLocaleString()}
-${loan > 0 ? `\n⚠️ Active Loan : $${loan.toLocaleString()} (use *.loan pay*)` : ""}
-🎒 Items   : ${(user.inventory ?? []).length}
-⭐ XP      : ${(user.xp ?? 0).toLocaleString()}`,
+      text: formatAccountBalance({
+        wallet: cash,
+        bank,
+        gems: diamonds,
+        vault,
+        orbs,
+        netWorth: net,
+        extraRows,
+      }),
       mentions: [sender],
     }, { quoted: msg });
   },

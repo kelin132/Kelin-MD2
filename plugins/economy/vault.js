@@ -4,6 +4,7 @@
  * Deposits are free; withdrawals cost 5% fee.
  */
 import { getUser, saveUser, requireRegistration, addHistory } from "./database.js";
+import { formatAccountBalance } from "./balanceFormat.js";
 
 export default {
   name: "vault",
@@ -24,11 +25,14 @@ export default {
     // ── Balance ───────────────────────────────────────────────────────────
     if (!args[0] || ["bal", "balance", "check"].includes(sub)) {
       return sock.sendMessage(jid, {
-        text:
-          `🏦 *Your Vault*\n\n` +
-          `🔒 Vault Balance : $${(user.vault || 0).toLocaleString()}\n` +
-          `💰 Cash          : $${user.money.toLocaleString()}\n\n` +
-          `_Tip: Vault funds cannot be stolen by .rob_`
+        text: formatAccountBalance({
+          wallet: user.money,
+          bank: user.bank,
+          gems: user.diamonds,
+          vault: user.vault,
+          netWorth: (user.money || 0) + (user.bank || 0) + (user.vault || 0),
+          footerLines: ["Vault funds are protected", "Use .vault deposit or withdraw"],
+        })
       }, { quoted: msg });
     }
 
