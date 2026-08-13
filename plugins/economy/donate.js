@@ -6,6 +6,7 @@
  */
 import { getUser, saveUser, requireRegistration, isRegistered, addHistory } from "./database.js";
 import { parseAmount } from "./parseAmount.js";
+import { formatWalletTransfer } from "./walletMessage.js";
 
 function resolveTarget(msg) {
   // 1. Direct @mention
@@ -88,12 +89,15 @@ export default {
     await addHistory(targetJid, "donate_in",   amount, `Received $${amount.toLocaleString()} from ${giver.name}`);
 
     await sock.sendMessage(jid, {
-      text:
-        `✅ *Donation Sent!*\n\n` +
-        `💸 Amount     : $${amount.toLocaleString()}\n` +
-        `👤 Recipient  : @${targetJid.split("@")[0]} (${receiver.name})\n` +
-        `💰 Your Balance: $${giver.money.toLocaleString()}`,
-      mentions: [targetJid],
+      text: formatWalletTransfer({
+        action: "DONATION SENT",
+        amount,
+        senderJid: sender,
+        targetJid,
+        receiverName: receiver.name,
+        balance: giver.money,
+      }),
+      mentions: [sender, targetJid],
     }, { quoted: msg });
   },
 };

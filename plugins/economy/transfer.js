@@ -1,12 +1,13 @@
 import { getUser, saveUser, isRegistered, requireRegistration } from "./database.js";
 import { parseAmount } from "./parseAmount.js";
+import { formatWalletTransfer } from "./walletMessage.js";
 
 export default {
   name: "transfer",
   description: "Send money to another user",
   category: "economy",
   usage: ".transfer @user <amount>",
-  aliases: ["send", "pay", "give"],
+  aliases: ["send", "pay"],
   cooldown: 10,
 
   async run({ sock, msg, sender, args }) {
@@ -50,10 +51,15 @@ export default {
     await saveUser(sender, sender_user);
     await saveUser(mentionedJid, target_user);
 
-    const targetTag = mentionedJid.split("@")[0];
-
     await sock.sendMessage(msg.key.remoteJid, {
-      text: `✅ *Transfer Successful!*\n\n💸 Sent   : $${amount.toLocaleString()}\n👤 To     : @${targetTag}\n💰 Balance: $${sender_user.money.toLocaleString()}`,
+      text: formatWalletTransfer({
+        action: "TRANSFER SENT",
+        amount,
+        senderJid: sender,
+        targetJid: mentionedJid,
+        receiverName: target_user.name,
+        balance: sender_user.money,
+      }),
       mentions: [sender, mentionedJid]
     }, { quoted: msg });
   }

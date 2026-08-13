@@ -3,7 +3,8 @@ export default {
   description: "Check if the bot is responsive",
   category: "main",
   usage: ".ping",
-  aliases: ["p"],
+  // Keep `.p` reserved for the economy profile shortcut.
+  aliases: [],
   cooldown: 3,
   isOwner: false,
   isAdmin: false,
