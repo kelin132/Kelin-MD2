@@ -1,6 +1,6 @@
 import { getUser, saveUser, requireRegistration } from "./database.js";
 import { getQuotedImageBuffer, noQuoteText } from "../image/_imageHelper.js";
-import { uploadToCatbox } from "../../lib/catboxUpload.mjs";
+import { encodeProfileBackground } from "../../lib/profileBackground.mjs";
 
 const MAX_BACKGROUND_BYTES = 8 * 1024 * 1024;
 
@@ -43,17 +43,12 @@ export default {
     }
 
     try {
-      const url = await uploadToCatbox(buffer, `profile-bg-${Date.now()}.jpg`);
-      if (!/^https:\/\/files\.catbox\.moe\/[\w.-]+$/i.test(url)) {
-        throw new Error("invalid upload URL");
-      }
-
       const user = await getUser(sender);
-      user.profileBackground = url;
+      user.profileBackground = encodeProfileBackground(buffer);
       await saveUser(sender, user);
       return reply("✅ Profile background updated. Run *.profile* to see it.");
     } catch (error) {
-      console.warn("[bg] image upload failed:", error.message);
+      console.warn("[bg] background save failed:", error.message);
       return reply("❌ I couldn't save that background right now. Please try again in a moment.");
     }
   },
