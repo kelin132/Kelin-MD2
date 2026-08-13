@@ -53,7 +53,9 @@ export default {
       await sock.sendMessage(jid, { text: '⏳ Downloading Instagram media…' }, { quoted: msg });
 
       const info = await getInstagramInfo(url.trim());
-      const isVideo = !!(info.duration > 0 || /reel|tv/i.test(url));
+      const isVideo = info.mediaType === 'video' ||
+        !!(info.videoUrl && info.duration > 0) ||
+        /reel|tv/i.test(url);
 
       const caption =
         `📥 *${(info.title || 'Instagram Post').slice(0, 200)}*\n` +
