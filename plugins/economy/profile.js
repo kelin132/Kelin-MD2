@@ -70,6 +70,9 @@ export default {
     const daysActive = user.registeredAt
       ? Math.max(0, Math.floor((Date.now() - new Date(user.registeredAt).getTime()) / 86400000))
       : 0;
+    // Reach is supported as a stored value when another system provides it.
+    // Existing accounts get a useful, stable fallback based on active days.
+    const reach = Number.isFinite(Number(user.reach)) ? Number(user.reach) : daysActive;
     const displayName = registeredName.toUpperCase();
     const caption =
 `╭─「 🌸 𝗣𝗥𝗢𝗙𝗜𝗟𝗘 」─╮
@@ -78,6 +81,7 @@ export default {
 │ ${role.toUpperCase()} • ${roleLabel.toUpperCase()}
 │
 │ ⟡ 𝗦𝗧𝗔𝗧𝗨𝗦
+│ ├─ 📣 𝗥𝗘𝗔𝗖𝗛 ── ${reach}
 │ ├─ 🌟 𝗔𝗖𝗧𝗜𝗩𝗘 ─ ${daysActive}
 │ ├─ 🃏 𝗖𝗔𝗥𝗗𝗦 ── ${cardsOwned}
 │ ├─ 🎮 𝗚𝗔𝗠𝗘𝗦 ── ${gamesPlayed}
@@ -110,6 +114,7 @@ export default {
         level,
         xp,
         xpTarget:     xpForLevel(level),
+        reach,
         wallet:       user.money    ?? 0,
         bank:         user.bank     ?? 0,
         bio:          user.bio      || "No bio set.",
@@ -119,6 +124,7 @@ export default {
         items:        user.inventory?.length ?? 0,
         transactions: user.history?.length   ?? 0,
         profileImage: profilePic,
+        profileBackground: user.profileBackground || null,
         levelRole,
         earnedRoles,
       });

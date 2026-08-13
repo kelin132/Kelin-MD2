@@ -14,6 +14,7 @@ export const DEFAULTS = {
   level:         1,
   xp:            0,
   bio:           "",
+  profileBackground: null,
   age:           null,
   inventory:     [],
   history:       [],          // last 10 transactions [{type,amount,desc,ts}]
