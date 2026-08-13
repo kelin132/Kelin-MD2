@@ -62,6 +62,13 @@ export default {
     const levelRole   = getLevelRole(level);
     const earnedRoles = getAllEarnedRoles(level);
     const roleLabel   = getLevelRoleLabel(level);
+    const roleShort = {
+      Owner: "OWNER",
+      Moderator: "MOD",
+      Staff: "STAFF",
+      Premium: "PREMIUM",
+      Member: "MEMBER",
+    }[role] || role.toUpperCase();
 
     const lastDaily       = user.lastDaily ?? 0;
     const hoursSinceDaily = (Date.now() - lastDaily) / 36e5;
@@ -75,36 +82,32 @@ export default {
     const reach = Number.isFinite(Number(user.reach)) ? Number(user.reach) : daysActive;
     const displayName = registeredName.toUpperCase();
     const caption =
-`╭─「 🌸 𝗣𝗥𝗢𝗙𝗜𝗟𝗘 」─╮
+`╭━━━〔 🌸 𝗣𝗥𝗢𝗙𝗜𝗟𝗘 〕━━━╮
 │
-│ ${displayName} 「 ${registeredName} 」
-│ ${role.toUpperCase()} • ${roleLabel.toUpperCase()}
+│ ${displayName} • ${roleShort}
+│ ${roleLabel}
 │
-│ ⟡ 𝗦𝗧𝗔𝗧𝗨𝗦
-│ ├─ 📣 𝗥𝗘𝗔𝗖𝗛 ── ${reach}
-│ ├─ 🌟 𝗔𝗖𝗧𝗜𝗩𝗘 ─ ${daysActive}
-│ ├─ 🃏 𝗖𝗔𝗥𝗗𝗦 ── ${cardsOwned}
-│ ├─ 🎮 𝗚𝗔𝗠𝗘𝗦 ── ${gamesPlayed}
-│ ├─ 💸 𝗖𝗔𝗦𝗜𝗡𝗢 ── ${casinoGames}
-│ └─ 🐾 𝗣𝗢𝗞𝗘𝗠𝗢𝗡 ─ ${pokemonCount}
+│ ── ✦ 𝗦𝗧𝗔𝗧𝗦 ✦ ──
+│ 🌟 Active ${daysActive}
+│ 🃏 Cards ${cardsOwned}
+│ 🎮 Games ${gamesPlayed}
+│ 🐾 Pokémon ${pokemonCount}
 │
-│ ⟡ 𝗟𝗘𝗩𝗘𝗟
-│ ├─ ⭐ 𝗟𝗩𝗟 ── ${level}
-│ └─ 📚 𝗫𝗣 ─── ${xp.toLocaleString()} / ${xpForLevel(level).toLocaleString()}
+│ ── ✦ 𝗟𝗘𝗩𝗘𝗟 ✦ ──
+│ ⭐ Lv.${level}
+│ 📚 ${xp.toLocaleString()}/${xpForLevel(level).toLocaleString()} XP
 │
-│ ⟡ 𝗪𝗘𝗔𝗟𝗧𝗛
-│ ├─ 💰 $${(user.money ?? 0).toLocaleString()}
-│ ├─ 🏦 $${(user.bank ?? 0).toLocaleString()}
-│ ├─ 💎 ${(
-  user.diamonds ?? 0
-).toLocaleString()}
-│ └─ 🎒 ${user.inventory?.length ?? 0}
+│ ── ✦ 𝗪𝗘𝗔𝗟𝗧𝗛 ✦ ──
+│ 💰 $${(user.money ?? 0).toLocaleString()}
+│ 🏦 $${(user.bank ?? 0).toLocaleString()}
+│ 💎 ${(user.diamonds ?? 0).toLocaleString()}
+│ 🎒 ${user.inventory?.length ?? 0}
 │
-│ 𝗕𝗜𝗢 「 ${user.bio || "None"} 」
-│ 𝗖𝗟𝗔𝗡 「 ${user.guild || "None"} 」
-│ 𝗝𝗢𝗜𝗡𝗘𝗗 「 ${fmtDate(user.registeredAt).toUpperCase()} 」
+│ 📝 ${user.bio || "None"}
+│ 🏰 Guild: ${user.guild || "None"}
+│ 📅 Joined: ${fmtDate(user.registeredAt)}
 │
-╰─「 ✦ 𝗘𝗡𝗗 ✦ 」─╯`;
+╰━━━━━━━━━━━━━━━━━━━━━━╯`;
 
     try {
       const imgBuffer = await generateProfileImage({
@@ -127,6 +130,11 @@ export default {
         profileBackground: user.profileBackground || null,
         levelRole,
         earnedRoles,
+        daysActive,
+        cards: cardsOwned,
+        games: gamesPlayed,
+        pokemon: pokemonCount,
+        diamonds: user.diamonds ?? 0,
       });
 
       await sock.sendMessage(jid, { image: imgBuffer, caption }, { quoted: msg });
