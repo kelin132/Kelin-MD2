@@ -3,10 +3,11 @@
 
 import { getWild, clearWild } from "../../lib/pokemon/wildState.mjs";
 import { getTrainer } from "../../lib/pokemon/players.mjs";
-import { getTrainerParty, getPokemonXpNeeded } from "../../lib/pokemon/pokemonDb.mjs";
+import { getTrainerParty } from "../../lib/pokemon/pokemonDb.mjs";
 import { pickLeadFromParty } from "../../lib/pokemon/players.mjs";
 import { startWildBattle, hasBattle } from "../../lib/pokemon/battleState.mjs";
 import { generateBattleScene } from "../../lib/pokemon/canvas.mjs";
+import { TYPE_EMOJIS } from "../../lib/pokemon/gameLogic.mjs";
 
 export default {
   name: "catch",
@@ -69,27 +70,38 @@ export default {
       });
     } catch {}
 
+    const playerName = lead.displayName || lead.name;
+    const wildName = wild.pokemon.displayName || wild.pokemon.name;
+    const playerType = lead.primaryType || (lead.types || [])[0] || "???";
+    const wildType = wild.pokemon.primaryType || (wild.pokemon.types || [])[0] || "???";
+    const prettyType = (type) => String(type).replace(/^./, (char) => char.toUpperCase());
+    const playerTypeEmoji = TYPE_EMOJIS[playerType.toLowerCase()] || "⭐";
+    const wildTypeEmoji = TYPE_EMOJIS[wildType.toLowerCase()] || "⭐";
+    const playerMoves = (lead.moves || []).length;
+    const wildMoves = (wild.pokemon.moves || []).length;
     const caption =
-`⚔️ *BATTLE STARTED!*
+`⚔️ Your Turn! ⚔️
 
-🐉 Your Pokémon: *${lead.displayName || lead.name}* Lv.${lead.level}
-❤️ HP: ${lead.hp}/${lead.maxHp}
-✨ XP: ${lead.xp || 0}/${getPokemonXpNeeded(lead.level) || "MAX LEVEL"}
+@${sender.split("@")[0]}'s ${playerTypeEmoji} ${playerName}
+❤️ ${lead.hp}/${lead.maxHp} • ⭐ Lv.${lead.level} • 🎯 ${playerMoves} Moves • ${playerTypeEmoji} ${prettyType(playerType)}
 
-🐾 Wild: *${wild.pokemon.displayName || wild.pokemon.name}* Lv.${wild.pokemon.level}
-❤️ HP: ${wild.pokemon.hp}/${wild.pokemon.maxHp}
+🆚
 
-*Battle Commands:*
-⚔️ \`.battle fight\` — See your moves
-⚔️ \`.battle fight <1-6>\` — Use a move
-🎾 \`.battle pokeball <type>\` — Throw a Pokéball
-💊 \`.battle item <item>\` — Use a heal item
-🏃 \`.battle run\` — Flee from battle`;
+${wildTypeEmoji} Wild ${wildName}
+❤️ ${wild.pokemon.hp}/${wild.pokemon.maxHp} • ⭐ Lv.${wild.pokemon.level} • 🎯 ${wildMoves} Moves • ${wildTypeEmoji} ${prettyType(wildType)}
+
+━━━━━━━━━━━━━━━━━━━━
+
+⚔️ Fight → \`.battle fight <1-4>\`
+🎒 Bag → \`.battle items\`
+🔄 Switch → \`.battle switch\`
+🔴 Pokéball → \`.battle pokeball (type)\`
+🏃 Run → \`.battle run\``;
 
     if (sceneBuffer) {
-      await sock.sendMessage(jid, { image: sceneBuffer, caption }, { quoted: msg });
+      await sock.sendMessage(jid, { image: sceneBuffer, caption, mentions: [sender] }, { quoted: msg });
     } else {
-      await sock.sendMessage(jid, { text: caption }, { quoted: msg });
+      await sock.sendMessage(jid, { text: caption, mentions: [sender] }, { quoted: msg });
     }
   },
 };

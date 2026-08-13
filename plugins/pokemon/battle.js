@@ -68,18 +68,18 @@ async function sendBattlePrompt(sock, jid, msg, myPokemon, enemyPokemon, battleT
   const enemyTypeEmoji = TYPE_EMOJIS[enemyType?.toLowerCase()] || "⭐";
   const myMovesCt  = (myPokemon.moves    || []).length;
   const enmMovesCt = (enemyPokemon.moves || []).length;
+  const prettyType = (type) => String(type || "???").replace(/^./, (char) => char.toUpperCase());
 
   const trainerNum  = trainerJid ? trainerJid.split("@")[0] : null;
-  const addressLine = trainerNum ? `@${trainerNum}` : (turnName || "Trainer");
-
-  const myLine = trainerNum
-    ? `@${trainerNum}'s ${myTypeEmoji} *${myName}*\n(❤️ HP: ${myPokemon.hp} / ${myPokemon.maxHp} | ⭐ Level: ${myPokemon.level} | 🎯 Moves: ${myMovesCt} | ${myTypeEmoji} Type: ${myType})`
-    : `${turnName || "Trainer"}'s ${myTypeEmoji} *${myName}*\n(❤️ HP: ${myPokemon.hp} / ${myPokemon.maxHp} | ⭐ Level: ${myPokemon.level} | 🎯 Moves: ${myMovesCt} | ${myTypeEmoji} Type: ${myType})`;
+  const trainerLabel = trainerNum ? `@${trainerNum}` : (turnName || "Trainer");
+  const myLine = `${trainerLabel}'s ${myTypeEmoji} ${myName}
+❤️ ${myPokemon.hp}/${myPokemon.maxHp} • ⭐ Lv.${myPokemon.level} • 🎯 ${myMovesCt} Moves • ${myTypeEmoji} ${prettyType(myType)}`;
 
   const enemyLabel = isWild ? `Wild` : `Opponent`;
-  const enemyLine  = `${enemyTypeEmoji} ${enemyLabel} *${enemyName}*\n(❤️ HP: ${enemyPokemon.hp} / ${enemyPokemon.maxHp} | ⭐ Level: ${enemyPokemon.level} | 🎯 Moves: ${enmMovesCt} | ${enemyTypeEmoji} Type: ${enemyType})`;
+  const enemyLine  = `${enemyTypeEmoji} ${enemyLabel} ${enemyName}
+❤️ ${enemyPokemon.hp}/${enemyPokemon.maxHp} • ⭐ Lv.${enemyPokemon.level} • 🎯 ${enmMovesCt} Moves • ${enemyTypeEmoji} ${prettyType(enemyType)}`;
 
-  const ballLine  = isWild ? `\n• 🔴 Throw Poké Ball\n  ↳ \`.battle pokeball (type)\`` : "";
+  const ballLine  = isWild ? `\n🔴 Pokéball → \`.battle pokeball (type)\`` : "";
   const mentions  = trainerJid ? [trainerJid] : [];
 
   await sock.sendMessage(jid, {
@@ -88,25 +88,16 @@ async function sendBattlePrompt(sock, jid, msg, myPokemon, enemyPokemon, battleT
 
 ${myLine}
 
-━━━━━━━━━━━━━━━━━━━━
+🆚
 
 ${enemyLine}
 
 ━━━━━━━━━━━━━━━━━━━━
 
-Select your next action, ${addressLine}.
-
-• ⚔️ Fight
-  ↳ \`.battle fight <1-4>\`
-
-• 🎒 Open Bag
-  ↳ \`.battle items\`
-
-• 🔄 Switch Pokémon
-  ↳ \`.battle switch\`${ballLine}
-
-• 🏃 Escape Battle
-  ↳ \`.battle run\``,
+⚔️ Fight → \`.battle fight <1-4>\`
+🎒 Bag → \`.battle items\`
+🔄 Switch → \`.battle switch\`${ballLine}
+🏃 Run → \`.battle run\``,
     mentions,
   }, { quoted: msg });
 }
