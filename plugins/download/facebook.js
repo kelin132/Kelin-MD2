@@ -121,7 +121,7 @@ Supported formats:
         video:    { url: video },
         mimetype: "video/mp4",
         fileName: `${title}.mp4`,
-        caption:  `🎬 *${title}*\n\n✨ *KELIN MD*`,
+        caption:  `🎬 *${title}*`,
       }, { quoted: msg });
 
     } catch (err) {

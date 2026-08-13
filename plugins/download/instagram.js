@@ -59,8 +59,7 @@ export default {
 
       const caption =
         `📥 *${(info.title || 'Instagram Post').slice(0, 200)}*\n` +
-        `👤 *${info.author}*\n` +
-        `✨ *Powered by KELIN MD*`;
+        `👤 *${info.author}*`;
 
       if (isVideo) {
         const { filePath, cleanup } = await downloadInstagramVideo(url.trim());

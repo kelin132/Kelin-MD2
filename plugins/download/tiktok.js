@@ -74,7 +74,7 @@ export default {
       await sock.sendMessage(jid, {
         video:    { url: dl },
         mimetype: "video/mp4",
-        caption:  `🎵 *${title}*\n\n✨ Downloaded by *AKIRA*`,
+        caption:  `🎵 *${title}*`,
       }, { quoted: msg });
 
     } catch (err) {
