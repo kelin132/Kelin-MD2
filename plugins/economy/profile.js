@@ -6,6 +6,30 @@ import { countTrainerPokemon } from "../../lib/pokemon/pokemonDb.mjs";
 
 const xpForLevel = (level) => level * 100;
 
+async function sendProfileFallback({ sock, jid, msg, caption, profilePic, target }) {
+  if (profilePic) {
+    try {
+      await sock.sendMessage(
+        jid,
+        { image: { url: profilePic }, caption },
+        { quoted: msg }
+      );
+      return;
+    } catch (fallbackError) {
+      console.error(
+        "[profile] Avatar fallback delivery failed:",
+        fallbackError.stack || fallbackError.message || fallbackError
+      );
+    }
+  }
+
+  await sock.sendMessage(
+    jid,
+    { text: caption, mentions: [target] },
+    { quoted: msg }
+  );
+}
+
 function fmtDate(iso) {
   if (!iso) return "Unknown";
   try {
@@ -109,8 +133,9 @@ export default {
 │
 ╰━━━━━━━━━━━━━━━━━━━━━━╯`;
 
+    let imgBuffer;
     try {
-      const imgBuffer = await generateProfileImage({
+      imgBuffer = await generateProfileImage({
         username:     registeredName,
         tag,
         role,
@@ -137,10 +162,23 @@ export default {
         diamonds: user.diamonds ?? 0,
       });
 
+    } catch (err) {
+      console.error(
+        "[profile] Canvas generation failed:",
+        err.stack || err.message || err
+      );
+      await sendProfileFallback({ sock, jid, msg, caption, profilePic, target });
+      return;
+    }
+
+    try {
       await sock.sendMessage(jid, { image: imgBuffer, caption }, { quoted: msg });
     } catch (err) {
-      console.error("[profile] Canvas error:", err.message);
-      await sock.sendMessage(jid, { text: caption, mentions: [target] }, { quoted: msg });
+      console.error(
+        "[profile] Canvas image delivery failed:",
+        err.stack || err.message || err
+      );
+      await sendProfileFallback({ sock, jid, msg, caption, profilePic, target });
     }
   },
 };
