@@ -86,6 +86,8 @@ export default {
     const levelRole   = getLevelRole(level);
     const earnedRoles = getAllEarnedRoles(level);
     const roleLabel   = getLevelRoleLabel(level);
+    const guildName   = String(user.guildName || user.guild || "None").trim() || "None";
+    const joinedDate  = fmtDate(user.registeredAt);
     const roleShort = {
       Owner: "OWNER",
       Moderator: "MOD",
@@ -111,25 +113,12 @@ export default {
 │ ${displayName} • ${roleShort}
 │ ${roleLabel}
 │
-│ ── ✦ 𝗦𝗧𝗔𝗧𝗦 ✦ ──
-│ 🌟 Active ${daysActive}
-│ 🃏 Cards ${cardsOwned}
-│ 🎮 Games ${gamesPlayed}
-│ 🐾 Pokémon ${pokemonCount}
-│
-│ ── ✦ 𝗟𝗘𝗩𝗘𝗟 ✦ ──
 │ ⭐ Lv.${level}
 │ 📚 ${xp.toLocaleString()}/${xpForLevel(level).toLocaleString()} XP
 │
-│ ── ✦ 𝗪𝗘𝗔𝗟𝗧𝗛 ✦ ──
-│ 💰 $${(user.money ?? 0).toLocaleString()}
-│ 🏦 $${(user.bank ?? 0).toLocaleString()}
-│ 💎 ${(user.diamonds ?? 0).toLocaleString()}
-│ 🎒 ${user.inventory?.length ?? 0}
-│
 │ 📝 ${user.bio || "None"}
-│ 🏰 Guild: ${user.guild || "None"}
-│ 📅 Joined: ${fmtDate(user.registeredAt)}
+│ ♜ Guild: ${guildName}
+│ ✦ Joined: ${joinedDate}
 │
 ╰━━━━━━━━━━━━━━━━━━━━━━╯`;
 
@@ -146,8 +135,8 @@ export default {
         wallet:       user.money    ?? 0,
         bank:         user.bank     ?? 0,
         bio:          user.bio      || "No bio set.",
-        guild:        user.guild    || null,
-        joined:       fmtDate(user.registeredAt),
+        guild:        guildName,
+        joined:       joinedDate,
         streak,
         items:        user.inventory?.length ?? 0,
         transactions: user.history?.length   ?? 0,
