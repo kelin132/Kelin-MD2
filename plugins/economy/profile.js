@@ -118,8 +118,7 @@ export default {
 │ ── ✦ 𝗪𝗘𝗔𝗟𝗧𝗛 ✦ ──
 │ 💰 $${(user.money ?? 0).toLocaleString()}
 │ 🏦 $${(user.bank ?? 0).toLocaleString()}
-│ 💎 ${(user.diamonds ?? 0).toLocaleString()}
-│ > use *.bg* to set your profile background 
+│ 💎 ${(user.diamonds ?? 0).toLocaleString()} 
 ╰━━━━━━━━━━━━━━━━━━━━━━╯`;
 
     let imgBuffer;
