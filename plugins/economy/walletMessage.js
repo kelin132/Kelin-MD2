@@ -19,7 +19,7 @@ export function formatWalletTransfer({
     : tagFor(targetJid);
 
   return [
-    "╭━━━〔 💳 KELIN WALLET 〕━━━╮",
+    "╭━━━〔 🔖 WALLET 〕━━━╮",
     "┃",
     `┃  ✅ ${action}`,
     "┃  ─────────────────────",
