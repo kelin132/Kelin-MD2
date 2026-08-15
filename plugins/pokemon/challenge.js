@@ -12,6 +12,27 @@ import { generateBattleScene } from "../../lib/pokemon/canvas.mjs";
 import { generateChallengeCanvas } from "../../lib/pokemon/challengeCanvas.mjs";
 import { resolveLid } from "../../lib/permissions.mjs";
 
+function normaliseLabel(value) {
+  return String(value ?? "").trim().replace(/^@+/, "").toLowerCase();
+}
+
+async function findGroupMemberByLabel(sock, chatJid, value) {
+  const label = normaliseLabel(value);
+  if (!label || !chatJid?.endsWith("@g.us")) return null;
+
+  try {
+    const metadata = await sock.groupMetadata(chatJid);
+    const participant = metadata.participants?.find((entry) =>
+      [entry.notify, entry.name, entry.vname, entry.displayName]
+        .filter(Boolean)
+        .some((name) => normaliseLabel(name) === label),
+    );
+    return participant?.id || null;
+  } catch {
+    return null;
+  }
+}
+
 export default {
   name: "challenge",
   aliases: ["ch", "pvp", "pokebattle"],
@@ -130,8 +151,12 @@ export default {
     const resolvedRawTargetJid = rawTargetJid?.endsWith("@lid")
       ? await resolveLid(rawTargetJid, sock, jid).then((digits) => digits ? `${digits}@s.whatsapp.net` : null)
       : rawTargetJid;
-    const typedTarget = !resolvedRawTargetJid ? await findTrainerByUsername(args.join(" ")) : null;
-    const targetJid = resolvedRawTargetJid || typedTarget?.jid || null;
+    const typedLabel = !resolvedRawTargetJid ? args.join(" ") : "";
+    const typedTarget = typedLabel ? await findTrainerByUsername(typedLabel) : null;
+    const groupTarget = !resolvedRawTargetJid && !typedTarget
+      ? await findGroupMemberByLabel(sock, jid, typedLabel)
+      : null;
+    const targetJid = resolvedRawTargetJid || typedTarget?.jid || groupTarget || null;
 
     if (!targetJid) {
       return sock.sendMessage(jid, {
