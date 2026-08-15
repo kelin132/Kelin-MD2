@@ -1,5 +1,7 @@
+import { getProfilePic } from "../../lib/profileGen.mjs";
 import {
   setWebsitePassword,
+  syncWebsiteProfilePicture,
   WEBSITE_PASSWORD_MAX_LENGTH,
   WEBSITE_PASSWORD_MIN_LENGTH,
 } from "../../lib/websiteAuth.mjs";
@@ -34,6 +36,8 @@ export default {
 
     try {
       await setWebsitePassword(sender, password);
+      const profilePictureUrl = await getProfilePic(sock, sender).catch(() => null);
+      if (profilePictureUrl) await syncWebsiteProfilePicture(sender, profilePictureUrl);
       await sock.sendMessage(chatId, {
         text: [
           "✅ *AIDORU website password saved.*",
