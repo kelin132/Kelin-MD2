@@ -2,7 +2,7 @@
 // Challenge another trainer to a Pokémon battle.
 // Target can be supplied by @mention OR by replying to their message.
 
-import { findTrainerByUsername, getTrainer, pickLeadFromParty } from "../../lib/pokemon/players.mjs";
+import { getTrainer, pickLeadFromParty } from "../../lib/pokemon/players.mjs";
 import { getTrainerParty, getPokemonXpNeeded } from "../../lib/pokemon/pokemonDb.mjs";
 import {
   setPendingChallenge, getIncomingChallenge,
@@ -10,35 +10,13 @@ import {
 } from "../../lib/pokemon/battleState.mjs";
 import { generateBattleScene } from "../../lib/pokemon/canvas.mjs";
 import { generateChallengeCanvas } from "../../lib/pokemon/challengeCanvas.mjs";
-import { resolveLid } from "../../lib/permissions.mjs";
-
-function normaliseLabel(value) {
-  return String(value ?? "").trim().replace(/^@+/, "").toLowerCase();
-}
-
-async function findGroupMemberByLabel(sock, chatJid, value) {
-  const label = normaliseLabel(value);
-  if (!label || !chatJid?.endsWith("@g.us")) return null;
-
-  try {
-    const metadata = await sock.groupMetadata(chatJid);
-    const participant = metadata.participants?.find((entry) =>
-      [entry.notify, entry.name, entry.vname, entry.displayName]
-        .filter(Boolean)
-        .some((name) => normaliseLabel(name) === label),
-    );
-    return participant?.id || null;
-  } catch {
-    return null;
-  }
-}
 
 export default {
   name: "challenge",
   aliases: ["ch", "pvp", "pokebattle"],
   description: "Challenge a user to a Pokémon battle, or accept an incoming challenge",
   category: "pokemon",
-  usage: ".ch @user  OR  .ch <trainer username>  OR  reply to their message then .ch  |  .ch accept",
+  usage: ".ch @user  OR  reply to their message then .ch  |  .ch accept",
 
   async run({ sock, msg, sender, args, text }) {
     const jid = msg.key.remoteJid;
@@ -147,29 +125,19 @@ export default {
         ? msg.quoted?.key?.remoteJid
         : null);
 
-    const rawTargetJid = mentionedJid || quotedSender || null;
-    const resolvedRawTargetJid = rawTargetJid?.endsWith("@lid")
-      ? await resolveLid(rawTargetJid, sock, jid).then((digits) => digits ? `${digits}@s.whatsapp.net` : null)
-      : rawTargetJid;
-    const typedLabel = !resolvedRawTargetJid ? args.join(" ") : "";
-    const typedTarget = typedLabel ? await findTrainerByUsername(typedLabel) : null;
-    const groupTarget = !resolvedRawTargetJid && !typedTarget
-      ? await findGroupMemberByLabel(sock, jid, typedLabel)
-      : null;
-    const targetJid = resolvedRawTargetJid || typedTarget?.jid || groupTarget || null;
+    const targetJid = mentionedJid || quotedSender || null;
 
     if (!targetJid) {
       return sock.sendMessage(jid, {
         text:
           "Usage:\n" +
           "• *.ch @user* — mention the trainer you want to challenge\n" +
-          "• *.ch <trainer username>* — challenge by their trainer username\n" +
           "• Reply to their message then *.ch*\n" +
           "• *.ch accept* — accept a challenge sent to you",
       }, { quoted: msg });
     }
 
-    if (targetJid === sender || targetJid.split("@")[0].split(":")[0] === sender.split("@")[0].split(":")[0]) {
+    if (targetJid === sender) {
       return sock.sendMessage(jid, { text: "❌ You can't challenge yourself!" }, { quoted: msg });
     }
 
@@ -178,13 +146,12 @@ export default {
       return sock.sendMessage(jid, { text: "❌ Start your journey first! Use *.startjourney*" }, { quoted: msg });
     }
 
-    const [opponent, party] = await Promise.all([
-      getTrainer(targetJid),
-      getTrainerParty(sender),
-    ]);
+    const opponent = await getTrainer(targetJid);
     if (!opponent) {
       return sock.sendMessage(jid, { text: "❌ That trainer hasn't started their Pokémon journey yet!" }, { quoted: msg });
     }
+
+    const party = await getTrainerParty(sender);
     const lead  = pickLeadFromParty(challenger, party);
     if (!lead || lead.hp <= 0) {
       return sock.sendMessage(jid, {
