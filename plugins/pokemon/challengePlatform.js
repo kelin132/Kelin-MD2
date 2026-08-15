@@ -11,7 +11,7 @@ export default {
   aliases: ["chp"],
   description: "Create a shared AIDORU web battle room for another trainer",
   category: "pokemon",
-  usage: ".chp @user  OR  reply to their message then .chp",
+  usage: ".chp @user  OR  .chp <trainer username>  OR  reply to their message then .chp",
 
   async run({ sock, msg, sender, args }) {
     const jid = msg.key.remoteJid;
@@ -40,6 +40,7 @@ export default {
           text:
             "Usage:\n" +
             "• *.chp @user* — create a web battle room for that trainer\n" +
+            "• *.chp <trainer username>* — create a room by trainer username\n" +
             "• Reply to their message then *.chp*",
         },
         { quoted: msg },

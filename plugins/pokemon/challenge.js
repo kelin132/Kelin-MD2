@@ -17,7 +17,7 @@ export default {
   aliases: ["ch", "pvp", "pokebattle"],
   description: "Challenge a user to a Pokémon battle, or accept an incoming challenge",
   category: "pokemon",
-  usage: ".ch @user  OR  reply to their message then .ch  |  .ch accept",
+  usage: ".ch @user  OR  .ch <trainer username>  OR  reply to their message then .ch  |  .ch accept",
 
   async run({ sock, msg, sender, args, text }) {
     const jid = msg.key.remoteJid;
@@ -138,6 +138,7 @@ export default {
         text:
           "Usage:\n" +
           "• *.ch @user* — mention the trainer you want to challenge\n" +
+          "• *.ch <trainer username>* — challenge by their trainer username\n" +
           "• Reply to their message then *.ch*\n" +
           "• *.ch accept* — accept a challenge sent to you",
       }, { quoted: msg });
