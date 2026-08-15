@@ -10,6 +10,40 @@ function normaliseLabel(value) {
   return String(value ?? "").trim().replace(/^@+/, "").toLowerCase();
 }
 
+function getContextInfo(msg) {
+  const message = msg.message || {};
+  return (
+    message.extendedTextMessage?.contextInfo ||
+    message.imageMessage?.contextInfo ||
+    message.videoMessage?.contextInfo ||
+    message.audioMessage?.contextInfo ||
+    message.documentMessage?.contextInfo ||
+    message.buttonsResponseMessage?.contextInfo ||
+    message.templateButtonReplyMessage?.contextInfo ||
+    null
+  );
+}
+
+function jidCandidates(jid) {
+  const value = String(jid || "");
+  if (!value) return [];
+  const [local, domain] = value.split("@", 2);
+  const bareLocal = (local || "").split(":", 1)[0];
+  const candidates = [value];
+  if (domain === "s.whatsapp.net" && bareLocal) {
+    candidates.push(`${bareLocal}@s.whatsapp.net`);
+  }
+  return [...new Set(candidates)];
+}
+
+async function findTrainerForJid(jid) {
+  for (const candidate of jidCandidates(jid)) {
+    const trainer = await getTrainer(candidate);
+    if (trainer) return trainer;
+  }
+  return null;
+}
+
 async function findGroupMemberByLabel(sock, chatJid, value) {
   const label = normaliseLabel(value);
   if (!label || !chatJid?.endsWith("@g.us")) return null;
@@ -17,11 +51,11 @@ async function findGroupMemberByLabel(sock, chatJid, value) {
   try {
     const metadata = await sock.groupMetadata(chatJid);
     const participant = metadata.participants?.find((entry) =>
-      [entry.notify, entry.name, entry.vname, entry.displayName]
+      [entry.notify, entry.name, entry.vname, entry.displayName, entry.jid]
         .filter(Boolean)
         .some((name) => normaliseLabel(name) === label),
     );
-    return participant?.id || null;
+    return participant?.id || participant?.jid || null;
   } catch {
     return null;
   }
@@ -36,12 +70,15 @@ export default {
 
   async run({ sock, msg, sender, args }) {
     const jid = msg.key.remoteJid;
-    const ctx = msg.message?.extendedTextMessage?.contextInfo;
+    const ctx = getContextInfo(msg);
     const mentionedJid = ctx?.mentionedJid?.[0] || null;
     const quotedSender =
       ctx?.participant ||
+      ctx?.quotedMessage?.key?.participant ||
       (msg.quoted?.key?.participant ?? null) ||
-      (msg.quoted?.key?.remoteJid !== jid ? msg.quoted?.key?.remoteJid : null);
+      (msg.quoted?.key?.remoteJid && msg.quoted.key.remoteJid !== jid
+        ? msg.quoted.key.remoteJid
+        : null);
 
     const rawTargetJid = mentionedJid || quotedSender || null;
     const resolvedRawTargetJid = rawTargetJid?.endsWith("@lid")
@@ -87,7 +124,7 @@ export default {
     }
 
     const [opponent, party] = await Promise.all([
-      getTrainer(targetJid),
+      findTrainerForJid(targetJid),
       getTrainerParty(sender),
     ]);
     if (!opponent) {
@@ -109,13 +146,15 @@ export default {
 
     let room;
     try {
+      const challengerJid = challenger.jid || sender;
+      const opponentJid = opponent.jid || targetJid;
       room = await createWebBattleRoom({
-        challengerJid: sender,
+        challengerJid,
         challengerName: challenger.username || msg.pushName || sender.split("@")[0],
         challengerAvatarUrl: await sock.profilePictureUrl(sender, "image").catch(() => null),
         challengerTrainer: challenger,
         challengerParty: party,
-        opponentJid: targetJid,
+        opponentJid,
       });
     } catch (error) {
       console.error("[chp] website battle room unavailable:", error?.message || error);
@@ -131,7 +170,7 @@ export default {
       `🌐 *WEB BATTLE ROOM READY!*\n\n` +
       `*${challenger.username || msg.pushName || sender.split("@")[0]}* challenged @${targetJid.split("@")[0]}!\n\n` +
       `Open this link to enter the live AIDORU battle arena:\n${url}\n\n` +
-      `Both trainers should open the link, sign in, and press *Ready up*. The battle starts automatically when both are ready.`;
+      `Both trainers should open the same link and sign in. The invited trainer is seated automatically and the battle starts as soon as they enter.`;
 
     return sock.sendMessage(
       jid,
