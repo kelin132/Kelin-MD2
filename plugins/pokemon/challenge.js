@@ -11,6 +11,7 @@ import {
 import { generateBattleScene } from "../../lib/pokemon/canvas.mjs";
 import { generateChallengeCanvas } from "../../lib/pokemon/challengeCanvas.mjs";
 import { createWebBattleRoom, webBattleUrl } from "../../lib/webBattleRoom.mjs";
+import { resolveLid } from "../../lib/permissions.mjs";
 
 export default {
   name: "challenge",
@@ -126,7 +127,10 @@ export default {
         ? msg.quoted?.key?.remoteJid
         : null);
 
-    const targetJid = mentionedJid || quotedSender || null;
+    const rawTargetJid = mentionedJid || quotedSender || null;
+    const targetJid = rawTargetJid?.endsWith("@lid")
+      ? await resolveLid(rawTargetJid, sock, jid).then((digits) => digits ? `${digits}@s.whatsapp.net` : null)
+      : rawTargetJid;
 
     if (!targetJid) {
       return sock.sendMessage(jid, {
@@ -147,12 +151,13 @@ export default {
       return sock.sendMessage(jid, { text: "❌ Start your journey first! Use *.startjourney*" }, { quoted: msg });
     }
 
-    const opponent = await getTrainer(targetJid);
+    const [opponent, party] = await Promise.all([
+      getTrainer(targetJid),
+      getTrainerParty(sender),
+    ]);
     if (!opponent) {
       return sock.sendMessage(jid, { text: "❌ That trainer hasn't started their Pokémon journey yet!" }, { quoted: msg });
     }
-
-    const party = await getTrainerParty(sender);
     const lead  = pickLeadFromParty(challenger, party);
     if (!lead || lead.hp <= 0) {
       return sock.sendMessage(jid, {
@@ -176,27 +181,6 @@ export default {
 
     setPendingChallenge(sender, targetJid, jid, lead);
 
-    const [challengerAvatarUrl, opponentAvatarUrl] = await Promise.all([
-      sock.profilePictureUrl(sender, "image").catch(() => null),
-      sock.profilePictureUrl(targetJid, "image").catch(() => null),
-    ]);
-
-    let challengeImage;
-    try {
-      challengeImage = await generateChallengeCanvas({
-        challenger: {
-          name: challenger.username || msg.pushName || sender.split("@")[0],
-          avatarUrl: challengerAvatarUrl,
-        },
-        opponent: {
-          name: `@${targetJid.split("@")[0]}`,
-          avatarUrl: opponentAvatarUrl,
-        },
-      });
-    } catch {
-      challengeImage = null;
-    }
-
     const caption =
       `⚔️ *BATTLE CHALLENGE!*\n\n` +
       `*${challenger.username}* challenges @${targetJid.split("@")[0]} to a Pokémon battle!\n\n` +
@@ -208,17 +192,34 @@ export default {
         : "") +
       `Type *.ch accept* to accept within 2 minutes!`;
 
-    if (challengeImage) {
-      await sock.sendMessage(jid, {
-        image: challengeImage,
-        caption,
-        mentions: [targetJid],
-      }, { quoted: msg });
-    } else {
-      await sock.sendMessage(jid, {
-        text: caption,
-        mentions: [targetJid],
-      }, { quoted: msg });
-    }
+    // Send the actionable room link immediately. Profile fetching and canvas rendering
+    // are best-effort enhancements and must never delay the challenge response.
+    await sock.sendMessage(jid, { text: caption, mentions: [targetJid] }, { quoted: msg });
+
+    void (async () => {
+      try {
+        const [challengerAvatarUrl, opponentAvatarUrl] = await Promise.all([
+          sock.profilePictureUrl(sender, "image").catch(() => null),
+          sock.profilePictureUrl(targetJid, "image").catch(() => null),
+        ]);
+        const challengeImage = await generateChallengeCanvas({
+          challenger: {
+            name: challenger.username || msg.pushName || sender.split("@")[0],
+            avatarUrl: challengerAvatarUrl,
+          },
+          opponent: {
+            name: `@${targetJid.split("@")[0]}`,
+            avatarUrl: opponentAvatarUrl,
+          },
+        });
+        await sock.sendMessage(jid, {
+          image: challengeImage,
+          caption: "🎨 Battle preview",
+          mentions: [targetJid],
+        }, { quoted: msg });
+      } catch (error) {
+        console.debug("[challenge] optional preview skipped:", error?.message || error);
+      }
+    })();
   },
 };
