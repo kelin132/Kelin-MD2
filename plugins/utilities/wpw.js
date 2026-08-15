@@ -21,12 +21,6 @@ export default {
 
   async run({ sock, msg, sender, args }) {
     const chatId = msg.key.remoteJid;
-    if (chatId?.endsWith("@g.us")) {
-      return sock.sendMessage(chatId, {
-        text: "🔒 Set your website password in a private chat with the bot so nobody else can see it.",
-      }, { quoted: msg });
-    }
-
     // Delete the command message even when validation or hashing fails, because it may contain
     // a password. The deletion is intentionally best-effort because WhatsApp controls delivery.
     scheduleSensitiveMessageDeletion(sock, msg);
@@ -35,7 +29,7 @@ export default {
     if (!password) {
       return sock.sendMessage(chatId, {
         text: `Use *.wpw <password>* with ${WEBSITE_PASSWORD_MIN_LENGTH}-${WEBSITE_PASSWORD_MAX_LENGTH} characters.`,
-      }, { quoted: msg });
+      });
     }
 
     try {
@@ -48,10 +42,10 @@ export default {
           "",
           "Never share your password with anyone.",
         ].join("\n"),
-      }, { quoted: msg });
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Could not save your website password.";
-      await sock.sendMessage(chatId, { text: `❌ ${message}` }, { quoted: msg });
+      await sock.sendMessage(chatId, { text: `❌ ${message}` });
     }
   },
 };

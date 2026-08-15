@@ -9,12 +9,6 @@ export default {
 
   async run({ sock, msg, sender }) {
     const chatId = msg.key.remoteJid;
-    if (chatId?.endsWith("@g.us")) {
-      return sock.sendMessage(chatId, {
-        text: "🔐 Use *.id* in a private chat with the bot so your account identifier stays private.",
-      }, { quoted: msg });
-    }
-
     try {
       const websiteId = await getOrCreateWebsiteId(sender);
       await sock.sendMessage(chatId, {
