@@ -10,6 +10,7 @@ import {
 } from "../../lib/pokemon/battleState.mjs";
 import { generateBattleScene } from "../../lib/pokemon/canvas.mjs";
 import { generateChallengeCanvas } from "../../lib/pokemon/challengeCanvas.mjs";
+import { createWebBattleRoom, webBattleUrl } from "../../lib/webBattleRoom.mjs";
 
 export default {
   name: "challenge",
@@ -159,6 +160,20 @@ export default {
       }, { quoted: msg });
     }
 
+    let webRoom = null;
+    try {
+      webRoom = await createWebBattleRoom({
+        challengerJid: sender,
+        challengerName: challenger.username || msg.pushName || sender.split("@")[0],
+        challengerAvatarUrl: await sock.profilePictureUrl(sender, "image").catch(() => null),
+        challengerTrainer: challenger,
+        challengerParty: party,
+        opponentJid: targetJid,
+      });
+    } catch (error) {
+      console.error("[challenge] website battle room unavailable:", error?.message || error);
+    }
+
     setPendingChallenge(sender, targetJid, jid, lead);
 
     const [challengerAvatarUrl, opponentAvatarUrl] = await Promise.all([
@@ -185,7 +200,12 @@ export default {
     const caption =
       `⚔️ *BATTLE CHALLENGE!*\n\n` +
       `*${challenger.username}* challenges @${targetJid.split("@")[0]} to a Pokémon battle!\n\n` +
-      `🐉 Their lead: *${lead.displayName}* Lv.${lead.level}\n\n` +
+      `🐉 Their lead: *${lead.displayName}* Lv.${lead.level}\n` +
+      `📦 All party Pokémon have been forced into the website battle room.\n\n` +
+      (webRoom
+        ? `🌐 *Battle room:* ${webBattleUrl(webRoom._id)}\n` +
+          `Open the link to ready your Pokémon, choose moves, use items, and spectate the live arena.\n\n`
+        : "") +
       `Type *.ch accept* to accept within 2 minutes!`;
 
     if (challengeImage) {
