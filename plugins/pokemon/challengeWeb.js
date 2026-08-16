@@ -7,7 +7,9 @@ import { createWebBattleRoom, webBattleUrl } from "../../lib/webBattleRoom.mjs";
 
 export default {
   name: "challengeWeb",
-  aliases: ["cha"],
+  // `.cha` is owned by challengeArena. Keeping a second plugin with the same
+  // alias makes command selection depend on filesystem order.
+  aliases: [],
   description: "Create a Pokémon battle room on the AIDORU website",
   category: "pokemon",
   usage: ".cha @user  OR  reply to their message then .cha",
@@ -79,6 +81,7 @@ export default {
     }
 
     const arenaUrl = webBattleUrl(room._id);
+    const roomCode = room.code || room._id.slice(-6).toUpperCase();
     const challengerName = challenger.username || msg.pushName || sender.split("@")[0];
     const opponentName = opponent.username || targetJid.split("@")[0];
 
@@ -102,12 +105,14 @@ export default {
       `⚔️ *WEBSITE BATTLE CHALLENGE!*\n\n` +
       `*${challengerName}* challenges @${opponentName} to an AIDORU Pokémon battle!\n\n` +
       `📦 Both parties are loaded into the battle room.\n` +
+      `🔐 *Room code:* \`${roomCode}\`\n` +
       `🌐 *Open the arena:* ${arenaUrl}\n\n` +
-      `This link opens the live arena directly. Both trainers can choose moves and fight there.`;
+      `This link opens the live arena directly. You can also enter the code from the Pokémon Battle page.`;
 
     const directMessage =
       `⚔️ *AIDORU BATTLE ARENA*\n\n` +
       `${challengerName} vs ${opponentName}\n\n` +
+      `Room code: *${roomCode}*\n` +
       `🌐 Open the arena directly:\n${arenaUrl}\n\n` +
       `Both trainers are already loaded. Open the link, sign in with your AIDORU account, and the match will start in the arena.`;
 
