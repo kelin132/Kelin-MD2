@@ -54,16 +54,22 @@ export default {
       return sock.sendMessage(chatJid, { text: "💔 The challenged trainer has no healthy Pokémon! They should use *.heal* first." }, { quoted: msg });
     }
 
+    const [challengerAvatarUrl, opponentAvatarUrl] = await Promise.all([
+      sock.profilePictureUrl(sender, "image").catch(() => null),
+      sock.profilePictureUrl(targetJid, "image").catch(() => null),
+    ]);
+
     let room;
     try {
       room = await createWebBattleRoom({
         challengerJid: sender,
         challengerName: challenger.username || msg.pushName || sender.split("@")[0],
-        challengerAvatarUrl: await sock.profilePictureUrl(sender, "image").catch(() => null),
+        challengerAvatarUrl,
         challengerTrainer: challenger,
         challengerParty: party,
         opponentJid: targetJid,
         opponentName: opponent.username || targetJid.split("@")[0],
+        opponentAvatarUrl,
         opponentTrainer: opponent,
         opponentParty,
       });
@@ -72,21 +78,20 @@ export default {
       return sock.sendMessage(chatJid, { text: "❌ The website battle arena is temporarily unavailable. Try again shortly." }, { quoted: msg });
     }
 
-    const [challengerAvatarUrl, opponentAvatarUrl] = await Promise.all([
-      sock.profilePictureUrl(sender, "image").catch(() => null),
-      sock.profilePictureUrl(targetJid, "image").catch(() => null),
-    ]);
+    const arenaUrl = webBattleUrl(room._id);
+    const challengerName = challenger.username || msg.pushName || sender.split("@")[0];
+    const opponentName = opponent.username || targetJid.split("@")[0];
 
     let challengeImage = null;
     try {
       challengeImage = await generateChallengeCanvas({
         challenger: {
-          name: challenger.username || msg.pushName || sender.split("@")[0],
+          name: challengerName,
           avatarUrl: challengerAvatarUrl,
         },
         opponent: {
-          name: `@${targetJid.split("@")[0]}`,
-          avatarUrl: opponentAvatarUrl,
+          name: `@${opponentName}`,
+          avatarUrl: room.opponent?.avatarUrl || null,
         },
       });
     } catch {
@@ -95,10 +100,27 @@ export default {
 
     const caption =
       `⚔️ *WEBSITE BATTLE CHALLENGE!*\n\n` +
-      `*${challenger.username || msg.pushName || sender.split("@")[0]}* challenges @${targetJid.split("@")[0]} to an AIDORU Pokémon battle!\n\n` +
-      `📦 Both players' party Pokémon have been forced into the same website battle room.\n` +
-      `🌐 *Battle room:* ${webBattleUrl(room._id)}\n\n` +
-      `Open the same link to enter this match. The challenger and challenged trainer will be placed on opposite sides automatically.`;
+      `*${challengerName}* challenges @${opponentName} to an AIDORU Pokémon battle!\n\n` +
+      `📦 Both parties are loaded into the battle room.\n` +
+      `🌐 *Open the arena:* ${arenaUrl}\n\n` +
+      `This link opens the live arena directly. Both trainers can choose moves and fight there.`;
+
+    const directMessage =
+      `⚔️ *AIDORU BATTLE ARENA*\n\n` +
+      `${challengerName} vs ${opponentName}\n\n` +
+      `🌐 Open the arena directly:\n${arenaUrl}\n\n` +
+      `Both trainers are already loaded. Open the link, sign in with your AIDORU account, and the match will start in the arena.`;
+
+    // A group message is useful for context, but each trainer also receives the
+    // direct arena URL so neither player has to hunt through the website lobby.
+    for (const playerJid of new Set([sender, targetJid])) {
+      if (playerJid === chatJid) continue;
+      try {
+        await sock.sendMessage(playerJid, { text: directMessage });
+      } catch (error) {
+        console.error("[challengeWeb] could not send direct arena link:", error?.message || error);
+      }
+    }
 
     if (challengeImage) {
       return sock.sendMessage(chatJid, { image: challengeImage, caption, mentions: [targetJid] }, { quoted: msg });
