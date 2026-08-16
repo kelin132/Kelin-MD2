@@ -1,5 +1,5 @@
-// plugins/pokemon/challengePlatform.js
-// Create a shared AIDORU web battle room for a WhatsApp challenge.
+// plugins/pokemon/challengeArena.js
+// Create a shared AIDORU web battle arena for a WhatsApp challenge.
 
 import { findTrainerByUsername, getTrainer, pickLeadFromParty } from "../../lib/pokemon/players.mjs";
 import { getTrainerParty } from "../../lib/pokemon/pokemonDb.mjs";
@@ -76,11 +76,11 @@ async function findGroupMemberByLabel(sock, chatJid, value) {
 }
 
 export default {
-  name: "challenge-platform",
-  aliases: ["chp"],
-  description: "Create a shared AIDORU web battle room for another trainer",
+  name: "challenge-arena",
+  aliases: ["cha"],
+  description: "Challenge another trainer in the AIDORU web battle arena",
   category: "pokemon",
-  usage: ".chp @user  OR  .chp <trainer username>  OR  reply to their message then .chp",
+  usage: ".cha @user  OR  .cha <trainer username>  OR  reply to their message then .cha",
 
   async run({ sock, msg, sender, args }) {
     const jid = msg.key.remoteJid;
@@ -114,9 +114,9 @@ export default {
         {
           text:
             "Usage:\n" +
-            "• *.chp @user* — create a web battle room for that trainer\n" +
-            "• *.chp <trainer username>* — create a room by trainer username\n" +
-            "• Reply to their message then *.chp*",
+            "• *.cha @user* — challenge that trainer in the web arena\n" +
+            "• *.cha <trainer username>* — challenge by trainer username\n" +
+            "• Reply to their message then *.cha*",
         },
         { quoted: msg },
       );
@@ -138,9 +138,10 @@ export default {
       );
     }
 
-    const [opponent, party] = await Promise.all([
+    const [opponent, party, opponentParty] = await Promise.all([
       findTrainerForJid(targetJid),
       getTrainerParty(sender),
+      getTrainerParty(targetJid),
     ]);
     if (!opponent) {
       return sock.sendMessage(
@@ -159,33 +160,49 @@ export default {
       );
     }
 
+    if (!opponentParty.some((pokemon) => pokemon.hp > 0)) {
+      return sock.sendMessage(
+        jid,
+        { text: "❌ That trainer has no healthy Pokémon! They need to use *.heal* first." },
+        { quoted: msg },
+      );
+    }
+
     let room;
     try {
       const challengerJid = challenger.jid || sender;
       const opponentJid = opponent.jid || targetJid;
+      const [challengerAvatarUrl, opponentAvatarUrl] = await Promise.all([
+        sock.profilePictureUrl(sender, "image").catch(() => null),
+        sock.profilePictureUrl(targetJid, "image").catch(() => null),
+      ]);
       room = await createWebBattleRoom({
         challengerJid,
         challengerName: challenger.username || msg.pushName || sender.split("@")[0],
-        challengerAvatarUrl: await sock.profilePictureUrl(sender, "image").catch(() => null),
+        challengerAvatarUrl,
         challengerTrainer: challenger,
         challengerParty: party,
         opponentJid,
+        opponentName: opponent.username || targetJid.split("@")[0],
+        opponentAvatarUrl,
+        opponentTrainer: opponent,
+        opponentParty,
       });
     } catch (error) {
-      console.error("[chp] website battle room unavailable:", error?.message || error);
+      console.error("[cha] website battle room unavailable:", error?.message || error);
       return sock.sendMessage(
         jid,
-        { text: "❌ I couldn't open the web battle room right now. Please try *.chp* again." },
+        { text: "❌ I couldn't open the web battle arena right now. Please try *.cha* again." },
         { quoted: msg },
       );
     }
 
     const url = webBattleUrl(room._id);
     const caption =
-      `🌐 *WEB BATTLE ROOM READY!*\n\n` +
+      `🌐 *WEB BATTLE ARENA READY!*\n\n` +
       `*${challenger.username || msg.pushName || sender.split("@")[0]}* challenged @${targetJid.split("@")[0]}!\n\n` +
-      `Open this link to enter the live AIDORU battle arena:\n${url}\n\n` +
-      `Both trainers should open the same link and sign in. The invited trainer is seated automatically and the battle starts as soon as they enter.`;
+      `Open this link to enter your live AIDORU battle arena:\n${url}\n\n` +
+      `Both trainers' parties are loaded into this room. Sign in with your AIDORU account and the battle starts when the invited trainer enters.`;
 
     return sock.sendMessage(
       jid,
