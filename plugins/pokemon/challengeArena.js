@@ -246,23 +246,6 @@ export default {
       `Open this link to enter the shared AIDORU battle:\n${url}\n\n` +
       `Both trainers' healed parties are loaded and ready to fight. Sign in with your AIDORU account; the live match opens from this link or by entering the code in Pokémon Battle.`;
 
-    const directMessage =
-      `🌐 *AIDORU POKÉMON BATTLE*\n\n` +
-      `Room code: *${roomCode}*\n` +
-      `Open the battle directly:\n${url}\n\n` +
-      `Sign in with your AIDORU account. If you use the website menu, choose Pokémon Battle and enter room code *${roomCode}*.`;
-
-    // Deliver the invite privately as well as in the group so the challenged
-    // trainer can open the exact room without having to search the lobby.
-    for (const playerJid of new Set([challengerJid, opponentJid])) {
-      if (playerJid === jid) continue;
-      try {
-        await sock.sendMessage(playerJid, { text: directMessage });
-      } catch (error) {
-        console.error("[cha] could not send direct battle invite:", error?.message || error);
-      }
-    }
-
     return sock.sendMessage(
       jid,
       { text: caption, mentions: [targetJid] },
