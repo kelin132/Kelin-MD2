@@ -1,49 +1,49 @@
-// plugins/pets/petshop.js
-// .petshop [buy <number>] — Buy items for your active pet using economy coins
+// .petshop [page|buy <number>] — Buy care items for the active pet
 import { getActivePet, savePet, awardExp } from "../../lib/petDatabase.js";
 import { getUser, saveUser, requireRegistration } from "../economy/database.js";
 
-const SHOP = {
-  kibble: {
-    name: "🍖 Kibble",
-    desc: "Restore 40 hunger",
-    price: 200,
-    apply: (pet) => ({ hunger: Math.min(100, pet.hunger + 40) }),
-  },
-  meal: {
-    name: "🍣 Premium Meal",
-    desc: "Restore full hunger + 10 happiness",
-    price: 500,
-    apply: (pet) => ({ hunger: 100, happiness: Math.min(100, pet.happiness + 10) }),
-  },
-  toy: {
-    name: "🎾 Toy",
-    desc: "Restore 35 happiness",
-    price: 300,
-    apply: (pet) => ({ happiness: Math.min(100, pet.happiness + 35) }),
-  },
-  exppotion: {
-    name: "🧪 EXP Potion",
-    desc: "Grant 150 EXP instantly",
-    price: 800,
-    apply: null, // handled separately
-  },
-  revival: {
-    name: "💊 Revival Tonic",
-    desc: "Restore 60 hunger + 40 happiness",
-    price: 600,
-    apply: (pet) => ({
-      hunger:    Math.min(100, pet.hunger + 60),
-      happiness: Math.min(100, pet.happiness + 40),
-    }),
-  },
-};
+const SHOP = [
+  { key: "kibble", name: "🍖 Kibble", desc: "Restore 40 hunger", price: 200, apply: (pet) => ({ hunger: Math.min(100, pet.hunger + 40) }) },
+  { key: "meal", name: "🍣 Premium Meal", desc: "Full hunger + 10 happiness", price: 500, apply: (pet) => ({ hunger: 100, happiness: Math.min(100, pet.happiness + 10) }) },
+  { key: "toy", name: "🎾 Toy", desc: "Restore 35 happiness", price: 300, apply: (pet) => ({ happiness: Math.min(100, pet.happiness + 35) }) },
+  { key: "exppotion", name: "🧪 EXP Potion", desc: "Grant 150 EXP instantly", price: 800 },
+  { key: "revival", name: "💊 Revival Tonic", desc: "Restore 60 hunger + 40 happiness", price: 600, apply: (pet) => ({ hunger: Math.min(100, pet.hunger + 60), happiness: Math.min(100, pet.happiness + 40) }) },
+  { key: "berry", name: "🍓 Sweet Berry", desc: "Restore 20 hunger + 20 happiness", price: 150, apply: (pet) => ({ hunger: Math.min(100, pet.hunger + 20), happiness: Math.min(100, pet.happiness + 20) }) },
+  { key: "energy", name: "⚡ Energy Drink", desc: "Restore 50 happiness", price: 700, apply: (pet) => ({ happiness: Math.min(100, pet.happiness + 50) }) },
+  { key: "deluxemeal", name: "🍱 Deluxe Bento", desc: "Full hunger + 25 happiness", price: 1_200, apply: (pet) => ({ hunger: 100, happiness: Math.min(100, pet.happiness + 25) }) },
+  { key: "grooming", name: "🧼 Grooming Kit", desc: "Restore 70 happiness", price: 1_000, apply: (pet) => ({ happiness: Math.min(100, pet.happiness + 70) }) },
+  { key: "friendship", name: "💖 Friendship Ribbon", desc: "Restore 100 happiness", price: 2_500, apply: (pet) => ({ happiness: 100 }) },
+  { key: "superxp", name: "🌟 Super EXP Potion", desc: "Grant 500 EXP instantly", price: 2_500 },
+  { key: "goldenmeal", name: "👑 Golden Meal", desc: "Full hunger + 50 happiness", price: 4_000, apply: (pet) => ({ hunger: 100, happiness: Math.min(100, pet.happiness + 50) }) },
+];
+
+const PAGE_SIZE = 6;
+const fmt = (n) => `$${Number(n || 0).toLocaleString()}`;
+
+function shopText(page = 1) {
+  const totalPages = Math.ceil(SHOP.length / PAGE_SIZE);
+  const safePage = Math.min(totalPages, Math.max(1, page));
+  const start = (safePage - 1) * PAGE_SIZE;
+  const list = SHOP.slice(start, start + PAGE_SIZE).map((item, index) =>
+    `  ⚜️ *${start + index + 1}. ${item.name}*  — ${fmt(item.price)}\n    _${item.desc}_`
+  ).join("\n\n");
+  return [
+    `╭─❀「 🏪 *𝐏𝐄𝐓 𝐒𝐇𝐎𝐏* 」❀─╮`,
+    `│ Page *${safePage}/${totalPages}*  •  ${SHOP.length} items`,
+    `│`,
+    list,
+    `│`,
+    `│ *.petshop ${safePage < totalPages ? safePage + 1 : 1}* — next page`,
+    `│ *.petshop buy <number>* — purchase`,
+    `╰───────────────❀`,
+  ].join("\n");
+}
 
 export default {
   name: "petshop",
-  description: "Buy items for your pet with economy coins",
+  description: "Browse two pages of pet care items and buy with economy coins",
   category: "pets",
-  usage: ".petshop [buy <number>]",
+  usage: ".petshop [1|2] or .petshop buy <number>",
   aliases: ["pshop"],
   cooldown: 3,
 
@@ -51,81 +51,45 @@ export default {
     const jid = msg.key.remoteJid;
     if (!await requireRegistration(sock, msg, sender)) return;
 
-    // .petshop — show shop
-    if (!args[0] || args[0].toLowerCase() !== "buy") {
-      const list = Object.entries(SHOP).map(([key, item], index) =>
-        `  ⚜️ *${index + 1}. ${item.name}*  (${key})\n    _${item.desc}_\n    💰 *$${item.price.toLocaleString()}*`
-      ).join("\n\n");
-
-      return sock.sendMessage(jid, {
-        text: [
-          `꧁━━〔 🏪 *P E T  S H O P* 〕━━꧂`,
-          ``,
-          list,
-          ``,
-          `  ━━━━━━━━━━━━━━━━━━━━━━━`,
-          `  *.petshop buy <number>*`,
-          `  e.g. *.petshop buy 1*`,
-          ``,
-          `꧂━━━━━━━━━━━━━━━━━━━━━━━━꧁`,
-        ].join("\n"),
-      }, { quoted: msg });
+    const action = (args[0] || "").toLowerCase();
+    if (action !== "buy") {
+      const page = /^\d+$/.test(action) ? Number(action) : 1;
+      return sock.sendMessage(jid, { text: shopText(page) }, { quoted: msg });
     }
 
-    // .petshop buy <number>
     const itemNumber = Number(args[1]);
-    const itemEntry  = Number.isInteger(itemNumber) ? Object.entries(SHOP)[itemNumber - 1] : null;
-    const itemKey    = itemEntry?.[0];
-    const item       = itemKey ? SHOP[itemKey] : null;
-
+    const item = Number.isInteger(itemNumber) ? SHOP[itemNumber - 1] : null;
     if (!item) {
-      return sock.sendMessage(jid, {
-        text: "❌ Choose a valid item number.\n\nUse *.petshop* to see the numbered list.",
-      }, { quoted: msg });
+      return sock.sendMessage(jid, { text: "❌ Choose a valid item number.\n\nUse *.petshop* or *.petshop 2* to browse." }, { quoted: msg });
     }
 
     const pet = await getActivePet(sender);
     if (!pet) {
-      return sock.sendMessage(jid, {
-        text: `🐾 You don't have an active pet! Use *.adopt* first.`,
-      }, { quoted: msg });
+      return sock.sendMessage(jid, { text: "🐾 You don't have an active pet! Use *.adopt* first." }, { quoted: msg });
     }
 
     const user = await getUser(sender);
     if ((user.money || 0) < item.price) {
-      return sock.sendMessage(jid, {
-        text: `❌ Not enough money!\n\n💰 Cost    : $${item.price.toLocaleString()}\n💰 Balance : $${(user.money || 0).toLocaleString()}`,
-      }, { quoted: msg });
+      return sock.sendMessage(jid, { text: `❌ Not enough money!\n\n💰 Cost: ${fmt(item.price)}\n💰 Balance: ${fmt(user.money)}` }, { quoted: msg });
     }
 
-    // Deduct coins
     user.money -= item.price;
     await saveUser(sender, user);
 
-    // Apply item effect
-    let effectText = "";
-    if (itemKey === "exppotion") {
-      const result = await awardExp(sender, pet.petId, 150);
-      effectText = `✨ *${pet.name}* gained 150 EXP!`;
+    let effectText;
+    if (item.key === "exppotion" || item.key === "superxp") {
+      const exp = item.key === "superxp" ? 500 : 150;
+      const result = await awardExp(sender, pet.petId, exp);
+      effectText = `✨ *${pet.name}* gained ${exp} EXP!`;
       if (result?.levelsGained > 0) effectText += `\n🎉 *LEVEL UP!* Now Level ${result.pet.level}!`;
     } else {
       const changes = item.apply(pet);
       await savePet(sender, pet.petId, changes);
-      effectText = Object.entries(changes)
-        .map(([k, v]) => `${k === "hunger" ? "🍖 Hunger" : "😊 Happiness"}: → ${v}%`)
-        .join("\n");
+      effectText = Object.entries(changes).map(([key, value]) => `${key === "hunger" ? "🍖 Hunger" : "😊 Happiness"}: → ${value}%`).join("\n");
     }
 
     return sock.sendMessage(jid, {
-      text: [
-        `🏪 *PURCHASE SUCCESSFUL!*`,
-        ``,
-        `${item.name} bought for *$${item.price.toLocaleString()}*`,
-        ``,
-        effectText,
-        ``,
-        `💰 Remaining balance: $${user.money.toLocaleString()}`,
-      ].join("\n"),
+      text: `╭─❀「 🏪 *𝐏𝐔𝐑𝐂𝐇𝐀𝐒𝐄* 」❀─╮\n│ ${item.name} bought for *${fmt(item.price)}*\n│\n│ ${effectText}\n│\n│ 💰 Remaining: *${fmt(user.money)}*\n╰───────────────❀`,
     }, { quoted: msg });
   },
 };

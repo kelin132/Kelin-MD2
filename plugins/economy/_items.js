@@ -393,7 +393,8 @@ export const DIG_LOOT = [
 
 /** Loot table for .fish */
 export const FISH_LOOT = [
-  { type: "cash",  min: 30,  max: 300,  weight: 50, label: "💰 Cash" },
+  { type: "cash",  min: 9_000,  max: 25_000,  weight: 44, label: "💰 Cash" },
+  { type: "cash",  min: 25_001, max: 90_000,  weight: 12, label: "💰 Rare Cash" },
   { type: "item",  name: "boots",               weight: 15 },
   { type: "item",  name: "basic_fishing_rod",   weight: 12 },
   { type: "item",  name: "scroll",              weight: 8  },

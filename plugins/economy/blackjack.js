@@ -2,6 +2,8 @@ import { getUser, saveUser, requireRegistration, maybeAwardDiamonds } from "./da
 import { randomChoice } from "../../lib/gambling.mjs";
 import { parseAmount } from "./parseAmount.js";
 
+const MAX_BET = 1_000_000_000;
+
 const DECK = [
   ...Array(4).fill("A"), ...Array(4).fill("K"), ...Array(4).fill("Q"),
   ...Array(4).fill("J"), ...Array(4).fill("10"), ...Array(4).fill("9"),
@@ -52,6 +54,7 @@ export default {
 `╭─❀「 🃏 *𝐁𝐋𝐀𝐂𝐊𝐉𝐀𝐂𝐊* 」❀─╮
 │ 📖 *Usage*   :: *.blackjack <amount>*
 │ 💰 *Min Bet* :: *$100*
+│ 💰 *Max Bet* :: *$1B* virtual coins
 │
 │ 🃏 *Rules:*
 │   Get 21 or closer than dealer
@@ -66,13 +69,14 @@ export default {
     const user = await getUser(sender);
     const bet  = parseAmount(args[0].toLowerCase(), user.money);
 
-    if (isNaN(bet) || bet < 100) {
+    if (isNaN(bet) || bet < 100 || bet > MAX_BET) {
       return sock.sendMessage(jid, {
         text:
 `╭─❀「 🃏 *𝐁𝐋𝐀𝐂𝐊𝐉𝐀𝐂𝐊* 」❀─╮
 │ ❌ *Result*  :: *INVALID BET 🔴*
 │
 │ 💰 *Min Bet* :: *$100*
+│ 💰 *Max Bet* :: *$1B* virtual coins
 ╰───────────────❀`
       }, { quoted: msg });
     }

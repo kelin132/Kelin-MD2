@@ -9,6 +9,7 @@ import { parseAmount } from "./parseAmount.js";
 import { getNewlyUnlockedRole, buildLevelUpMsg } from "../../lib/levelRoles.mjs";
 
 const COOLDOWN = 8 * 1000;
+const MAX_BET = 1_000_000_000;
 
 function fmt(n) {
   if (n >= 1e12) return `$${(n/1e12).toFixed(1)}T`;
@@ -48,7 +49,8 @@ export default {
 `╭─❀「 💰 *𝐂𝐎𝐈𝐍 𝐅𝐋𝐈𝐏* 」❀─╮
 │ Usage: *.coinflip <heads|tails> <amount>*
 │ Example: .coinflip heads 1000
-│ Example: .coinflip h 5m
+│ Example: .coinflip h 1b
+│ Maximum: *$1B* virtual coins
 │
 │ 🎯 *Win Rate* :: *55%*
 │ 💰 *Win*      :: *×2 your bet*
@@ -61,6 +63,7 @@ export default {
     let amount = parseAmount(rawAmt, user.money);
     if (!amount || isNaN(amount) || amount < 10) return reply("❌ Minimum bet is *$10*.");
     if (amount > user.money) return reply(`❌ You only have *${fmt(user.money)}*.`);
+    if (amount > MAX_BET) return reply("❌ Maximum bet is *$1B* virtual coins.");
 
     user.lastCoinflip = now;
 
