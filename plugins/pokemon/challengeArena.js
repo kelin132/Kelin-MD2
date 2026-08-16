@@ -2,12 +2,17 @@
 // Create a shared AIDORU web battle arena for a WhatsApp challenge.
 
 import { findTrainerByUsername, getTrainer, pickLeadFromParty } from "../../lib/pokemon/players.mjs";
-import { getTrainerParty } from "../../lib/pokemon/pokemonDb.mjs";
+import { getTrainerParty, healParty } from "../../lib/pokemon/pokemonDb.mjs";
 import { createWebBattleRoom, webBattleUrl } from "../../lib/webBattleRoom.mjs";
 import { resolveLid } from "../../lib/permissions.mjs";
 
 function normaliseLabel(value) {
-  return String(value ?? "").trim().replace(/^@+/, "").toLowerCase();
+  return String(value ?? "")
+    .trim()
+    .replace(/^@+/, "")
+    .split("@", 1)[0]
+    .split(":", 1)[0]
+    .toLowerCase();
 }
 
 function unwrapMessage(message) {
@@ -27,6 +32,7 @@ function unwrapMessage(message) {
 function getContextInfo(msg) {
   const message = unwrapMessage(msg.message);
   return (
+    message.contextInfo ||
     message.extendedTextMessage?.contextInfo ||
     message.imageMessage?.contextInfo ||
     message.videoMessage?.contextInfo ||
@@ -65,11 +71,11 @@ async function findGroupMemberByLabel(sock, chatJid, value) {
   try {
     const metadata = await sock.groupMetadata(chatJid);
     const participant = metadata.participants?.find((entry) =>
-      [entry.notify, entry.name, entry.vname, entry.displayName, entry.jid]
+      [entry.notify, entry.name, entry.vname, entry.displayName, entry.jid, entry.id, entry.lid]
         .filter(Boolean)
         .some((name) => normaliseLabel(name) === label),
     );
-    return participant?.id || participant?.jid || null;
+    return participant?.id || participant?.jid || participant?.lid || null;
   } catch {
     return null;
   }
@@ -96,17 +102,27 @@ export default {
         : null);
 
     const rawTargetJid = mentionedJid || quotedSender || null;
-    const resolvedRawTargetJid = rawTargetJid?.endsWith("@lid")
-      ? await resolveLid(rawTargetJid, sock, jid).then((digits) =>
-          digits ? `${digits}@s.whatsapp.net` : null,
-        )
-      : rawTargetJid;
-    const typedLabel = !resolvedRawTargetJid ? args.join(" ") : "";
+    let resolvedRawTargetJid = rawTargetJid;
+    if (rawTargetJid?.endsWith("@lid")) {
+      const groupMemberJid = await findGroupMemberByLabel(sock, jid, rawTargetJid);
+      if (groupMemberJid) {
+        resolvedRawTargetJid = groupMemberJid;
+      } else {
+        const digits = await resolveLid(rawTargetJid, sock, jid);
+        resolvedRawTargetJid = digits ? `${digits}@s.whatsapp.net` : null;
+      }
+    }
+
+    const typedLabel = args.join(" ");
     const typedTarget = typedLabel ? await findTrainerByUsername(typedLabel) : null;
     const groupTarget = !resolvedRawTargetJid && !typedTarget
       ? await findGroupMemberByLabel(sock, jid, typedLabel)
       : null;
-    const targetJid = resolvedRawTargetJid || typedTarget?.jid || groupTarget || null;
+    const targetJid =
+      resolvedRawTargetJid ||
+      typedTarget?.jid ||
+      groupTarget ||
+      (rawTargetJid && !rawTargetJid.endsWith("@lid") ? rawTargetJid : null);
 
     if (!targetJid) {
       return sock.sendMessage(
@@ -138,11 +154,7 @@ export default {
       );
     }
 
-    const [opponent, party, opponentParty] = await Promise.all([
-      findTrainerForJid(targetJid),
-      getTrainerParty(sender),
-      getTrainerParty(targetJid),
-    ]);
+    const opponent = await findTrainerForJid(targetJid);
     if (!opponent) {
       return sock.sendMessage(
         jid,
@@ -151,27 +163,55 @@ export default {
       );
     }
 
-    const lead = pickLeadFromParty(challenger, party);
-    if (!lead || lead.hp <= 0) {
+    const challengerJid = challenger.jid || sender;
+    const opponentJid = opponent.jid || targetJid;
+
+    try {
+      await Promise.all([healParty(challengerJid), healParty(opponentJid)]);
+    } catch (error) {
+      console.error("[cha] unable to heal battle parties:", error?.message || error);
       return sock.sendMessage(
         jid,
-        { text: "💔 All your Pokémon have fainted! Use *.heal* first." },
+        { text: "❌ I couldn't heal both battle parties right now. Please try *.cha* again." },
         { quoted: msg },
       );
     }
 
-    if (!opponentParty.some((pokemon) => pokemon.hp > 0)) {
+    const [party, opponentParty] = await Promise.all([
+      getTrainerParty(challengerJid),
+      getTrainerParty(opponentJid),
+    ]);
+    if (!party.length || !opponentParty.length) {
       return sock.sendMessage(
         jid,
-        { text: "❌ That trainer has no healthy Pokémon! They need to use *.heal* first." },
+        { text: "❌ Both trainers need at least one Pokémon in their battle party." },
         { quoted: msg },
       );
     }
+
+    const lead = pickLeadFromParty(challenger, party);
+    if (!lead || lead.hp <= 0 || !opponentParty.some((pokemon) => pokemon.hp > 0)) {
+      return sock.sendMessage(
+        jid,
+        { text: "❌ Both trainers need at least one Pokémon in their battle party." },
+        { quoted: msg },
+      );
+    }
+
+    await sock.sendMessage(
+      jid,
+      {
+        text:
+          "✅ *ALL POKÉMON HAVE BEEN HEALED!*\n\n" +
+          "🏟️ Both trainers' battle parties have been taken to the AIDORU website.\n" +
+          "🔗 Preparing your shared battle lobby...",
+        mentions: [targetJid],
+      },
+      { quoted: msg },
+    );
 
     let room;
     try {
-      const challengerJid = challenger.jid || sender;
-      const opponentJid = opponent.jid || targetJid;
       const [challengerAvatarUrl, opponentAvatarUrl] = await Promise.all([
         sock.profilePictureUrl(sender, "image").catch(() => null),
         sock.profilePictureUrl(targetJid, "image").catch(() => null),
@@ -199,10 +239,10 @@ export default {
 
     const url = webBattleUrl(room._id);
     const caption =
-      `🌐 *WEB BATTLE ARENA READY!*\n\n` +
+      `🌐 *WEB BATTLE LOBBY READY!*\n\n` +
       `*${challenger.username || msg.pushName || sender.split("@")[0]}* challenged @${targetJid.split("@")[0]}!\n\n` +
-      `Open this link to enter your live AIDORU battle arena:\n${url}\n\n` +
-      `Both trainers' parties are loaded into this room. Sign in with your AIDORU account and the battle starts when the invited trainer enters.`;
+      `Open this link to enter the shared AIDORU battle lobby:\n${url}\n\n` +
+      `Both trainers' healed parties are loaded and ready to fight. Sign in with your AIDORU account; the battle starts when the invited trainer enters.`;
 
     return sock.sendMessage(
       jid,
