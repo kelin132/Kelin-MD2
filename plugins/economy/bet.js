@@ -10,7 +10,6 @@ import { MAX_BET, maxBetMessage } from "./bettingLimits.js";
 import { getNewlyUnlockedRole, buildLevelUpMsg } from "../../lib/levelRoles.mjs";
 
 const COOLDOWN = 30 * 1000;
-const MAX_BET = 1_000_000_000;
 
 const WIN_LINES  = ["あなたの運はいい！", "運命はあなたの味方だ！", "大勝利！", "ラッキー！やりました！", "完璧な読み！"];
 const LOSE_LINES = ["残念！次は勝てる！", "惜しい！もう一度！", "ツキがなかった...", "また挑戦してね！", "負けても諦めないで！"];
@@ -54,7 +53,7 @@ export default {
 `╭─❀「 🎲 *𝐁𝐄𝐓* 」❀─╮
 │ Usage: *.bet <amount>*
 │ Examples: .bet 500  /  .bet 10k  /  .bet 1b
-│ Maximum: *$1B* virtual coins
+│ Maximum: *$300B*
 │ *.bet all* — bet everything in wallet
 │ *.bet half* — bet half your wallet
 │
@@ -74,8 +73,6 @@ export default {
       return sock.sendMessage(jid, { text: `❌ You only have *${fmt(user.money)}* in your wallet.` }, { quoted: msg });
     if (amount < 10)
       return sock.sendMessage(jid, { text: "❌ Minimum bet is *$10*." }, { quoted: msg });
-    if (amount > MAX_BET)
-      return sock.sendMessage(jid, { text: "❌ Maximum bet is *$1B* virtual coins." }, { quoted: msg });
 
     const won          = randomChance(0.53,1);
     const diamondReward = maybeAwardDiamonds(user, won ? 0.003 : 0.001, 1, 2);
