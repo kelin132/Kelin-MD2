@@ -6,6 +6,7 @@
 import { getUser, saveUser, requireRegistration, addHistory, maybeAwardDiamonds, checkLevelUp } from "./database.js";
 import { randomChoice, randomChance } from "../../lib/gambling.mjs";
 import { parseAmount } from "./parseAmount.js";
+import { MAX_BET, maxBetMessage } from "./bettingLimits.js";
 import { getNewlyUnlockedRole, buildLevelUpMsg } from "../../lib/levelRoles.mjs";
 
 const COOLDOWN = 30 * 1000;
@@ -58,6 +59,7 @@ export default {
 │ *.bet half* — bet half your wallet
 │
 │ 💰 *Wallet* :: *${fmt(user.money)}*
+│ 💰 *Max Bet* :: *$300B*
 │ 🎯 *Win Rate* :: *53,1%*
 ╰───────────────❀`,
       }, { quoted: msg });
@@ -66,6 +68,8 @@ export default {
     let amount = parseAmount(raw, user.money);
     if (!amount || isNaN(amount) || amount <= 0)
       return sock.sendMessage(jid, { text: "❌ Enter a valid amount. Example: *.bet 500*" }, { quoted: msg });
+    if (amount > MAX_BET)
+      return sock.sendMessage(jid, { text: maxBetMessage() }, { quoted: msg });
     if (amount > user.money)
       return sock.sendMessage(jid, { text: `❌ You only have *${fmt(user.money)}* in your wallet.` }, { quoted: msg });
     if (amount < 10)

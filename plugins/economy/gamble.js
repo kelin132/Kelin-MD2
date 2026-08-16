@@ -1,10 +1,10 @@
 import { getUser, saveUser, requireRegistration, addHistory, maybeAwardDiamonds, checkLevelUp } from "./database.js";
 import { randomChoice, randomChance } from "../../lib/gambling.mjs";
 import { parseAmount } from "./parseAmount.js";
+import { MAX_BET, MAX_BET_LABEL, maxBetMessage } from "./bettingLimits.js";
 import { getNewlyUnlockedRole, buildLevelUpMsg } from "../../lib/levelRoles.mjs";
 
 const COOLDOWN = 5 * 60 * 1000;
-const MAX_BET  = 10_000;
 
 function fmt(n) {
   if (n >= 1e12) return `$${(n/1e12).toFixed(1)}T`;
@@ -19,7 +19,7 @@ export default {
   aliases: ["bet2", "gbl"],
   category: "economy",
   cooldown: 6,
-  description: "Gamble your cash — 55% chance to double it (5 min cooldown, max $10k)",
+  description: "Gamble your cash — 55% chance to double it (5 min cooldown, max $300B)",
   usage: ".gamble <amount|all|half>",
   checkJail: true,
 
@@ -46,7 +46,7 @@ export default {
     if (!args[0]) return reply(
 `╭─❀「 🎰 *𝐆𝐀𝐌𝐁𝐋𝐄* 」❀─╮
 │ Usage: *.gamble <amount|all|half>*
-│ Max bet: *$10,000*
+│ Max bet: *${MAX_BET_LABEL}*
 │ Win rate: *55%*  │  Reward: *×2*
 │
 │ 💰 *Wallet* :: *${fmt(user.money)}*
@@ -57,7 +57,7 @@ export default {
     let   amount = parseAmount(input, user.money);
 
     if (isNaN(amount) || amount <= 0) return reply("❌ Enter a valid amount.");
-    if (amount > MAX_BET)             amount = MAX_BET;
+    if (amount > MAX_BET)             return reply(maxBetMessage());
     if (amount > user.money)          return reply(`❌ You only have *${fmt(user.money)}* in your wallet.`);
     if (amount < 10)                  return reply("❌ Minimum bet is $10.");
 

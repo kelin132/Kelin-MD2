@@ -6,6 +6,7 @@
 import { getUser, saveUser, requireRegistration, addHistory, maybeAwardDiamonds, checkLevelUp } from "./database.js";
 import { randomChoice } from "../../lib/gambling.mjs";
 import { parseAmount } from "./parseAmount.js";
+import { MAX_BET, maxBetMessage } from "./bettingLimits.js";
 import { getNewlyUnlockedRole, buildLevelUpMsg } from "../../lib/levelRoles.mjs";
 import { generateSlotsImage } from "../../lib/economyCanvas.mjs";
 
@@ -61,7 +62,7 @@ export default {
 `╭─❀「 🎰 *𝐒𝐋𝐎𝐓𝐒* 」❀─╮
 │ 📖 *Usage*    :: *.slots <amount>*
 │ 💰 *Min Bet*  :: *$50*
-│ 💰 *Max Bet*  :: *$50,000*
+│ 💰 *Max Bet*  :: *$300B*
 │
 │ 💎 *Payouts* (match 3):
 │   7️⃣ ×10  💎 ×7  🔔 ×5  🍇 ×4
@@ -75,7 +76,7 @@ export default {
 
     let amount = parseAmount(raw, user.money);
     if (!amount || isNaN(amount) || amount < 50) return reply("❌ Minimum bet is *$50*.");
-    if (amount > 50000)  return reply("❌ Maximum bet is *$50,000*.");
+    if (amount > MAX_BET)  return reply(maxBetMessage());
     if (amount > user.money) return reply(`❌ You only have *${fmt(user.money)}*.`);
 
     user.lastSlots = now;

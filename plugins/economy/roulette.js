@@ -6,6 +6,7 @@
 import { getUser, saveUser, requireRegistration, addHistory, maybeAwardDiamonds } from "./database.js";
 import { randomInt } from "../../lib/gambling.mjs";
 import { parseAmount } from "./parseAmount.js";
+import { MAX_BET, maxBetMessage } from "./bettingLimits.js";
 
 const COOLDOWN = 20 * 1000; // 20 seconds
 
@@ -83,6 +84,7 @@ export default {
 
     let amount = parseAmount(rawAmt, user.money);
     if (!amount || isNaN(amount) || amount < 50) return reply("❌ Minimum bet is *$50*.");
+    if (amount > MAX_BET) return reply(maxBetMessage());
     if (amount > user.money) return reply(`❌ You only have *${fmt(user.money)}*.`);
 
     const validSimple = ["red", "black", "even", "odd"];

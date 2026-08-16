@@ -1,6 +1,7 @@
 import { getUser, saveUser, requireRegistration } from "../economy/database.js";
 import { randomInt } from "../../lib/gambling.mjs";
 import { parseAmount } from "../economy/parseAmount.js";
+import { MAX_BET, maxBetMessage } from "../economy/bettingLimits.js";
 
 export default {
   name: "dicegame",
@@ -18,10 +19,13 @@ export default {
 
     if (!bet || bet < 50) {
       return sock.sendMessage(msg.key.remoteJid, {
-        text: "🎲 *Dice Game*\n\nUsage: *.dicegame <bet>*  — e.g. .dicegame 10k\nMin bet: $50\n✦ Shorthand: k = thousand | m = million | b = billion\nHighest roll wins!"
+        text: "🎲 *Dice Game*\n\nUsage: *.dicegame <bet>*  — e.g. .dicegame 10k\nMin bet: $50\nMax bet: $300B\n✦ Shorthand: k = thousand | m = million | b = billion\nHighest roll wins!"
       }, { quoted: msg });
     }
 
+    if (bet > MAX_BET) {
+      return sock.sendMessage(msg.key.remoteJid, { text: maxBetMessage() }, { quoted: msg });
+    }
     if (user.money < bet) {
       return sock.sendMessage(msg.key.remoteJid, {
         text: `❌ Not enough money!\n💰 Balance: $${user.money.toLocaleString()}`

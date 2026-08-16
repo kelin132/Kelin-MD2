@@ -1,6 +1,7 @@
 import { getUser, saveUser, requireRegistration } from "../economy/database.js";
 import { randomChoice } from "../../lib/gambling.mjs";
 import { parseAmount } from "../economy/parseAmount.js";
+import { MAX_BET, maxBetMessage } from "../economy/bettingLimits.js";
 
 const SYMBOLS = ["🍒", "🍋", "🍇", "🔔", "⭐", "💎", "7️⃣"];
 const PAYOUTS = {
@@ -33,10 +34,13 @@ export default {
 
     if (!bet || bet < 50) {
       return sock.sendMessage(msg.key.remoteJid, {
-        text: `🎰 *SLOT MACHINE*\n\nUsage: *.slots <bet>*  — e.g. .slots 50k\nMin bet: $50\n✦ Shorthand: k = thousand | m = million | b = billion\n\nSymbols & multipliers:\n💎 x20 | 7️⃣ x15 | ⭐ x10\n🔔 x8 | 🍇 x6 | 🍋 x5 | 🍒 x4\n2 matching — x1.5 partial win`
+        text: `🎰 *SLOT MACHINE*\n\nUsage: *.slots <bet>*  — e.g. .slots 50k\nMin bet: $50\nMax bet: $300B\n✦ Shorthand: k = thousand | m = million | b = billion\n\nSymbols & multipliers:\n💎 x20 | 7️⃣ x15 | ⭐ x10\n🔔 x8 | 🍇 x6 | 🍋 x5 | 🍒 x4\n2 matching — x1.5 partial win`
       }, { quoted: msg });
     }
 
+    if (bet > MAX_BET) {
+      return sock.sendMessage(msg.key.remoteJid, { text: maxBetMessage() }, { quoted: msg });
+    }
     if (user.money < bet) {
       return sock.sendMessage(msg.key.remoteJid, {
         text: `❌ Insufficient funds!\n💰 Balance: $${user.money.toLocaleString()}\nBet: $${bet.toLocaleString()}`

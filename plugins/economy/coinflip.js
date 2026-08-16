@@ -6,6 +6,7 @@
 import { getUser, saveUser, requireRegistration, addHistory, maybeAwardDiamonds, checkLevelUp } from "./database.js";
 import { randomChance } from "../../lib/gambling.mjs";
 import { parseAmount } from "./parseAmount.js";
+import { MAX_BET, maxBetMessage } from "./bettingLimits.js";
 import { getNewlyUnlockedRole, buildLevelUpMsg } from "../../lib/levelRoles.mjs";
 
 const COOLDOWN = 8 * 1000;
@@ -62,6 +63,7 @@ export default {
     const normalCall = call === "h" ? "heads" : call === "t" ? "tails" : call;
     let amount = parseAmount(rawAmt, user.money);
     if (!amount || isNaN(amount) || amount < 10) return reply("❌ Minimum bet is *$10*.");
+    if (amount > MAX_BET) return reply(maxBetMessage());
     if (amount > user.money) return reply(`❌ You only have *${fmt(user.money)}*.`);
     if (amount > MAX_BET) return reply("❌ Maximum bet is *$1B* virtual coins.");
 

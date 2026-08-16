@@ -1,6 +1,7 @@
 import { getUser, saveUser, requireRegistration } from "../economy/database.js";
 import { randomChoice } from "../../lib/gambling.mjs";
 import { parseAmount } from "../economy/parseAmount.js";
+import { MAX_BET, maxBetMessage } from "../economy/bettingLimits.js";
 
 export default {
   name: "coinflipbet",
@@ -19,8 +20,11 @@ export default {
 
     if (!["heads","tails"].includes(choice) || !bet || bet < 50) {
       return sock.sendMessage(msg.key.remoteJid, {
-        text: "💰 *Coin Flip Bet*\n\nUsage: *.coinflipbet <heads|tails> <amount>*\nMin bet: $50\n✦ Shorthand: 10k / 5m / 1b"
+        text: "💰 *Coin Flip Bet*\n\nUsage: *.coinflipbet <heads|tails> <amount>*\nMin bet: $50\nMax bet: $300B\n✦ Shorthand: 10k / 5m / 1b"
       }, { quoted: msg });
+    }
+    if (bet > MAX_BET) {
+      return sock.sendMessage(msg.key.remoteJid, { text: maxBetMessage() }, { quoted: msg });
     }
     if (user.money < bet) {
       return sock.sendMessage(msg.key.remoteJid, {
