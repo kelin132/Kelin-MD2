@@ -6,11 +6,11 @@ import { generateChallengeCanvas } from "../../lib/pokemon/challengeCanvas.mjs";
 import { createWebBattleRoom, webBattleUrl } from "../../lib/webBattleRoom.mjs";
 
 export default {
-  name: "challengeWeb",
-  // `.cha` is owned by challengeArena. Keeping a second plugin with the same
-  // alias makes command selection depend on filesystem order.
+  // Legacy implementation retained for reference only. The command is owned by
+  // challengeArena.js so `.cha` can never dispatch two competing room flows.
+  name: "challengeWebLegacy",
   aliases: [],
-  description: "Create a Pokémon battle room on the AIDORU website",
+  description: "Legacy disabled website challenge implementation",
   category: "pokemon",
   usage: ".cha @user  OR  reply to their message then .cha",
 

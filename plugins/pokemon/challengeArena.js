@@ -203,8 +203,8 @@ export default {
       {
         text:
           "✅ *ALL POKÉMON HAVE BEEN HEALED!*\n\n" +
-          "🏟️ Both trainers' battle parties have been taken to the AIDORU website.\n" +
-          "🔗 Preparing your shared battle lobby...",
+          "🏟️ Both trainers' battle parties have been loaded into one shared match.\n" +
+          "🔗 Preparing your direct Pokémon arena link...",
         mentions: [targetJid],
       },
       { quoted: msg },
@@ -240,11 +240,11 @@ export default {
     const url = webBattleUrl(room._id);
     const roomCode = room.code || room._id.slice(-6).toUpperCase();
     const caption =
-      `🌐 *WEB BATTLE LOBBY READY!*\n\n` +
+      `🌐 *POKÉMON BATTLE ARENA READY!*\n\n` +
       `*${challenger.username || msg.pushName || sender.split("@")[0]}* challenged @${targetJid.split("@")[0]}!\n\n` +
       `🔐 *Room code:* \`${roomCode}\`\n` +
-      `Open this link to enter the shared AIDORU battle:\n${url}\n\n` +
-      `Both trainers' healed parties are loaded and ready to fight. Sign in with your AIDORU account; the live match opens from this link or by entering the code in Pokémon Battle.`;
+      `Open this same link in your signed-in AIDORU accounts to enter the match directly:\n${url}\n\n` +
+      `Both trainers' healed parties, lead Pokémon, moves, and items are loaded into this one shared arena. The match starts automatically when the room opens.`;
 
     return sock.sendMessage(
       jid,
