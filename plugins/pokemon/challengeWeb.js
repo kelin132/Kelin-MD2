@@ -41,10 +41,17 @@ export default {
       return sock.sendMessage(chatJid, { text: "❌ That trainer hasn't started their Pokémon journey yet!" }, { quoted: msg });
     }
 
-    const party = await getTrainerParty(sender);
+    const [party, opponentParty] = await Promise.all([
+      getTrainerParty(sender),
+      getTrainerParty(targetJid),
+    ]);
     const lead = pickLeadFromParty(challenger, party);
+    const opponentLead = pickLeadFromParty(opponent, opponentParty);
     if (!lead || lead.hp <= 0) {
       return sock.sendMessage(chatJid, { text: "💔 All your Pokémon have fainted! Use *.heal* first." }, { quoted: msg });
+    }
+    if (!opponentLead || opponentLead.hp <= 0) {
+      return sock.sendMessage(chatJid, { text: "💔 The challenged trainer has no healthy Pokémon! They should use *.heal* first." }, { quoted: msg });
     }
 
     let room;
@@ -56,6 +63,9 @@ export default {
         challengerTrainer: challenger,
         challengerParty: party,
         opponentJid: targetJid,
+        opponentName: opponent.username || targetJid.split("@")[0],
+        opponentTrainer: opponent,
+        opponentParty,
       });
     } catch (error) {
       console.error("[challengeWeb] website battle room unavailable:", error?.message || error);
@@ -86,9 +96,9 @@ export default {
     const caption =
       `⚔️ *WEBSITE BATTLE CHALLENGE!*\n\n` +
       `*${challenger.username || msg.pushName || sender.split("@")[0]}* challenges @${targetJid.split("@")[0]} to an AIDORU Pokémon battle!\n\n` +
-      `📦 All party Pokémon have been forced into the website battle room.\n` +
+      `📦 Both players' party Pokémon have been forced into the same website battle room.\n` +
       `🌐 *Battle room:* ${webBattleUrl(room._id)}\n\n` +
-      `Open the link to enter the arena, ready your party, choose moves, use items, and spectate the live battle.`;
+      `Open the same link to enter this match. The challenger and challenged trainer will be placed on opposite sides automatically.`;
 
     if (challengeImage) {
       return sock.sendMessage(chatJid, { image: challengeImage, caption, mentions: [targetJid] }, { quoted: msg });
