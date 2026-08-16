@@ -3,6 +3,7 @@
  * Downloads Facebook videos using multiple API sources with auto-fallback.
  */
 import { get, davidGet } from "../../lib/gifted.js";
+import { omegaDownload } from "../../lib/omegaDownload.js";
 
 // ── Pick the best video URL from an API result ────────────────────────────────
 
@@ -49,6 +50,8 @@ function pickTitle(result) {
 
 async function fetchFacebook(url) {
   const attempts = [
+    // OmegaTech all-downloader
+    () => omegaDownload("all", { url }),
     () => get("/download/facebook",  { url }),
     () => get("/download/fb",        { url }),
     () => get("/download/fbvideo",   { url }),

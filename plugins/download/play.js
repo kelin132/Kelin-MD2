@@ -5,6 +5,7 @@
  */
 import yts from "yt-search";
 import { get, davidGet } from "../../lib/gifted.js";
+import { omegaDownload } from "../../lib/omegaDownload.js";
 
 // ── YouTube search ────────────────────────────────────────────────────────────
 
@@ -71,6 +72,8 @@ async function fetchAudio(videoUrl) {
     // David Cyril API — fallback
     () => davidGet("/download/ytmp3",   { url: videoUrl }),
     () => davidGet("/download/ytaudio", { url: videoUrl }),
+    // OmegaTech documented fallback
+    () => omegaDownload("play", { query: videoUrl, format: "mp3", quality: "128k" }),
   ];
 
   for (const attempt of endpoints) {

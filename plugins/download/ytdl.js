@@ -4,6 +4,7 @@
  */
 import yts from "yt-search";
 import { get, davidGet } from "../../lib/gifted.js";
+import { omegaDownload } from "../../lib/omegaDownload.js";
 
 // ── Search YouTube ────────────────────────────────────────────────────────────
 
@@ -41,6 +42,8 @@ function pickVideo(result) {
 
 async function fetchVideo(videoUrl) {
   const endpoints = [
+    // OmegaTech all-downloader
+    () => omegaDownload("all", { url: videoUrl }),
     () => get("/download/ytdl",    { url: videoUrl }),
     () => get("/download/youtube", { url: videoUrl, type: "video" }),
     () => get("/download/yt",      { url: videoUrl }),

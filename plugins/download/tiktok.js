@@ -4,6 +4,7 @@
  * API: https://apis.davidcyril.name.ng/endpoints/download/#tiktok-downloader
  */
 import { davidGet } from "../../lib/gifted.js";
+import { omegaDownload } from "../../lib/omegaDownload.js";
 
 // Deduplicate rapid re-triggers
 const processed = new Set();
@@ -16,6 +17,8 @@ const DAVID_BASE = "https://apis.davidcyril.name.ng";
  */
 async function fetchTikTok(url) {
   const attempts = [
+    // OmegaTech all-downloader
+    () => omegaDownload("all", { url }),
     () => davidGet("/download/tiktok",    { url }),
     () => davidGet("/download/tiktokdl",  { url }),
     () => davidGet("/download/tt",        { url }),
