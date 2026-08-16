@@ -86,8 +86,9 @@ try {
     log("warn", "[migration] cardLimit migration failed: " + String(migErr));
   }
 } catch (err) {
-  log("warn", "MongoDB connection failed: " + String(err));
-  log("warn", "Economy/guild/staff features require MongoDB. Add MONGO_URI to your .env");
+  log("error", "MongoDB startup failed: " + String(err));
+  log("error", "Bot startup stopped before plugins loaded. Check MONGO_URI, MongoDB network access, and database permissions.");
+  process.exit(1);
 }
 
 // ── Load plugins ──────────────────────────────────────────────────────────────
