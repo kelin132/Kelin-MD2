@@ -10,8 +10,22 @@ function normaliseLabel(value) {
   return String(value ?? "").trim().replace(/^@+/, "").toLowerCase();
 }
 
+function unwrapMessage(message) {
+  let current = message || {};
+  for (let index = 0; index < 5; index += 1) {
+    const next =
+      current.ephemeralMessage?.message ||
+      current.viewOnceMessage?.message ||
+      current.viewOnceMessageV2?.message ||
+      current.viewOnceMessageV2Extension?.message;
+    if (!next) break;
+    current = next;
+  }
+  return current;
+}
+
 function getContextInfo(msg) {
-  const message = msg.message || {};
+  const message = unwrapMessage(msg.message);
   return (
     message.extendedTextMessage?.contextInfo ||
     message.imageMessage?.contextInfo ||
@@ -74,6 +88,7 @@ export default {
     const mentionedJid = ctx?.mentionedJid?.[0] || null;
     const quotedSender =
       ctx?.participant ||
+      ctx?.quotedParticipant ||
       ctx?.quotedMessage?.key?.participant ||
       (msg.quoted?.key?.participant ?? null) ||
       (msg.quoted?.key?.remoteJid && msg.quoted.key.remoteJid !== jid
