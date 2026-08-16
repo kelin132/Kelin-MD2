@@ -11,6 +11,32 @@ import {
 import { generateBattleScene } from "../../lib/pokemon/canvas.mjs";
 import { generateChallengeCanvas } from "../../lib/pokemon/challengeCanvas.mjs";
 
+function unwrapMessage(message) {
+  let current = message || {};
+  for (let index = 0; index < 5; index += 1) {
+    const next =
+      current.ephemeralMessage?.message ||
+      current.viewOnceMessage?.message ||
+      current.viewOnceMessageV2?.message ||
+      current.viewOnceMessageV2Extension?.message;
+    if (!next) break;
+    current = next;
+  }
+  return current;
+}
+
+function getContextInfo(msg) {
+  const message = unwrapMessage(msg.message);
+  return (
+    message.extendedTextMessage?.contextInfo ||
+    message.imageMessage?.contextInfo ||
+    message.videoMessage?.contextInfo ||
+    message.stickerMessage?.contextInfo ||
+    message.buttonsResponseMessage?.contextInfo ||
+    null
+  );
+}
+
 export default {
   name: "challenge",
   aliases: ["ch", "pvp", "pokebattle"],
@@ -116,10 +142,11 @@ export default {
     // ── Resolve opponent ───────────────────────────────────────────────────────
     // Priority 1: @mention in the command message
     // Priority 2: sender of the message being replied to
-    const ctx = msg.message?.extendedTextMessage?.contextInfo;
+    const ctx = getContextInfo(msg);
     const mentionedJid = ctx?.mentionedJid?.[0] || null;
     const quotedSender =
       ctx?.participant ||                         // group quoted sender
+      ctx?.quotedParticipant ||                   // alternate Baileys field
       (msg.quoted?.key?.participant ?? null) ||   // Baileys quoted key (group)
       (msg.quoted?.key?.remoteJid !== jid         // DM: quoted sender ≠ group jid
         ? msg.quoted?.key?.remoteJid
