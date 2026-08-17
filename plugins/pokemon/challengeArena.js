@@ -82,11 +82,11 @@ async function findGroupMemberByLabel(sock, chatJid, value) {
 }
 
 export default {
-  name: "challenge-arena",
-  aliases: ["cha"],
-  description: "Challenge another trainer in the AIDORU web battle arena",
+  name: "chweb",
+  aliases: ["orcha"],
+  description: "Open a shared AIDORU web arena with healed parties, moves, items, and live trainer matchmaking",
   category: "pokemon",
-  usage: ".cha @user  OR  .cha <trainer username>  OR  reply to their message then .cha",
+  usage: ".chweb @user  OR  .chweb <trainer username>  OR  reply to their message then .chweb",
 
   async run({ sock, msg, sender, args }) {
     const jid = msg.key.remoteJid;
@@ -130,9 +130,9 @@ export default {
         {
           text:
             "Usage:\n" +
-            "• *.cha @user* — challenge that trainer in the web arena\n" +
-            "• *.cha <trainer username>* — challenge by trainer username\n" +
-            "• Reply to their message then *.cha*",
+            "• *.chweb @user* — challenge that trainer in the web arena\n" +
+            "• *.chweb <trainer username>* — challenge by trainer username\n" +
+            "• Reply to their message then *.chweb*",
         },
         { quoted: msg },
       );
@@ -169,10 +169,10 @@ export default {
     try {
       await Promise.all([healParty(challengerJid), healParty(opponentJid)]);
     } catch (error) {
-      console.error("[cha] unable to heal battle parties:", error?.message || error);
+      console.error("[chweb] unable to heal battle parties:", error?.message || error);
       return sock.sendMessage(
         jid,
-        { text: "❌ I couldn't heal both battle parties right now. Please try *.cha* again." },
+        { text: "❌ I couldn't heal both battle parties right now. Please try *.chweb* again." },
         { quoted: msg },
       );
     }
@@ -229,10 +229,10 @@ export default {
         opponentParty,
       });
     } catch (error) {
-      console.error("[cha] website battle room unavailable:", error?.message || error);
+      console.error("[chweb] website battle room unavailable:", error?.message || error);
       return sock.sendMessage(
         jid,
-        { text: "❌ I couldn't open the web battle arena right now. Please try *.cha* again." },
+        { text: "❌ I couldn't open the web battle arena right now. Please try *.chweb* again." },
         { quoted: msg },
       );
     }

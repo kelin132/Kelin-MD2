@@ -43,9 +43,34 @@ const PUBLIC_CATS = new Set([
   "naruto", "pokemon", "pets", "image", "dragonball",
 ]);
 
-function renderCategory(emoji, title, disabledTag, commands) {
-  const commandLines = commands
-    .map((command) => `│ ꕥ ${command}`)
+function normalizeCategory(value = "") {
+  const normalized = String(value).trim().toLowerCase().replace(/é/g, "e");
+  return normalized === "poke" ? "pokemon" : normalized;
+}
+
+function formatUsage(usage, menuPrefix) {
+  if (!usage) return "";
+  return String(usage).replace(/\.(?=[a-z])/gi, menuPrefix);
+}
+
+function renderDetailedCommand(plugin, menuPrefix) {
+  const command = `${menuPrefix}${plugin.name}`;
+  const aliases = (plugin.aliases || [])
+    .filter((alias) => alias && alias !== plugin.name)
+    .map((alias) => `${menuPrefix}${alias}`);
+  const aliasLine = aliases.length ? `\n│   ◇ Also: ${aliases.join("  ·  ")}` : "";
+  const usage = formatUsage(plugin.usage, menuPrefix);
+  const usageLine = usage ? `\n│   ↳ ${usage}` : "";
+  const description = plugin.description || "Explore this command in your trainer journey.";
+
+  return `│ ✦ *${command}*${aliasLine}\n│   ${description}${usageLine}`;
+}
+
+function renderCategory(emoji, title, disabledTag, plugins, menuPrefix, detailed = false) {
+  const commandLines = plugins
+    .map((plugin) => detailed
+      ? renderDetailedCommand(plugin, menuPrefix)
+      : `│ ꕥ ${menuPrefix}${plugin.name}`)
     .join("\n");
 
   return `\n╭─${emoji}「 ${title}${disabledTag} 」\n│\n${commandLines}\n╰━━━━━━━━━━━━━━━━━━━━`;
@@ -55,11 +80,11 @@ export default {
   name: "menu",
   description: "Display all available commands",
   category: "main",
-  usage: ".menu",
+  usage: ".menu [category]  — e.g. .menu pokemon",
   aliases: ["help", "cmds", "commands", "start"],
   cooldown: 10,
 
-  async run({ sock, msg, prefix, isOwner, isStaff, isMod, sender }) {
+  async run({ sock, msg, prefix, isOwner, isStaff, isMod, sender, args }) {
     const jid = msg.key.remoteJid;
     const allPlugins = getPlugins();
     const isGroup = jid?.endsWith("@g.us");
@@ -69,12 +94,13 @@ export default {
     const disabledCats = new Set(gs.disabledCategories || []);
     const runtime = getRuntimeSettings();
     const menuPrefix = runtime.prefix || prefix;
+    const requestedCategory = normalizeCategory(args?.[0] || "");
 
     const map = new Map();
     for (const plugin of allPlugins) {
       const cat = plugin.category || "other";
       if (!map.has(cat)) map.set(cat, []);
-      map.get(cat).push(plugin.name);
+      map.get(cat).push(plugin);
     }
 
     const showStaff = isOwner || isStaff || isMod;
@@ -90,7 +116,22 @@ export default {
       ...[...map.keys()].filter((cat) => !order.includes(cat) && PUBLIC_CATS.has(cat)).sort(),
     ];
 
-    let text = `𝗛𝗲𝗹𝗹𝗼 𝘀𝗲𝗻𝗽𝗮𝗶 ${mention}, 𝗜 𝗮𝗺 𝗭𝗵𝗼𝗻𝗴𝗹𝗶 👋
+    if (requestedCategory && !sortedCats.includes(requestedCategory)) {
+      return sock.sendMessage(jid, {
+        text: `❌ That category is unavailable here.\n\nTry *.menu pokemon* to open the Pokémon command guide.`,
+      }, { quoted: msg });
+    }
+
+    const visibleCats = requestedCategory ? [requestedCategory] : sortedCats;
+    let text = requestedCategory
+      ? `╭━━━━━━━━━━━━━━━━━━━━╮
+│ 🎮 *𝗣𝗢𝗞𝗘́𝗠𝗢𝗡 𝗙𝗜𝗘𝗟𝗗 𝗚𝗨𝗜𝗗𝗘*
+│
+│ Build your team, master your party,
+│ and choose your next battle wisely.
+╰━━━━━━━━━━━━━━━━━━━━╯
+\n${READMORE}\n`
+      : `𝗛𝗲𝗹𝗹𝗼 𝘀𝗲𝗻𝗽𝗮𝗶 ${mention}, 𝗜 𝗮𝗺 𝗭𝗵𝗼𝗻𝗴𝗹𝗶 👋
 ╭━━━━━━━━━━━━━━━━━━━━╮
 │ ✦ 𝗥𝗘𝗚𝗜𝗦𝗧𝗘𝗥
 │ ├─ 🌸 ꕥ ${menuPrefix}𝗿𝗲𝗴 › 𝗨𝘀𝗲 𝗲𝗰𝗼𝗻𝗼𝗺𝘆 𝗰𝗼𝗺𝗺𝗮𝗻𝗱𝘀
@@ -100,19 +141,19 @@ export default {
 ╰━━━━━━━━━━━━━━━━━━━━╯
 \n${READMORE}\n`;
 
-    for (const cat of sortedCats) {
+    for (const cat of visibleCats) {
       const isCatDisabled = isGroup && disabledCats.has(cat) && !showStaff;
       if (isCatDisabled) continue;
       const emoji = categoryEmojis[cat] || "📌";
       const title = categoryTitles[cat] || cat.toUpperCase();
       const disabledTag = isGroup && disabledCats.has(cat) && showStaff ? " _(disabled)_" : "";
-      const displayCommands = map.get(cat).sort().map((command) => {
-        const styledCommand = command
-          .replace(/[a-z]/g, (letter) => String.fromCodePoint(0x1d5ee + letter.charCodeAt(0) - 97))
-          .replace(/[A-Z]/g, (letter) => String.fromCodePoint(0x1d5d4 + letter.charCodeAt(0) - 65));
-        return `${menuPrefix}${styledCommand}`;
-      });
-      text += renderCategory(emoji, title, disabledTag, displayCommands);
+      const categoryPlugins = [...map.get(cat)].sort((a, b) => a.name.localeCompare(b.name));
+      if (requestedCategory) {
+        text += renderCategory(emoji, title, disabledTag, categoryPlugins, menuPrefix, true);
+        text += `\n\n🌟 _Use *.menu* to return to the full command atlas._`;
+      } else {
+        text += renderCategory(emoji, title, disabledTag, categoryPlugins, menuPrefix);
+      }
     }
 
     if (isGroup && !showStaff && disabledCats.size > 0) {
