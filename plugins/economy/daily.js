@@ -1,5 +1,4 @@
 import { getUser, saveUser, requireRegistration, checkLevelUp } from "./database.js";
-import { generateDailyImage } from "../../lib/economyCanvas.mjs";
 
 function fmt(n) {
   if (n >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
@@ -64,17 +63,6 @@ export default {
 │ ⭐ *Level ${user.level}*  🔥 *Streak active!*${leveled ? `\n│\n│ 🎉 *LEVEL UP!* — Now Level ${user.level}` : ""}
 ╰───────────────❀`;
 
-    try {
-      const imgBuffer = await generateDailyImage({
-        reward,
-        xpBonus,
-        balance: user.money,
-        level:   user.level,
-        leveled,
-      });
-      await sock.sendMessage(jid, { image: imgBuffer, caption }, { quoted: msg });
-    } catch {
-      await sock.sendMessage(jid, { text: caption }, { quoted: msg });
-    }
+    await sock.sendMessage(jid, { text: caption }, { quoted: msg });
   },
 };
