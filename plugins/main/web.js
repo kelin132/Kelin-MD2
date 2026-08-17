@@ -1,4 +1,4 @@
-const WEBSITE_URL = "https://aidoru.zone.id";
+const WEBSITE_URL = "https://aidoru.zone.id/";
 
 export default {
   name: "web",
@@ -12,16 +12,21 @@ export default {
     const jid = msg.key.remoteJid || msg.key.participant;
     if (!jid) return;
 
-    const text = `╭─❀「 🌐 *𝐀𝐈𝐃𝐎𝐑𝐔 𝐖𝐄𝐁𝐒𝐈𝐓𝐄* 」❀─╮
-│ Your trainer profile, Pokémon party,
-│ cards, pets, Mart, battles and more.
+    const text = `╭─୨୧「 🌸 *𝐀𝐈𝐃𝐎𝐑𝐔 𝐂𝐎𝐌𝐌𝐔𝐍𝐈𝐓𝐘* 」୨୧─╮
+│ A soft little home for every trainer,
+│ collector and Pokémon dreamer. ✨
 │
-│ ✦ Edit your profile background
-│ ✦ Manage your party and PC
-│ ✦ Join Pokémon battle rooms
+│ ✦ Build your trainer profile and showcase your style
+│ ✦ Track your XP, level, Pokémon party and cards
+│ ✦ Care for your pets and explore the Mart
+│ ✦ Create or join lively Pokémon battle rooms
+│ ✦ Meet other members of the AIDORU community
+│
+│ Come in, choose your next adventure,
+│ and let your collection sparkle. 🌷
 │
 │ 🔗 ${WEBSITE_URL}
-╰───────────────❀`;
+╰────────「 ✦ 𝐒𝐓𝐀𝐑𝐓 𝐘𝐎𝐔𝐑 𝐉𝐎𝐔𝐑𝐍𝐄𝐘 ✦ 」────────╯`;
 
     const quoted = { quoted: msg };
     try {
@@ -29,11 +34,12 @@ export default {
         text,
         contextInfo: {
           externalAdReply: {
-            title: "AIDORU — Your Pokémon trainer world",
-            body: "Manage your profile, Pokémon, cards, pets and live battles on the web.",
+            title: "🌸 AIDORU Community — Your Pokémon World",
+            body: "Create your trainer profile, collect cards, raise Pokémon, care for pets and join battle rooms.",
             sourceUrl: WEBSITE_URL,
+            canonicalUrl: WEBSITE_URL,
             mediaType: 1,
-            renderLargerThumbnail: false,
+            renderLargerThumbnail: true,
             showAdAttribution: false,
           },
         },
