@@ -3,7 +3,7 @@ const WEBSITE_URL = "https://aidoru.zone.id";
 export default {
   name: "web",
   aliases: ["website", "site"],
-  category: "general",
+  category: "utilities",
   cooldown: 5,
   description: "Get the AIDORU website link",
   usage: ".web",
