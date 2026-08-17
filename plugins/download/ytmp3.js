@@ -1,4 +1,4 @@
-import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
+import { downloadMediaBuffer, downloadYoutubeAudio, omegaDownload } from "../../lib/omegaDownload.js";
 
 export default {
   name: "ytmp3",
@@ -25,9 +25,18 @@ export default {
 
     try {
       await sock.sendMessage(jid, { text: "⏳ Downloading audio…" }, { quoted: msg });
-      const media = await omegaDownload("play", { url: url.trim(), format: "mp3" });
-      const file = await downloadMediaBuffer(media.url);
-      const title = media.title || "YouTube Audio";
+      let file;
+      let title = "YouTube Audio";
+      try {
+        const media = await omegaDownload("play", { url: url.trim(), format: "mp3" });
+        title = media.title || title;
+        file = await downloadMediaBuffer(media.url);
+      } catch (providerError) {
+        console.warn("[ytmp3] Valore audio path failed; using local YouTube audio fallback:", providerError.message);
+        const local = await downloadYoutubeAudio(url.trim());
+        file = local;
+        title = local.title || title;
+      }
       const mimetype = file.mimetype.startsWith("audio/") ? file.mimetype : "audio/mpeg";
 
       await sock.sendMessage(jid, {
