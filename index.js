@@ -105,4 +105,6 @@ startCardSpawner();
 startTaxScheduler();
 
 // ── Auto-update check ─────────────────────────────────────────────────────────
-autoUpdate();
+// Do not compete with the first connection/message burst for network and disk.
+const updateTimer = setTimeout(() => autoUpdate(), 30_000);
+updateTimer.unref?.();
