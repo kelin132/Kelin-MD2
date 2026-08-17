@@ -17,7 +17,7 @@ export default {
   description: "Leaderboard — top cards or top Pokémon collectors",
   category: "economy",
   usage: ".lb --cards | .lb --pokemon",
-  aliases: ["kb",".lb"],
+  aliases: ["kb", "leaderboard"],
   cooldown: 8,
 
   async run({ sock, msg, args }) {
@@ -28,10 +28,34 @@ export default {
 
     const db = await getDb();
 
-    // ── Default: use the same wealth-ranking layout as .rich/.leaderboard ────
+    // ── Default: wealth leaderboard (kept inline so deployed containers do not
+    // depend on a separate leaderboard.js file that may not exist). ─────────
     if (!flag) {
-      const { default: richLeaderboard } = await import("./leaderboard.js");
-      return richLeaderboard.run({ sock, msg });
+      const { getAllUsers } = await import("./database.js");
+      const users = (await getAllUsers())
+        .filter((user) => user?.registered !== false)
+        .map((user) => ({
+          ...user,
+          totalWealth: Number(user.money || 0) + Number(user.bank || 0),
+        }))
+        .sort((a, b) => b.totalWealth - a.totalWealth)
+        .slice(0, 10);
+
+      if (!users.length) {
+        return sock.sendMessage(jid, { text: "💰 No registered players yet!" }, { quoted: msg });
+      }
+
+      let text = "💰 *WEALTH LEADERBOARD — TOP 10*\n";
+      text += "━".repeat(30) + "\n\n";
+      for (let i = 0; i < users.length; i++) {
+        const user = users[i];
+        const medal = MEDALS[i] || `${i + 1}.`;
+        const name = user.name || user.username || `User_${String(user._id || "").slice(-4)}`;
+        text += `${medal} *${name}*\n`;
+        text += `   💰 $${user.totalWealth.toLocaleString()}  •  ⭐ Lv${user.level || 1}\n\n`;
+      }
+
+      return sock.sendMessage(jid, { text: text.trim() }, { quoted: msg });
     }
 
     // ── TOP LEVELS ────────────────────────────────────────────────────────────
