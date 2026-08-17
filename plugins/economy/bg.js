@@ -4,6 +4,7 @@ export default {
   name: "profile-background-web-only",
   aliases: [],
   category: "economy",
+  hidden: true,
   cooldown: 5,
   description: "Profile backgrounds are managed on the AIDORU website",
   usage: ".bg",

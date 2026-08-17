@@ -98,6 +98,7 @@ export default {
 
     const map = new Map();
     for (const plugin of allPlugins) {
+      if (plugin.hidden) continue;
       const cat = plugin.category || "other";
       if (!map.has(cat)) map.set(cat, []);
       map.get(cat).push(plugin);

@@ -6,6 +6,14 @@ import { countTrainerPokemon } from "../../lib/pokemon/pokemonDb.mjs";
 
 const xpForLevel = (level) => level * 100;
 
+function withTimeout(promise, timeoutMs, fallback = null) {
+  let timer;
+  const timeout = new Promise((resolve) => {
+    timer = setTimeout(() => resolve(fallback), timeoutMs);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
 async function sendProfileFallback({ sock, jid, msg, caption, profilePic, target }) {
   if (profilePic) {
     try {
@@ -57,7 +65,7 @@ export default {
 
     const [user, profilePic, cardUser, pokemonCount] = await Promise.all([
       getUser(target),
-      getProfilePic(sock, target),
+      withTimeout(getProfilePic(sock, target), 2500),
       getCardUser(target),
       countTrainerPokemon(target),
     ]);

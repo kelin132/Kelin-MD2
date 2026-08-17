@@ -83,7 +83,7 @@ async function findGroupMemberByLabel(sock, chatJid, value) {
 
 export default {
   name: "chweb",
-  aliases: ["cha"],
+  aliases: ["cha", "chaweb"],
   description: "Open a shared AIDORU web arena with healed parties, moves, items, and live trainer matchmaking",
   category: "pokemon",
   usage: ".chweb @user  OR  .chweb <trainer username>  OR  reply to their message then .chweb",
@@ -145,7 +145,10 @@ export default {
       return sock.sendMessage(jid, { text: "❌ You can't challenge yourself!" }, { quoted: msg });
     }
 
-    const challenger = await getTrainer(sender);
+    const [challenger, opponent] = await Promise.all([
+      getTrainer(sender),
+      findTrainerForJid(targetJid),
+    ]);
     if (!challenger) {
       return sock.sendMessage(
         jid,
@@ -154,7 +157,6 @@ export default {
       );
     }
 
-    const opponent = await findTrainerForJid(targetJid);
     if (!opponent) {
       return sock.sendMessage(
         jid,
