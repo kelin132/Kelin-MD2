@@ -2,7 +2,6 @@ import { createSpawnId, fetchAllCards, TIER_NAME, TIER_NUM } from "../../lib/car
 import { findOrCreateUser, uid } from "../cards/db.js";
 
 const MAX_BULK_CARDS = 100;
-const MAX_SERIES_CARDS = 500;
 
 function contextInfo(msg) {
   return msg.message?.extendedTextMessage?.contextInfo
@@ -136,9 +135,6 @@ export default {
           if (seriesNames.length > 1) {
             return reply(`❌ That series search is ambiguous. Try one of these:\n\n${seriesNames.slice(0, 12).map((name) => `• ${name}`).join("\n")}`);
           }
-        }
-        if (seriesMatches.length > MAX_SERIES_CARDS) {
-          return reply(`❌ This series contains ${seriesMatches.length} cards, above the safe grant limit of ${MAX_SERIES_CARDS}.`);
         }
         grantedCards = seriesMatches;
       } else {
