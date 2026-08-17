@@ -5,7 +5,7 @@
  */
 import yts from "yt-search";
 import { get, davidGet } from "../../lib/gifted.js";
-import { downloadMediaBuffer, downloadYoutubeAudio, omegaDownload } from "../../lib/omegaDownload.js";
+import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
 
 // ── YouTube search ────────────────────────────────────────────────────────────
 
@@ -111,18 +111,9 @@ export default {
       const meta = await ytSearch(text);
       await sendBanner(sock, jid, msg, meta, "Fetching audio… please wait");
 
-      let file;
-      let trackTitle = meta.title;
-      try {
-        const { dl, title } = await fetchAudio(meta.url);
-        trackTitle = title || trackTitle;
-        file = await downloadMediaBuffer(dl);
-      } catch (providerError) {
-        console.warn("[play] Provider audio path failed; using local YouTube audio fallback:", providerError.message);
-        const local = await downloadYoutubeAudio(meta.url);
-        file = local;
-        trackTitle = local.title || trackTitle;
-      }
+      const { dl, title } = await fetchAudio(meta.url);
+      const trackTitle = title || meta.title;
+      const file = await downloadMediaBuffer(dl);
       const mimetype = file.mimetype.startsWith("audio/") ? file.mimetype : "audio/mpeg";
 
       await sock.sendMessage(jid, {

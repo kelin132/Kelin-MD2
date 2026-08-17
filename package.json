@@ -11,7 +11,6 @@
     "install:panel": "npm install --legacy-peer-deps --package-lock=false --registry=https://registry.npmjs.org"
   },
   "dependencies": {
-    "@distube/ytdl-core": "^4.16.10",
     "@hapi/boom": "^10.0.1",
     "@napi-rs/canvas": "^0.1.86",
     "@whiskeysockets/baileys": "7.0.0-rc13",
