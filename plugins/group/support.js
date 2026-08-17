@@ -29,10 +29,22 @@ Join our official support group:
 ⚔️ Anime power activated...
 `;
 
+      const supportUrl = "https://chat.whatsapp.com/EIw91iFyLXOAMgjFg6gmZI?s=cl&p=a&mlu=0&amv=2";
       await sock.sendMessage(
         msg.key.remoteJid,
         {
-          text: supportMessage
+          text: supportMessage,
+          contextInfo: {
+            externalAdReply: {
+              title: "AKIRA MD Support Group",
+              body: "Join the official support group for help, updates, and announcements.",
+              mediaType: 1,
+              thumbnailUrl: "https://aidoru.zone.id/favicon.ico",
+              sourceUrl: supportUrl,
+              renderLargerThumbnail: true,
+              showAdAttribution: false,
+            },
+          },
         },
         { quoted: msg }
       );
