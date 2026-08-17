@@ -63,10 +63,12 @@ export default {
 
     if (target === sender && !await requireRegistration(sock, msg, sender)) return;
 
-    const [user, profilePic, cardUser, pokemonCount] = await Promise.all([
+    const cardUser = await getCardUser(target);
+    const websiteAvatar = [cardUser?.profilePictureUrl, cardUser?.profileImage, cardUser?.avatarUrl]
+      .find((value) => typeof value === "string" && /^https?:\/\//i.test(value));
+    const [user, profilePic, pokemonCount] = await Promise.all([
       getUser(target),
-      withTimeout(getProfilePic(sock, target), 2500),
-      getCardUser(target),
+      withTimeout(getProfilePic(sock, target, websiteAvatar), 2500),
       countTrainerPokemon(target),
     ]);
 
