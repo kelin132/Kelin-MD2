@@ -2,29 +2,35 @@ import { generateOtp, getOrCreateWebsiteId } from "../../lib/websiteAuth.mjs";
 
 export default {
   name: "otp",
-  description: "Send a one-time AIDORU password reset code",
+  description: "Send a one-time AIDORU password reset code in a group",
   category: "utilities",
   usage: ".otp",
   cooldown: 30,
 
   async run({ sock, msg, sender }) {
-    // In a group, pluginManager resolves sender from msg.key.participant. In a
-    // direct chat it falls back to msg.key.remoteJid. Always use that sender
-    // JID for identity lookup and delivery; never send the OTP to the group.
-    const senderJid = String(sender || msg.key.participant || msg.key.remoteJid || "").trim();
-    const sourceChat = msg.key.remoteJid;
-    const deliveryJid = senderJid;
-    const quoted = deliveryJid === sourceChat ? { quoted: msg } : undefined;
+    const sourceChat = String(msg.key.remoteJid || "").trim();
+    const senderJid = String(sender || msg.key.participant || sourceChat || "").trim();
+    const quoted = { quoted: msg };
 
-    if (!deliveryJid || deliveryJid.endsWith("@g.us")) return;
+    if (!sourceChat.endsWith("@g.us")) {
+      if (sourceChat) {
+        await sock.sendMessage(sourceChat, {
+          text: "❌ Use *.otp* in a group chat. For your safety, reset codes are never sent in private messages.",
+        }, quoted);
+      }
+      return;
+    }
+
+    if (!senderJid) return;
 
     try {
-      const websiteId = await getOrCreateWebsiteId(deliveryJid);
+      const websiteId = await getOrCreateWebsiteId(senderJid);
       const code = await generateOtp(websiteId);
-      await sock.sendMessage(deliveryJid, {
+      await sock.sendMessage(sourceChat, {
         text: [
           "🔐 *AIDORU PASSWORD RESET CODE*",
           "",
+          `For: *${senderJid.split("@")[0]}*`,
           `AIDORU ID: *${websiteId}*`,
           `One-time code: *${code}*`,
           "",
@@ -34,7 +40,7 @@ export default {
       }, quoted);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Could not create a reset code.";
-      await sock.sendMessage(deliveryJid, { text: `❌ ${message}` }, quoted);
+      await sock.sendMessage(sourceChat, { text: `❌ ${message}` }, quoted);
     }
   },
 };

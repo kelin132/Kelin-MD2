@@ -17,7 +17,7 @@ export default {
           "",
           `ID: *${websiteId}*`,
           "",
-          "Set your website password directly on AIDORU, then sign in with this ID. Use *.otp* in this DM if you need to reset it.",
+          "Set your website password directly on AIDORU, then sign in with this ID. Use *.otp* in a group if you need to reset it.",
         ].join("\n"),
       }, { quoted: msg });
     } catch (error) {
