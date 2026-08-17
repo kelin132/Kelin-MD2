@@ -8,7 +8,6 @@ import { randomChoice } from "../../lib/gambling.mjs";
 import { parseAmount } from "./parseAmount.js";
 import { MAX_BET, maxBetMessage } from "./bettingLimits.js";
 import { getNewlyUnlockedRole, buildLevelUpMsg } from "../../lib/levelRoles.mjs";
-import { generateSlotsImage } from "../../lib/economyCanvas.mjs";
 
 const COOLDOWN = 15 * 1000;
 
@@ -128,21 +127,7 @@ export default {
 ${resultLine}
 ╰───────────────❀`;
 
-    try {
-      const imgBuffer = await generateSlotsImage({
-        reels:         [a, b, c],
-        resultMsg,
-        bet:           amount,
-        winnings,
-        balance:       user.money,
-        diamondReward: diamondReward || 0,
-        leveled,
-        level:         newLevel,
-      });
-      await sock.sendMessage(jid, { image: imgBuffer, caption }, { quoted: msg });
-    } catch {
-      await reply(caption);
-    }
+    await reply(caption);
 
     if (leveled) {
       const newRole = getNewlyUnlockedRole(startLevel, newLevel);
