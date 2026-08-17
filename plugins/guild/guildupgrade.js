@@ -63,8 +63,24 @@ export default {
       }, { quoted: msg });
     }
 
-    await sock.sendMessage(msg.key.remoteJid, {
-      text: `╭─〔 🎉 *GUILD UPGRADED* 〕\n│\n│ ⚔️ Guild    : ${guildName}\n│ ⭐ New Level: ${result.level}\n│ 💰 Treasury : $${Number(result.treasury || 0).toLocaleString()}\n│ 🧾 New Tax  : ${(guildTaxRate(result.level) * 100).toFixed(0)}%\n│\n│ Your guild has unlocked a stronger tax treasury and larger member capacity.\n└───────────────◆`,
+    const chatJid = msg.key.remoteJid;
+    const ownerNumber = String(sender).split("@")[0].split(":")[0];
+    const notificationText = `╭─〔 🔔 *GUILD LEVEL UP* 〕\n│\n│ ⚔️ *${guildName}* is now *Lv.${result.level}*!\n│ 👑 Upgraded by: @${ownerNumber}\n│ 🧾 New tax rate: ${(guildTaxRate(result.level) * 100).toFixed(0)}%\n│ 👥 New capacity: ${8 + Number(result.level || 1) * 2} members\n│\n│ ✦ Keep working together to unlock the next guild upgrade.\n└───────────────◆`;
+    const contextInfo = { mentionedJid: [sender] };
+
+    await sock.sendMessage(chatJid, {
+      text: `╭─〔 🎉 *GUILD UPGRADED* 〕\n│\n│ ⚔️ Guild    : ${guildName}\n│ ⭐ New Level: ${result.level}\n│ 💰 Treasury : $${Number(result.treasury || 0).toLocaleString()}\n│ 🧾 New Tax  : ${(guildTaxRate(result.level) * 100).toFixed(0)}%\n│\n│ A level-up notification has been sent to the guild members.\n└───────────────◆`,
+      contextInfo,
     }, { quoted: msg });
+
+    if (!String(chatJid).endsWith("@g.us")) {
+      const members = Array.isArray(result.members) ? result.members : (Array.isArray(guild.members) ? guild.members : []);
+      const recipients = [...new Set(members.map((member) => String(member).trim()))]
+        .filter((member) => member && member !== String(chatJid));
+      await Promise.allSettled(recipients.map((recipient) => sock.sendMessage(recipient, {
+        text: notificationText,
+        contextInfo,
+      })));
+    }
   },
 };
