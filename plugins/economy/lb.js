@@ -16,7 +16,7 @@ export default {
   name: "lb",
   description: "Leaderboard — top cards or top Pokémon collectors",
   category: "economy",
-  usage: ".lb --cards | .lb --pokemon",
+  usage: ".lb --cards | .lb --pokemon";".lb",
   aliases: ["kb"],
   cooldown: 8,
 
