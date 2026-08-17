@@ -4,7 +4,7 @@
  * API: https://apis.davidcyril.name.ng/endpoints/download/#tiktok-downloader
  */
 import { davidGet } from "../../lib/gifted.js";
-import { omegaDownload } from "../../lib/omegaDownload.js";
+import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
 
 // Deduplicate rapid re-triggers
 const processed = new Set();
@@ -73,11 +73,13 @@ export default {
       await sock.sendMessage(jid, { text: "⏳ Downloading TikTok video, please wait..." }, { quoted: msg });
 
       const { dl, title } = await fetchTikTok(url.trim());
+      const file = await downloadMediaBuffer(dl);
+      const mimetype = file.mimetype.startsWith("video/") ? file.mimetype : "video/mp4";
 
       await sock.sendMessage(jid, {
-        video:    { url: dl },
-        mimetype: "video/mp4",
-        caption:  `🎵 *${title}*`,
+        video: file.buffer,
+        mimetype,
+        caption: `🎵 *${title}*`,
       }, { quoted: msg });
 
     } catch (err) {

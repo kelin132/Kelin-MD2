@@ -5,7 +5,7 @@
  */
 import yts from "yt-search";
 import { get, davidGet } from "../../lib/gifted.js";
-import { omegaDownload } from "../../lib/omegaDownload.js";
+import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
 
 // ── YouTube search ────────────────────────────────────────────────────────────
 
@@ -112,13 +112,15 @@ export default {
       await sendBanner(sock, jid, msg, meta, "Fetching audio… please wait");
 
       const { dl, title } = await fetchAudio(meta.url);
-      const trackTitle    = title || meta.title;
+      const file = await downloadMediaBuffer(dl);
+      const trackTitle = title || meta.title;
+      const mimetype = file.mimetype.startsWith("audio/") ? file.mimetype : "audio/mpeg";
 
       await sock.sendMessage(jid, {
-        audio:    { url: dl },
-        mimetype: "audio/mpeg",
+        audio: file.buffer,
+        mimetype,
         fileName: `${trackTitle}.mp3`,
-        ptt:      false,
+        ptt: false,
       }, { quoted: msg });
 
     } catch (err) {

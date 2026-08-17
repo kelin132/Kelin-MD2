@@ -3,7 +3,7 @@
  * Downloads Facebook videos using multiple API sources with auto-fallback.
  */
 import { get, davidGet } from "../../lib/gifted.js";
-import { omegaDownload } from "../../lib/omegaDownload.js";
+import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
 
 // ── Pick the best video URL from an API result ────────────────────────────────
 
@@ -119,12 +119,14 @@ Supported formats:
 
     try {
       const { video, title } = await fetchFacebook(text.trim());
+      const file = await downloadMediaBuffer(video);
+      const mimetype = file.mimetype.startsWith("video/") ? file.mimetype : "video/mp4";
 
       await sock.sendMessage(jid, {
-        video:    { url: video },
-        mimetype: "video/mp4",
+        video: file.buffer,
+        mimetype,
         fileName: `${title}.mp4`,
-        caption:  `🎬 *${title}*`,
+        caption: `🎬 *${title}*`,
       }, { quoted: msg });
 
     } catch (err) {

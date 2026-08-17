@@ -2,7 +2,7 @@
  * KELIN MD — .instagram command
  * Downloads Instagram posts, reels, and videos through OmegaTech.
  */
-import { omegaDownload } from "../../lib/omegaDownload.js";
+import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
 
 const processedMessages = new Set();
 
@@ -63,10 +63,12 @@ export default {
       const title = media.title || "Instagram Media";
       const caption = `📥 *${title.slice(0, 200)}*`;
 
-      if (isVideoUrl(media.url, url)) {
+      if (isVideoUrl(media.url, url) || /video|mp4|webm/i.test(`${media.type} ${media.format}`)) {
+        const file = await downloadMediaBuffer(media.url);
+        const mimetype = file.mimetype.startsWith("video/") ? file.mimetype : "video/mp4";
         await sock.sendMessage(jid, {
-          video: { url: media.url },
-          mimetype: "video/mp4",
+          video: file.buffer,
+          mimetype,
           caption,
         }, { quoted: msg });
       } else {

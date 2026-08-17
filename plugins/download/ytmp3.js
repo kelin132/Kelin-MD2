@@ -1,4 +1,4 @@
-import { omegaDownload } from "../../lib/omegaDownload.js";
+import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
 
 export default {
   name: "ytmp3",
@@ -25,12 +25,14 @@ export default {
 
     try {
       await sock.sendMessage(jid, { text: "⏳ Downloading audio…" }, { quoted: msg });
-      const media = await omegaDownload("all", { url: url.trim() });
+      const media = await omegaDownload("play", { url: url.trim(), format: "mp3" });
+      const file = await downloadMediaBuffer(media.url);
       const title = media.title || "YouTube Audio";
+      const mimetype = file.mimetype.startsWith("audio/") ? file.mimetype : "audio/mpeg";
 
       await sock.sendMessage(jid, {
-        audio: { url: media.url },
-        mimetype: "audio/mpeg",
+        audio: file.buffer,
+        mimetype,
         fileName: `${title}.mp3`,
         ptt: false,
       }, { quoted: msg });

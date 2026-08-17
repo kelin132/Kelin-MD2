@@ -4,7 +4,7 @@
  */
 import yts from "yt-search";
 import { get, davidGet } from "../../lib/gifted.js";
-import { omegaDownload } from "../../lib/omegaDownload.js";
+import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
 
 // ── Search YouTube ────────────────────────────────────────────────────────────
 
@@ -114,13 +114,15 @@ export default {
       }
 
       const { dl, title } = await fetchVideo(meta.url);
-      const trackTitle    = title || meta.title;
+      const file = await downloadMediaBuffer(dl);
+      const trackTitle = title || meta.title;
+      const mimetype = file.mimetype.startsWith("video/") ? file.mimetype : "video/mp4";
 
       await sock.sendMessage(jid, {
-        video:    { url: dl },
-        mimetype: "video/mp4",
+        video: file.buffer,
+        mimetype,
         fileName: `${trackTitle}.mp4`,
-        caption:  `🎬 *${trackTitle}*\n\n✨ *KELIN MD*`,
+        caption: `🎬 *${trackTitle}*\n\n✨ *KELIN MD*`,
       }, { quoted: msg });
 
     } catch (err) {
