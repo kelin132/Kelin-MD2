@@ -1,4 +1,4 @@
-import { guildSystem } from "../../lib/guildSystem.js";
+import { guildSystem, guildUpgradeRequirements } from "../../lib/guildSystem.js";
 
 export default {
   name: "guildrank",
@@ -27,7 +27,9 @@ export default {
 
     const lines = guilds.map((g, i) => {
       const badge = medals[i] || `  ${i + 1}.`;
-      return `├◆ ${badge} *${g.name}*\n│     Lv.${g.level} · 👥${g.members.length} · 💰$${g.treasury.toLocaleString()}`;
+      const requirements = guildUpgradeRequirements(g.level);
+      const ready = g.guildXp >= requirements.guildXp && g.treasury >= requirements.treasury && g.members.length >= requirements.members;
+      return `├◆ ${badge} *${g.name}*\n│     Lv.${g.level} · XP ${Number(g.guildXp || 0).toLocaleString()} · 👥${g.members.length}/${requirements.memberCapacity}\n│     💰$${g.treasury.toLocaleString()} · 🧾${Math.round((g.taxRate || requirements.taxRate) * 100)}%${ready ? " · ✦ UPGRADE READY" : ""}`;
     }).join("\n");
 
     await sock.sendMessage(jid, {

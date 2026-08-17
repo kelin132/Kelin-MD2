@@ -7,6 +7,7 @@ import {
   claimWorkShift,
   restoreWorkEnergy,
 } from "./database.js";
+import { guildSystem } from "../../lib/guildSystem.js";
 import {
   SHIFT_COOLDOWN_MS,
   REST_COOLDOWN_MS,
@@ -239,7 +240,10 @@ export default {
 
     const event = rollWorkEvent(job);
     const gross = Math.min(MAX_SHIFT_GROSS_PAY, Math.max(0, job.pay + event.amount));
-    const tax = Math.floor(gross * PAYROLL_TAX_RATE);
+    const payrollTax = Math.floor(gross * PAYROLL_TAX_RATE);
+    const guildTaxInfo = await guildSystem.getGuildTax(sender, gross);
+    const guildTax = Math.min(Math.max(0, gross - payrollTax), guildTaxInfo.amount);
+    const tax = payrollTax + guildTax;
     const net = gross - tax;
     const updated = await claimWorkShift(sender, {
       jobKey,
@@ -265,7 +269,10 @@ export default {
 
     const { leveled } = checkLevelUp(updated);
     if (leveled) await saveUser(sender, updated);
-    await addHistory(sender, "work", net, `${job.name} — ${event.label}; tax ${formatMoney(tax)}`);
+    if (guildTaxInfo.guild && guildTax > 0) {
+      await guildSystem.recordWorkContribution(guildTaxInfo.guild.name, guildTax, job.xp);
+    }
+    await addHistory(sender, "work", net, `${job.name} — ${event.label}; payroll tax ${formatMoney(payrollTax)}; guild tax ${formatMoney(guildTax)}`);
 
     const caption = buildPaystub({
       user: updated,
@@ -274,6 +281,10 @@ export default {
       event,
       gross,
       tax,
+      payrollTax,
+      guildTax,
+      guildTaxRate: guildTaxInfo.rate,
+      guildName: guildTaxInfo.guild?.name ?? null,
       net,
       xpGained: job.xp,
       energyAfter: updated.energy,

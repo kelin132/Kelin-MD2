@@ -1,8 +1,21 @@
-import { guildSystem } from "../../lib/guildSystem.js";
+import { guildSystem, guildUpgradeRequirements, guildTaxRate } from "../../lib/guildSystem.js";
+
+function formatRequirements(guild) {
+  const requirements = guildUpgradeRequirements(guild.level);
+  const members = Array.isArray(guild.members) ? guild.members.length : 0;
+  const guildXp = Number(guild.guildXp) || 0;
+  const treasury = Number(guild.treasury) || 0;
+  return [
+    `🏛️ Treasury : $${treasury.toLocaleString()} / $${requirements.treasury.toLocaleString()}`,
+    `⭐ Guild XP  : ${guildXp.toLocaleString()} / ${requirements.guildXp.toLocaleString()}`,
+    `👥 Members   : ${members} / ${requirements.members}`,
+    `🧾 Tax rate  : ${(guildTaxRate(guild.level) * 100).toFixed(0)}% at Lv.${guild.level}`,
+  ].join("\n");
+}
 
 export default {
   name: "guildupgrade",
-  description: "Upgrade your guild level using treasury funds",
+  description: "Upgrade your guild when its activity requirements are complete",
   category: "guild",
   usage: ".guildupgrade <guild_name>",
   aliases: ["gupgrade"],
@@ -11,7 +24,7 @@ export default {
   async run({ sock, msg, sender, text }) {
     if (!text) {
       return sock.sendMessage(msg.key.remoteJid, {
-        text: "❌ Usage: *.guildupgrade <guild_name>*"
+        text: "❌ Usage: *.guildupgrade <guild_name>*\n\nUse *.myguild* to view your guild’s progress.",
       }, { quoted: msg });
     }
 
@@ -20,28 +33,38 @@ export default {
 
     if (!guild) {
       return sock.sendMessage(msg.key.remoteJid, {
-        text: `❌ Guild "${guildName}" not found.`
+        text: `❌ Guild "${guildName}" not found.`,
       }, { quoted: msg });
     }
 
     if (guild.owner !== sender) {
       return sock.sendMessage(msg.key.remoteJid, {
-        text: "❌ Only the guild owner can upgrade the guild."
+        text: "❌ Only the guild owner can upgrade the guild.",
       }, { quoted: msg });
     }
 
-    const cost = guild.level * 5000;
+    const result = await guildSystem.upgradeGuild(guildName, sender);
 
-    if (guild.treasury < cost) {
+    if (result?.reason === "max_level") {
       return sock.sendMessage(msg.key.remoteJid, {
-        text: `❌ *Insufficient treasury funds!*\n\n💰 Upgrade cost : $${cost.toLocaleString()}\n🏛️ Treasury     : $${guild.treasury.toLocaleString()}\n💸 Need         : $${(cost - guild.treasury).toLocaleString()} more\n\nUse *.guildtax <guild> <amount>* to add funds.`
+        text: `✨ *${guildName} has reached the maximum guild level: Lv.${result.maxLevel}.*`,
       }, { quoted: msg });
     }
 
-    const upgraded = await guildSystem.upgradeGuild(guildName, sender);
+    if (result?.reason === "requirements") {
+      return sock.sendMessage(msg.key.remoteJid, {
+        text: `╭─〔 🏯 *GUILD UPGRADE LOCKED* 〕\n│ ${guildName} · Lv.${guild.level}\n│\n${formatRequirements(guild)}\n│\n│ Keep working, contributing, and growing your guild.\n└───────────────◆`,
+      }, { quoted: msg });
+    }
+
+    if (!result || result === "not_owner") {
+      return sock.sendMessage(msg.key.remoteJid, {
+        text: "❌ The guild could not be upgraded. Refresh *.myguild* and try again.",
+      }, { quoted: msg });
+    }
 
     await sock.sendMessage(msg.key.remoteJid, {
-      text: `🎉 *Guild Upgraded!*\n\n⚔️ Guild    : ${guildName}\n⭐ New Level: ${upgraded.level}\n💰 Cost     : $${cost.toLocaleString()}\n🏛️ Treasury : $${upgraded.treasury.toLocaleString()}`
+      text: `╭─〔 🎉 *GUILD UPGRADED* 〕\n│\n│ ⚔️ Guild    : ${guildName}\n│ ⭐ New Level: ${result.level}\n│ 💰 Treasury : $${Number(result.treasury || 0).toLocaleString()}\n│ 🧾 New Tax  : ${(guildTaxRate(result.level) * 100).toFixed(0)}%\n│\n│ Your guild has unlocked a stronger tax treasury and larger member capacity.\n└───────────────◆`,
     }, { quoted: msg });
-  }
+  },
 };

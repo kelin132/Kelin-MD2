@@ -1,4 +1,4 @@
-import { guildSystem } from "../../lib/guildSystem.js";
+import { guildSystem, guildUpgradeRequirements } from "../../lib/guildSystem.js";
 
 export default {
   name: "guildlist",
@@ -27,7 +27,9 @@ export default {
 
     let lines = sorted.map((g, i) => {
       const rank = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`;
-      return `├◆ ${rank} *${g.name}* — Lv.${g.level} | 👥${g.members.length} | 💰$${g.treasury.toLocaleString()}`;
+      const requirements = guildUpgradeRequirements(g.level);
+      const ready = g.guildXp >= requirements.guildXp && g.treasury >= requirements.treasury && g.members.length >= requirements.members;
+      return `├◆ ${rank} *${g.name}* — Lv.${g.level} | 👥${g.members.length}/${requirements.memberCapacity} | 💰$${g.treasury.toLocaleString()} | 🧾${Math.round((g.taxRate || requirements.taxRate) * 100)}%${ready ? " | ✦ READY" : ""}`;
     }).join("\n");
 
     await sock.sendMessage(jid, {
@@ -37,6 +39,7 @@ export default {
 ${lines}
 │
 ├◆ *.joinguild <name>*  — Join a guild
+├◆ *.guildmembers       — List member names
 ├◆ *.myguild <name>*    — View details
 └───────────────◆`
     }, { quoted: msg });

@@ -219,7 +219,7 @@ export function rollWorkEvent(job) {
   return { key: "standardShift", label: "Standard shift", amount: 0 };
 }
 
-export function buildPaystub({ user, jobKey, job, event, gross, tax, net, xpGained, energyAfter, now }) {
+export function buildPaystub({ user, jobKey, job, event, gross, tax, payrollTax = tax, guildTax = 0, guildTaxRate = 0, guildName = null, net, xpGained, energyAfter, now }) {
   const nextShift = Math.max(0, SHIFT_COOLDOWN_MS - (Date.now() - now));
   const eventAmount = event.amount >= 0 ? `+${formatMoney(event.amount)}` : `-${formatMoney(Math.abs(event.amount))}`;
   return [
@@ -230,7 +230,9 @@ export function buildPaystub({ user, jobKey, job, event, gross, tax, net, xpGain
     `│ Base pay       ${formatMoney(job.pay)}`,
     `│ ${event.label.padEnd(16)} ${eventAmount}`,
     `│ Gross pay      ${formatMoney(gross)}`,
-    `│ Payroll tax    -${formatMoney(tax)} (10%)`,
+    `│ Payroll tax    -${formatMoney(payrollTax)} (10%)`,
+    ...(guildTax > 0 ? [`│ Guild tax      -${formatMoney(guildTax)} (${(guildTaxRate * 100).toFixed(0)}%)`, `│ Guild treasury ${guildName ? `→ ${guildName}` : "contribution"}`] : []),
+    `│ Total tax      -${formatMoney(tax)}`,
     `│ *Net pay       +${formatMoney(net)}*`,
     `├────────────────────────────`,
     `│ Career XP      +${xpGained}`,
@@ -246,7 +248,7 @@ export function buildJobBoard(user) {
   const groups = ["entry", "mid", "high"];
   const lines = [
     `╭───〔 📋 *CAREER BOARD* 〕───╮`,
-    `│ Cooldown: 10 minutes  •  Tax: 10%`,
+      `│ Cooldown: 10 minutes  •  Payroll tax: 10%`,
     `│ Energy cost is paid per shift.`,
     `│ Start unemployed: choose an entry job first.`,
     `├────────────────────────────`,

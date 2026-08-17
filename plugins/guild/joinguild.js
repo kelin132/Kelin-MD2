@@ -1,4 +1,4 @@
-import { guildSystem } from "../../lib/guildSystem.js";
+import { guildSystem, guildUpgradeRequirements } from "../../lib/guildSystem.js";
 import { requireRegistration } from "./database.js";
 import { generateGuildProfile, getProfilePic, getContactName } from "../../lib/guildGen.mjs";
 
@@ -43,6 +43,12 @@ export default {
     }
 
     const success = await guildSystem.addMember(guildName, sender);
+    if (success === "member_cap") {
+      const requirements = guildUpgradeRequirements(Number(guild.level) || 1);
+      return sock.sendMessage(jid, {
+        text: `❌ *${guild.name}* is full at ${requirements.memberCapacity} members.\n\nThe guild owner must use *.guildupgrade ${guild.name}* after meeting the next-level requirements.`,
+      }, { quoted: msg });
+    }
     if (!success) {
       return sock.sendMessage(jid, { text: "❌ Failed to join guild. Please try again." }, { quoted: msg });
     }
@@ -65,7 +71,17 @@ export default {
 
     try {
       const imgBuffer = await generateGuildProfile(
-        { name: guild.name, icon: guild.icon || null, description: guild.description || "" },
+        {
+          name: guild.name,
+          icon: guild.icon || null,
+          description: guild.description || "",
+          level: updated.level,
+          guildXp: updated.guildXp,
+          treasury: updated.treasury,
+          taxRate: updated.taxRate,
+          memberCount: updated.members.length,
+          memberCapacity: guildUpgradeRequirements(updated.level).memberCapacity,
+        },
         { name: myName, profilePic: myPic || ownerPic }
       );
       await sock.sendMessage(jid, { image: imgBuffer, caption, mentions: [guild.owner] }, { quoted: msg });

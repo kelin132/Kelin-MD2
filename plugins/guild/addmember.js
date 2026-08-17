@@ -1,4 +1,4 @@
-import { guildSystem } from "../../lib/guildSystem.js";
+import { guildSystem, guildUpgradeRequirements } from "../../lib/guildSystem.js";
 import { requireRegistration } from "./database.js";
 
 export default {
@@ -42,6 +42,14 @@ export default {
     }
 
     const success = await guildSystem.addMember(ownedGuild.name, targetJid);
+
+    if (success === "member_cap") {
+      const level = Number(ownedGuild.level) || 1;
+      const requirements = guildUpgradeRequirements(level);
+      return sock.sendMessage(jid, {
+        text: `❌ *${ownedGuild.name}* is full at ${requirements.memberCapacity} members.\n\nUpgrade the guild with *.guildupgrade ${ownedGuild.name}* after reaching the treasury, guild XP, and member requirements.`,
+      }, { quoted: msg });
+    }
 
     if (success) {
       const updated = await guildSystem.getGuild(ownedGuild.name);
