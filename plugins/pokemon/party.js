@@ -6,6 +6,7 @@ import { getTrainer }       from "../../lib/pokemon/players.mjs";
 import { getTrainerParty, getPokemonXpNeeded }  from "../../lib/pokemon/pokemonDb.mjs";
 import { generatePartyCanvas } from "../../lib/pokemon/canvas.mjs";
 import { TYPE_MOVES } from "../../lib/pokemon/gameLogic.mjs";
+import { getImageMessage } from "../../lib/pokemon/api.mjs";
 
 // Flat name→move lookup so we can fill in pp/accuracy for older stored moves
 const MOVE_LOOKUP = Object.values(TYPE_MOVES).flat().reduce((acc, m) => {
@@ -120,10 +121,15 @@ ${moveLines || "  No moves learned yet"}
 • *.setlead ${slotArg}* — Make this your battle lead${p.isStarter ? "\n\n🏅 *This is your Starter Pokémon* — it can never be given away or moved to PC." : ""}
 • *.t2pc ${slotArg}* — Move to PC storage${p.isStarter ? " _(blocked for starter)_" : ""}`;
 
-      return sock.sendMessage(jid, {
-        image: { url: p.imageUrl },
-        caption: text,
-      }, { quoted: msg });
+      const imageMessage = await getImageMessage({
+        pokedexId: p.pokedexId || p.id,
+        imageUrl: p.imageUrl,
+      });
+      return sock.sendMessage(
+        jid,
+        imageMessage ? { ...imageMessage, caption: text } : { text },
+        { quoted: msg },
+      );
     }
 
     // ── Full party canvas view ─────────────────────────────────────────────

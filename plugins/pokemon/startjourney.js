@@ -5,7 +5,7 @@
 // - .startjourney <name>    → pick by name (e.g. ".startjourney charmander")
 
 import { getTrainer, createTrainer, addToParty, setLeadPokemonId } from "../../lib/pokemon/players.mjs";
-import { fetchPokemon } from "../../lib/pokemon/api.mjs";
+import { fetchPokemon, getImageMessage } from "../../lib/pokemon/api.mjs";
 import { buildPokemon, savePokemon, updatePokemon } from "../../lib/pokemon/pokemonDb.mjs";
 import { generateStarterCanvas } from "../../lib/pokemon/canvas.mjs";
 
@@ -220,9 +220,7 @@ Examples: \`.startjourney charmander\`, \`.startjourney sobble\`, \`.startjourne
       `  *${i + 1}.* ${m.name} (Power: ${m.power || "—"})`
     ).join("\n");
 
-    await sock.sendMessage(jid, {
-      image: { url: apiData.imageUrl },
-      caption:
+    const caption =
 `🎮 *POKÉMON JOURNEY STARTED!*${shinyTag}
 
 👤 Trainer: *${username}*
@@ -243,7 +241,12 @@ ${moveList}
 Use *.spawnpoke* to find wild Pokémon
 Use *.party* to view your team
 Use *.mart* to visit the shop
-Use *.heal* to heal your Pokémon`,
-    }, { quoted: msg });
+Use *.help pokemon* to see more commands`;
+    const imageMessage = await getImageMessage(apiData);
+    await sock.sendMessage(
+      jid,
+      imageMessage ? { ...imageMessage, caption } : { text: caption },
+      { quoted: msg },
+    );
   },
 };

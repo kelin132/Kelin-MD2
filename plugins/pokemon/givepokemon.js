@@ -3,7 +3,7 @@
 
 import { getTrainer, addToParty, addToPC } from "../../lib/pokemon/players.mjs";
 import { buildPokemon, savePokemon, updatePokemon } from "../../lib/pokemon/pokemonDb.mjs";
-import { fetchPokemon } from "../../lib/pokemon/api.mjs";
+import { fetchPokemon, getImageMessage } from "../../lib/pokemon/api.mjs";
 
 export default {
   name: "givepokemon",
@@ -58,9 +58,7 @@ export default {
 
     const dest = partyFull ? "📦 PC" : "🎒 Party";
 
-    await sock.sendMessage(jid, {
-      image: { url: apiData.imageUrl },
-      caption:
+    const caption =
 `🎁 *POKÉMON GIFT!*
 
 @${targetJid.split("@")[0]} received a *${pokemon.displayName}*!
@@ -70,8 +68,14 @@ export default {
 🛡️ Defense: ${pokemon.defense}
 🏷️ Type: ${(apiData.types || []).join(" / ")}
 
-Sent to: ${dest}`,
-      mentions: [targetJid],
-    }, { quoted: msg });
+Sent to: ${dest}`;
+    const imageMessage = await getImageMessage(apiData);
+    await sock.sendMessage(
+      jid,
+      imageMessage
+        ? { ...imageMessage, caption, mentions: [targetJid] }
+        : { text: caption, mentions: [targetJid] },
+      { quoted: msg },
+    );
   },
 };

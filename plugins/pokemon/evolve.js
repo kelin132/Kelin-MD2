@@ -5,7 +5,7 @@
 import { getTrainer, removeItem, hasItem } from "../../lib/pokemon/players.mjs";
 import { getTrainerParty, getTrainerPC, evolvePokemon, getAllTrainerPokemon, updatePokemon } from "../../lib/pokemon/pokemonDb.mjs";
 import { getEvolutionByStone, isMegaEvolutionStone } from "../../lib/pokemon/gameLogic.mjs";
-import { fetchPokemon } from "../../lib/pokemon/api.mjs";
+import { fetchPokemon, getImageMessage } from "../../lib/pokemon/api.mjs";
 
 export default {
   name: "evolve",
@@ -120,9 +120,7 @@ Buy regular evolution stones at *.mart page 4*`,
       ? `💎✨ *MEGA EVOLUTION!*`
       : `✨ *EVOLUTION!*`;
 
-    await sock.sendMessage(jid, {
-      image: { url: newData.imageUrl },
-      caption:
+    const caption =
 `${titleLine}
 
 🐣 *${pokeName}* → 🌟 *${evolvedName}*!
@@ -134,7 +132,12 @@ Buy regular evolution stones at *.mart page 4*`,
 💨 Speed: ${evolved.speed}
 🏷️ Type: ${(evolved.types || []).join(" / ")}${megaBoostMsg}
 
-*Your Pokémon has evolved!* 🎉${isMega ? "\n💎 Key Stone power released — *Mega Evolution*!" : ""}`,
-    }, { quoted: msg });
+*Your Pokémon has evolved!* 🎉${isMega ? "\n💎 Key Stone power released — *Mega Evolution*!" : ""}`;
+    const imageMessage = await getImageMessage(newData);
+    await sock.sendMessage(
+      jid,
+      imageMessage ? { ...imageMessage, caption } : { text: caption },
+      { quoted: msg },
+    );
   },
 };
