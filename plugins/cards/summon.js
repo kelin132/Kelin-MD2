@@ -2,9 +2,10 @@
  * KELIN MD — .summon
  * Summon a random card from any tier (or a specific tier).
  * Costs coins from the user's card balance based on the tier summoned.
+ * The result is held as a pending claim until the user runs .claim.
  *
  * Usage:
- *   .summon           — random tier summon
+ *   .summon           — random tier summon; claim it later with .claim
  *   .summon <tier>    — specific tier (1-6 or Common/Uncommon/Rare/Epic/Legendary/Mythical)
  */
 import { findOrCreateUser } from "./db.js";
@@ -66,7 +67,7 @@ export default {
   name: "summon",
   aliases: ["nsummon", "cardsummon", "pull"],
   category: "cards",
-  description: "Summon and instantly claim a card — costs coins based on tier",
+  description: "Summon a card to claim later — costs coins based on tier",
   usage: ".summon [tier]  — e.g. .summon  |  .summon rare  |  .summon 5  |  .summon mythical",
   cooldown: 20,
 
@@ -79,7 +80,7 @@ export default {
       if ((args[0] || "").toLowerCase() === "help") {
         return reply(
 `╭━━━〔 🔮 𝑺𝑼𝑴𝑴𝑶𝑵 𝑺𝒀𝑺𝑻𝑬𝑴 ✨ 〕━━━╮
-┃ ✦ Summon & instantly claim a card!
+┃ ✦ Summon a card, then use *.claim* to collect it!
 ┃ ✦ Costs coins per tier from your wallet.
 ┃
 ┣━━━━━━━━━━━━━━━━━━━━━━━━
@@ -214,11 +215,13 @@ export default {
         card.series = await getSeries(card.name, { timeout: 4000 });
       }
 
-      // ── Add card to collection ──────────────────────────────────────────────
+      // ── Hold the card until the user explicitly claims it ────────────────────
       const cardUser = await findOrCreateUser(sender);
-      cardUser.cards = cardUser.cards || [];
+      cardUser.pendingCards = Array.isArray(cardUser.pendingCards)
+        ? cardUser.pendingCards
+        : [];
 
-      cardUser.cards.push({
+      const pendingCard = {
         cardId:     card.cardId,
         name:       card.name,
         tier:       card.tier,
@@ -229,10 +232,10 @@ export default {
         series:     card.series || "Unknown",
         media:      card.media  || null,
         mediaType:  (card.tierNum === "6" || card.tierNum === "S") ? "gif" : "image",
-        obtainedAt: new Date(),
-      });
+        summonedAt: new Date(),
+      };
 
-      cardUser.totalCards = (cardUser.totalCards || 0) + 1;
+      cardUser.pendingCards.push(pendingCard);
       await cardUser.save();
 
       const claimText =
@@ -247,9 +250,9 @@ export default {
 ┃ 💸 Cost   › $${cost.toLocaleString()}
 ┃ 👛 Wallet › $${ecoUser.money.toLocaleString()}
 ┣━━━━━━━━━━━━━━━━━━━━
-┃ 🎉 𝗖𝗟𝗔𝗜𝗠𝗘𝗗!
-┃ Card added to your collection!
-┃ Use .col to view your cards.
+┃ ✨ 𝗖𝗟𝗔𝗜𝗠 𝗥𝗘𝗔𝗗𝗬!
+┃ The card is waiting for you.
+┃ Use *.claim* to add it to your collection.
 ╰━━━━━━━━━━━━━━━━━━━━╯`;
 
       if (card.media) {

@@ -1,5 +1,5 @@
 // plugins/owner/mods.js
-// .mods  — list all guardians/mods with @mentions
+// .mods  — list all guardians/mods with clean phone numbers
 // .addmod / .removemod — manage the mods list
 
 import { getModsData, saveModsData, getMods } from '../../lib/permissions.mjs';
@@ -117,18 +117,12 @@ export default {
         (a, b) => b.level - a.level || a.name.localeCompare(b.name)
       );
 
-      const mentionJids = sorted.map((s) => {
-        const storedNum = s.jid.split('@')[0].split(':')[0].replace(/\D/g, '');
-        const number = cleanNumMap[storedNum] || storedNum;
-        return `${number}@s.whatsapp.net`;
-      });
-
       const rows = sorted.map((s, index) => {
         const storedNum = s.jid.split('@')[0].split(':')[0].replace(/\D/g, '');
         const number    = cleanNumMap[storedNum] || storedNum;
         const label     = LEVEL_LABEL[s.level] || 'MOD';
         return [
-          `╭─❖ *${index + 1}. @${number}*`,
+          `╭─❖ *${index + 1}. +${number}*`,
           `│ 👤 Name: ${s.name}`,
           `│ 🛡️ Role: *${label}*`,
           '╰──────────────',
@@ -144,8 +138,7 @@ export default {
         `📖 Use *.rules* if you are unsure of the rules.`;
 
       return sock.sendMessage(jid, {
-        text:     caption,
-         mentions: mentionJids,
+        text: caption,
       }, { quoted: msg });
     }
 

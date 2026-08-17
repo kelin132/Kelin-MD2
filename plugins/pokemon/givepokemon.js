@@ -2,7 +2,7 @@
 // [Mod/Owner] Give a Pokémon to a user
 
 import { getTrainer, addToParty, addToPC } from "../../lib/pokemon/players.mjs";
-import { buildPokemon, savePokemon } from "../../lib/pokemon/pokemonDb.mjs";
+import { buildPokemon, savePokemon, updatePokemon } from "../../lib/pokemon/pokemonDb.mjs";
 import { fetchPokemon } from "../../lib/pokemon/api.mjs";
 
 export default {

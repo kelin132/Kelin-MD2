@@ -1,6 +1,7 @@
 /**
  * KELIN MD — .spawnpack
  * Buy a spawn pack containing a bundle of cards at a discounted price.
+ * The bundle is held as a pending claim until the buyer runs .claim.
  *
  * Pack contents:
  *   2 × Tier 6 (Mythical)
@@ -137,27 +138,27 @@ export default {
         );
       }
 
-      // ── Add all cards to collection ────────────────────────────────────────
+      // ── Hold the complete pack until the buyer explicitly claims it ─────────
       const cardUser = await findOrCreateUser(sender);
-      cardUser.cards = cardUser.cards || [];
+      cardUser.pendingCards = Array.isArray(cardUser.pendingCards)
+        ? cardUser.pendingCards
+        : [];
 
-      for (const card of allCards) {
-        cardUser.cards.push({
-          cardId:     card.cardId,
-          name:       card.name,
-          tier:       card.tier,
-          tierNum:    card.tierNum || card.tier,
-          index:      card.index || null,
-          spawnId:    createSpawnId(),
-          price:      card.price  || 0,
-          series:     card.series || "Unknown",
-          media:      card.media  || null,
-          mediaType:  (card.tierNum === "6" || card.tierNum === "S") ? "gif" : "image",
-          obtainedAt: new Date(),
-        });
-      }
+      const pendingCards = allCards.map((card) => ({
+        cardId:     card.cardId,
+        name:       card.name,
+        tier:       card.tier,
+        tierNum:    card.tierNum || card.tier,
+        index:      card.index || null,
+        spawnId:    createSpawnId(),
+        price:      card.price  || 0,
+        series:     card.series || "Unknown",
+        media:      card.media  || null,
+        mediaType:  (card.tierNum === "6" || card.tierNum === "S") ? "gif" : "image",
+        summonedAt: new Date(),
+      }));
 
-      cardUser.totalCards = (cardUser.totalCards || 0) + allCards.length;
+      cardUser.pendingCards.push(...pendingCards);
       await cardUser.save();
 
       // ── Build summary listing ──────────────────────────────────────────────
@@ -177,8 +178,8 @@ ${tierLines}
 ┃ 💸 Cost   › $${PACK_COST.toLocaleString()}
 ┃ 👛 Wallet › $${ecoUser.money.toLocaleString()}
 ┣━━━━━━━━━━━━━━━━━━━━
-┃ 🎉 All cards added to your collection!
-┃ Use *.col* to view your cards.
+┃ ✨ Cards are waiting to be claimed!
+┃ Use *.claim* to add the full pack to your collection.
 ╰━━━━━━━━━━━━━━━━━━━━╯`;
 
       // Try to send the best card (Mythical/Tier6) as a media preview

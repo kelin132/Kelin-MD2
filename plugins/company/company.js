@@ -12,6 +12,8 @@
  *   .company work                   — Work a shift as an employee
  *   .company sell                   — Sell company for 40% of purchase price
  *   .company leaderboard            — Top 5 companies by total paid
+ *   .company fund <amount>           — Irreversible payroll treasury deposit (max $500B/day)
+ *   .company upgrade                 — Upgrade company level when requirements are met
  */
 import { getUser, saveUser, requireRegistration, addHistory, isRegistered } from "../economy/database.js";
 import { parseAmount } from "../economy/parseAmount.js";
@@ -27,9 +29,29 @@ const COMPANY_TIERS = [
 ];
 
 const MAX_EMPLOYEES   = 6;
+const COMPANY_MAX_LEVEL = 10;
+const DAILY_FUND_LIMIT = 500_000_000_000;
 const PAYDAY_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
 const COMPANY_WORK_COOLDOWN = 9 * 60 * 1000; // 9 min between company shifts
 const SELL_RATE       = 0.40; // get 40% back on sell — it's a distressed sale
+
+function companyLevelRequirement(level) {
+  const nextLevel = Math.max(2, Number(level || 1) + 1);
+  return {
+    level: nextLevel,
+    xp: (nextLevel - 1) * 100,
+    treasury: (nextLevel - 1) * 1_000_000_000,
+    employees: Math.min(MAX_EMPLOYEES, Math.max(1, nextLevel - 1)),
+  };
+}
+
+function resetDailyFunding(company) {
+  const today = new Date().toISOString().slice(0, 10);
+  if (company.fundingDay !== today) {
+    company.fundingDay = today;
+    company.fundedToday = 0;
+  }
+}
 
 // ── Collection helper (Col pattern) ─────────────────────────────────────────
 const Col = {
@@ -69,15 +91,14 @@ async function tryPayday(company, ownerJid) {
   if (!company.employees?.length) return { paid: false };
   if (now - (company.lastPayday || 0) < PAYDAY_INTERVAL) return { paid: false };
 
-  const owner = await getUser(ownerJid);
   const totalSalary = company.employees.reduce((s, e) => s + (e.salary || 0), 0);
+  const treasury = Number(company.treasury || 0);
 
-  if ((owner.money || 0) < totalSalary) return { paid: false, broke: true, totalSalary };
+  if (treasury < totalSalary) return { paid: false, broke: true, totalSalary, treasury };
 
-  // Deduct from owner
-  owner.money -= totalSalary;
-  await saveUser(ownerJid, owner);
-  await addHistory(ownerJid, "company_payday", -totalSalary, `Payday: ${company.employees.length} employees`);
+  // Payroll is paid from the irreversible company treasury.
+  company.treasury = treasury - totalSalary;
+  company.xp = (company.xp || 0) + company.employees.length;
 
   // Pay each employee
   for (const emp of company.employees) {
@@ -99,15 +120,15 @@ export default {
   aliases: ["corp", "bitlife", "business"],
   category: "economy",
   cooldown: 6,
-  description: "Run your own company — hire staff and grow your empire!",
-  usage: ".company buy <name> <tier 1-5> | .company info | .company hire @user <salary> | .company work | .company fire @user",
+  description: "Run your own company — fund workers, upgrade levels, and grow your empire!",
+  usage: ".company buy <name> <tier 1-5> | .company info | .company fund <amount> | .company upgrade",
 
   async run({ sock, msg, sender, args }) {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const jid   = msg.key.remoteJid;
     const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
-    const sub   = (args[0] || "info").toLowerCase();
+      const sub   = (args[0] || "info").toLowerCase();
 
     // ── HELP ─────────────────────────────────────────────────────────────────
     if (sub === "help") {
@@ -129,13 +150,17 @@ ${tierList}
   *.company hire @user <salary>*— Hire an employee (max 6)
   *.company fire @user*         — Fire an employee
   *.company salary @user <amt>* — Update employee salary
-  *.company employees*          — List your staff
-    *.company work*               — Work a shift as an employee
+    *.company employees*          — List your staff
+  *.company work*               — Work a shift as an employee
+  *.company fund <amount>*      — Irreversible treasury deposit (max $500B/day)
+  *.company upgrade*            — Upgrade company level
   *.company sell*               — Sell company (40% back, employees released automatically)
   *.company leave*              — Leave a company you work at
   *.company leaderboard*        — Top 5 companies
 
-🕐 Salaries are paid automatically every 24 hours!`
+🕐 Salaries are paid automatically every 24 hours from the company treasury.
+⚠️ Treasury deposits cannot be withdrawn or transferred back to the owner.`
+
       );
     }
 
@@ -189,6 +214,11 @@ Your wallet: $${(user.money || 0).toLocaleString()}`
         employees:   [],
         lastPayday:  now,
         totalPaid:   0,
+        treasury:    0,
+        fundedToday: 0,
+        fundingDay:  new Date(now).toISOString().slice(0, 10),
+        level:       1,
+        xp:          0,
         foundedDate,
       });
 
@@ -248,11 +278,95 @@ Your wallet: $${(user.money || 0).toLocaleString()}`
       return;
     }
 
+    // ── FUND TREASURY ─────────────────────────────────────────────────────────
+    if (sub === "fund" || sub === "deposit" || sub === "fundworkers") {
+      const company = await getCompany(sender);
+      if (!company) return reply("❌ You don't own a company yet! Buy one with *.company buy <name> <tier>*." );
+      resetDailyFunding(company);
+
+      const amount = parseAmount((args[1] || "").toLowerCase(), 0);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        return reply("❌ Usage: *.company fund <amount>*\n\nExample: *.company fund 500b*");
+      }
+      if (amount > DAILY_FUND_LIMIT) {
+        return reply(`❌ The maximum daily company funding is *$${DAILY_FUND_LIMIT.toLocaleString()}* (500B).`);
+      }
+      if ((company.fundedToday || 0) + amount > DAILY_FUND_LIMIT) {
+        const remaining = DAILY_FUND_LIMIT - (company.fundedToday || 0);
+        return reply(`❌ Your company has already received $${(company.fundedToday || 0).toLocaleString()} today.\n\nRemaining today: *$${Math.max(0, remaining).toLocaleString()}*`);
+      }
+
+      const user = await getUser(sender);
+      if ((user.money || 0) < amount) {
+        return reply(`❌ Insufficient wallet funds.\n\nRequired: $${amount.toLocaleString()}\nWallet: $${(user.money || 0).toLocaleString()}`);
+      }
+
+      user.money -= amount;
+      await saveUser(sender, user);
+      await addHistory(sender, "company_fund", -amount, `Irreversible treasury funding: ${company.name}`);
+      company.treasury = (company.treasury || 0) + amount;
+      company.fundedToday = (company.fundedToday || 0) + amount;
+      company.xp = (company.xp || 0) + Math.max(1, Math.floor(amount / 1_000_000_000));
+      await saveCompany(company);
+
+      return reply(
+`╭━━━〔 🏢 𝐂𝐎𝐌𝐏𝐀𝐍𝐘 𝐓𝐑𝐄𝐀𝐒𝐔𝐑𝐘 〕━━━╮
+┃ ✦ Deposit accepted permanently.
+┃
+┃ 🏢 Company  :: *${company.name}*
+┃ 💰 Added    :: *$${amount.toLocaleString()}*
+┃ 🏦 Treasury :: *$${company.treasury.toLocaleString()}*
+┃ ✨ Company XP:: *${company.xp.toLocaleString()}*
+┃ 📅 Funded today :: $${company.fundedToday.toLocaleString()}/$${DAILY_FUND_LIMIT.toLocaleString()}
+┃
+┃ ⚠️ Treasury deposits cannot be withdrawn.
+╰━━━━━━━━━━━━━━━━━━━━╯`);
+    }
+
+    // ── COMPANY LEVEL UP ───────────────────────────────────────────────────────
+    if (sub === "upgrade" || sub === "levelup" || sub === "level") {
+      const company = await getCompany(sender);
+      if (!company) return reply("❌ You don't own a company yet!");
+      const currentLevel = Number(company.level || 1);
+      if (currentLevel >= COMPANY_MAX_LEVEL) return reply(`✨ *${company.name}* is already at the maximum company level (${COMPANY_MAX_LEVEL}).`);
+
+      const req = companyLevelRequirement(currentLevel);
+      const missing = [];
+      if ((company.xp || 0) < req.xp) missing.push(`XP: ${(req.xp - (company.xp || 0)).toLocaleString()} more`);
+      if ((company.treasury || 0) < req.treasury) missing.push(`treasury: $${(req.treasury - (company.treasury || 0)).toLocaleString()} more`);
+      if ((company.employees?.length || 0) < req.employees) missing.push(`employees: ${req.employees - (company.employees?.length || 0)} more`);
+      if (missing.length) {
+        return reply(
+`⏳ *${company.name}* is not ready for level ${req.level} yet.
+
+📊 Current level: ${currentLevel}
+✨ Requirement: ${req.xp} XP
+🏦 Treasury requirement: $${req.treasury.toLocaleString()}
+👥 Employee requirement: ${req.employees}
+
+Missing: ${missing.join(" · ")}`);
+      }
+
+      company.level = req.level;
+      await saveCompany(company);
+      return reply(
+`╭━━━〔 🎉 𝐂𝐎𝐌𝐏𝐀𝐍𝐘 𝐋𝐄𝐕𝐄𝐋 𝐔𝐏 〕━━━╮
+┃ 🏢 *${company.name}* reached *Level ${company.level}*!
+┃
+┃ ✨ XP :: ${company.xp.toLocaleString()}
+┃ 🏦 Treasury :: $${company.treasury.toLocaleString()}
+┃ 👥 Capacity :: ${Math.min(MAX_EMPLOYEES, company.level + 5)} employees
+┃
+┃ Keep funding your workers and growing the company.
+╰━━━━━━━━━━━━━━━━━━━━╯`);
+    }
+
     // ── INFO ──────────────────────────────────────────────────────────────────
     if (sub === "info" || !args[0]) {
       const company = await getCompany(sender);
       if (!company) return reply("❌ You don't own a company yet!\n\nUse *.company buy <name> <1-5>* to get started.\nType *.company help* for info.");
 
+      resetDailyFunding(company);
       const paydayResult = await tryPayday(company, sender);
       const freshCompany = await getCompany(sender) || company;
       const ownerName = await getRegisteredName(sender, "Company owner");
@@ -267,6 +381,8 @@ Your wallet: $${(user.money || 0).toLocaleString()}`
         : "  None — use *.company hire @user <salary>*";
 
       const totalSalary = freshCompany.employees?.reduce((s, e) => s + (e.salary || 0), 0) || 0;
+      const companyLevel = Number(freshCompany.level || 1);
+      const nextUpgrade = companyLevel < COMPANY_MAX_LEVEL ? companyLevelRequirement(companyLevel) : null;
       const nextPayday  = freshCompany.lastPayday
         ? Math.max(0, Math.ceil((freshCompany.lastPayday + PAYDAY_INTERVAL - Date.now()) / 3600000))
         : 24;
@@ -279,14 +395,18 @@ Your wallet: $${(user.money || 0).toLocaleString()}`
 `${freshCompany.tierEmoji} *${freshCompany.name.toUpperCase()}*
 
 📊 Tier       : ${freshCompany.tierLabel}
+✨ Level      : ${companyLevel}/${COMPANY_MAX_LEVEL} · XP ${(freshCompany.xp || 0).toLocaleString()}
 👤 Owner      : ${ownerName}
-💼 Employees  : ${freshCompany.employees?.length || 0}/${MAX_EMPLOYEES}
+💼 Employees  : ${freshCompany.employees?.length || 0}/${Math.min(MAX_EMPLOYEES, companyLevel + 5)}
 💸 Daily Cost : $${totalSalary.toLocaleString()}
+🏦 Treasury   : $${(freshCompany.treasury || 0).toLocaleString()}
 ⏰ Next Payday: in ${nextPayday}h
 💰 Total Paid : $${(freshCompany.totalPaid || 0).toLocaleString()}
 
 👥 *Staff:*
-${empList}${paydayMsg}`
+${empList}
+
+${nextUpgrade ? `⬆️ Next level: ${nextUpgrade.level} · ${nextUpgrade.xp} XP · $${nextUpgrade.treasury.toLocaleString()} treasury · ${nextUpgrade.employees} employees` : "🏆 Maximum company level reached."}${paydayMsg}`
       );
     }
 
