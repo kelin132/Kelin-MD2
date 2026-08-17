@@ -16,8 +16,8 @@ export default {
   name: "lb",
   description: "Leaderboard — top cards or top Pokémon collectors",
   category: "economy",
-  usage: ".lb --cards | .lb --pokemon";".lb",
-  aliases: ["kb"],
+  usage: ".lb --cards | .lb --pokemon",
+  aliases: ["kb",".lb"],
   cooldown: 8,
 
   async run({ sock, msg, args }) {
