@@ -3,6 +3,7 @@ import { generateProfileImage, getProfilePic, resolveRole } from "../../lib/prof
 import { getLevelRole, getAllEarnedRoles, getLevelRoleLabel } from "../../lib/levelRoles.mjs";
 import { getUser as getCardUser } from "../cards/db.js";
 import { countTrainerPokemon } from "../../lib/pokemon/pokemonDb.mjs";
+import { guildSystem } from "../../lib/guildSystem.js";
 
 const xpForLevel = (level) => level * 100;
 
@@ -66,10 +67,11 @@ export default {
     const cardUser = await getCardUser(target);
     const websiteAvatar = [cardUser?.profilePictureUrl, cardUser?.profileImage, cardUser?.avatarUrl]
       .find((value) => typeof value === "string" && /^https?:\/\//i.test(value));
-    const [user, profilePic, pokemonCount] = await Promise.all([
+    const [user, profilePic, pokemonCount, guild] = await Promise.all([
       getUser(target),
       withTimeout(getProfilePic(sock, target, websiteAvatar), 2500),
       countTrainerPokemon(target),
+      withTimeout(guildSystem.getUserPrimaryGuild(target), 2500),
     ]);
 
     const tag   = target.split("@")[0].split(":")[0];
@@ -96,7 +98,7 @@ export default {
     const levelRole   = getLevelRole(level);
     const earnedRoles = getAllEarnedRoles(level);
     const roleLabel   = getLevelRoleLabel(level);
-    const guildName   = String(user.guildName || user.guild || "None").trim() || "None";
+    const guildName   = String(guild?.name || user.guildName || user.guild || "None").trim() || "None";
     const joinedDate  = fmtDate(user.registeredAt);
     const roleShort = {
       Owner: "OWNER",
