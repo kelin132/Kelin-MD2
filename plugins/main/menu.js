@@ -125,14 +125,9 @@ export default {
 
     const visibleCats = requestedCategory ? [requestedCategory] : sortedCats;
     let text = requestedCategory
-      ? `╭━━━━━━━━━━━━━━━━━━━━╮
-│ 🎮 *𝗣𝗢𝗞𝗘́𝗠𝗢𝗡 𝗙𝗜𝗘𝗟𝗗 𝗚𝗨𝗜𝗗𝗘*
-│
-│ Build your team, master your party,
-│ and choose your next battle wisely.
-╰━━━━━━━━━━━━━━━━━━━━╯
+      ? `*MENU*
 \n${READMORE}\n`
-      : `𝗛𝗲𝗹𝗹𝗼 𝘀𝗲𝗻𝗽𝗮𝗶 ${mention}, 𝗜 𝗮𝗺 𝗭𝗵𝗼𝗻𝗴𝗹𝗶 👋
+      : `𝗛𝗲𝗹𝗹𝗼 𝘀𝗲𝗻𝗽𝗮𝗶 ${mention}, 𝗜 𝗮𝗺 ${BOT_NAME} 👋
 ╭━━━━━━━━━━━━━━━━━━━━╮
 │ ✦ 𝗥𝗘𝗚𝗜𝗦𝗧𝗘𝗥
 │ ├─ 🌸 ꕥ ${menuPrefix}𝗿𝗲𝗴 › 𝗨𝘀𝗲 𝗲𝗰𝗼𝗻𝗼𝗺𝘆 𝗰𝗼𝗺𝗺𝗮𝗻𝗱𝘀
