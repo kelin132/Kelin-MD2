@@ -35,7 +35,6 @@ export default {
           `One-time code: *${code}*`,
           "",
           "Enter this six-digit code on the AIDORU website within 10 minutes.",
-          "If you did not request a reset, ignore this message and never share the code.",
         ].join("\n"),
       }, quoted);
     } catch (error) {
