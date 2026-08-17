@@ -127,7 +127,7 @@ export default {
     let text = requestedCategory
       ? `*MENU*
 \n${READMORE}\n`
-      : `𝗛𝗲𝗹𝗹𝗼 𝘀𝗲𝗻𝗽𝗮𝗶 ${mention}, 𝗜 𝗮𝗺 Zhongli 👋
+      : `𝗛𝗲𝗹𝗹𝗼 𝘀𝗲𝗻𝗽𝗮𝗶 ${mention}, 𝗜 𝗮𝗺 ${runtime.botName} 👋
 ╭━━━━━━━━━━━━━━━━━━━━╮
 │ ✦ 𝗥𝗘𝗚𝗜𝗦𝗧𝗘𝗥
 │ ├─ 🌸 ꕥ ${menuPrefix}𝗿𝗲𝗴 › 𝗨𝘀𝗲 𝗲𝗰𝗼𝗻𝗼𝗺𝘆 𝗰𝗼𝗺𝗺𝗮𝗻𝗱𝘀
