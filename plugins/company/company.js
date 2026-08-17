@@ -433,25 +433,25 @@ ${nextUpgrade ? `⬆️ Next level: ${nextUpgrade.level} · ${nextUpgrade.xp} XP
         );
       }
 
-      const owner = await getUser(company.ownerId);
       const salary = employee.salary || 0;
-      if ((owner.money || 0) < salary) {
+      const treasury = Number(company.treasury || 0);
+      if (treasury < salary) {
         return reply(
           `⚠️ *Company payroll is short!*\n\n` +
-          `Your salary is $${salary.toLocaleString()}, but *${await getRegisteredName(company.ownerId, "the owner")}* ` +
-          "does not have enough money in the company wallet yet."
+          `Your salary is $${salary.toLocaleString()}, but the company treasury only has ` +
+          `$${treasury.toLocaleString()}.\n\n` +
+          `Ask the owner to use *.company fund <amount>* to add irreversible payroll funds.`
         );
       }
-
-      owner.money -= salary;
-      await saveUser(company.ownerId, owner);
-      await addHistory(company.ownerId, "company_shift", -salary, `Paid an employee at ${company.name}`);
 
       const worker = await getUser(sender);
       worker.money = (worker.money || 0) + salary;
       await saveUser(sender, worker);
       await addHistory(sender, "company_shift", salary, `Worked a shift at ${company.name}`);
 
+      company.treasury = treasury - salary;
+      company.totalPaid = (company.totalPaid || 0) + salary;
+      company.xp = (company.xp || 0) + 1;
       employee.lastWork = now;
       await saveCompany(company);
 
@@ -461,7 +461,8 @@ ${nextUpgrade ? `⬆️ Next level: ${nextUpgrade.level} · ${nextUpgrade.xp} XP
         `🏢 Company : *${company.name}*\n` +
         `👤 Worker  : *${employeeName}*\n` +
         `💰 Earned  : *$${salary.toLocaleString()}*\n` +
-        `💰 Balance : $${worker.money.toLocaleString()}\n\n` +
+        `💰 Balance : $${worker.money.toLocaleString()}\n` +
+        `🏦 Treasury: $${company.treasury.toLocaleString()}\n\n` +
         "⏰ You can work again in 9 minutes."
       );
     }

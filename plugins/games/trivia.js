@@ -44,17 +44,15 @@ export default {
   usage: ".trivia  |  .trivia <your answer>",
   checkJail: true,
 
-  async run({ sock, msg, sender, args, text }) {
+  async run({ sock, msg, sender, text }) {
     if (!await requireRegistration(sock, msg, sender)) return;
 
-    const jid   = msg.key.remoteJid;
+    const jid = msg.key.remoteJid;
     const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
-    const now   = Date.now();
-    const user  = await getUser(sender);
-
+    const now = Date.now();
+    const user = await getUser(sender);
     const existing = activeQuestions.get(jid);
 
-    // ── Answer an active question ─────────────────────────────────────────
     if (existing && text.trim()) {
       const answer = text.trim().toLowerCase();
       if (answer === existing.answer) {
@@ -62,7 +60,7 @@ export default {
         activeQuestions.delete(jid);
 
         user.money += existing.reward;
-        user.xp     = (user.xp || 0) + 25;
+        user.xp = (user.xp || 0) + 25;
         await saveUser(sender, user);
         await addHistory(sender, "trivia", existing.reward, "Trivia correct answer");
 
@@ -73,12 +71,10 @@ export default {
 💰 Earned: +$${existing.reward.toLocaleString()}
 🏦 Balance: $${user.money.toLocaleString()}`
         );
-      } else {
-        return reply(`❌ Wrong answer! Try again.\n\n❓ ${existing.question}\n\n⏳ ${Math.ceil((existing.endsAt - now) / 1000)}s remaining.`);
       }
+      return reply(`❌ Wrong answer! Try again.\n\n❓ ${existing.question}\n\n⏳ ${Math.ceil((existing.endsAt - now) / 1000)}s remaining.`);
     }
 
-    // ── Start a new question ──────────────────────────────────────────────
     if (existing) {
       return reply(`❓ A question is already active!\n\n*${existing.question}*\n\n⏳ ${Math.ceil((existing.endsAt - now) / 1000)}s remaining.`);
     }
