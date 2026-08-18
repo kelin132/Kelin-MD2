@@ -1,4 +1,4 @@
-import { buildEconomyLinkPreview, withHiddenPreviewUrl } from "../../lib/economyPreview.mjs";
+import { buildEconomyLinkPreview, buildEconomyExternalAdReply } from "../../lib/economyPreview.mjs";
 
 export default {
   name: "mart",
@@ -13,18 +13,15 @@ export default {
 
     const text = `🏪 *AIDORU POKÉMON MART*
 
-Browse Poké Balls, items, evolution stones, and trainer upgrades on the AIDORU website.
-
-✨ Your WhatsApp Mart purchases have moved to the web so your inventory stays synced safely.
-🛍️ Tap the preview card to open the Mart.`;
+Tap the preview card to open the Mart.`;
     const linkPreview = await buildEconomyLinkPreview("mart");
-    const previewText = withHiddenPreviewUrl(text, "mart");
+    const externalAdReply = await buildEconomyExternalAdReply("mart");
 
     try {
-      return await sock.sendMessage(jid, { text: previewText, linkPreview }, { quoted: msg });
+      return await sock.sendMessage(jid, { text, linkPreview, contextInfo: { externalAdReply } }, { quoted: msg });
     } catch (error) {
       console.warn("[mart] website preview failed; sending text fallback:", error?.message || error);
-      return sock.sendMessage(jid, { text: previewText }, { quoted: msg });
+      return sock.sendMessage(jid, { text }, { quoted: msg });
     }
   },
 };
