@@ -12,6 +12,38 @@ import { getDb } from "../../lib/mongo.mjs";
 import { formatAnimeLeaderboard } from "../../lib/animeLeaderboard.mjs";
 
 const MEDALS = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
+const WEALTH_RANKS = ["𝟏", "𝟐", "𝟑", "𝟒", "𝟓", "𝟔", "𝟕", "𝟖", "𝟗", "𝟏𝟎"];
+const WEALTH_TIERS = [
+  ["⚡", "Legendary Hero"], ["🌸", "Elite Warrior"], ["🗡️", "Grand Swordsman"],
+  ["✨", "Skilled Fighter"], ["🌙", "Rising Star"], ["🎴", "Card Master"],
+  ["🔥", "Flame Bearer"], ["💧", "Tide Turner"], ["🌿", "Forest Spirit"], ["⭐", "Chosen One"],
+];
+const WEALTH_SEPARATOR = "  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈";
+const formatMoney = (value) => `$${Number(value || 0).toLocaleString()}`;
+function formatWealthLeaderboard(users, cardCounts, pokemonCounts, companies) {
+  const lines = [
+    "⛩️  *𝗪𝗘𝗔𝗟𝗧𝗛  𝗥𝗔𝗡𝗞𝗜𝗡𝗚𝗦* ⛩️",
+    "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄",
+    "  🌸 *Top 10 Richest Warriors*",
+    "  ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦",
+    "",
+  ];
+  users.forEach((user, index) => {
+    const userJid = String(user._id || user.jid || user.whatsappNumber || "");
+    const [tierIcon, tierName] = WEALTH_TIERS[index] || ["⭐", "Chosen One"];
+    const name = user.name || user.username || `User_${userJid.slice(-4)}`;
+    const cardCount = cardCounts.get(userJid) || 0;
+    const pokemonCount = pokemonCounts.get(userJid) || 0;
+    const company = companies.get(userJid);
+    lines.push(`『 ${WEALTH_RANKS[index] || String(index + 1)} 』 *${name}*`);
+    lines.push(`  ┗ ${tierIcon} ${tierName}`);
+    lines.push(`  💰 *${formatMoney(user.totalWealth)}*  🃏 *${cardCount}* cards  🎮 *${pokemonCount}* pkm`);
+    if (company?.name) lines.push(`  🏯 *${company.name}*`);
+    if (index < users.length - 1) lines.push(WEALTH_SEPARATOR);
+  });
+  lines.push("", "✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦", "🌺 _May your wealth grow like the sakura_");
+  return lines.join("\n");
+}
 
 export default {
   name: "lb",
@@ -46,13 +78,30 @@ export default {
         return sock.sendMessage(jid, { text: "💰 No registered players yet!" }, { quoted: msg });
       }
 
-      const text = formatAnimeLeaderboard({
-        subtitle: "WEALTH LEADERBOARD",
-        rows: users.map((user) => ({ name: user.name || user.username || `User_${String(user._id || "").slice(-4)}`, value: user.totalWealth })),
-        valueIcon: "💰",
-        valueLabel: "𝐖𝐄𝐀𝐋𝐓𝐇",
-        footer: "🌸 𝐀𝐍𝐈𝐌𝐄 𝐋𝐄𝐆𝐄𝐍𝐃𝐒",
-      });
+      const userJids = users.map((user) => String(user._id || user.jid || user.whatsappNumber || "")).filter(Boolean);
+      const [cardDocs, pokemonDocs, companyDocs] = await Promise.all([
+        db.collection("mn_users").find({
+          $or: [{ whatsappNumber: { $in: userJids } }, { userId: { $in: userJids } }],
+        }, { projection: { userId: 1, whatsappNumber: 1, cards: 1 } }).toArray(),
+        db.collection("pokemon_owned").aggregate([
+          { $match: { ownerJid: { $in: userJids } } },
+          { $group: { _id: "$ownerJid", total: { $sum: 1 } } },
+        ]).toArray(),
+        db.collection("companies").find({ ownerId: { $in: userJids } }, {
+          projection: { ownerId: 1, name: 1 },
+        }).toArray(),
+      ]);
+      const cardCounts = new Map();
+      for (const doc of cardDocs) {
+        const count = Array.isArray(doc.cards) ? doc.cards.length : 0;
+        for (const key of [doc.whatsappNumber, doc.userId].filter(Boolean)) {
+          const normalized = String(key);
+          cardCounts.set(normalized, Math.max(cardCounts.get(normalized) || 0, count));
+        }
+      }
+      const pokemonCounts = new Map(pokemonDocs.map((doc) => [String(doc._id), Number(doc.total || 0)]));
+      const companies = new Map(companyDocs.map((company) => [String(company.ownerId), company]));
+      const text = formatWealthLeaderboard(users, cardCounts, pokemonCounts, companies);
       return sock.sendMessage(jid, { text }, { quoted: msg });
     }
 
