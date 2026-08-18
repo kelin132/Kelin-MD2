@@ -1,6 +1,6 @@
 // .item use <item> — use Pokémon items outside battle
 
-import { getTrainer, hasItem, removeItem } from "../../lib/pokemon/players.mjs";
+import { getTrainer, hasItem, removeItem, updateTrainer } from "../../lib/pokemon/players.mjs";
 import {
   addPokemonXP,
   getAllTrainerPokemon,
@@ -98,11 +98,18 @@ export default {
     }
 
     if (itemKey === "rarecandy") {
-      // Rare Candy is intentionally unlimited. Each use still consumes one
-      // Rare Candy item from the trainer's bag and levels one Pokémon.
+      // Five Rare Candy uses per trainer per day, resetting at midnight UTC.
+      const DAILY_LIMIT = 5;
+      const today = new Date().toISOString().slice(0, 10);
+      const lastDate = trainer.rareCandyLastDate || "";
+      const usesToday = lastDate === today ? (trainer.rareCandyUsesToday || 0) : 0;
+      if (usesToday >= DAILY_LIMIT) {
+        return reply(`❌ *Daily limit reached!*\n\nYou can only use *${DAILY_LIMIT} Rare Candies per day*.\n⏳ Resets at midnight.`);
+      }
+
       const pokemonQuery = args.slice(2).join(" ").trim();
       if (!pokemonQuery) {
-        return reply("❌ Choose a Pokémon.\nExample: *.item use rarecandy pikachu*\n\n🍬 Rare Candy uses are unlimited.");
+        return reply(`❌ Choose a Pokémon.\nExample: *.item use rarecandy pikachu*\n\n🍬 Uses today: *${usesToday}/${DAILY_LIMIT}*`);
       }
 
       const pokemon = findPokemon(await getAllTrainerPokemon(sender), pokemonQuery);
@@ -119,6 +126,7 @@ export default {
       }
 
       await removeItem(sender, itemKey);
+      await updateTrainer(sender, { rareCandyLastDate: today, rareCandyUsesToday: usesToday + 1 });
       let replyText =
         `🍬 *Rare Candy used!*\n\n` +
         `🐾 ${pokemon.displayName || pokemon.name}: ` +
