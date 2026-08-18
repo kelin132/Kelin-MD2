@@ -161,8 +161,8 @@ ${pageIndex}
 📖 Browse: *.mart page <1–${TOTAL_PAGES}>*
 🛒 Buy:    *.mart buy <number> [qty]*
 🎒 My bag: *.bag*`
-> get more items here
-> https://aidoru.zone.id/mart`,
+> *find more items here*
+> *https://aidoru.zone.id/mart*`,
     }, { quoted: msg });
   },
 };
