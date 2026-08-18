@@ -655,11 +655,12 @@ Use *.company buy* to start a new one.`
         };
       }));
       return reply(formatAnimeLeaderboard({
+        title: "COMPANY LEADERS",
         subtitle: "COMPANY LEADERBOARD",
         rows,
         valueIcon: "🏢",
         valueLabel: "𝐓𝐎𝐓𝐀𝐋 𝐏𝐀𝐈𝐃",
-        footer: "🌸 𝐀𝐍𝐈𝐌𝐄 𝐋𝐄𝐆𝐄𝐍𝐃𝐒",
+        footer: "🌸 𝐁𝐔𝐒𝐈𝐍𝐄𝐒𝐒 𝐋𝐄𝐆𝐄𝐍𝐃𝐒",
       }));
     }
 
