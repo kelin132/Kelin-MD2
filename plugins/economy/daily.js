@@ -35,9 +35,8 @@ export default {
 │ 🍃 *Flavour* :: _すでに受け取り済み！_
 │
 │ 🕐 *Next*    :: *${hours}h ${minutes}m*
-│ > More daily rewards can be claimed here
-│ > https://aidoru.zone.id/arcade  
-│ 
+│
+│  >  More daily rewards can be claimed on the website 
 ╰───────────────❀`
       }, { quoted: msg });
     }
