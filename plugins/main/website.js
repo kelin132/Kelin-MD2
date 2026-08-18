@@ -1,4 +1,15 @@
+import { readFile } from "node:fs/promises";
+
 const WEBSITE_URL = "https://aidoru.zone.id/";
+const PREVIEW_IMAGE_URL = new URL("../../assets/aidoru-web-preview.jpg", import.meta.url);
+let previewThumbnailPromise;
+
+function getPreviewThumbnail() {
+  if (!previewThumbnailPromise) {
+    previewThumbnailPromise = readFile(PREVIEW_IMAGE_URL).catch(() => null);
+  }
+  return previewThumbnailPromise;
+}
 
 function buildWebsiteMessage() {
   return `╭─୨୧「 🌸 *𝐀𝐈𝐃𝐎𝐑𝐔 𝐂𝐎𝐌𝐌𝐔𝐍𝐈𝐓𝐘* 」୨୧─╮
@@ -36,6 +47,7 @@ export default {
       "matched-text": WEBSITE_URL,
       title: "🌸 AIDORU Community — Your Pokémon World",
       description: "Create your trainer profile, collect cards, raise Pokémon, care for pets and join battle rooms.",
+      jpegThumbnail: await getPreviewThumbnail(),
     };
 
     try {
