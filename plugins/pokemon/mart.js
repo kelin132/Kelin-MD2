@@ -149,8 +149,7 @@ ${itemData.desc}${itemData.category === "key"
       .map(([n, label]) => `  *${n}.* ${label} → \`.mart page ${n}\``)
       .join("\n");
 
-    await sock.sendMessage(jid, {
-      text:
+    const martText =
 `🏪 *POKÉMON MART*
 💰 Balance: *$${(econUser.money || 0).toLocaleString()}*
 🎾 Pokéballs: ${ballCount}
@@ -163,7 +162,23 @@ ${pageIndex}
 📖 Browse: *.mart page <1–${TOTAL_PAGES}>*
 🛒 Buy:    *.mart buy <number> [qty]*
 🎒 My bag: *.bag*
-🔗 *More items:* ${MART_URL}`,
-    }, { quoted: msg });
+🔗 *More items:* ${MART_URL}`;
+    const linkPreview = {
+      "canonical-url": MART_URL,
+      "matched-text": MART_URL,
+      title: "🏪 AIDORU Pokémon Mart",
+      description: "Browse Pokémon items, supplies, and upgrades for your trainer.",
+    };
+
+    try {
+      return await sock.sendMessage(
+        jid,
+        { text: martText, linkPreview },
+        { quoted: msg },
+      );
+    } catch (error) {
+      console.warn("[mart] link preview failed; sending visible text fallback:", error?.message || error);
+      return sock.sendMessage(jid, { text: martText }, { quoted: msg });
+    }
   },
 };
