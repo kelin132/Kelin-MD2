@@ -13,7 +13,7 @@ export default {
   aliases: ["gyms", "gymchallenge"],
   description: "Challenge themed Pokémon gyms in the shared AIDORU web arena",
   category: "pokemon",
-  usage: ".gyms  OR  .gym <tide|ember|voltage|shadow>",
+  usage: ".gyms  OR  .gym <gym-name>",
 
   async run({ sock, msg, sender, args }) {
     const jid = msg.key.remoteJid;
