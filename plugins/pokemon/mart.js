@@ -8,6 +8,8 @@ import { getMartPage, getItemByIndex, TOTAL_PAGES, PAGE_LABELS } from "../../lib
 import { getUser, addMoney } from "../economy/database.js";
 import { getBattle } from "../../lib/pokemon/battleState.mjs";
 
+const MART_URL = "https://aidoru.zone.id/mart";
+
 // 30-second buy cooldown per user
 const buyCooldowns = new Map(); // jid → timestamp
 const BUY_COOLDOWN_MS = 30_000;
@@ -160,9 +162,8 @@ ${pageIndex}
 ━━━━━━━━━━━━━━━━━━━━
 📖 Browse: *.mart page <1–${TOTAL_PAGES}>*
 🛒 Buy:    *.mart buy <number> [qty]*
-🎒 My bag: *.bag*`
-> *find more items here*
-> *https://aidoru.zone.id/mart*,
+🎒 My bag: *.bag*
+🔗 *More items:* ${MART_URL}`,
     }, { quoted: msg });
   },
 };
