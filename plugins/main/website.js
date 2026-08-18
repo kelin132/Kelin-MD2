@@ -18,22 +18,9 @@ function buildWebsiteMessage() {
 ╰──────────────────`.trim();
 }
 
-function buildPreview() {
-  return {
-    title: "🌸 AIDORU Community — Your Pokémon World",
-    body: "Create your trainer profile, collect cards, raise Pokémon, care for pets and join battle rooms.",
-    sourceUrl: WEBSITE_URL,
-    canonicalUrl: WEBSITE_URL,
-    mediaType: 1,
-    renderLargerThumbnail: true,
-    showAdAttribution: false,
-  };
-}
-
 export default {
   name: "web",
   aliases: ["website", "site"],
-  allowDM: true,
   category: "utilities",
   cooldown: 5,
   description: "Open the new AIDORU Community website",
@@ -44,16 +31,6 @@ export default {
     if (!chatId) return;
 
     const text = buildWebsiteMessage();
-    const quoted = { quoted: msg };
-
-    try {
-      return await sock.sendMessage(chatId, {
-        text,
-        contextInfo: { externalAdReply: buildPreview() },
-      }, quoted);
-    } catch (previewError) {
-      console.warn("WEB_PREVIEW_FALLBACK:", previewError?.message || previewError);
-      return sock.sendMessage(chatId, { text }, quoted);
-    }
+    return sock.sendMessage(chatId, { text }, { quoted: msg });
   },
 };
