@@ -10,8 +10,9 @@
 import { downloadMediaBuffer } from "../../lib/omegaDownload.js";
 
 const SUNO_API = "https://api.omegatech.app/api/ai/sonu-pro";
+const SUNO_LEGACY_API = "https://omegatech-api.dixonomega.tech/api/ai/sonu3";
 const DEFAULT_STYLE = "Pop";
-const REQUEST_TIMEOUT = 120_000;
+const REQUEST_TIMEOUT = 45_000;
 const MAX_PROMPT_LENGTH = 600;
 const activeGenerations = new Set();
 
@@ -20,9 +21,19 @@ function cleanText(value, fallback = "") {
 }
 
 function extractTrack(payload) {
-  const root = payload?.data || payload;
-  const tracks = Array.isArray(root?.tracks) ? root.tracks : [];
-  return tracks[0] || root?.track || root || {};
+  const queue = [payload];
+  const seen = new Set();
+  while (queue.length) {
+    const value = queue.shift();
+    if (!value || typeof value !== "object" || seen.has(value)) continue;
+    seen.add(value);
+    if (Array.isArray(value.tracks) && value.tracks[0]) return value.tracks[0];
+    if (value.track && typeof value.track === "object") return value.track;
+    for (const child of Object.values(value)) {
+      if (child && typeof child === "object") queue.push(child);
+    }
+  }
+  return payload?.data || payload || {};
 }
 
 function safeFileName(value) {
@@ -42,19 +53,11 @@ function parsePrompt(text) {
   };
 }
 
-async function generateMusic(prompt, style) {
-  const query = new URLSearchParams({
-    action: "generate",
-    prompt,
-    title: prompt,
-    isInstrumental: "false",
-    musicStyle: style,
-  });
+async function requestJson(url) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
-
   try {
-    const response = await fetch(`${SUNO_API}?${query.toString()}`, {
+    const response = await fetch(url, {
       headers: { Accept: "application/json", "User-Agent": "KELIN-MD2/1.0" },
       signal: controller.signal,
     });
@@ -68,24 +71,52 @@ async function generateMusic(prompt, style) {
     if (!response.ok || payload?.success === false || payload?.status === "error") {
       throw new Error(payload?.message || payload?.error || `Suno API request failed (HTTP ${response.status})`);
     }
-
-    const track = extractTrack(payload);
-    const audioUrl = cleanText(track.musicFile || track.audio_url || track.audioUrl || track.url);
-    if (!audioUrl || !/^https?:\/\//i.test(audioUrl)) {
-      throw new Error("Suno API returned no downloadable audio");
-    }
-    return {
-      title: cleanText(track.title || payload.title, "Untitled"),
-      lyrics: cleanText(track.lyrics || payload.lyrics),
-      duration: track.duration || payload.duration || "N/A",
-      audioUrl,
-      coverUrl: cleanText(track.coverImage || track.image_url || payload.thumbnail),
-    };
+    return payload;
   } catch (error) {
-    if (error?.name === "AbortError") throw new Error("Suno generation timed out after 120 seconds");
+    if (error?.name === "AbortError") throw new Error(`Suno request timed out after ${REQUEST_TIMEOUT / 1000} seconds`);
     throw error;
   } finally {
     clearTimeout(timer);
+  }
+}
+
+function trackFromPayload(payload) {
+  const track = extractTrack(payload);
+  const audioUrl = cleanText(track.musicFile || track.audio_url || track.audioUrl || track.url || payload?.url);
+  if (!audioUrl || !/^https?:\/\//i.test(audioUrl)) return null;
+  return {
+    title: cleanText(track.title || payload?.title, "Untitled"),
+    lyrics: cleanText(track.lyrics || payload?.lyrics),
+    duration: track.duration || payload?.duration || "N/A",
+    audioUrl,
+    coverUrl: cleanText(track.coverImage || track.image_url || payload?.thumbnail),
+  };
+}
+
+async function generateMusic(prompt, style) {
+  const query = new URLSearchParams({
+    action: "generate",
+    prompt,
+    title: prompt,
+    isInstrumental: "false",
+    musicStyle: style,
+  });
+  let firstError;
+  try {
+    const result = trackFromPayload(await requestJson(`${SUNO_API}?${query.toString()}`));
+    if (result) return result;
+    firstError = new Error("Suno Pro returned no downloadable audio");
+  } catch (error) {
+    firstError = error;
+  }
+
+  try {
+    const legacyQuery = new URLSearchParams({ action: "full", prompt });
+    const result = trackFromPayload(await requestJson(`${SUNO_LEGACY_API}?${legacyQuery.toString()}`));
+    if (result) return result;
+    throw new Error("Suno legacy endpoint returned no downloadable audio");
+  } catch (fallbackError) {
+    throw new Error(`${firstError?.message || "Suno Pro failed"}; fallback failed: ${fallbackError?.message || "unknown error"}`);
   }
 }
 
@@ -145,12 +176,12 @@ export default {
 
     try {
       await sock.sendMessage(jid, {
-        text: `🎵 *Generating your music...*\n\n📝 *Prompt:* ${prompt}\n🎼 *Style:* ${style}\n⏰ This may take up to two minutes.`,
+        text: `🎵 *Generating your music...*\n\n📝 *Prompt:* ${prompt}\n🎼 *Style:* ${style}\n⏰ Usually ready within 45 seconds.`,
       }, { quoted: msg });
       await msg.react?.("🎵");
 
       const generated = await generateMusic(prompt, style);
-      const file = await downloadMediaBuffer(generated.audioUrl, { timeoutMs: 90_000 });
+      const file = await downloadMediaBuffer(generated.audioUrl, { timeoutMs: 60_000 });
       const caption = resultCaption({ ...generated, prompt, style });
       await sock.sendMessage(jid, {
         audio: file.buffer,
