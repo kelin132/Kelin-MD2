@@ -162,7 +162,7 @@ ${pageIndex}
 🛒 Buy:    *.mart buy <number> [qty]*
 🎒 My bag: *.bag*`
 > *find more items here*
-> *https://aidoru.zone.id/mart*`,
+> *https://aidoru.zone.id/mart*,
     }, { quoted: msg });
   },
 };
