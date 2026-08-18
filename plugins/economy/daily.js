@@ -60,8 +60,6 @@ export default {
 │ 🔮 *XP*      :: *+${xpBonus}*
 │ 💰 *Wallet*  :: *${fmt(user.money)}*
 │ 
-│ > https://aidoru.zone.id/arcade 
-│
 │ ⭐ *Level ${user.level}*  🔥 *Streak active!*${leveled ? `\n│\n│ 🎉 *LEVEL UP!* — Now Level ${user.level}` : ""}
 ╰───────────────❀`;
 
