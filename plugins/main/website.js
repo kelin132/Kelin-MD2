@@ -33,6 +33,7 @@ function buildPreview() {
 export default {
   name: "web",
   aliases: ["website", "site"],
+  allowDM: true,
   category: "utilities",
   cooldown: 5,
   description: "Open the new AIDORU Community website",
