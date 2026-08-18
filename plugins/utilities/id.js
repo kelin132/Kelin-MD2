@@ -13,19 +13,12 @@ export default {
       const websiteId = await getOrCreateWebsiteId(sender);
       await sock.sendMessage(chatId, {
         text: [
-          "🎴 𝐀𝐂𝐂𝐎𝐔𝐍𝐓",
+          "🪪 *YOUR AIDORU ID*",
           "",
-          "╭─「 🌸 𝐀𝐈𝐃𝐎𝐑𝐔 𝐈𝐃 」─╮",
-          `│ 🪪 ID       › ${websiteId}`,
-          "│",
-          "│ 🔐 Set your website password on AIDORU,",
-          "│ then sign in with this ID.",
-          "│",
-          "│ 🌐 https://aidoru.zone.id/",
-          "╰────────────────╯",
+          `ID: *${websiteId}*`,
           "",
-          "Use *.otp* in a group if you need to reset it.",
-        ].join("\\n"),
+          "Set your website password directly on AIDORU, then sign in with this ID. Use *.otp* in a group if you need to reset it.",
+        ].join("\n"),
       }, { quoted: msg });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Could not retrieve your AIDORU ID.";

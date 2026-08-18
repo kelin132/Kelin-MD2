@@ -1,7 +1,6 @@
 import { guildSystem, guildTaxRate, guildUpgradeRequirements } from "../../lib/guildSystem.js";
 import { requireRegistration } from "./database.js";
 import { generateGuildProfile, getProfilePic, getContactName } from "../../lib/guildGen.mjs";
-import { getExternalAdReply } from "../../lib/linkPreview.mjs";
 
 const WEBSITE_URL = "https://aidoru.zone.id/guild";
 
@@ -81,16 +80,6 @@ ${progressLines(guild)}
 │ ${WEBSITE_URL}
 └───────────────◆`;
 
-    let preview;
-    try {
-      preview = await getExternalAdReply(WEBSITE_URL, {
-        title: `${guild.name} · AIDORU Guild`,
-        body: "View your guild’s anime profile and members",
-      });
-    } catch {
-      preview = null;
-    }
-
     try {
       const imgBuffer = await generateGuildProfile(
         {
@@ -107,12 +96,30 @@ ${progressLines(guild)}
       await sock.sendMessage(jid, {
         image: imgBuffer,
         caption,
-        ...(preview ? { contextInfo: { externalAdReply: preview } } : {}),
+        contextInfo: {
+          externalAdReply: {
+            title: `${guild.name} · AIDORU Guild`,
+            body: "View your guild’s anime profile and members",
+            sourceUrl: WEBSITE_URL,
+            mediaType: 1,
+            renderLargerThumbnail: true,
+            showAdAttribution: false,
+          },
+        },
       }, { quoted: msg });
     } catch {
       await sock.sendMessage(jid, {
         text: caption,
-        ...(preview ? { contextInfo: { externalAdReply: preview } } : {}),
+        contextInfo: {
+          externalAdReply: {
+            title: `${guild.name} · AIDORU Guild`,
+            body: "View your guild’s anime profile and members",
+            sourceUrl: WEBSITE_URL,
+            mediaType: 1,
+            renderLargerThumbnail: true,
+            showAdAttribution: false,
+          },
+        },
       }, { quoted: msg });
     }
   },

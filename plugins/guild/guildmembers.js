@@ -1,6 +1,5 @@
 import { guildSystem } from "../../lib/guildSystem.js";
 import { requireRegistration } from "./database.js";
-import { getExternalAdReply } from "../../lib/linkPreview.mjs";
 
 const WEBSITE_URL = "https://aidoru.zone.id/guild";
 
@@ -40,21 +39,18 @@ export default {
       return `│ ${badge} ${index + 1}. *${member.name}*`;
     }).join("\n");
 
-    const textMessage = `╭─〔 🌸 *𝐆𝐔𝐈𝐋𝐃 𝐌𝐄𝐌𝐁𝐄𝐑𝐒* 〕\n│ 🏯 *${guild.name}* · Lv.${Number(guild.level || 1)}\n│ 👥 ${members.length} member${members.length === 1 ? "" : "s"}\n│\n${lines}\n│\n│ > You can view your guild here\n│ ${WEBSITE_URL}\n└───────────────◆`;
-
-    let preview;
-    try {
-      preview = await getExternalAdReply(WEBSITE_URL, {
-        title: `${guild.name} · AIDORU Guild`,
-        body: "View your guild’s anime profile and members",
-      });
-    } catch {
-      preview = null;
-    }
-
     await sock.sendMessage(msg.key.remoteJid, {
-      text: textMessage,
-      ...(preview ? { contextInfo: { externalAdReply: preview } } : {}),
+      text: `╭─〔 🌸 *𝐆𝐔𝐈𝐋𝐃 𝐌𝐄𝐌𝐁𝐄𝐑𝐒* 〕\n│ 🏯 *${guild.name}* · Lv.${Number(guild.level || 1)}\n│ 👥 ${members.length} member${members.length === 1 ? "" : "s"}\n│\n${lines}\n│\n│ > You can view your guild here\n│ ${WEBSITE_URL}\n└───────────────◆`,
+      contextInfo: {
+        externalAdReply: {
+          title: `${guild.name} · AIDORU Guild`,
+          body: "View your guild’s anime profile and members",
+          sourceUrl: WEBSITE_URL,
+          mediaType: 1,
+          renderLargerThumbnail: true,
+          showAdAttribution: false,
+        },
+      },
     }, { quoted: msg });
   },
 };

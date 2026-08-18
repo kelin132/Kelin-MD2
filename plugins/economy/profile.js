@@ -4,7 +4,6 @@ import { getLevelRole, getAllEarnedRoles, getLevelRoleLabel } from "../../lib/le
 import { getUser as getCardUser } from "../cards/db.js";
 import { countTrainerPokemon } from "../../lib/pokemon/pokemonDb.mjs";
 import { guildSystem } from "../../lib/guildSystem.js";
-import { getExternalAdReply } from "../../lib/linkPreview.mjs";
 
 const xpForLevel = (level) => level * 100;
 
@@ -16,12 +15,12 @@ function withTimeout(promise, timeoutMs, fallback = null) {
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
-async function sendProfileFallback({ sock, jid, msg, caption, profilePic, target, preview }) {
+async function sendProfileFallback({ sock, jid, msg, caption, profilePic, target }) {
   if (profilePic) {
     try {
       await sock.sendMessage(
         jid,
-        { image: { url: profilePic }, caption, ...(preview ? { contextInfo: { externalAdReply: preview } } : {}) },
+        { image: { url: profilePic }, caption },
         { quoted: msg }
       );
       return;
@@ -35,7 +34,7 @@ async function sendProfileFallback({ sock, jid, msg, caption, profilePic, target
 
   await sock.sendMessage(
     jid,
-    { text: caption, mentions: [target], ...(preview ? { contextInfo: { externalAdReply: preview } } : {}) },
+    { text: caption, mentions: [target] },
     { quoted: msg }
   );
 }
@@ -121,35 +120,21 @@ export default {
     const reach = Number.isFinite(Number(user.reach)) ? Number(user.reach) : daysActive;
     const displayName = registeredName.toUpperCase();
     const caption =
-`🎴 𝐀𝐂𝐂𝐎𝐔𝐍𝐓
-
-╭─「 🌸 𝐏𝐑𝐎𝐅𝐈𝐋𝐄 」─╮
-│ 👤 Name    › ${displayName}
-│ 🏷️ Role    › ${roleShort}
-│ 🌟 Level   › ${level} · ${xp.toLocaleString()} XP
-│ 🏰 Guild   › ${guildName}
+`╭━━━〔 🌸 𝗣𝗥𝗢𝗙𝗜𝗟𝗘 〕━━━╮
 │
-│ 💰 Wallet  › $${(user.money ?? 0).toLocaleString()}
-│ 🏦 Bank    › $${(user.bank ?? 0).toLocaleString()}
-│ 💎 Gems    › ${(user.diamonds ?? 0).toLocaleString()}
+│ ── ✦ 𝗦𝗧𝗔𝗧𝗦 ✦ ──
+│ 🌟 Active ${daysActive}
+│ 🃏 Cards ${cardsOwned}
+│ 🐾 Pokémon ${pokemonCount}
 │
-│ 🃏 Cards   › ${cardsOwned}
-│ 🐾 Pokémon › ${pokemonCount}
-│ 🌌 Active  › ${daysActive} days
+│ ── ✦ 𝗪𝗘𝗔𝗟𝗧𝗛 ✦ ──
+│ 💰 $${(user.money ?? 0).toLocaleString()}
+│ 🏦 $${(user.bank ?? 0).toLocaleString()}
+│ 💎 ${(user.diamonds ?? 0).toLocaleString()} 
 │
 │ > *Edit your background PFP at:*
 │ > *https://aidoru.zone.id/profile*
 ╰━━━━━━━━━━━━━━━━━━━━━━╯`;
-
-    const profilePageUrl = "https://aidoru.zone.id/profile";
-    const preview = await withTimeout(
-      getExternalAdReply(profilePageUrl, {
-        title: `${registeredName} · AIDORU Profile`,
-        body: "View this trainer’s profile on AIDORU Community",
-      }).catch(() => null),
-      2500,
-      null,
-    );
 
     let imgBuffer;
     try {
@@ -185,22 +170,18 @@ export default {
         "[profile] Canvas generation failed:",
         err.stack || err.message || err
       );
-      await sendProfileFallback({ sock, jid, msg, caption, profilePic, target, preview });
+      await sendProfileFallback({ sock, jid, msg, caption, profilePic, target });
       return;
     }
 
     try {
-      await sock.sendMessage(jid, {
-        image: imgBuffer,
-        caption,
-        ...(preview ? { contextInfo: { externalAdReply: preview } } : {}),
-      }, { quoted: msg });
+      await sock.sendMessage(jid, { image: imgBuffer, caption }, { quoted: msg });
     } catch (err) {
       console.error(
         "[profile] Canvas image delivery failed:",
         err.stack || err.message || err
       );
-      await sendProfileFallback({ sock, jid, msg, caption, profilePic, target, preview });
+      await sendProfileFallback({ sock, jid, msg, caption, profilePic, target });
     }
   },
 };
