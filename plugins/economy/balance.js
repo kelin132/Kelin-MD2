@@ -21,35 +21,6 @@ export default {
       footerLines: ["Use .ebal", "for account breakdown"],
     });
 
-    // Website-linked accounts use the profile picture synced from AIDORU/WhatsApp.
-    // Keep the preview URL-only so `.bal` remains fast and WhatsApp fetches the image.
-    const profileImage = [
-      user.profilePictureUrl,
-      user.profileImage,
-      user.avatarUrl,
-      user.profilePic,
-      user.pfp,
-    ].find((value) => typeof value === "string" && /^https?:\/\//i.test(value.trim()));
-    const websiteProfile = user.websiteId || user.websiteVerifiedAt;
-    const thumbnailUrl = profileImage || `https://api.dicebear.com/9.x/thumbs/png?seed=${encodeURIComponent(user.name || sender)}`;
-    const profileUrl = websiteProfile
-      ? `https://aidoru.zone.id/?profile=${encodeURIComponent(String(user.websiteId || sender))}`
-      : "https://aidoru.zone.id/";
-
-    await sock.sendMessage(jid, {
-      text,
-      mentions: [sender],
-      contextInfo: {
-        externalAdReply: {
-          title: user.name ? `${user.name} · AIDORU Account` : "AIDORU Account",
-          body: websiteProfile ? "Balance · AIDORU Community profile" : "Balance · Join AIDORU Community",
-          sourceUrl: profileUrl,
-          thumbnailUrl,
-          mediaType: 1,
-          renderLargerThumbnail: true,
-          showAdAttribution: false,
-        },
-      },
-    }, { quoted: msg });
+    await sock.sendMessage(jid, { text, mentions: [sender] }, { quoted: msg });
   },
 };
