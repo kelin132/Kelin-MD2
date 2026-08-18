@@ -14,7 +14,7 @@ export default {
     const text = `🏪 *AIDORU POKÉMON MART*
 
 Tap the preview card to open the Mart.`;
-    const externalAdReply = await buildEconomyExternalAdReply("mart");
+    const linkPreview = await buildEconomyLinkPreview("mart");
 
     try {
       return await sock.sendMessage(jid, { text, linkPreview }, { quoted: msg });
