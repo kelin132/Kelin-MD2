@@ -132,8 +132,8 @@ export default {
 │ 🏦 $${(user.bank ?? 0).toLocaleString()}
 │ 💎 ${(user.diamonds ?? 0).toLocaleString()} 
 │
-│ 🎨 Edit your background PFP at:
-│ https://aidoru.zone.id/profile
+│ > *Edit your background PFP at:*
+│ > *https://aidoru.zone.id/profile*
 ╰━━━━━━━━━━━━━━━━━━━━━━╯`;
 
     let imgBuffer;
