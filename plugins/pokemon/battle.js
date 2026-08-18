@@ -490,12 +490,8 @@ export default {
           return `  ${item?.emoji || "🎾"} *${item?.name || k}* × ${inv[k]}  — ${item?.desc || ""}\n     ➤ \`.battle pokeball ${k}\``;
         });
 
-        // Healing items
-        const healKeys = ["potion","superpotion","hyperpotion","fullrestore","revive","maxrevive"];
-        const healLines = healKeys.filter(k => (inv[k] || 0) > 0).map(k => {
-          const item = MART_ITEMS[k];
-          return `  ${item?.emoji || "💊"} *${item?.name || k}* × ${inv[k]}  — ${item?.desc || ""}\n     ➤ \`.battle item ${k}\``;
-        });
+        // Healing items are intentionally omitted from the active battle bag.
+        const healLines = [];
 
         // Battle items
         const battleKeys = ["xattack","xdefense","xspeed"];
@@ -524,9 +520,15 @@ ${hasBalls ? `🎾 *POKÉBALLS* ${battle.type !== "wild" ? "_(wild battles only)
         }, { quoted: msg });
       }
 
-      const itemKey = args[1].toLowerCase().replace(/\s/g, "");
-
+            const itemKey = args[1].toLowerCase().replace(/\s/g, "");
+      const healingItemKeys = ["potion", "superpotion", "hyperpotion", "fullrestore", "revive", "maxrevive"];
+      if (healingItemKeys.includes(itemKey)) {
+        return sock.sendMessage(jid, {
+          text: "🚫 Healing items are disabled during battles. Switch Pokémon or use *.heal* after the battle ends.",
+        }, { quoted: msg });
+      }
       // If a ball was specified under .battle item, redirect to pokeball logic
+
       const ballTypes = ["pokeball","greatball","ultraball","masterball","premierball","healball","duskball","netball","luxuryball","quickball"];
       if (ballTypes.some(b => b === itemKey || itemKey.includes(b.replace("ball","")))) {
         args[0] = "pokeball";
