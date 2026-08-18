@@ -39,7 +39,7 @@ function getContextInfo(msg) {
 
 export default {
   name: "challenge",
-  aliases: ["ch", "pvp", "pokebattle"],
+  aliases: ["ch", "cha", "pvp", "pokebattle"],
   description: "Challenge a user to a Pokémon battle, or accept an incoming challenge",
   category: "pokemon",
   usage: ".ch @user  OR  reply to their message then .ch  |  .ch accept",
