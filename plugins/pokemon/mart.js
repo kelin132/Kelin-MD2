@@ -1,4 +1,4 @@
-import { buildEconomyLinkPreview } from "../../lib/economyPreview.mjs";
+import { buildEconomyLinkPreview, withHiddenPreviewUrl } from "../../lib/economyPreview.mjs";
 
 export default {
   name: "mart",
@@ -18,12 +18,13 @@ Browse Poké Balls, items, evolution stones, and trainer upgrades on the AIDORU 
 ✨ Your WhatsApp Mart purchases have moved to the web so your inventory stays synced safely.
 🛍️ Tap the preview card to open the Mart.`;
     const linkPreview = await buildEconomyLinkPreview("mart");
+    const previewText = withHiddenPreviewUrl(text, "mart");
 
     try {
-      return await sock.sendMessage(jid, { text, linkPreview }, { quoted: msg });
+      return await sock.sendMessage(jid, { text: previewText, linkPreview }, { quoted: msg });
     } catch (error) {
       console.warn("[mart] website preview failed; sending text fallback:", error?.message || error);
-      return sock.sendMessage(jid, { text }, { quoted: msg });
+      return sock.sendMessage(jid, { text: previewText }, { quoted: msg });
     }
   },
 };
