@@ -83,7 +83,7 @@ async function findGroupMemberByLabel(sock, chatJid, value) {
 
 export default {
   name: "chweb",
-  aliases: ["cha", "chaweb", "gym"],
+  aliases: ["cha", "chaweb"],
   description: "Open a shared AIDORU web arena with healed parties, moves, items, and live trainer matchmaking",
   category: "pokemon",
   usage: ".chweb @user  OR  .chweb <trainer username>  OR  reply to their message then .chweb",
