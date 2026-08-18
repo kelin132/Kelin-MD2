@@ -7,6 +7,7 @@ import { getUser, saveUser, requireRegistration, addHistory, maybeAwardDiamonds 
 import { randomInt } from "../../lib/gambling.mjs";
 import { parseAmount } from "./parseAmount.js";
 import { MAX_BET, maxBetMessage } from "./bettingLimits.js";
+import { formatGamblingResult } from "../../lib/gamblingFormat.mjs";
 
 const COOLDOWN = 20 * 1000; // 20 seconds
 
@@ -128,20 +129,19 @@ export default {
     await saveUser(sender, user);
     await addHistory(sender, "roulette", net, `Roulette: ${betType} $${amount.toLocaleString()}`);
 
-    const ballLine = `${result} ${emoji} — ${color === "green" ? "Green" : color === "red" ? "Red" : "Black"} | ${result === 0 ? "Zero" : isEven ? "Even" : "Odd"}`;
+    const ballLine = `${result} ${emoji} (${color === "green" ? "Green" : color === "red" ? "Red" : "Black"})`;
+    const bonus = diamondReward ? `💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}` : "";
 
-    return reply(
-`╭─❀「 🎡 *𝐑𝐎𝐔𝐋𝐄𝐓𝐓𝐄* 」❀─╮
-│ 🌙 *Result*  :: *${won ? "WIN" : "LOSE"} ${won ? "🟢" : "🔴"}*
-│ 🍃 *Flavour* :: _${won ? "ルーレット勝利！運命！" : "惜しかった...次は勝てる！"}_
-│
-│ 🎡 *Ball*    :: *${ballLine}*
-│ 🎯 *Bet*     :: *${betType}* × *${fmt(amount)}*
-│ ${won ? `💰 *Won*     :: *+${fmt(winnings)}* (×${multiplier})` : `💸 *Lost*    :: *-${fmt(amount)}*`}
-│ 💰 *Wallet*  :: *${fmt(user.money)}*${diamondReward ? `\n│ 💎 *Bonus*   :: *+${diamondReward} Gem${diamondReward === 1 ? "" : "s"}*` : ""}
-│
-│ ${won && multiplier >= 36 ? "🎉 *JACKPOT NUMBER!* おめでとう！" : won ? "✨ *YOU WON!* おめでとう！" : "💀 *Better luck next time!*"}
-╰───────────────❀`
-    );
+    return reply(formatGamblingResult({
+      icon: "🎡",
+      title: "Roulette",
+      won,
+      betLabel: `Bet: ${betType} ×`,
+      bet: amount,
+      got: ballLine,
+      details: [bonus],
+      net,
+      balance: user.money,
+    }));
   },
 };

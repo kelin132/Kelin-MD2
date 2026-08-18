@@ -8,6 +8,7 @@ import { randomChance } from "../../lib/gambling.mjs";
 import { parseAmount } from "./parseAmount.js";
 import { MAX_BET, maxBetMessage } from "./bettingLimits.js";
 import { getNewlyUnlockedRole, buildLevelUpMsg } from "../../lib/levelRoles.mjs";
+import { formatGamblingResult } from "../../lib/gamblingFormat.mjs";
 
 const COOLDOWN = 8 * 1000;
 
@@ -81,18 +82,17 @@ export default {
       await saveUser(sender, user);
       await addHistory(sender, "coinflip", amount, `Coinflip win: ${normalCall}`);
 
-      await reply(
-`╭─❀「 💰 *𝐂𝐎𝐈𝐍 𝐅𝐋𝐈𝐏* 」❀─╮
-│ 🌙 *Result*    :: *${coinEmoji}*
-│ 🍃 *Your Pick* :: *${normalCall}*
-│
-│ 💰 *Bet*       :: *${fmt(amount)}*
-│ 💎 *Reward*    :: *${fmt(amount * 2)}*
-│ 💰 *Wallet*    :: *${fmt(user.money)}*${diamondReward ? `\n│ 💎 *Bonus*     :: *+${diamondReward} Gem${diamondReward === 1 ? "" : "s"}*` : ""}
-│
-│ ✨ *YOU WON!* おめでとう！🎉
-╰───────────────❀`
-      );
+      await reply(formatGamblingResult({
+        icon: "💰",
+        title: "Coin Flip",
+        won: true,
+        betLabel: `Bet: ${normalCall} ×`,
+        bet: amount,
+        got: coinEmoji,
+        details: [`💎 Reward: ${fmt(amount * 2)}`, diamondReward ? `💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}` : ""],
+        net: amount,
+        balance: user.money,
+      }));
 
       if (leveled) {
         const newRole = getNewlyUnlockedRole(startLevel, newLevel);
@@ -103,18 +103,16 @@ export default {
       await saveUser(sender, user);
       await addHistory(sender, "coinflip", -amount, `Coinflip loss: ${normalCall}`);
 
-      await reply(
-`╭─❀「 💰 *𝐂𝐎𝐈𝐍 𝐅𝐋𝐈𝐏* 」❀─╮
-│ 🌙 *Result*    :: *${coinEmoji}*
-│ 🍃 *Your Pick* :: *${normalCall}*
-│
-│ 💰 *Bet*       :: *${fmt(amount)}*
-│ 💸 *Lost*      :: *-${fmt(amount)}*
-│ 💰 *Wallet*    :: *${fmt(user.money)}*${diamondReward ? `\n│ 💎 *Bonus*     :: *+${diamondReward} Gem${diamondReward === 1 ? "" : "s"}*` : ""}
-│
-│ 💀 *YOU LOST!* 残念... 頑張れ！
-╰───────────────❀`
-      );
+      await reply(formatGamblingResult({
+        icon: "💰",
+        title: "Coin Flip",
+        betLabel: `Bet: ${normalCall} ×`,
+        bet: amount,
+        got: coinEmoji,
+        details: [diamondReward ? `💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}` : ""],
+        net: -amount,
+        balance: user.money,
+      }));
     }
   },
 };

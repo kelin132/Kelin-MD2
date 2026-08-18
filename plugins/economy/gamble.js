@@ -3,6 +3,7 @@ import { randomChoice, randomChance } from "../../lib/gambling.mjs";
 import { parseAmount } from "./parseAmount.js";
 import { MAX_BET, MAX_BET_LABEL, maxBetMessage } from "./bettingLimits.js";
 import { getNewlyUnlockedRole, buildLevelUpMsg } from "../../lib/levelRoles.mjs";
+import { formatGamblingResult } from "../../lib/gamblingFormat.mjs";
 
 const COOLDOWN = 5 * 60 * 1000;
 
@@ -79,17 +80,16 @@ export default {
       await saveUser(sender, user);
       await addHistory(sender, "slots", amount, `Gamble win +$${amount.toLocaleString()}`);
 
-      await reply(
-`╭─❀「 🎰 *𝐆𝐀𝐌𝐁𝐋𝐄* 」❀─╮
-│ 🎲 *Spin*    :: ${spin}
-│
-│ 💰 *Bet*     :: *${fmt(amount)}*
-│ 💰 *Won*     :: *+${fmt(amount)}*
-│ 💰 *Balance* :: *${fmt(user.money)}*${diamondReward ? `\n│ 💎 *Bonus*   :: *+${diamondReward} Gem${diamondReward === 1 ? "" : "s"}*` : ""}
-│
-│ ✨ *YOU WON!* おめでとう！🎉
-╰───────────────❀`
-      );
+      await reply(formatGamblingResult({
+        icon: "🎰",
+        title: "Gamble",
+        won: true,
+        bet: amount,
+        got: spin,
+        details: [diamondReward ? `💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}` : ""],
+        net: amount,
+        balance: user.money,
+      }));
 
       if (leveled) {
         const newRole = getNewlyUnlockedRole(startLevel, newLevel);
@@ -100,17 +100,15 @@ export default {
       await saveUser(sender, user);
       await addHistory(sender, "slots", -amount, `Gamble loss -$${amount.toLocaleString()}`);
 
-      await reply(
-`╭─❀「 🎰 *𝐆𝐀𝐌𝐁𝐋𝐄* 」❀─╮
-│ 🎲 *Spin*    :: ${spin}
-│
-│ 💰 *Bet*     :: *${fmt(amount)}*
-│ 💸 *Lost*    :: *-${fmt(amount)}*
-│ 💰 *Balance* :: *${fmt(user.money)}*${diamondReward ? `\n│ 💎 *Bonus*   :: *+${diamondReward} Gem${diamondReward === 1 ? "" : "s"}*` : ""}
-│
-│ 💀 *YOU LOST!* 残念... 頑張れ！
-╰───────────────❀`
-      );
+      await reply(formatGamblingResult({
+        icon: "🎰",
+        title: "Gamble",
+        bet: amount,
+        got: spin,
+        details: [diamondReward ? `💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}` : ""],
+        net: -amount,
+        balance: user.money,
+      }));
     }
   },
 };

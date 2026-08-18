@@ -7,6 +7,7 @@ import { getUser, saveUser, requireRegistration, addHistory, maybeAwardDiamonds,
 import { randomChoice } from "../../lib/gambling.mjs";
 import { parseAmount } from "./parseAmount.js";
 import { MAX_BET, maxBetMessage } from "./bettingLimits.js";
+import { formatGamblingResult } from "../../lib/gamblingFormat.mjs";
 import { getNewlyUnlockedRole, buildLevelUpMsg } from "../../lib/levelRoles.mjs";
 
 const COOLDOWN = 15 * 1000;
@@ -111,21 +112,16 @@ export default {
     const tag = user.name || sender.split("@")[0].split(":")[0];
 
     const won    = winnings > 0;
-    const jackpot = resultMsg.toLowerCase().startsWith("jackpot");
-
-    const caption =
-`╭─❀「 🎰 *𝐒𝐋𝐎𝐓𝐒* 」❀─╮
-│ 🌙 *Result*  :: *${resultMsg} ${jackpot ? "🟡" : won ? "🟢" : "🔴"}*
-│
-│   ╔══${a}══${b}══${c}══╗
-│   ╚═══════════╝
-│
-│ 💰 *Wagered* :: *${fmt(amount)}*
-│ ${won ? `💰 *Won*     :: *+${fmt(winnings)}*` : `📉 *Lost*    :: *-${fmt(amount)}*`}
-│ 💰 *Wallet*  :: *${fmt(user.money)}*${diamondReward ? `\n│ 💎 *Bonus*   :: *+${diamondReward} Gem${diamondReward === 1 ? "" : "s"}*` : ""}
-│
-${resultLine}
-╰───────────────❀`;
+    const caption = formatGamblingResult({
+      icon: "🎰",
+      title: "Slots",
+      won,
+      bet: amount,
+      got: `${a} ${b} ${c}`,
+      details: [resultMsg, diamondReward ? `💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}` : ""],
+      net,
+      balance: user.money,
+    });
 
     await reply(caption);
 

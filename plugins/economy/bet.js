@@ -8,6 +8,7 @@ import { randomChoice, randomChance } from "../../lib/gambling.mjs";
 import { parseAmount } from "./parseAmount.js";
 import { MAX_BET, maxBetMessage } from "./bettingLimits.js";
 import { getNewlyUnlockedRole, buildLevelUpMsg } from "../../lib/levelRoles.mjs";
+import { formatGamblingResult } from "../../lib/gamblingFormat.mjs";
 
 const COOLDOWN = 30 * 1000;
 
@@ -90,17 +91,16 @@ export default {
 
       const tag = user.name || sender.split("@")[0].split(":")[0];
       await sock.sendMessage(jid, {
-        text:
-`╭─❀「 🎲 *𝐁𝐄𝐓* 」❀─╮
-│ 🌙 *Result*  :: *WIN* 🟢
-│ 🍃 *Flavour* :: _${flavour}_
-│
-│ 💰 *Wagered* :: *${fmt(amount)}*
-│ 💰 *Reward*  :: *+${fmt(amount)}*
-│ 💰 *Wallet*  :: *${fmt(user.money)}*${diamondReward ? `\n│ 💎 *Bonus*   :: *+${diamondReward} Gem${diamondReward === 1 ? "" : "s"}*` : ""}
-│
-│ ✨ *YOU WON!* おめでとう！🎉
-╰───────────────❀`,
+        text: formatGamblingResult({
+          icon: "🎲",
+          title: "Bet",
+          won: true,
+          bet: amount,
+          got: flavour,
+          details: [diamondReward ? `💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}` : ""],
+          net: amount,
+          balance: user.money,
+        }),
       }, { quoted: msg });
 
       if (leveled) {
@@ -113,17 +113,15 @@ export default {
       await addHistory(sender, "bet", -amount, `Bet lost — wagered $${amount.toLocaleString()}`);
 
       await sock.sendMessage(jid, {
-        text:
-`╭─❀「 🎲 *𝐁𝐄𝐓* 」❀─╮
-│ 🌙 *Result*  :: *LOSE* 🔴
-│ 🍃 *Flavour* :: _${flavour}_
-│
-│ 💰 *Wagered* :: *${fmt(amount)}*
-│ 📉 *Lost*    :: *-${fmt(amount)}*
-│ 💰 *Wallet*  :: *${fmt(user.money)}*${diamondReward ? `\n│ 💎 *Bonus*   :: *+${diamondReward} Gem${diamondReward === 1 ? "" : "s"}*` : ""}
-│
-│ 💀 *Better luck next time!* 頑張れ！
-╰───────────────❀`,
+        text: formatGamblingResult({
+          icon: "🎲",
+          title: "Bet",
+          bet: amount,
+          got: flavour,
+          details: [diamondReward ? `💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}` : ""],
+          net: -amount,
+          balance: user.money,
+        }),
       }, { quoted: msg });
     }
   },

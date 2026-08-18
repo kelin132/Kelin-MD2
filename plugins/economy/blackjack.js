@@ -2,6 +2,7 @@ import { getUser, saveUser, requireRegistration, maybeAwardDiamonds } from "./da
 import { randomChoice } from "../../lib/gambling.mjs";
 import { parseAmount } from "./parseAmount.js";
 import { MAX_BET, maxBetMessage } from "./bettingLimits.js";
+import { formatGamblingResult } from "../../lib/gamblingFormat.mjs";
 
 const DECK = [
   ...Array(4).fill("A"), ...Array(4).fill("K"), ...Array(4).fill("Q"),
@@ -101,6 +102,7 @@ export default {
     const pv     = handValue(player);
     const dv     = handValue(dealer);
 
+    const startingMoney = user.money;
     let resultMsg  = "";
     let resultLine = "";
     let won        = false;
@@ -132,19 +134,17 @@ export default {
     await saveUser(sender, user);
 
     await sock.sendMessage(jid, {
-      text:
-`╭─❀「 🃏 *𝐁𝐋𝐀𝐂𝐊𝐉𝐀𝐂𝐊* 」❀─╮
-│ 🌙 *Result*  :: *${resultMsg}*
-│ 🍃 *Flavour* :: _${won ? "完璧なゲーム！" : pv > 21 ? "バスト！やってしまった..." : "惜しかった..."}_
-│
-│ 🃏 *Your Hand* :: *${player.join(" ")}* = ${pv}
-│ 🎴 *Dealer*    :: *${dealer.join(" ")}* = ${dv}
-│
-│ 💰 *Bet*     :: *${fmt(bet)}*
-│ 💰 *Wallet*  :: *${fmt(user.money)}*${diamondReward ? `\n│ 💎 *Bonus*   :: *+${diamondReward} Gem${diamondReward === 1 ? "" : "s"}*` : ""}
-│
-│ ${resultLine}
-╰───────────────❀`
+      text: formatGamblingResult({
+        icon: "🃏",
+        title: "Blackjack",
+        won,
+        push: resultMsg.startsWith("PUSH"),
+        bet,
+        got: `You ${player.join(" ")} (${pv}) │ Dealer ${dealer.join(" ")} (${dv})`,
+        details: [resultLine.replace(/^\S+\s*/, "")],
+        net: user.money - startingMoney,
+        balance: user.money,
+      }),
     }, { quoted: msg });
   }
 };
