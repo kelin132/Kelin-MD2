@@ -4,6 +4,8 @@ import { getLevelRole, getAllEarnedRoles, getLevelRoleLabel } from "../../lib/le
 import { getUser as getCardUser } from "../cards/db.js";
 import { countTrainerPokemon } from "../../lib/pokemon/pokemonDb.mjs";
 import { guildSystem } from "../../lib/guildSystem.js";
+import { GYMS } from "../../lib/pokemon/gymData.mjs";
+import { getTrainer } from "../../lib/pokemon/players.mjs";
 
 const xpForLevel = (level) => level * 100;
 
@@ -48,6 +50,32 @@ function fmtDate(iso) {
   } catch { return "Unknown"; }
 }
 
+function gymAchievementSummary(trainer) {
+  const badges = Array.isArray(trainer?.badges) ? trainer.badges.map(String) : [];
+  const rewards = trainer?.gymRewards && typeof trainer.gymRewards === "object"
+    ? Object.keys(trainer.gymRewards)
+    : [];
+  const earnedIds = new Set(
+    [...badges, ...rewards]
+      .map((value) => value.trim().toLowerCase().replace(/-badge$/i, ""))
+      .filter(Boolean),
+  );
+  const earnedGyms = GYMS.filter((gym) => earnedIds.has(gym.id));
+  const explicitWins = [trainer?.gymWins, trainer?.gymBattleWins, trainer?.gymVictories]
+    .map(Number)
+    .find((value) => Number.isFinite(value) && value >= 0);
+  const wins = explicitWins ?? earnedGyms.length;
+  const nextGym = GYMS.find((gym) => !earnedGyms.some((earned) => earned.id === gym.id));
+
+  return {
+    wins,
+    completed: earnedGyms.length,
+    total: GYMS.length,
+    badges: earnedGyms.length ? earnedGyms.map((gym) => gym.badge).join(", ") : "None yet",
+    next: nextGym ? nextGym.name : "Circuit complete",
+  };
+}
+
 export default {
   name: "profile",
   description: "View your economy profile card",
@@ -67,11 +95,12 @@ export default {
     const cardUser = await getCardUser(target);
     const websiteAvatar = [cardUser?.profilePictureUrl, cardUser?.profileImage, cardUser?.avatarUrl]
       .find((value) => typeof value === "string" && /^https?:\/\//i.test(value));
-    const [user, profilePic, pokemonCount, guild] = await Promise.all([
+    const [user, profilePic, pokemonCount, guild, trainer] = await Promise.all([
       getUser(target),
       withTimeout(getProfilePic(sock, target, websiteAvatar), 2500),
       countTrainerPokemon(target),
       withTimeout(guildSystem.getUserPrimaryGuild(target), 2500),
+      withTimeout(getTrainer(target), 2500),
     ]);
 
     const tag   = target.split("@")[0].split(":")[0];
@@ -107,6 +136,7 @@ export default {
       Premium: "PREMIUM",
       Member: "MEMBER",
     }[role] || role.toUpperCase();
+    const gymProgress = gymAchievementSummary(trainer);
 
     const lastDaily       = user.lastDaily ?? 0;
     const hoursSinceDaily = (Date.now() - lastDaily) / 36e5;
@@ -126,6 +156,10 @@ export default {
 │ 🌟 Active ${daysActive}
 │ 🃏 Cards ${cardsOwned}
 │ 🐾 Pokémon ${pokemonCount}
+│ 🏟️ Gym Circuit ${gymProgress.wins}/${gymProgress.total} wins
+│ 🎖️ Badges ${gymProgress.completed}/${gymProgress.total}
+│ 🏅 ${gymProgress.badges}
+│ ⏭️ Next ${gymProgress.next}
 │
 │ ── ✦ 𝗪𝗘𝗔𝗟𝗧𝗛 ✦ ──
 │ 💰 $${(user.money ?? 0).toLocaleString()}
