@@ -3,6 +3,7 @@
 
 import { getTrainer } from "../../lib/pokemon/players.mjs";
 import { MART_ITEMS } from "../../lib/pokemon/martItems.mjs";
+import { formatAnimeLeaderboard } from "../../lib/animeLeaderboard.mjs";
 
 // Category display order and labels
 const CAT_META = {
@@ -64,29 +65,28 @@ Visit *.mart* to buy items.`,
       }, { quoted: msg });
     }
 
-    // Build sections in defined order
+    // Render inventory rows with the same boxed leaderboard layout as `.lb`.
     const catOrder = ["ball", "heal", "cure", "battle", "vitamin", "stone", "mega", "key", "other"];
-    const sections = catOrder
+    const rows = catOrder
       .filter(cat => groups[cat] && groups[cat].length > 0)
-      .map(cat => {
-        const meta  = CAT_META[cat] || CAT_META.other;
-        const lines = groups[cat].map(it => {
-          const hint = meta.hint(it.key);
-          return `  ${it.emoji} *${it.name}* × *${it.qty}*\n    ↳ ${it.desc}\n    ↳ ${hint}`;
-        }).join("\n");
-        return `${meta.label}\n${lines}`;
-      })
-      .join("\n\n");
+      .flatMap(cat => {
+        const meta = CAT_META[cat] || CAT_META.other;
+        return groups[cat].map(it => ({
+          name: `${it.emoji} ${it.name}`,
+          valueText: `🎒 × ${it.qty} · ${it.desc || "No description"}\n│    ↳ ${meta.hint(it.key)}`,
+        }));
+      });
 
-    await sock.sendMessage(jid, {
-      text:
-`🎒 *${trainer.username}'s BAG* (${totalItems} item${totalItems !== 1 ? "s" : ""})
+    const text = formatAnimeLeaderboard({
+      title: "INVENTORY",
+      subtitle: `${trainer.username}'S BAG · ${totalItems} ITEMS`,
+      rows,
+      valueIcon: "🎒",
+      valueLabel: "ITEMS",
+      footer: "🌸 AIDORU ITEMS",
+      limit: rows.length,
+    }) + "\n🛒 Buy more at *.mart*\n⚔️ Use items with *.battle item*";
 
-${sections}
-
-━━━━━━━━━━━━━━━━━━━━
-🛒 Buy more at *.mart*
-⚔️ Use items in battle: \`.battle item\``,
-    }, { quoted: msg });
+    await sock.sendMessage(jid, { text }, { quoted: msg });
   },
 };

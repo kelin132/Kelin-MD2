@@ -83,7 +83,7 @@ async function findGroupMemberByLabel(sock, chatJid, value) {
 
 export default {
   name: "chweb",
-  aliases: ["cha", "chaweb"],
+  aliases: ["cha", "chaweb", "gym"],
   description: "Open a shared AIDORU web arena with healed parties, moves, items, and live trainer matchmaking",
   category: "pokemon",
   usage: ".chweb @user  OR  .chweb <trainer username>  OR  reply to their message then .chweb",
@@ -131,6 +131,7 @@ export default {
           text:
             "Usage:\n" +
             "• *.chweb @user* — challenge that trainer in the web arena\n" +
+            "• *.gym @user* — open the same web arena shortcut\n" +
             "• *.chweb <trainer username>* — challenge by trainer username\n" +
             "• Reply to their message then *.chweb*",
         },
@@ -214,10 +215,10 @@ export default {
 
     let room;
     try {
-      const [challengerAvatarUrl, opponentAvatarUrl] = await Promise.all([
-        sock.profilePictureUrl(sender, "image").catch(() => null),
-        sock.profilePictureUrl(targetJid, "image").catch(() => null),
-      ]);
+      // Do not block room creation on two remote WhatsApp avatar lookups.
+      // The web arena can resolve profile images independently after the room opens.
+      const challengerAvatarUrl = challenger.avatarUrl || challenger.profilePic || challenger.image || null;
+      const opponentAvatarUrl = opponent.avatarUrl || opponent.profilePic || opponent.image || null;
       room = await createWebBattleRoom({
         challengerJid,
         challengerName: challenger.username || msg.pushName || sender.split("@")[0],
