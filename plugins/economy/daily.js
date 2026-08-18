@@ -35,8 +35,9 @@ export default {
 │ 🍃 *Flavour* :: _すでに受け取り済み！_
 │
 │ 🕐 *Next*    :: *${hours}h ${minutes}m*
-│
-│ 🔥 *Don't break your streak!*
+│ > More daily rewards can be claimed here
+│ > https://aidoru.zone.id/arcade  
+│ 
 ╰───────────────❀`
       }, { quoted: msg });
     }
@@ -59,6 +60,8 @@ export default {
 │ 💰 *Reward*  :: *+${fmt(reward)}*
 │ 🔮 *XP*      :: *+${xpBonus}*
 │ 💰 *Wallet*  :: *${fmt(user.money)}*
+│ 
+│ > https://aidoru.zone.id/arcade 
 │
 │ ⭐ *Level ${user.level}*  🔥 *Streak active!*${leveled ? `\n│\n│ 🎉 *LEVEL UP!* — Now Level ${user.level}` : ""}
 ╰───────────────❀`;
