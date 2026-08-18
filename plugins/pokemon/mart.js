@@ -11,9 +11,12 @@ export default {
     const jid = msg.key.remoteJid || msg.key.participant;
     if (!jid) return;
 
+    const config = getEconomyPreviewConfig("mart");
     const text = `🏪 *AIDORU POKÉMON MART*
 
-Tap the preview card to open the Mart.`;
+Tap the preview card to open the Mart.
+
+🔗 ${config.url}`;
     const linkPreview = await buildEconomyLinkPreview("mart");
 
     try {
