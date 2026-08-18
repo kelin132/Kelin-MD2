@@ -1,4 +1,4 @@
-import { buildEconomyLinkPreview, buildEconomyExternalAdReply } from "../../lib/economyPreview.mjs";
+import { buildEconomyExternalAdReply } from "../../lib/economyPreview.mjs";
 
 export default {
   name: "mart",
@@ -14,11 +14,10 @@ export default {
     const text = `🏪 *AIDORU POKÉMON MART*
 
 Tap the preview card to open the Mart.`;
-    const linkPreview = await buildEconomyLinkPreview("mart");
     const externalAdReply = await buildEconomyExternalAdReply("mart");
 
     try {
-      return await sock.sendMessage(jid, { text, linkPreview, contextInfo: { externalAdReply } }, { quoted: msg });
+      return await sock.sendMessage(jid, { text, contextInfo: { externalAdReply } }, { quoted: msg });
     } catch (error) {
       console.warn("[mart] website preview failed; sending text fallback:", error?.message || error);
       return sock.sendMessage(jid, { text }, { quoted: msg });

@@ -1,29 +1,35 @@
 /**
  * KELIN MD — .restart
- * The hosting panel owns the process lifecycle. Do not call process.exit()
- * from a WhatsApp command because many panels do not automatically respawn it.
+ * Sends a confirmation message then exits the process cleanly.
+ * PM2 / forever / systemd will auto-restart the bot.
+ * Owner / staff only.
  */
+
 export default {
   name: "restart",
   aliases: ["reboot", "rs"],
-  description: "Refresh bot status without taking the process offline",
+  description: "Restart the bot process (owner only)",
   category: "owner",
   usage: ".restart",
   isStaff: true,
+
   async run({ sock, msg }) {
     const jid = msg.key.remoteJid;
-    if (!jid) return;
-    return sock.sendMessage(jid, {
+
+    await sock.sendMessage(jid, {
       text:
-`╭━━━〔 🔄 *BOT STATUS* 〕━━━╮
+`╭━━━〔 🔄 *RESTARTING BOT* 〕━━━╮
 │
-│  ⚡ No restart needed!
-│  The bot is still running normally.
-│
-│  Use your hosting panel's restart button
-│  when a full process restart is required.
+│  ⚡ Bot is restarting…
+│  Please wait a few seconds.
 │
 ╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
     }, { quoted: msg });
+
+    // Small delay so the message is delivered before the process exits
+    await new Promise(r => setTimeout(r, 1500));
+
+    console.log("[restart] Owner triggered a restart — exiting now.");
+    process.exit(0);
   },
 };
