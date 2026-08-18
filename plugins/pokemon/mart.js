@@ -14,7 +14,7 @@ export default {
     const config = getEconomyPreviewConfig("mart");
     const text = `🏪 *AIDORU POKÉMON MART*
 
-Tap the preview card to open the Mart.
+Vist the mart on the website to make your purchases.💠
 
 🔗 ${config.url}`;
     const linkPreview = await buildEconomyLinkPreview("mart");
