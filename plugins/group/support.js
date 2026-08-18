@@ -39,7 +39,6 @@ Join our official support group:
               title: "AKIRA MD Support Group",
               body: "Join the official support group for help, updates, and announcements.",
               mediaType: 1,
-              thumbnailUrl: "https://aidoru.zone.id/favicon.ico",
               sourceUrl: supportUrl,
               renderLargerThumbnail: true,
               showAdAttribution: false,
