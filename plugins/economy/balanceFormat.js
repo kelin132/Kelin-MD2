@@ -1,9 +1,24 @@
 function money(value) {
-  return `$${Number(value ?? 0).toLocaleString()}`;
+  const amount = Number(value ?? 0);
+  const absolute = Math.abs(amount);
+  const sign = amount < 0 ? "-" : "";
+  if (absolute >= 1e12) return `${sign}$${compact(absolute / 1e12)}T`;
+  if (absolute >= 1e9) return `${sign}$${compact(absolute / 1e9)}B`;
+  if (absolute >= 1e6) return `${sign}$${compact(absolute / 1e6)}M`;
+  if (absolute >= 1e3) return `${sign}$${compact(absolute / 1e3)}K`;
+  return `${sign}$${absolute.toLocaleString()}`;
+}
+
+function compact(value) {
+  return value.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
 }
 
 function number(value) {
   return Number(value ?? 0).toLocaleString();
+}
+
+function row(icon, label, value) {
+  return `│ ${icon} ${label.padEnd(7)} › ${value}`;
 }
 
 export function formatAccountBalance({
@@ -17,17 +32,17 @@ export function formatAccountBalance({
   footerLines = [],
 }) {
   const rows = [
-    `│ 💰 𝗪𝗮𝗹𝗹𝗲𝘁  ୨୧ ${money(wallet)}`,
-    `│ 🏦 𝗕𝗮𝗻𝗸    ୨୧ ${money(bank)}`,
-    `│ 💎 𝗚𝗲𝗺𝘀    ୨୧ ${number(gems)}`,
+    row("💰", "Wallet", money(wallet)),
+    row("🏦", "Bank", money(bank)),
+    row("💎", "Gems", number(gems)),
   ];
 
-  if (vault !== undefined) rows.push(`│ 🔒 𝗩𝗮𝘂𝗹𝘁   ୨୧ ${money(vault)}`);
-  if (orbs !== undefined) rows.push(`│ 🔮 𝗢𝗿𝗯𝘀    ୨୧ ${number(orbs)}`);
-  rows.push("│", `│ 🌌 𝗡𝗲𝘁 𝗪𝗼𝗿𝘁𝗵 ୨୧ ${money(netWorth)}`);
+  if (vault !== undefined) rows.push(row("🔒", "Vault", money(vault)));
+  if (orbs !== undefined) rows.push(row("🔮", "Orbs", number(orbs)));
+  rows.push("│", row("🌌", "Worth", money(netWorth)));
 
   if (extraRows.length) {
-    rows.push("│", ...extraRows.map((row) => `│ ${row}`));
+    rows.push("│", ...extraRows.map((value) => `│ ${value}`));
   }
 
   if (footerLines.length) {
@@ -36,10 +51,10 @@ export function formatAccountBalance({
   }
 
   return [
-    "🎴 𝐀𝐂𝐂𝐎𝐔𝐍𝐓 𝐁𝐀𝐋𝐀𝐍𝐂𝐄",
+    "🎴 𝐀𝐂𝐂𝐎𝐔𝐍𝐓",
     "",
-    "╭─ ⟡ ───────────── ⟡ ─╮",
+    "╭─「 🌸 𝐁𝐀𝐋𝐀𝐍𝐂𝐄 」─╮",
     ...rows,
-    "╰─ ⟡ ───────────── ⟡ ─╯",
+    "╰────────────────╯",
   ].join("\n");
 }
