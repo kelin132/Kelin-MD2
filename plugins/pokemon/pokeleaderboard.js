@@ -1,6 +1,7 @@
 // plugins/pokemon/pokeleaderboard.js — anime aesthetic theme
 
 import { getDb } from "../../lib/mongo.mjs";
+import { formatAnimeLeaderboard } from "../../lib/animeLeaderboard.mjs";
 
 const TYPE_EMOJIS = {
   fire:"🔥", water:"💧", grass:"🍃", electric:"⚡", psychic:"🔮",
@@ -76,17 +77,13 @@ export default {
       const nameMap = {};
       for (const t of trainers) nameMap[t.jid] = t.username || "Trainer";
 
-      let text = animeHeader("𝗣𝗢𝗞𝗘́𝗠𝗢𝗡  𝗖𝗔𝗧𝗖𝗛  𝗥𝗔𝗡𝗞𝗜𝗡𝗚𝗦", "Top Collectors");
-
-      results.forEach((r, i) => {
-        const badge = RANK_BADGES[i] || `『${i + 1}』`;
-        const name  = nameMap[r._id] || "Trainer";
-        text += `${badge} *${name}*\n`;
-        text += `  ┗ 🎮 *${r.total}* Pokémon caught\n`;
-        if (i < results.length - 1) text += `  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n`;
+      const text = formatAnimeLeaderboard({
+        subtitle: "POKÉMON CATCH LEADERBOARD",
+        rows: results.map((r) => ({ name: nameMap[r._id] || "Trainer", value: r.total })),
+        valueIcon: "🎮",
+        valueLabel: "𝐏𝐎𝐊𝐄́𝐌𝐎𝐍",
+        footer: "🌸 𝐀𝐍𝐈𝐌𝐄 𝐋𝐄𝐆𝐄𝐍𝐃𝐒",
       });
-
-      text += animeFooter();
       return sock.sendMessage(jid, { text }, { quoted: msg });
     }
 
@@ -104,19 +101,13 @@ export default {
       const nameMap   = {};
       for (const t of trainers) nameMap[t.jid] = t.username || "Trainer";
 
-      let text = animeHeader("𝗟𝗘𝗩𝗘𝗟  𝗥𝗔𝗡𝗞𝗜𝗡𝗚𝗦", "Strongest Pokémon");
-
-      results.forEach((p, i) => {
-        const badge     = RANK_BADGES[i] || `『${i + 1}』`;
-        const typeEmoji = TYPE_EMOJIS[p.primaryType] || "⭐";
-        const shiny     = p.shiny ? " ✨" : "";
-        const owner     = nameMap[p.ownerJid] || "Trainer";
-        text += `${badge} ${typeEmoji} *${p.displayName || p.name}${shiny}*\n`;
-        text += `  ┗ 🏅 Lv.*${p.level}*  〔 👤 *${owner}* 〕\n`;
-        if (i < results.length - 1) text += `  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n`;
+      const text = formatAnimeLeaderboard({
+        subtitle: "POKÉMON LEVEL LEADERBOARD",
+        rows: results.map((p) => ({ name: `${TYPE_EMOJIS[p.primaryType] || "⭐"} ${p.displayName || p.name}${p.shiny ? " ✨" : ""}`, value: p.level })),
+        valueIcon: "🏅",
+        valueLabel: "𝐋𝐄𝐕𝐄𝐋",
+        footer: "🌸 𝐀𝐍𝐈𝐌𝐄 𝐋𝐄𝐆𝐄𝐍𝐃𝐒",
       });
-
-      text += animeFooter();
       return sock.sendMessage(jid, { text }, { quoted: msg });
     }
 
@@ -132,18 +123,13 @@ export default {
         }, { quoted: msg });
       }
 
-      let text = animeHeader("𝗕𝗔𝗧𝗧𝗟𝗘  𝗥𝗔𝗡𝗞𝗜𝗡𝗚𝗦", "Elite Trainers");
-
-      results.forEach((t, i) => {
-        const badge  = RANK_BADGES[i] || `『${i + 1}』`;
-        const losses = t.losses || 0;
-        const ratio  = losses > 0 ? (t.wins / (t.wins + losses) * 100).toFixed(0) : "100";
-        text += `${badge} *${t.username || "Trainer"}*\n`;
-        text += `  ┗ ⚔️ *${t.wins}W* / ${losses}L  〔 📊 *${ratio}%* win rate 〕\n`;
-        if (i < results.length - 1) text += `  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n`;
+      const text = formatAnimeLeaderboard({
+        subtitle: "POKÉMON BATTLE LEADERBOARD",
+        rows: results.map((t) => ({ name: t.username || "Trainer", value: t.wins })),
+        valueIcon: "⚔️",
+        valueLabel: "𝐖𝐈𝐍𝐒",
+        footer: "🌸 𝐀𝐍𝐈𝐌𝐄 𝐋𝐄𝐆𝐄𝐍𝐃𝐒",
       });
-
-      text += animeFooter();
       return sock.sendMessage(jid, { text }, { quoted: msg });
     }
 

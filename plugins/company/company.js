@@ -19,6 +19,7 @@ import { getUser, saveUser, requireRegistration, addHistory, isRegistered } from
 import { parseAmount } from "../economy/parseAmount.js";
 import { getDb } from "../../lib/mongo.mjs";
 import { generateCompanyCard } from "../../lib/companyCanvas.mjs";
+import { formatAnimeLeaderboard } from "../../lib/animeLeaderboard.mjs";
 
 const COMPANY_TIERS = [
   { tier: 1, label: "Startup",           price: 1_000_000_000,  emoji: "🏪" },
@@ -644,26 +645,22 @@ Use *.company buy* to start a new one.`
 
       if (!top.length) return reply("📊 No companies registered yet!\n\nBe the first with *.company buy*");
 
-      const medals = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣"];
-      const rows   = await Promise.all(top.map(async (c, i) => {
+            const rows = await Promise.all(top.map(async (c) => {
         const ownerName = await getRegisteredName(c.ownerId);
         const empCount = c.employees?.length || 0;
-        return (
-          `${medals[i]} *${c.name}*\n` +
-          `   ${c.tierEmoji} ${c.tierLabel} • 👥 ${empCount}/${MAX_EMPLOYEES} staff\n` +
-          `   💸 Total paid: $${(c.totalPaid || 0).toLocaleString()}\n` +
-          `   👤 Owner: ${ownerName}`
-        );
-      })).then(items => items.join("\n\n"));
-
-      return reply(
-`🏆 *COMPANY LEADERBOARD*
-_Top 5 by total salary paid_
-
-${rows}
-
-> Your company's ranking is based on how much you've paid your employees total.`
-      );
+        return {
+          name: c.name,
+          value: c.totalPaid || 0,
+          valueText: `${c.tierEmoji} ${c.tierLabel} · 👥 ${empCount}/${MAX_EMPLOYEES} · 💸 $${(c.totalPaid || 0).toLocaleString()} · 👤 ${ownerName}`,
+        };
+      }));
+      return reply(formatAnimeLeaderboard({
+        subtitle: "COMPANY LEADERBOARD",
+        rows,
+        valueIcon: "🏢",
+        valueLabel: "𝐓𝐎𝐓𝐀𝐋 𝐏𝐀𝐈𝐃",
+        footer: "🌸 𝐀𝐍𝐈𝐌𝐄 𝐋𝐄𝐆𝐄𝐍𝐃𝐒",
+      }));
     }
 
     // ── LEAVE ─────────────────────────────────────────────────────────────────

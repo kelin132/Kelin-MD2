@@ -9,6 +9,7 @@
  *   .lb            → Shows usage menu
  */
 import { getDb } from "../../lib/mongo.mjs";
+import { formatAnimeLeaderboard } from "../../lib/animeLeaderboard.mjs";
 
 const MEDALS = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
 
@@ -45,17 +46,14 @@ export default {
         return sock.sendMessage(jid, { text: "💰 No registered players yet!" }, { quoted: msg });
       }
 
-      let text = "💰 *WEALTH LEADERBOARD — TOP 10*\n";
-      text += "━".repeat(30) + "\n\n";
-      for (let i = 0; i < users.length; i++) {
-        const user = users[i];
-        const medal = MEDALS[i] || `${i + 1}.`;
-        const name = user.name || user.username || `User_${String(user._id || "").slice(-4)}`;
-        text += `${medal} *${name}*\n`;
-        text += `   💰 $${user.totalWealth.toLocaleString()}  •  ⭐ Lv${user.level || 1}\n\n`;
-      }
-
-      return sock.sendMessage(jid, { text: text.trim() }, { quoted: msg });
+      const text = formatAnimeLeaderboard({
+        subtitle: "WEALTH LEADERBOARD",
+        rows: users.map((user) => ({ name: user.name || user.username || `User_${String(user._id || "").slice(-4)}`, value: user.totalWealth })),
+        valueIcon: "💰",
+        valueLabel: "𝐖𝐄𝐀𝐋𝐓𝐇",
+        footer: "🌸 𝐀𝐍𝐈𝐌𝐄 𝐋𝐄𝐆𝐄𝐍𝐃𝐒",
+      });
+      return sock.sendMessage(jid, { text }, { quoted: msg });
     }
 
     // ── TOP LEVELS ────────────────────────────────────────────────────────────
@@ -69,18 +67,14 @@ export default {
         return sock.sendMessage(jid, { text: "⭐ No registered players yet!" }, { quoted: msg });
       }
 
-      let text = "⭐ *LEVEL LEADERBOARD — TOP 10*\n";
-      text += "━".repeat(28) + "\n\n";
-      for (let i = 0; i < users.length; i++) {
-        const user = users[i];
-        const medal = MEDALS[i] || `${i + 1}.`;
-        const xp = user.xp || 0;
-        const nextLevelXp = (user.level || 1) * 1000;
-        text += `${medal} *${user.name || "User"}*\n`;
-        text += `   ⭐ Level ${user.level || 1} • ${xp.toLocaleString()} XP\n`;
-        text += `   📈 ${Math.max(0, nextLevelXp - xp).toLocaleString()} XP to next level\n\n`;
-      }
-      return sock.sendMessage(jid, { text: text.trim() }, { quoted: msg });
+      const text = formatAnimeLeaderboard({
+        subtitle: "LEVEL LEADERBOARD",
+        rows: users.map((user) => ({ name: user.name || "User", value: user.level || 1 })),
+        valueIcon: "⭐",
+        valueLabel: "𝐋𝐄𝐕𝐄𝐋",
+        footer: "🌸 𝐀𝐍𝐈𝐌𝐄 𝐋𝐄𝐆𝐄𝐍𝐃𝐒",
+      });
+      return sock.sendMessage(jid, { text }, { quoted: msg });
     }
 
     // ── TOP CARDS ──────────────────────────────────────────────────────────────
@@ -130,18 +124,14 @@ export default {
         mnNameMap[doc.userId] = econName || doc.username || null;
       }
 
-      let text = "🃏 *TOP CARD COLLECTORS*\n";
-      text += "━".repeat(28) + "\n\n";
-
-      for (let i = 0; i < results.length; i++) {
-        const r      = results[i];
-        const medal  = MEDALS[i] || `${i + 1}.`;
-        const name   = mnNameMap[r.userId] || `User_${String(r.userId).slice(-4)}`;
-        text += `${medal} *${name}*\n`;
-        text += `   🃏 Cards: ${r.cardCount}\n\n`;
-      }
-
-      return sock.sendMessage(jid, { text: text.trim() }, { quoted: msg });
+      const text = formatAnimeLeaderboard({
+        subtitle: "ANIME CARD LEADERBOARD",
+        rows: results.map((r) => ({ name: mnNameMap[r.userId] || `User_${String(r.userId).slice(-4)}`, value: r.cardCount })),
+        valueIcon: "🃏",
+        valueLabel: "𝐂𝐀𝐑𝐃𝐒",
+        footer: "🌸 𝐀𝐍𝐈𝐌𝐄 𝐋𝐄𝐆𝐄𝐍𝐃𝐒",
+      });
+      return sock.sendMessage(jid, { text }, { quoted: msg });
     }
 
     // ── TOP POKÉMON ────────────────────────────────────────────────────────────
@@ -176,19 +166,17 @@ export default {
       for (const u of userDocs)    nameMap[u._id]    = u.name     || null;
       for (const t of trainerDocs) nameMap[t.jid]    = t.username || nameMap[t.jid] || null;
 
-      let text = "🎮 *TOP POKÉMON TRAINERS*\n";
-      text += "━".repeat(28) + "\n\n";
-
-      for (let i = 0; i < results.length; i++) {
-        const r     = results[i];
-        const medal = MEDALS[i] || `${i + 1}.`;
-        const num   = (r._id || "").split("@")[0].split(":")[0];
-        const name  = nameMap[r._id] || `Trainer_${num.slice(-4)}`;
-        text += `${medal} *${name}*\n`;
-        text += `   🎮 Pokémon: ${r.total}\n\n`;
-      }
-
-      return sock.sendMessage(jid, { text: text.trim() }, { quoted: msg });
+      const text = formatAnimeLeaderboard({
+        subtitle: "POKÉMON LEADERBOARD",
+        rows: results.map((r) => {
+          const num = (r._id || "").split("@")[0].split(":")[0];
+          return { name: nameMap[r._id] || `Trainer_${num.slice(-4)}`, value: r.total };
+        }),
+        valueIcon: "🎮",
+        valueLabel: "𝐏𝐎𝐊𝐄́𝐌𝐎𝐍",
+        footer: "🌸 𝐀𝐍𝐈𝐌𝐄 𝐋𝐄𝐆𝐄𝐍𝐃𝐒",
+      });
+      return sock.sendMessage(jid, { text }, { quoted: msg });
     }
 
     // Unknown flag

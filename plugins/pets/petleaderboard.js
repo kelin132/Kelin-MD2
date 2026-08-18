@@ -3,6 +3,7 @@
 import { getPetLeaderboard } from "../../lib/petDatabase.js";
 import { RARITIES } from "../../lib/petData.js";
 import { getUser } from "../economy/database.js";
+import { formatAnimeLeaderboard } from "../../lib/animeLeaderboard.mjs";
 
 export default {
   name: "petlb",
@@ -22,8 +23,6 @@ export default {
       }, { quoted: msg });
     }
 
-    const medals = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
-
     // Look up registered names for all owners in parallel
     const ownerNames = await Promise.all(
       top.map(async (pet) => {
@@ -36,30 +35,20 @@ export default {
       })
     );
 
-    const lines = top.map((pet, i) => {
-      const rarity  = RARITIES[pet.rarity] || RARITIES.common;
-      const trainer = ownerNames[i];
-      return [
-        `${medals[i]} *${pet.name}*`,
-        `   ${rarity.color} *${rarity.label}*  〔 ⭐ *Lv.${pet.level}* 〕  ⚔️ *${pet.attack}*`,
-        `   👤 *Trainer:* *${trainer}*`,
-      ].join("\n");
+    const text = formatAnimeLeaderboard({
+      subtitle: "PET COMPANION LEADERBOARD",
+      rows: top.map((pet, i) => {
+        const rarity = RARITIES[pet.rarity] || RARITIES.common;
+        return {
+          name: pet.name,
+          value: pet.level,
+          valueText: `⭐ Lv.${pet.level} · ${rarity.color} ${rarity.label} · ⚔️ ${pet.attack} · 👤 ${ownerNames[i]}`,
+        };
+      }),
+      valueIcon: "🐾",
+      valueLabel: "𝐋𝐄𝐕𝐄𝐋",
+      footer: "🌸 𝐀𝐍𝐈𝐌𝐄 𝐋𝐄𝐆𝐄𝐍𝐃𝐒",
     });
-
-    return sock.sendMessage(jid, {
-      text: [
-        `꧁━━〔 🏆 *P E T  L E A D E R B O A R D* 〕━━꧂`,
-        ``,
-        `  🌸 *Top Companions by Level*`,
-        `  ━━━━━━━━━━━━━━━━━━━━━━━`,
-        ``,
-        lines.join("\n\n"),
-        ``,
-        `  ━━━━━━━━━━━━━━━━━━━━━━━`,
-        `  ⚔️ *Train hard with* *.trainpet*!`,
-        ``,
-        `꧂━━━━━━━━━━━━━━━━━━━━━━━━━━━━꧁`,
-      ].join("\n"),
-    }, { quoted: msg });
+    return sock.sendMessage(jid, { text }, { quoted: msg });
   },
 };

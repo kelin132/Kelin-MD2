@@ -1,4 +1,5 @@
 import { getUser } from "./database.js";
+import { formatAnimeLeaderboard } from "../../lib/animeLeaderboard.mjs";
 
 export default {
   name: "richg",
@@ -33,16 +34,13 @@ export default {
         return reply("❌ No registered users in this group yet.\n\nUse *.register <name>* to join!");
       }
 
-      const medals = ["🥇", "🥈", "🥉"];
-      let text = `🏆 *GROUP LEADERBOARD*\n📍 ${meta.subject}\n\n`;
-
-      users.forEach((u, i) => {
-        const rank = medals[i] || `${i + 1}.`;
-        const name = u.name || `User_${u.jid?.split("@")[0]?.slice(-4) || "???"}`;
-        text += `${rank} *${name}*\n`;
-        text += `   💰 $${u.net.toLocaleString()}  •  ⭐ Lv${u.level || 1}\n\n`;
+      const text = formatAnimeLeaderboard({
+        subtitle: `GROUP WEALTH · ${meta.subject}`,
+        rows: users.map((u) => ({ name: u.name || `User_${u.jid?.split("@")[0]?.slice(-4) || "???"}`, value: u.net })),
+        valueIcon: "💰",
+        valueLabel: "𝐖𝐄𝐀𝐋𝐓𝐇",
+        footer: "🌸 𝐆𝐑𝐎𝐔𝐏 𝐋𝐄𝐆𝐄𝐍𝐃𝐒",
       });
-
       return reply(text);
     } catch (err) {
       console.error("RICHG ERROR:", err);

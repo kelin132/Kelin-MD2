@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { getUser } from "../economy/database.js";
+import { formatAnimeLeaderboard } from "../../lib/animeLeaderboard.mjs";
 
 const STATS_PATH = path.resolve("./database/wordleStats.json");
 
@@ -40,15 +41,17 @@ export default {
       })
     );
 
-    const medals   = ["🥇", "🥈", "🥉"];
     const mentions = leaderboard.map(([j]) => j);
-    let text       = "🏆 *WORDLE LEADERBOARD*\n\n";
-
-    leaderboard.forEach(([playerJid, data], i) => {
-      const rank     = medals[i] || `${i + 1}.`;
-      const winRate  = data.played > 0 ? Math.round((data.wins / data.played) * 100) : 0;
-      text += `${rank} *${names[i]}*\n`;
-      text += `   🏆 Wins: ${data.wins}  🎮 Played: ${data.played}  📈 ${winRate}%  🔥 Best: ${data.bestStreak}\n\n`;
+    const text = formatAnimeLeaderboard({
+      subtitle: "WORDLE LEADERBOARD",
+      rows: leaderboard.map(([playerJid, data], i) => ({
+        name: names[i],
+        value: data.wins,
+        valueText: `🏆 ${data.wins} 𝐖𝐈𝐍𝐒 · 🎮 ${data.played} 𝐏𝐋𝐀𝐘𝐄𝐃 · 📈 ${data.played > 0 ? Math.round((data.wins / data.played) * 100) : 0}% · 🔥 ${data.bestStreak} 𝐁𝐄𝐒𝐓`,
+      })),
+      valueIcon: "🏆",
+      valueLabel: "𝐖𝐈𝐍𝐒",
+      footer: "🌸 𝐀𝐍𝐈𝐌𝐄 𝐋𝐄𝐆𝐄𝐍𝐃𝐒",
     });
 
     await sock.sendMessage(msg.key.remoteJid, { text, mentions }, { quoted: msg });
