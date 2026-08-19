@@ -3,6 +3,7 @@
  * Downloads Instagram posts, reels, and videos through OmegaTech.
  */
 import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
+import { princeMedia, PRINCE_ENDPOINTS } from "../../lib/princeTech.mjs";
 
 const processedMessages = new Set();
 
@@ -59,12 +60,27 @@ export default {
       await sock.sendMessage(jid, { react: { text: "⏳", key: msg.key } });
       await sock.sendMessage(jid, { text: "⏳ Downloading Instagram media…" }, { quoted: msg });
 
-      const media = await omegaDownload("all", { url: url.trim() });
+      let media;
+      try {
+        media = await omegaDownload("all", { url: url.trim() });
+      } catch (omegaError) {
+        const prince = await princeMedia(PRINCE_ENDPOINTS.instagram, { url: url.trim() });
+        media = {
+          url: prince.url,
+          buffer: prince.buffer,
+          type: "video",
+          format: "mp4",
+          title: "Instagram Media",
+          providerError: omegaError,
+        };
+      }
       const title = media.title || "Instagram Media";
       const caption = `📥 *${title.slice(0, 200)}*`;
 
-      if (isVideoUrl(media.url, url) || /video|mp4|webm/i.test(`${media.type} ${media.format}`)) {
-        const file = await downloadMediaBuffer(media.url);
+      if (isVideoUrl(media.url || "", url) || /video|mp4|webm/i.test(`${media.type} ${media.format}`)) {
+        const file = media.buffer
+          ? { buffer: media.buffer, mimetype: "video/mp4" }
+          : await downloadMediaBuffer(media.url);
         const mimetype = file.mimetype.startsWith("video/") ? file.mimetype : "video/mp4";
         await sock.sendMessage(jid, {
           video: file.buffer,

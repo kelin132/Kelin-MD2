@@ -6,6 +6,7 @@
 import yts from "yt-search";
 import { get, davidGet } from "../../lib/gifted.js";
 import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
+import { princeMedia, PRINCE_ENDPOINTS } from "../../lib/princeTech.mjs";
 
 // ── YouTube search ────────────────────────────────────────────────────────────
 
@@ -74,14 +75,22 @@ async function fetchAudio(videoUrl) {
     () => davidGet("/download/ytaudio", { url: videoUrl }),
     // OmegaTech documented fallback
     () => omegaDownload("play", { query: videoUrl, format: "mp3", quality: "128k" }),
+    // Prince Tech fallback; only succeeds when the provider exposes real media.
+    async () => {
+      const result = await princeMedia(PRINCE_ENDPOINTS.play, { url: videoUrl });
+      return result.buffer
+        ? { buffer: result.buffer, mimetype: result.mimetype, title: "" }
+        : { dl: result.url, title: "" };
+    },
   ];
 
   for (const attempt of endpoints) {
     try {
       const data   = await attempt();
+      if (data?.buffer) return data;
       const result = data?.result || data?.data || data;
-      const dl     = pickAudio(result);
-      if (dl) return { dl, title: result?.title || "" };
+      const dl     = data?.dl || pickAudio(result);
+      if (dl) return { dl, title: result?.title || data?.title || "" };
     } catch { /* try next */ }
   }
 
@@ -111,9 +120,9 @@ export default {
       const meta = await ytSearch(text);
       await sendBanner(sock, jid, msg, meta, "Fetching audio… please wait");
 
-      const { dl, title } = await fetchAudio(meta.url);
+      const { dl, buffer, mimetype: returnedMimetype, title } = await fetchAudio(meta.url);
       const trackTitle = title || meta.title;
-      const file = await downloadMediaBuffer(dl);
+      const file = buffer ? { buffer, mimetype: returnedMimetype || "audio/mpeg" } : await downloadMediaBuffer(dl);
       const mimetype = file.mimetype.startsWith("audio/") ? file.mimetype : "audio/mpeg";
 
       await sock.sendMessage(jid, {

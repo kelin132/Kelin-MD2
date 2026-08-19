@@ -5,6 +5,7 @@
 import yts from "yt-search";
 import { get, davidGet } from "../../lib/gifted.js";
 import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
+import { princeMedia, PRINCE_ENDPOINTS } from "../../lib/princeTech.mjs";
 
 // ── Search YouTube ────────────────────────────────────────────────────────────
 
@@ -50,14 +51,18 @@ async function fetchVideo(videoUrl) {
     () => davidGet("/download/ytdl",    { url: videoUrl }),
     () => davidGet("/download/youtube", { url: videoUrl, type: "video" }),
     () => davidGet("/download/yt",      { url: videoUrl }),
+    // Prince Tech fallbacks, tried last so existing providers remain preferred.
+    () => princeMedia(PRINCE_ENDPOINTS.yt, { url: videoUrl }),
+    () => princeMedia(PRINCE_ENDPOINTS.ytVideo, { format: "360p", url: videoUrl }),
   ];
 
   for (const attempt of endpoints) {
     try {
       const data   = await attempt();
+      if (data?.buffer) return data;
       const result = data?.result || data?.data || data;
-      const dl     = pickVideo(result);
-      if (dl) return { dl, title: result?.title || "" };
+      const dl     = data?.url || pickVideo(result);
+      if (dl) return { dl, title: result?.title || data?.title || "" };
     } catch { /* try next */ }
   }
 
@@ -113,8 +118,8 @@ export default {
         await sock.sendMessage(jid, { text: previewCaption }, { quoted: msg });
       }
 
-      const { dl, title } = await fetchVideo(meta.url);
-      const file = await downloadMediaBuffer(dl);
+      const { dl, buffer, mimetype: returnedMimetype, title } = await fetchVideo(meta.url);
+      const file = buffer ? { buffer, mimetype: returnedMimetype || "video/mp4" } : await downloadMediaBuffer(dl);
       const trackTitle = title || meta.title;
       const mimetype = file.mimetype.startsWith("video/") ? file.mimetype : "video/mp4";
 
