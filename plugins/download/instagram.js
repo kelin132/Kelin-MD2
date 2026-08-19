@@ -97,7 +97,7 @@ export default {
       console.error("[instagram]", err.message);
       await sock.sendMessage(jid, { react: { text: "❌", key: msg.key } });
       await sock.sendMessage(jid, {
-        text: `❌ *Instagram download failed.*\n\n_${err.message.slice(0, 300)}_\n\n💡 Make sure the post is public and the URL is correct.`,
+        text: "❌ This media couldn't be downloaded. Try again later!",
       }, { quoted: msg });
     }
   },

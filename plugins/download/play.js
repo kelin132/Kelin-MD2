@@ -147,7 +147,7 @@ export default {
     } catch (err) {
       console.error("[play]", err.message);
       await sock.sendMessage(jid, {
-        text: `❌ Audio download failed.\n\n_${err.message}_\n\nTry again with a direct YouTube URL or another song.`
+        text: "❌ This audio couldn't be downloaded. Try again later!"
       }, { quoted: msg });
     }
   },

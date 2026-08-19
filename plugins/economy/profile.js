@@ -148,26 +148,27 @@ export default {
     // Reach is supported as a stored value when another system provides it.
     // Existing accounts get a useful, stable fallback based on active days.
     const reach = Number.isFinite(Number(user.reach)) ? Number(user.reach) : daysActive;
-    const displayName = registeredName.toUpperCase();
+    const displayName = registeredName;
+    const profileAge = user.age === null || user.age === undefined || user.age === "" ? "N/A" : user.age;
+    const profileBirthday = String(user.birthday || "N/A").trim() || "N/A";
+    const profileBio = String(user.bio || "N/A").trim() || "N/A";
+    const profileCards = Number.isFinite(Number(cardsOwned)) ? Number(cardsOwned).toLocaleString() : "N/A";
+    const profilePokemon = Number.isFinite(Number(pokemonCount)) ? Number(pokemonCount).toLocaleString() : "N/A";
+    const profileBadges = Number.isFinite(Number(gymProgress.completed)) ? gymProgress.completed : "N/A";
     const caption =
 `╭━━━〔 🌸 𝗣𝗥𝗢𝗙𝗜𝗟𝗘 〕━━━╮
+│ ❀ Name : \`${displayName}\`
+│ ❀ Age : \`${profileAge}\`
+│ ❀ Bday : \`${profileBirthday}\`
+│ ❀ Bio : \`${profileBio}\`
+│ ❀ Cards : \`${profileCards}\`
+│ ❀ Pokémon : \`${profilePokemon}\`
+│ ❀ Badges : \`${profileBadges}\`
+│ ❀ Role : \`${role}\`
 │
-│ ── ✦ 𝗦𝗧𝗔𝗧𝗦 ✦ ──
-│ 🌟 Active ${daysActive}
-│ 🃏 Cards ${cardsOwned}
-│ 🐾 Pokémon ${pokemonCount}
-│ 🏟️ Gym Circuit ${gymProgress.wins}/${gymProgress.total} wins
-│ 🎖️ Badges ${gymProgress.completed}/${gymProgress.total}
-│ 🏅 ${gymProgress.badges}
-│ ⏭️ Next ${gymProgress.next}
-│
-│ ── ✦ 𝗪𝗘𝗔𝗟𝗧𝗛 ✦ ──
-│ 💰 $${(user.money ?? 0).toLocaleString()}
-│ 🏦 $${(user.bank ?? 0).toLocaleString()}
-│ 💎 ${(user.diamonds ?? 0).toLocaleString()} 
-│
-│ > *Edit your background PFP at:*
-│ > *https://aidoru.zone.id/profile*
+│  *view and edit your profile image*
+│ *here:*
+│  *https://aidoru.zone.id/profile*
 ╰━━━━━━━━━━━━━━━━━━━━━━╯`;
 
     let imgBuffer;

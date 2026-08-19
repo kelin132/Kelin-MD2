@@ -66,7 +66,7 @@ async function fetchVideo(videoUrl) {
     } catch { /* try next */ }
   }
 
-  throw new Error("All YouTube video download sources failed. Try a direct YouTube URL or use *.play* for audio.");
+  throw new Error("No usable video source returned");
 }
 
 // ── .ytdl ─────────────────────────────────────────────────────────────────────
@@ -133,7 +133,7 @@ export default {
     } catch (err) {
       console.error("[ytdl]", err.message);
       await sock.sendMessage(jid, {
-        text: `❌ YouTube download failed.\n\n_${err.message}_\n\nTip: Try a direct YouTube link, or use *.play* for audio.`,
+        text: "❌ This video couldn't be downloaded. Try again later!",
       }, { quoted: msg });
     }
   },

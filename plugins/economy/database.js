@@ -16,6 +16,7 @@ export const DEFAULTS = {
   bio:           "",
   profileBackground: null,
   age:           null,
+  birthday:      null,
   inventory:     [],
   history:       [],          // last 10 transactions [{type,amount,desc,ts}]
   lastDaily:     0,

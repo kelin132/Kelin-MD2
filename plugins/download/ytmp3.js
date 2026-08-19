@@ -48,7 +48,7 @@ export default {
     } catch (err) {
       console.error("[ytmp3]", err.message);
       await sock.sendMessage(jid, {
-        text: `❌ YouTube audio download failed.\n\n_${err.message}_`,
+        text: "❌ This audio couldn't be downloaded. Try again later!",
       }, { quoted: msg });
     }
   },
