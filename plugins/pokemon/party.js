@@ -33,7 +33,7 @@ export default {
     const trainer = await getTrainer(sender);
     if (!trainer) {
       return sock.sendMessage(jid, {
-        text: "❌ Start your journey first! Use *.startjourney*",
+        text: "❌ Start your journey first! Use `.startjourney`",
       }, { quoted: msg });
     }
 
@@ -44,8 +44,8 @@ export default {
         text:
 `🎒 *YOUR PARTY IS EMPTY!*
 
-Use *.t2party <pokémon name>* to move Pokémon from PC to party.
-Or catch wild Pokémon with *.spawnpoke* then *.catch*!`,
+Use \`.t2party <pokémon name>\` to move Pokémon from PC to party.
+Or catch wild Pokémon with \`.spawnpoke\` then \`.catch\`!`,
       }, { quoted: msg });
     }
 
@@ -76,10 +76,12 @@ Or catch wild Pokémon with *.spawnpoke* then *.catch*!`,
       const statusText = isFainted ? "𝗙𝗔𝗜𝗡𝗧𝗘𝗗" : "𝗔𝗟𝗜𝗩𝗘";
       const hpPct     = p.maxHp > 0 ? p.hp / p.maxHp : 0;
       const hpBar     = isFainted ? "💀" : hpPct > 0.5 ? "🟩🟩🟩🟩🟩" : hpPct > 0.25 ? "🟨🟨🟨🟩🟩" : "🟥🟥🟨🟩🟩";
+      
+      const currentXp = p.xp ?? p.exp ?? 0;
       const xpNeeded  = getPokemonXpNeeded(p.level);
-      const xpBar     = xpNeeded > 0 ? Math.min(10, Math.round((p.xp / xpNeeded) * 10)) : 10;
+      const xpBar     = xpNeeded > 0 ? Math.min(10, Math.round((currentXp / xpNeeded) * 10)) : 10;
       const xpFill    = "▓".repeat(xpBar) + "░".repeat(10 - xpBar);
-      const xpText    = xpNeeded > 0 ? `${p.xp}/${xpNeeded}` : "MAX LEVEL";
+      const xpText    = xpNeeded > 0 ? `\`${currentXp}/${xpNeeded}\`` : "`MAX LEVEL`";
 
       const moveLines = (p.moves || []).map((m, i) => {
         const def      = MOVE_LOOKUP[m.name?.toLowerCase()] || m;
@@ -103,13 +105,13 @@ Or catch wild Pokémon with *.spawnpoke* then *.catch*!`,
 
 ━━━━━━━━━━━━━━━━━━━━
 📊 *STATS*
-• Level: *${p.level}*
-• HP: *${Math.max(0, p.hp)}/${p.maxHp}* ${hpBar}
+• Level: \`${p.level}\`
+• HP: \`${Math.max(0, p.hp)}/${p.maxHp}\` ${hpBar}
 • Status: *${statusText}*
-• Attack: *${p.attack}*    Defense: *${p.defense}*
-• Speed: *${p.speed}*       Sp.Atk: *${p.spAtk || "?"}*
+• Attack: \`${p.attack}\`    Defense: \`${p.defense}\`
+• Speed: \`${p.speed}\`       Sp.Atk: \`${p.spAtk || "?"}\`
 • Type: ${allTypes}
-• XP: *${xpText}* [${xpFill}]
+• XP: ${xpText} [${xpFill}]
 • Caught: ${caughtStr}
 
 ━━━━━━━━━━━━━━━━━━━━
@@ -118,8 +120,8 @@ ${moveLines || "  No moves learned yet"}
 
 ━━━━━━━━━━━━━━━━━━━━
 💡 *Tips:*
-• *.setlead ${slotArg}* — Make this your battle lead${p.isStarter ? "\n\n🏅 *This is your Starter Pokémon* — it can never be given away or moved to PC." : ""}
-• *.t2pc ${slotArg}* — Move to PC storage${p.isStarter ? " _(blocked for starter)_" : ""}`;
+• \`.setlead ${slotArg}\` — Make this your battle lead${p.isStarter ? "\n\n🏅 *This is your Starter Pokémon* — it can never be given away or moved to PC." : ""}
+• \`.t2pc ${slotArg}\` — Move to PC storage${p.isStarter ? " _(blocked for starter)_" : ""}`;
 
       const imageMessage = await getImageMessage({
         pokedexId: p.pokedexId || p.id,
@@ -143,31 +145,32 @@ ${moveLines || "  No moves learned yet"}
     const CIRCLED = ["①","②","③","④","⑤","⑥"];
     const leadId  = trainer.leadPokemonId?.toString();
     const slots = party.map((p, i) => {
-      const icon     = TYPE_EMOJIS[p.primaryType] || "⭐";
-      const name     = `${p.displayName || p.name}${p.shiny ? " ✨" : ""}${p.nickname ? ` "${p.nickname}"` : ""}`;
-      const isLead   = (p._id || p.id)?.toString() === leadId;
-      const tags     = [isLead ? " ⚡LEAD" : "", p.isStarter ? " 🏅" : ""].filter(Boolean).join("");
-      const xpNeeded = getPokemonXpNeeded(p.level);
-      const xpText   = xpNeeded > 0 ? `${p.xp}/${xpNeeded}` : "MAX";
+      const icon      = TYPE_EMOJIS[p.primaryType] || "⭐";
+      const name      = `${p.displayName || p.name}${p.shiny ? " ✨" : ""}${p.nickname ? ` "${p.nickname}"` : ""}`;
+      const isLead    = (p._id || p.id)?.toString() === leadId;
+      const tags      = [isLead ? " ⚡LEAD" : "", p.isStarter ? " 🏅" : ""].filter(Boolean).join("");
+      const currentXp = p.xp ?? p.exp ?? 0;
+      const xpNeeded  = getPokemonXpNeeded(p.level);
+      const xpText    = xpNeeded > 0 ? `\`${currentXp}/${xpNeeded}\`` : "`MAX`";
       const currentHp = Math.max(0, Number(p.hp) || 0);
       const statusText = currentHp <= 0 ? "𝗙𝗔𝗜𝗡𝗧𝗘𝗗" : "𝗔𝗟𝗜𝗩𝗘";
       return [
-        `│ ├─ ${CIRCLED[i] || `${i + 1}.`} ${icon} *${name}*${tags}   𝗟𝘃. ${p.level}`,
-        `│   ❤️ 𝗛𝗣 ${currentHp}/${p.maxHp}`,
+        `│ ├─ ${CIRCLED[i] || `${i + 1}.`} ${icon} *${name}*${tags}   𝗟𝘃. \`${p.level}\``,
+        `│   ❤️ 𝗛𝗣 \`${currentHp}/${p.maxHp}\``,
         `│   ✨ 𝗫𝗣 ${xpText}`,
         `│   ⚡ 𝗦𝘁𝗮𝘁𝘂𝘀: ${statusText}`,
       ].join("\n");
     });
 
     const caption =
-`╭─ ⚔️「 𝗣𝗔𝗥𝗧𝗬 ${party.length}/6 」
+`╭─ ⚔️「 𝗣𝗔𝗥𝗧𝗬 \`${party.length}/6\` 」
 ${slots.join("\n")}
 ╰━━━━━━━━━━━━━━━━
 
-✦ *.party <1-6>* — 𝗗𝗲𝘁𝗮𝗶𝗹𝗲𝗱 𝗦𝘁𝗮𝘁𝘀
-✦ *.swap <slot1> <slot2>* — 𝗥𝗲𝗼𝗿𝗱𝗲𝗿
-✦ *.t2pc <name>* — 𝗠𝗼𝘃𝗲 𝘁𝗼 𝗣𝗖
-✦ *.t2party <name>* — 𝗕𝗿𝗶𝗻𝗴 𝗳𝗿𝗼𝗺 𝗣𝗖`;
+✦ \`.party <1-6>\` — 𝗗𝗲𝘁𝗮𝗶𝗹𝗲𝗱 𝗦𝘁𝗮𝘁𝘀
+✦ \`.swap <slot1> <slot2>\` — 𝗥𝗲𝗼𝗿𝗱𝗲𝗿
+✦ \`.t2pc <name>\` — 𝗠𝗼𝘃𝗲 𝘁𝗼 𝗣𝗖
+✦ \`.t2party <name>\` — 𝗕𝗿𝗶𝗻𝗴 𝗳𝗿𝗼𝗺 𝗣𝗖`;
 
     if (buf) {
       await sock.sendMessage(jid, { image: buf, caption }, { quoted: msg });
