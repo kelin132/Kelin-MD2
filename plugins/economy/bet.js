@@ -12,8 +12,21 @@ import { formatGamblingResult } from "../../lib/gamblingFormat.mjs";
 
 const COOLDOWN = 30 * 1000;
 
-const WIN_LINES  = ["あなたの運はいい！", "運命はあなたの味方だ！", "大勝利！", "ラッキー！やりました！", "完璧な読み！"];
-const LOSE_LINES = ["残念！次は勝てる！", "惜しい！もう一度！", "ツキがなかった...", "また挑戦してね！", "負けても諦めないで！"];
+const WIN_LINES  = [
+  "Luck is on your side!",
+  "Fortune favors the bold!",
+  "Huge victory!",
+  "Jackpot! You nailed it!",
+  "A perfect call!"
+];
+
+const LOSE_LINES = [
+  "Bummer! You'll get it next time!",
+  "So close! Try again!",
+  "Luck wasn't with you...",
+  "Give it another shot!",
+  "Don't give up after a loss!"
+];
 
 /** Short money formatter */
 function fmt(n) {
@@ -43,7 +56,7 @@ export default {
     if (now - (user.lastBet || 0) < COOLDOWN) {
       const secs = Math.ceil((COOLDOWN - (now - user.lastBet)) / 1000);
       return sock.sendMessage(jid, {
-        text: `⏳ Cooldown! You can bet again in *${secs}s*.`,
+        text: `⏳ Cooldown! You can bet again in \`${secs}s\`.`,
       }, { quoted: msg });
     }
 
@@ -52,28 +65,28 @@ export default {
       return sock.sendMessage(jid, {
         text:
 `╭─❀「 🎲 *𝐁𝐄𝐓* 」❀─╮
-│ Usage: *.bet <amount>*
-│ Examples: .bet 500  /  .bet 10k  /  .bet 1b
-│ Maximum: *$300B*
-│ *.bet all* — bet everything in wallet
-│ *.bet half* — bet half your wallet
+│ Usage: \`.bet <amount>\`
+│ Examples: \`.bet 500\`  /  \`.bet 10k\`  /  \`.bet 1b\`
+│ Maximum: \`$300B\`
+│ \`.bet all\` — bet everything in wallet
+│ \`.bet half\` — bet half your wallet
 │
-│ 💰 *Wallet* :: *${fmt(user.money)}*
-│ 💰 *Max Bet* :: *$300B*
-│ 🎯 *Win Rate* :: *53,1%*
+│ 💰 *Wallet* :: \`${fmt(user.money)}\`
+│ 💰 *Max Bet* :: \`$300B\`
+│ 🎯 *Win Rate* :: \`53.1%\`
 ╰───────────────❀`,
       }, { quoted: msg });
     }
 
     let amount = parseAmount(raw, user.money);
     if (!amount || isNaN(amount) || amount <= 0)
-      return sock.sendMessage(jid, { text: "❌ Enter a valid amount. Example: *.bet 500*" }, { quoted: msg });
+      return sock.sendMessage(jid, { text: "❌ Enter a valid amount. Example: \`.bet 500\`" }, { quoted: msg });
     if (amount > MAX_BET)
       return sock.sendMessage(jid, { text: maxBetMessage() }, { quoted: msg });
     if (amount > user.money)
-      return sock.sendMessage(jid, { text: `❌ You only have *${fmt(user.money)}* in your wallet.` }, { quoted: msg });
+      return sock.sendMessage(jid, { text: `❌ You only have \`${fmt(user.money)}\` in your wallet.` }, { quoted: msg });
     if (amount < 10)
-      return sock.sendMessage(jid, { text: "❌ Minimum bet is *$10*." }, { quoted: msg });
+      return sock.sendMessage(jid, { text: "❌ Minimum bet is \`$10\`." }, { quoted: msg });
 
     const won          = randomChance(0.53,1);
     const diamondReward = maybeAwardDiamonds(user, won ? 0.003 : 0.001, 1, 2);
@@ -97,7 +110,7 @@ export default {
           won: true,
           bet: amount,
           got: flavour,
-          details: [diamondReward ? `💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}` : ""],
+          details: [diamondReward ? `💎 Bonus: +\`${diamondReward}\` Gem${diamondReward === 1 ? "" : "s"}` : ""],
           net: amount,
           balance: user.money,
         }),
@@ -118,7 +131,7 @@ export default {
           title: "Bet",
           bet: amount,
           got: flavour,
-          details: [diamondReward ? `💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}` : ""],
+          details: [diamondReward ? `💎 Bonus: +\`${diamondReward}\` Gem${diamondReward === 1 ? "" : "s"}` : ""],
           net: -amount,
           balance: user.money,
         }),
