@@ -9,7 +9,6 @@
  *   .lb            → Shows usage menu
  */
 import { getDb } from "../../lib/mongo.mjs";
-import { formatAnimeLeaderboard } from "../../lib/animeLeaderboard.mjs";
 
 const MEDALS = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
 const WEALTH_RANKS = ["𝟏", "𝟐", "𝟑", "𝟒", "𝟓", "𝟔", "𝟕", "𝟖", "𝟗", "𝟏𝟎"];
@@ -42,6 +41,26 @@ function formatWealthLeaderboard(users, cardCounts, pokemonCounts, companies) {
     if (index < users.length - 1) lines.push(WEALTH_SEPARATOR);
   });
   lines.push("", "✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦", "🌺 _May your wealth grow like the sakura_");
+  return lines.join("\n");
+}
+
+function formatCategoryLeaderboard({ heading, subtitle, rows, valueIcon, valueLabel, footer }) {
+  const visibleRows = rows.slice(0, 10);
+  const lines = [
+    "⛩️  *𝗪𝗘𝗔𝗟𝗧𝗛  𝗥𝗔𝗡𝗞𝗜𝗡𝗚𝗦* ⛩️",
+    "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄",
+    `  🌸 *${subtitle || heading}*`,
+    "  ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦",
+    "",
+  ];
+  visibleRows.forEach((row, index) => {
+    const name = String(row.name || "Trainer").trim();
+    const value = Number(row.value) || 0;
+    lines.push(`『 ${WEALTH_RANKS[index] || String(index + 1)} 』 *${name}*`);
+    lines.push(`  ┗ ${valueIcon} *${value.toLocaleString()} ${valueLabel}*`);
+    if (index < visibleRows.length - 1) lines.push(WEALTH_SEPARATOR);
+  });
+  lines.push("", "✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦", `🌺 _${footer || heading}_`);
   return lines.join("\n");
 }
 
@@ -116,12 +135,13 @@ export default {
         return sock.sendMessage(jid, { text: "⭐ No registered players yet!" }, { quoted: msg });
       }
 
-      const text = formatAnimeLeaderboard({
-        subtitle: "LEVEL LEADERBOARD",
+      const text = formatCategoryLeaderboard({
+        heading: "LEVEL RANKINGS",
+        subtitle: "Top 10 Players by Level",
         rows: users.map((user) => ({ name: user.name || "User", value: user.level || 1 })),
         valueIcon: "⭐",
-        valueLabel: "𝐋𝐄𝐕𝐄𝐋",
-        footer: "🌸 𝐀𝐍𝐈𝐌𝐄 𝐋𝐄𝐆𝐄𝐍𝐃𝐒",
+        valueLabel: "LEVEL",
+        footer: "Level up and claim your place",
       });
       return sock.sendMessage(jid, { text }, { quoted: msg });
     }
@@ -131,7 +151,7 @@ export default {
       // mn_users stores cards as an array; aggregate by size
       const results = await db.collection("mn_users").aggregate([
         { $match: { cards: { $exists: true, $type: "array", $ne: [] } } },
-        { $project: { userId: 1, cardCount: { $size: "$cards" } } },
+        { $project: { userId: 1, whatsappNumber: 1, username: 1, cardCount: { $size: "$cards" } } },
         { $sort: { cardCount: -1 } },
         { $limit: 10 },
       ]).toArray();
@@ -145,7 +165,12 @@ export default {
       // Pull full mn_users docs to get whatsappNumber (full JID) and username
       const userIds = results.map(r => r.userId).filter(Boolean);
       const mnDocs  = await db.collection("mn_users")
-        .find({ userId: { $in: userIds } }, { projection: { userId: 1, username: 1, whatsappNumber: 1 } })
+        .find({
+          $or: [
+            { userId: { $in: userIds } },
+            { whatsappNumber: { $in: userIds } },
+          ],
+        }, { projection: { userId: 1, username: 1, whatsappNumber: 1 } })
         .toArray();
 
       // userId → whatsappNumber (full JID)
@@ -173,12 +198,13 @@ export default {
         mnNameMap[doc.userId] = econName || doc.username || null;
       }
 
-      const text = formatAnimeLeaderboard({
-        subtitle: "ANIME CARD LEADERBOARD",
+      const text = formatCategoryLeaderboard({
+        heading: "CARD RANKINGS",
+        subtitle: "Top 10 Card Collectors",
         rows: results.map((r) => ({ name: mnNameMap[r.userId] || `User_${String(r.userId).slice(-4)}`, value: r.cardCount })),
         valueIcon: "🃏",
-        valueLabel: "𝐂𝐀𝐑𝐃𝐒",
-        footer: "🌸 𝐀𝐍𝐈𝐌𝐄 𝐋𝐄𝐆𝐄𝐍𝐃𝐒",
+        valueLabel: "CARDS",
+        footer: "Collect • compete • become a legend",
       });
       return sock.sendMessage(jid, { text }, { quoted: msg });
     }
@@ -215,15 +241,17 @@ export default {
       for (const u of userDocs)    nameMap[u._id]    = u.name     || null;
       for (const t of trainerDocs) nameMap[t.jid]    = t.username || nameMap[t.jid] || null;
 
-      const text = formatAnimeLeaderboard({
-        subtitle: "POKÉMON LEADERBOARD",
+      const text = formatCategoryLeaderboard({
+        heading: "POKÉMON RANKINGS",
+        subtitle: "Top 10 Pokémon Trainers",
         rows: results.map((r) => {
-          const num = (r._id || "").split("@")[0].split(":")[0];
-          return { name: nameMap[r._id] || `Trainer_${num.slice(-4)}`, value: r.total };
+          const ownerId = String(r._id || "");
+          const num = ownerId.split("@")[0].split(":")[0];
+          return { name: nameMap[ownerId] || `Trainer_${num.slice(-4)}`, value: r.total };
         }),
         valueIcon: "🎮",
-        valueLabel: "𝐏𝐎𝐊𝐄́𝐌𝐎𝐍",
-        footer: "🌸 𝐀𝐍𝐈𝐌𝐄 𝐋𝐄𝐆𝐄𝐍𝐃𝐒",
+        valueLabel: "POKÉMON",
+        footer: "Catch • train • rise to the top",
       });
       return sock.sendMessage(jid, { text }, { quoted: msg });
     }

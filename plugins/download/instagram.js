@@ -44,14 +44,14 @@ export default {
     setTimeout(() => processedMessages.delete(msg.key.id), 5 * 60 * 1000);
 
     const raw = text || args.join(" ");
-    const match = raw.match(/https?:\/\/\S+/);
-    const url = match?.[0]?.replace(/[<>]/g, "");
+    const match = raw.match(/https?:\/\/[^\s<>()]+/i);
+    const url = match?.[0]?.replace(/[<>\])},.!?]+$/g, "");
 
-    if (!url || !/instagram\.com/i.test(url)) {
+    if (!url || !/(?:instagram\.com|instagr\.am)/i.test(url)) {
       return sock.sendMessage(jid, {
         text:
           "📸 *Instagram Downloader*\n\n" +
-          "Usage: *.instagram <URL>*\n\n" +
+          "Usage: *.ig <Instagram URL>*\n\n" +
           "Supported: posts, reels, TV videos, and public media.",
       }, { quoted: msg });
     }
@@ -83,7 +83,7 @@ export default {
       }
       if (!media) throw lastError || new Error("No Instagram provider returned usable media");
 
-      const title = media.title || "Instagram Media";
+      const title = String(media.title || "Instagram Media").trim().slice(0, 200);
       const caption = `📥 *${title.slice(0, 200)}*`;
       const mimetype = String(media.mimetype || "").toLowerCase();
       const video = mimetype.startsWith("video/")
