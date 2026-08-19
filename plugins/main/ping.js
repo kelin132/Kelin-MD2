@@ -12,8 +12,17 @@ export default {
   version: "1.0.0",
   async run({ sock, msg }) {
     const start = Date.now();
-    await sock.sendMessage(msg.key.remoteJid, { text: "Pinging..." });
+    
+    // Send initial message
+    const sentMsg = await sock.sendMessage(msg.key.remoteJid, { text: "Pinging..." });
+    
+    // Calculate response latency
     const ping = Date.now() - start;
-    await sock.sendMessage(msg.key.remoteJid, { text: `Pong! 🏓 ${ping}ms` });
+
+    // Edit the previous message to show the formatted result
+    await sock.sendMessage(msg.key.remoteJid, {
+      text: `❀ \`${ping}ms\``,
+      edit: sentMsg.key,
+    });
   },
 };
