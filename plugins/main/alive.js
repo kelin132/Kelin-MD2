@@ -14,7 +14,10 @@ export default {
     const hours = Math.floor(uptime / 3600);
     const mins = Math.floor((uptime % 3600) / 60);
     const secs = Math.floor(uptime % 60);
-    const text = ``AIDORU` is Online! ⚡\n\n> Uptime: ${hours}h ${mins}m ${secs}s\n> Status: Active\n> © KELIN MD`;
+    
+    // Escaped backticks satisfy JavaScript template literals and format in WhatsApp as `1h 2m 3s`
+    const text = `\`${hours}h ${mins}m ${secs}s\``;
+    
     await sock.sendMessage(msg.key.remoteJid, { text });
   },
 };
