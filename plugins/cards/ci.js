@@ -94,7 +94,7 @@ export default {
 
     try {
       const input = args.join(" ").trim();
-      if (!input) return reply("❌ Usage: .ci <card name, ID, or collection index>");
+      if (!input) return reply("❌ Usage: `.ci <card name, ID, or collection index>`");
 
       const user = await findOrCreateUser(sender);
       const ownedCards = Array.isArray(user.cards) ? user.cards : [];
@@ -112,23 +112,23 @@ export default {
           const similar = await searchCards(input, 5);
           if (similar.length) {
             let suggest = `╭─❀「 🎴 *𝐂𝐀𝐑𝐃 𝐈𝐍𝐅𝐎* 」❀─╮\n│ ❌ Card not found. Did you mean:\n│\n`;
-            similar.forEach((c, i) => { suggest += `│ ${i + 1}. *${c.name}* — \`${c.cardId}\`\n`; });
+            similar.forEach((c, i) => { suggest += `│ \`${i + 1}\`. \`${c.name}\` — \`${c.cardId}\`\n`; });
             suggest += `╰───────────────❀`;
             return reply(suggest);
           }
           return reply(
 `╭─❀「 🎴 *𝐂𝐀𝐑𝐃 𝐈𝐍𝐅𝐎* 」❀─╮
 │ ❌ No card found matching
-│    _"${input}"_
+│    _\`${input}\`_
 ╰───────────────❀`
           );
         }
 
         // Multiple owned cards share the same name — show a picker
         if (result.duplicates) {
-          let msg = `╭─❀「 🎴 *𝐂𝐀𝐑𝐃 𝐈𝐍𝐅𝐎* 」❀─╮\n│ ⚠️ Multiple cards match that name!\n│ Use *.ci <collection #>* to pick one:\n│\n`;
+          let msg = `╭─❀「 🎴 *𝐂𝐀𝐑𝐃 𝐈𝐍𝐅𝐎* 」❀─╮\n│ ⚠️ Multiple cards match that name!\n│ Use \`.ci <collection #>\` to pick one:\n│\n`;
           result.duplicates.forEach(({ card: c, index: i }) => {
-            msg += `│ *#${i + 1}* — ${c.name} · \`${c.cardId}\`\n`;
+            msg += `│ \`#${i + 1}\` — \`${c.name}\` · \`${c.cardId}\`\n`;
           });
           msg += `╰───────────────❀`;
           return reply(msg);
@@ -163,14 +163,14 @@ export default {
 │  🃏 *Card Info*
 ╰━━━━━━━━━━━━━━━━━━━━╯
 
-✨ *${card.name || "Unknown"}*${collNum ? `  ·  #${collNum}` : ""}
-📚 ${series}
+✨ \`${card.name || "Unknown"}\`${collNum ? `  ·  \`#${collNum}\`` : ""}
+📚 \`${series}\`
 
 ━━━━━━━━━━━━━━━━━━━━━
-⭐ *Tier:*     ${tier}${tierStars ? `  ${tierStars}` : ""}
-🏷️ *Spawn ID:* ${spawnId}
-🔢 *Index:*    ${indexVal}
-📌 *Issue:*    ${issueVal}
+⭐ *Tier:*     \`${tier}\`${tierStars ? `  ${tierStars}` : ""}
+🏷️ *Spawn ID:* \`${spawnId}\`
+🔢 *Index:*    \`${indexVal}\`
+📌 *Issue:*    \`${issueVal}\`
 ━━━━━━━━━━━━━━━━━━━━━`;
 
       return reply(text);
