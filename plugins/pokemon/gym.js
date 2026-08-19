@@ -20,6 +20,11 @@ export default {
     const trainer = await getTrainer(sender);
     if (!trainer) return sock.sendMessage(jid, { text: "❌ Start your journey first with `.startjourney`." }, { quoted: msg });
     const badges = Array.isArray(trainer.badges) ? trainer.badges.map(String) : [];
+    const cooldownUntil = trainer.gymCooldownUntil ? new Date(String(trainer.gymCooldownUntil)).getTime() : 0;
+    if (Number.isFinite(cooldownUntil) && cooldownUntil > Date.now() && args[0]) {
+      const remainingHours = Math.ceil((cooldownUntil - Date.now()) / 3600000);
+      return sock.sendMessage(jid, { text: `⏳ Gym cooldown active. You can challenge the next gym in about ${remainingHours} hour${remainingHours === 1 ? "" : "s"}.` }, { quoted: msg });
+    }
     const selected = args[0] ? gymById(args[0]) : null;
 
     if (!selected) {
