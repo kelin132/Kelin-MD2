@@ -2,7 +2,6 @@
 // .pets — Show all owned pets
 import { getAllPets, setActivePet } from "../../lib/petDatabase.js";
 import { RARITIES } from "../../lib/petData.js";
-import { formatAnimeLeaderboard } from "../../lib/animeLeaderboard.mjs";
 
 export default {
   name: "pets",
