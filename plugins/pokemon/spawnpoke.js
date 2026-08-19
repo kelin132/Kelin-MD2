@@ -23,7 +23,7 @@ export default {
     const trainer = await getTrainer(sender);
     if (!trainer) {
       return sock.sendMessage(jid, {
-        text: "❌ You haven't started your journey yet!\nUse *.startjourney* to begin.",
+        text: "❌ You haven't started your journey yet!\nUse `.startjourney` to begin.",
       }, { quoted: msg });
     }
 
@@ -37,7 +37,7 @@ export default {
     // Check if a wild Pokémon is already present
     if (getWild(jid)) {
       return sock.sendMessage(jid, {
-        text: "⚠️ A wild Pokémon is already here!\nUse *.catch* to fight it.",
+        text: "⚠️ A wild Pokémon is already here!\nUse `.catch` to fight it.",
       }, { quoted: msg });
     }
 
@@ -46,7 +46,7 @@ export default {
     if (Date.now() - lastSpawn < SPAWN_COOLDOWN_MS) {
       const remaining = Math.ceil((SPAWN_COOLDOWN_MS - (Date.now() - lastSpawn)) / 1000);
       return sock.sendMessage(jid, {
-        text: `⏳ Wild Pokémon spawn cooldown! Wait *${remaining}s* before spawning again.`,
+        text: `⏳ Wild Pokémon spawn cooldown! Wait \`${remaining}s\` before spawning again.`,
       }, { quoted: msg });
     }
 
@@ -78,7 +78,7 @@ export default {
     setWild(jid, wildPoke, sender, (pokeName) => {
       // Send "fled away" message when the 30-min timer fires
       sock.sendMessage(jid, {
-        text: `🌿 *${pokeName}* got tired of waiting and *fled away!* 🏃\nUse *.spawnpoke* to encounter a new wild Pokémon.`,
+        text: `🌿 *${pokeName}* got tired of waiting and *fled away!* 🏃\nUse \`.spawnpoke\` to encounter a new wild Pokémon.`,
       }).catch(() => {});
     });
     spawnCooldowns.set(jid, Date.now());
@@ -93,11 +93,11 @@ export default {
 
 🐾 Name: *${wildPoke.displayName}*
 🏷️ Type: ${typeStr}
-📊 Level: ${level}
-❤️ HP: ${maxHp}/${maxHp}
+📊 Level: \`${level}\`
+❤️ HP: \`${maxHp}/${maxHp}\`
 
-Use *.catch* to battle this Pokémon!
-⏰ It will flee in 30 minutes.`;
+Use \`.catch\` to battle this Pokémon!
+⏰ It will flee in \`30 minutes\`.`;
 
     // Use local sprite file when available (no CDN); falls back to URL, then text-only
     const imgMsg = await getImageMessage(apiData);
