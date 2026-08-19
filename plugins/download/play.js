@@ -113,15 +113,17 @@ export async function fetchAudio(videoUrl, searchTitle = "") {
     // URL as a secondary attempt for providers that accept URLs.
     () => omegaDownload("play", { query: searchTitle || videoUrl, format: "mp3", quality: "128k" }),
     () => omegaDownload("play", { query: videoUrl, format: "mp3", quality: "128k" }),
-    // Valore AIO fallback; select a real MP3 stream from its media list.
-    () => valoreAudio(videoUrl),
-    // Prince Tech fallback; only succeeds when the provider exposes real media.
+    // Exact Prince Tech MP3 endpoint supplied for `.play`.
+    // It is tried before other emergency sources and is accepted only when it
+    // returns a real URL or direct audio buffer; quality-only metadata is not media.
     async () => {
-      const result = await princeMedia(PRINCE_ENDPOINTS.play, { url: videoUrl });
+      const result = await princeMedia(PRINCE_ENDPOINTS.play, { url: videoUrl, format: "mp3" });
       return result.buffer
         ? { buffer: result.buffer, mimetype: result.mimetype, title: "" }
         : { dl: result.url, title: "" };
     },
+    // Valore AIO fallback; select a real MP3 stream from its media list.
+    () => valoreAudio(videoUrl),
   ];
 
   let lastError;
