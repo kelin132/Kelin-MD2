@@ -21,7 +21,7 @@ export default {
 │ ❌ You have no cards yet!
 │
 │ 💡 Wait for a spawn and type
-│    *.claim <ID>* to grab one.
+│    \`*.claim <ID>*\` to grab one.
 ╰───────────────❀`
         );
       }
@@ -29,10 +29,10 @@ export default {
       if (!args[0]) {
         return reply(
 `╭─❀「 🎴 *𝐂𝐀𝐑𝐃 𝐕𝐈𝐄𝐖* 」❀─╮
-│ 💡 *Usage* :: *.card <index>*
+│ 💡 *Usage* :: \`.card <index>\`
 │
-│ 🃏 You own *${user.cards.length}* card(s).
-│    Use *.col* to browse them.
+│ 🃏 You own \`${user.cards.length}\` card(s).
+│    Use \`.col\` to browse them.
 ╰───────────────❀`
         );
       }
@@ -43,8 +43,8 @@ export default {
 `╭─❀「 🎴 *𝐂𝐀𝐑𝐃 𝐕𝐈𝐄𝐖* 」❀─╮
 │ ❌ Invalid card number!
 │
-│ 🃏 You have *${user.cards.length}* card(s).
-│    Use *.col* to see the list.
+│ 🃏 You have \`${user.cards.length}\` card(s).
+│    Use \`.col\` to see the list.
 ╰───────────────❀`
         );
       }
@@ -54,14 +54,14 @@ export default {
 
       const caption =
 `╭─❀「 🎴 *𝐂𝐀𝐑𝐃 𝐕𝐈𝐄𝐖* 」❀─╮
-│ ${emoji} *${card.name || "Unknown"}*
+│ ${emoji} \`${card.name || "Unknown"}\`
 │
-│ 🏷️  *Tier*   :: *${card.tier || "Unknown"}*
-│ 📺 *Series* :: *${card.series || "Unknown"}*
+│ 🏷️  *Tier*   :: \`${card.tier || "Unknown"}\`
+│ 📺 *Series* :: \`${card.series || "Unknown"}\`
 │ 🆔 *ID*     :: \`${card.cardId || "Unknown"}\`
-│ 💎 *Value*  :: *$${(card.price || 0).toLocaleString()}*
+│ 💎 *Value*  :: \`$${(card.price || 0).toLocaleString()}\`
 │
-│ 🃏 Card *#${index}* of *${user.cards.length}*
+│ 🃏 Card \`#${index}\` of \`${user.cards.length}\`
 ╰───────────────❀`;
 
       if (card.media) {
