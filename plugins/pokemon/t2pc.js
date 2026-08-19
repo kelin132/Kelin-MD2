@@ -16,13 +16,13 @@ export default {
 
     if (!args[0]) {
       return sock.sendMessage(jid, {
-        text: "Usage: *.t2pc <name or slot number>*\nExample: `.t2pc pikachu` or `.t2pc 2`\n\nUse *.party* to see your slots.",
+        text: "Usage: ``.t2pc <name or slot number>``\nExample: ``.t2pc pikachu`` or ``.t2pc 2``\n\nUse ``.party`` to see your slots.",
       }, { quoted: msg });
     }
 
     const trainer = await getTrainer(sender);
     if (!trainer) {
-      return sock.sendMessage(jid, { text: "❌ Start your journey first! Use *.startjourney*" }, { quoted: msg });
+      return sock.sendMessage(jid, { text: "❌ Start your journey first! Use ``.startjourney``" }, { quoted: msg });
     }
 
     const party = await getTrainerParty(sender);
@@ -53,7 +53,7 @@ export default {
 
     if (!target) {
       return sock.sendMessage(jid, {
-        text: `❌ Couldn't find *${query}* in your party.\nUse *.party* to see your Pokémon.`,
+        text: `❌ Couldn't find *${query}* in your party.\nUse \`\`.party\`\` to see your Pokémon.`,
       }, { quoted: msg });
     }
 
@@ -62,7 +62,7 @@ export default {
     await updatePokemon(target._id, { inParty: false });
 
     await sock.sendMessage(jid, {
-      text: `📦 *${target.displayName || target.name}* was moved to your PC!\n\nUse *.t2party <name>* to bring them back.`,
+      text: `📦 *${target.displayName || target.name}* was moved to your PC!\n\nUse \`\`.t2party <name>\`\` to bring them back.`,
     }, { quoted: msg });
   },
 };
