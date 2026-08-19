@@ -103,7 +103,7 @@ export default {
 ┃ .summon 4        — Epic (T4)
 ┃ .summon 5        — Legendary (T5)
 ┃ .summon 6        — Mythical (T6)
-┃ .summon mythical — Mythical by name
+┃ .summon secret — summon tier S
 ┃
 ┃ 💡 Earn coins via .daily .work .crime
 ╰━━━━━━━━━━━━━━━━━━━━━━━━╯`
