@@ -18,7 +18,7 @@ export default {
 
     const trainer = await getTrainer(sender);
     if (!trainer) {
-      return sock.sendMessage(jid, { text: "❌ Start your journey first! Use *.startjourney*" }, { quoted: msg });
+      return sock.sendMessage(jid, { text: "❌ Start your journey first! Use ``.startjourney``" }, { quoted: msg });
     }
 
     // Block healing during an active battle (wild or PvP)
@@ -35,14 +35,14 @@ export default {
     const party = await getTrainerParty(sender);
     if (!party || party.length === 0) {
       return sock.sendMessage(jid, {
-        text: "❌ Your party is empty! Use *.t2party* to add Pokémon.",
+        text: "❌ Your party is empty! Use ``.t2party`` to add Pokémon.",
       }, { quoted: msg });
     }
 
     const allHealthy = party.every(p => p.hp >= p.maxHp);
     if (allHealthy) {
       return sock.sendMessage(jid, {
-        text: "✅ All your Pokémon are already at full health!\n⏳ Next free heal in 150 seconds.",
+        text: "✅ All your Pokémon are already at full health!\n⏳ Next free heal in ``150`` seconds.",
       }, { quoted: msg });
     }
 
@@ -67,7 +67,7 @@ export default {
 ${healed}
 
 💚 *ALL POKEMON HAVE BEEN HEALED*
-⏳ Next heal: *150s*
+⏳ Next heal: \`\`150s\`\`
 
 ╰━━━━━━━━━━━━━━━━━━╯`,
     }, { quoted: msg });
