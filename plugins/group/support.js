@@ -13,15 +13,15 @@ export default {
   async run({ sock, msg }) {
     try {
       const supportMessage = `
-╭━━━〔 🌸 AKIRA MD SUPPORT 〕━━━╮
+╭━━━〔 🌸 *AKIRA MD SUPPORT* 〕━━━╮
 
 ✨ Need help with the bot?
 ✨ Found a bug?
 ✨ Want updates and new features?
 
-Join our official support group:
+*Join our official support group:*
 
-🔗 https://chat.whatsapp.com/EIw91iFyLXOAMgjFg6gmZI?s=cl&p=a&mlu=0&amv=2
+🔗 https://chat.whatsapp.com/LWlL76sLg9zAKbAJ2YHReL
 
 ╰━━━━━━━━━━━━━━━━━━━━╯
 
