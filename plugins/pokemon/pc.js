@@ -19,7 +19,7 @@ export default {
 
     const trainer = await getTrainer(sender);
     if (!trainer) {
-      return sock.sendMessage(jid, { text: "❌ Start your journey first! Use ``.startjourney``" }, { quoted: msg });
+      return sock.sendMessage(jid, { text: "❌ Start your journey first! Use *.startjourney*" }, { quoted: msg });
     }
 
     const page = Math.max(1, parseInt(args[0]) || 1);
@@ -27,7 +27,7 @@ export default {
 
     if (!pcPokemon || pcPokemon.length === 0) {
       return sock.sendMessage(jid, {
-        text: "📦 *Your PC is empty!*\n\nCatch more Pokémon or use ``.t2pc`` to move them from party.",
+        text: "📦 *Your PC is empty!*\n\nCatch more Pokémon or use *.t2pc* to move them from party.",
       }, { quoted: msg });
     }
 
@@ -48,19 +48,19 @@ export default {
         const typeIcon = typeEmojis[p.primaryType] || "⭐";
         const name     = p.nickname ? `${p.nickname} (${p.displayName || p.name})` : (p.displayName || p.name);
         const shiny    = p.shiny ? " ✨" : "";
-        return `\`\`${idx}.\`\` ${typeIcon} *${name}${shiny}* — Lv.\`\`${p.level}\`\``;
+        return `${idx}. ${typeIcon} *${name}${shiny}* — Lv.${p.level}`;
       }).join("\n");
 
       await sock.sendMessage(jid, {
         image: imageBuffer,
         caption:
 `📦 *PC STORAGE*
-Page \`\`${currentPage}/${totalPages}\`\` • \`\`${pcPokemon.length}\`\` Pokémon
+Page ${currentPage}/${totalPages} • ${pcPokemon.length} Pokémon
 
 ${nameList}
 
-Use \`\`.t2party <name or #>\`\` to move to party
-Use \`\`.pc <page>\`\` for more pages`,
+Use *.t2party <name or #>* to move to party
+Use *.pc <page>* for more pages`,
         mimetype: "image/png",
       }, { quoted: msg });
 
@@ -78,19 +78,19 @@ Use \`\`.pc <page>\`\` for more pages`,
         const shinyTag = p.shiny ? " ✨" : "";
         const nick = p.nickname ? ` (${p.nickname})` : "";
         const xpNeeded = getPokemonXpNeeded(p.level);
-        const xpText = xpNeeded > 0 ? `✨ \`\`${p.xp}/${xpNeeded}\`\`` : "✨ MAX XP";
-        return `\`\`${idx}.\`\` ${typeIcon} *${p.displayName || p.name}${nick}${shinyTag}* Lv.\`\`${p.level}\`\`\n   ❤️ \`\`${p.hp}/${p.maxHp}\`\`   ${xpText}`;
+        const xpText = xpNeeded > 0 ? `✨ ${p.xp}/${xpNeeded}` : "✨ MAX XP";
+        return `${idx}. ${typeIcon} *${p.displayName || p.name}${nick}${shinyTag}* Lv.${p.level}\n   ❤️ ${p.hp}/${p.maxHp}   ${xpText}`;
       }).join("\n\n");
 
       await sock.sendMessage(jid, {
         text:
 `📦 *PC STORAGE*
-Page \`\`${currentPage}/${totalPages}\`\` • \`\`${pcPokemon.length}\`\` Pokémon
+Page ${currentPage}/${totalPages} • ${pcPokemon.length} Pokémon
 
 ${list}
 
-Use \`\`.t2party <name or #>\`\` to move to party
-Use \`\`.pc <page>\`\` for more pages`,
+Use *.t2party <name or #>* to move to party
+Use *.pc <page>* for more pages`,
       }, { quoted: msg });
     }
   },
