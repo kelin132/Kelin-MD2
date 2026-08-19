@@ -62,9 +62,44 @@ async function sendBanner(sock, jid, msg, meta, action) {
   return sock.sendMessage(jid, { text: caption }, { quoted: msg });
 }
 
+// ── Valore AIO fallback ─────────────────────────────────────────────────────────
+
+async function valoreAudio(videoUrl) {
+  const response = await fetch("https://dl.valore.web.id/api/download", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Session-Id": `kelin-play-${Date.now()}`,
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ url: videoUrl }),
+    signal: AbortSignal.timeout(45_000),
+  });
+
+  const raw = await response.text();
+  let payload;
+  try {
+    payload = raw ? JSON.parse(raw) : null;
+  } catch {
+    throw new Error(`Valore returned a non-JSON response (HTTP ${response.status})`);
+  }
+
+  if (!response.ok || payload?.success === false) {
+    throw new Error(payload?.message || payload?.error || `Valore request failed (HTTP ${response.status})`);
+  }
+
+  const medias = Array.isArray(payload?.data?.medias) ? payload.data.medias : [];
+  const audio = medias
+    .filter((media) => media?.audioAvailable !== false && /^audio$/i.test(String(media.type || "")) && /mp3|m4a|audio/i.test(String(media.format || "")) && /^https?:\/\//i.test(media.url || ""))
+    .sort((a, b) => Number(b.size || 0) - Number(a.size || 0))[0];
+
+  if (!audio) throw new Error("Valore returned no usable MP3 stream");
+  return { dl: audio.url, title: payload?.data?.title || "YouTube Audio" };
+}
+
 // ── Try downloading via multiple endpoints ────────────────────────────────────
 
-async function fetchAudio(videoUrl) {
+async function fetchAudio(videoUrl, searchTitle = "") {
   const endpoints = [
     // Gifted API — primary endpoints
     () => get("/download/ytmp3",   { url: videoUrl }),
@@ -73,8 +108,13 @@ async function fetchAudio(videoUrl) {
     // David Cyril API — fallback
     () => davidGet("/download/ytmp3",   { url: videoUrl }),
     () => davidGet("/download/ytaudio", { url: videoUrl }),
-    // OmegaTech documented fallback
+    // OmegaTech documented fallback. Its `/play` route expects a search
+    // query, not a YouTube URL; use the resolved title first and retain the
+    // URL as a secondary attempt for providers that accept URLs.
+    () => omegaDownload("play", { query: searchTitle || videoUrl, format: "mp3", quality: "128k" }),
     () => omegaDownload("play", { query: videoUrl, format: "mp3", quality: "128k" }),
+    // Valore AIO fallback; select a real MP3 stream from its media list.
+    () => valoreAudio(videoUrl),
     // Prince Tech fallback; only succeeds when the provider exposes real media.
     async () => {
       const result = await princeMedia(PRINCE_ENDPOINTS.play, { url: videoUrl });
@@ -132,7 +172,7 @@ export default {
       const meta = await ytSearch(text);
       await sendBanner(sock, jid, msg, meta, "Fetching audio… please wait");
 
-      const { dl, buffer, mimetype: returnedMimetype, title } = await fetchAudio(meta.url);
+      const { dl, buffer, mimetype: returnedMimetype, title } = await fetchAudio(meta.url, meta.title);
       const trackTitle = title || meta.title;
       const file = buffer ? { buffer, mimetype: returnedMimetype || "audio/mpeg" } : await downloadMediaBuffer(dl);
       const mimetype = file.mimetype.startsWith("audio/") ? file.mimetype : "audio/mpeg";
