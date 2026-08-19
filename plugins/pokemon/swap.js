@@ -26,7 +26,7 @@ export default {
     const trainer = await getTrainer(sender);
     if (!trainer) {
       return sock.sendMessage(jid, {
-        text: "❌ Start your journey first! Use *.startjourney*",
+        text: "❌ Start your journey first! Use ``.startjourney``",
       }, { quoted: msg });
     }
 
@@ -34,7 +34,7 @@ export default {
     const activeBattle = getBattle(jid);
     if (activeBattle && (activeBattle.challengerJid === sender || activeBattle.opponentJid === sender)) {
       return sock.sendMessage(jid, {
-        text: "❌ You can't swap party positions during a battle!\nUse *.battle switch* to switch your active Pokémon instead.",
+        text: "❌ You can't swap party positions during a battle!\nUse ``.battle switch`` to switch your active Pokémon instead.",
       }, { quoted: msg });
     }
 
@@ -87,7 +87,7 @@ export default {
         const isLead    = (p._id || p.id)?.toString() === curLeadId;
         const isStarter = p.isStarter;
         const tags = [isLead ? "⚡LEAD" : "", isStarter ? "🏅STARTER" : ""].filter(Boolean).join(" ");
-        return `${i + 1}. ${icon}${hpBar} *${p.displayName || p.name}* Lv.${p.level} ❤️ ${p.hp}/${p.maxHp}${tags ? "  " + tags : ""}`;
+        return `${i + 1}. ${icon}${hpBar} *${p.displayName || p.name}* Lv.\`\`${p.level}\`\` ❤️ \`\`${p.hp}/${p.maxHp}\`\`${tags ? "  " + tags : ""}`;
       }).join("\n");
 
       return sock.sendMessage(jid, {
@@ -98,9 +98,9 @@ export default {
 ${slots}
 
 ━━━━━━━━━━━━━━━━━━━━
-Usage: *.swap <slot1> <slot2>*
-Example: *.swap 1 3* — swap slots 1 and 3
-         *.swap 1 5* — move slot 5 to lead position`,
+Usage: \`\`.swap <slot1> <slot2>\`\`
+Example: \`\`.swap 1 3\`\` — swap slots 1 and 3
+         \`\`.swap 1 5\`\` — move slot 5 to lead position`,
       }, { quoted: msg });
     }
 
@@ -114,7 +114,7 @@ Example: *.swap 1 3* — swap slots 1 and 3
       slot1 > maxSlot || slot2 > maxSlot
     ) {
       return sock.sendMessage(jid, {
-        text: `❌ Invalid slots! Choose between *1* and *${maxSlot}*.\nType *.swap* to see your party.`,
+        text: `❌ Invalid slots! Choose between \`\`1\`\` and \`\`${maxSlot}\`\`.\nType \`\`.swap\`\` to see your party.`,
       }, { quoted: msg });
     }
 
@@ -157,10 +157,10 @@ Example: *.swap 1 3* — swap slots 1 and 3
       text:
 `🔀 *Party positions swapped!*${leadNote}
 
-✅ Slot ${slot1}: *${name2}* Lv.${p2.level}
-✅ Slot ${slot2}: *${name1}* Lv.${p1.level}
+✅ Slot \`\`${slot1}\`\`: *${name2}* Lv.\`\`${p2.level}\`\`
+✅ Slot \`\`${slot2}\`\`: *${name1}* Lv.\`\`${p1.level}\`\`
 
-Use *.party* to see your updated lineup.`,
+Use \`\`.party\`\` to see your updated lineup.`,
     }, { quoted: msg });
   },
 };
