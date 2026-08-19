@@ -80,32 +80,32 @@ export default {
       if ((args[0] || "").toLowerCase() === "help") {
         return reply(
 `╭━━━〔 🔮 𝑺𝑼𝑴𝑴𝑶𝑵 𝑺𝒀𝑺𝑻𝑬𝑴 ✨ 〕━━━╮
-┃ ✦ Summon a card, then use *.claim* to collect it!
+┃ ✦ Summon a card, then use \`.claim\` to collect it!
 ┃ ✦ Costs coins per tier from your wallet.
 ┃
 ┣━━━━━━━━━━━━━━━━━━━━━━━━
 ┃ 💰 𝗦𝘂𝗺𝗺𝗼𝗻 𝗖𝗼𝘀𝘁𝘀
 ┃
-┃ ⚪ T1 Common     › $${SUMMON_COST.Common.toLocaleString()}
-┃ 🟢 T2 Uncommon   › $${SUMMON_COST.Uncommon.toLocaleString()}
-┃ 🔵 T3 Rare       › $${SUMMON_COST.Rare.toLocaleString()}
-┃ 🟣 T4 Epic       › $${SUMMON_COST.Epic.toLocaleString()}
-┃ 🟡 T5 Legendary  › $${SUMMON_COST.Legendary.toLocaleString()}
-┃ 🔴 T6 Mythical   › $${SUMMON_COST.Mythical.toLocaleString()}
+┃ ⚪ T1 Common     › \`$${SUMMON_COST.Common.toLocaleString()}\`
+┃ 🟢 T2 Uncommon   › \`$${SUMMON_COST.Uncommon.toLocaleString()}\`
+┃ 🔵 T3 Rare       › \`$${SUMMON_COST.Rare.toLocaleString()}\`
+┃ 🟣 T4 Epic       › \`$${SUMMON_COST.Epic.toLocaleString()}\`
+┃ 🟡 T5 Legendary  › \`$${SUMMON_COST.Legendary.toLocaleString()}\`
+┃ 🔴 T6 Mythical   › \`$${SUMMON_COST.Mythical.toLocaleString()}\`
 ┃
 ┣━━━━━━━━━━━━━━━━━━━━━━━━
 ┃ 📖 𝗨𝘀𝗮𝗴𝗲
 ┃
-┃ .summon          — random tier
-┃ .summon 1        — Common (T1)
-┃ .summon 2        — Uncommon (T2)
-┃ .summon 3        — Rare (T3)
-┃ .summon 4        — Epic (T4)
-┃ .summon 5        — Legendary (T5)
-┃ .summon 6        — Mythical (T6)
-┃ .summon secret — summon tier S
+┃ \`.summon\`          — random tier
+┃ \`.summon 1\`        — Common (T1)
+┃ \`.summon 2\`        — Uncommon (T2)
+┃ \`.summon 3\`        — Rare (T3)
+┃ \`.summon 4\`        — Epic (T4)
+┃ \`.summon 5\`        — Legendary (T5)
+┃ \`.summon 6\`        — Mythical (T6)
+┃ \`.summon secret\`   — summon tier S
 ┃
-┃ 💡 Earn coins via .daily .work .crime
+┃ 💡 Earn coins via \`.daily\` \`.work\` \`.crime\`
 ╰━━━━━━━━━━━━━━━━━━━━━━━━╯`
         );
       }
@@ -120,7 +120,7 @@ export default {
 `╭━━━〔 ⏳ 𝑪𝑶𝑶𝑳𝑫𝑶𝑾𝑵 〕━━━╮
 ┃ ✦ Summon is on cooldown!
 ┃
-┃ ⏱ Wait › 『 ${remaining}s 』
+┃ ⏱ Wait › 『 \`${remaining}s\` 』
 ┃
 ┃ The cards need time to rest...
 ╰━━━━━━━━━━━━━━━━━━━━╯`
@@ -140,13 +140,13 @@ export default {
         if (!tierName) {
           return reply(
 `╭━━━〔 ❌ 𝑰𝑵𝑽𝑨𝑳𝑰𝑫 𝑻𝑰𝑬𝑹 〕━━━╮
-┃ ✦ Unknown tier: 『 ${args[0]} 』
+┃ ✦ Unknown tier: 『 \`${args[0]}\` 』
 ┃
 ┃ Valid tiers:
 ┃ 1-6 or Common / Uncommon / Rare
 ┃ Epic / Legendary / Mythical
 ┃
-┃ 💡 Type .summon help for details
+┃ 💡 Type \`.summon help\` for details
 ╰━━━━━━━━━━━━━━━━━━━━╯`
           );
         }
@@ -169,13 +169,13 @@ export default {
 `╭━━━〔 💸 𝑰𝑵𝑺𝑼𝑭𝑭𝑰𝑪𝑰𝑬𝑵𝑻 𝑭𝑼𝑵𝑫𝑺 〕━━━╮
 ┃ ✦ Not enough coins to summon!
 ┃
-┃ ${emoji} Tier   ➜ 『 ${tierName} 』
+┃ ${emoji} Tier   ➜ 『 \`${tierName}\` 』
 ┃
 ┣━━━━━━━━━━━━━━━━━━━━
-┃ 💰 Required › $${cost.toLocaleString()}
-┃ 👛 Wallet   › $${(ecoUser.money || 0).toLocaleString()}
+┃ 💰 Required › \`$${cost.toLocaleString()}\`
+┃ 👛 Wallet   › \`$${(ecoUser.money || 0).toLocaleString()}\`
 ┣━━━━━━━━━━━━━━━━━━━━
-┃ 💡 Earn via .daily .work .crime
+┃ 💡 Earn via \`.daily\` \`.work\` \`.crime\`
 ╰━━━━━━━━━━━━━━━━━━━━╯`
         );
       }
@@ -198,10 +198,10 @@ export default {
 `╭━━━〔 ❌ 𝑵𝑶 𝑪𝑨𝑹𝑫𝑺 𝑨𝑽𝑨𝑰𝑳𝑨𝑩𝑳𝑬 〕━━━╮
 ┃ ✦ No cards found for this tier!
 ┃
-┃ ${emoji} Tier ➜ 『 ${tierName} 』
+┃ ${emoji} Tier ➜ 『 \`${tierName}\` 』
 ┃
 ┣━━━━━━━━━━━━━━━━━━━━
-┃ 💰 Refunded › $${cost.toLocaleString()}
+┃ 💰 Refunded › \`$${cost.toLocaleString()}\`
 ┣━━━━━━━━━━━━━━━━━━━━
 ┃ 💡 Try again later!
 ╰━━━━━━━━━━━━━━━━━━━━╯`
@@ -241,18 +241,18 @@ export default {
       const claimText =
 `╭━━━〔 ${emoji} 𝑺𝑼𝑴𝑴𝑶𝑵 𝑺𝑼𝑪𝑪𝑬𝑺𝑺 ✨ 〕━━━╮
 ┃ ✦ A card has appeared from the ether...
-┃${isRandom ? `\n┃ 🎲 Roll  ➜ 『 ${tierName} Tier 』` : ""}
-┃ 🃏 Card  ➜ 『 ${card.name} 』
-┃ ${emoji} Tier  ➜ 『 ${card.tier} 』
-┃ 📺 Series ➜ 『 ${card.series} 』
+┃${isRandom ? `\n┃ 🎲 Roll  ➜ 『 \`${tierName} Tier\` 』` : ""}
+┃ 🃏 Card  ➜ 『 \`${card.name}\` 』
+┃ ${emoji} Tier  ➜ 『 \`${card.tier}\` 』
+┃ 📺 Series ➜ 『 \`${card.series}\` 』
 ┃
 ┣━━━━━━━━━━━━━━━━━━━━
-┃ 💸 Cost   › $${cost.toLocaleString()}
-┃ 👛 Wallet › $${ecoUser.money.toLocaleString()}
+┃ 💸 Cost   › \`$${cost.toLocaleString()}\`
+┃ 👛 Wallet › \`$${ecoUser.money.toLocaleString()}\`
 ┣━━━━━━━━━━━━━━━━━━━━
 ┃ ✨ 𝗖𝗟𝗔𝗜𝗠 𝗥𝗘𝗔𝗗𝗬!
 ┃ The card is waiting for you.
-┃ Use *.claim* to add it to your collection.
+┃ Use \`.claim\` to add it to your collection.
 ╰━━━━━━━━━━━━━━━━━━━━╯`;
 
       if (card.media) {
