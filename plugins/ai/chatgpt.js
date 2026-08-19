@@ -14,7 +14,7 @@ export default {
     try {
       const uid = sender?.split("@")[0] || jid;
       const reply = await askKimi(text, { uid });
-      await sock.sendMessage(jid, { text: `💬 *Kimi:*\n\n${reply}` }, { quoted: msg });
+      await sock.sendMessage(jid, { text: `💬\n\n${reply}` }, { quoted: msg });
     } catch (err) {
       await sock.sendMessage(jid, { text: `❌ ${err.message}` }, { quoted: msg });
     } finally {
