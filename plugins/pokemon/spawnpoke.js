@@ -97,7 +97,7 @@ export default {
 ❤️ HP: \`${maxHp}/${maxHp}\`
 
 Use \`.catch\` to battle this Pokémon!
-⏰ It will flee in \`30 minutes\`.`;
+⏰ It will flee in 30 minutes.`;
 
     // Use local sprite file when available (no CDN); falls back to URL, then text-only
     const imgMsg = await getImageMessage(apiData);
