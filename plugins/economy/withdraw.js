@@ -1,6 +1,8 @@
 import { getUser, saveUser, requireRegistration, addHistory } from "./database.js";
 import { parseAmount } from "./parseAmount.js";
 
+const MAX_WITHDRAWAL = 300_000_000_000;
+
 export default {
   name: "withdraw",
   description: "Withdraw money from your bank",
@@ -17,7 +19,11 @@ export default {
 
     if (!args[0]) {
       return sock.sendMessage(msg.key.remoteJid, {
-        text: `🏦 *Withdraw*\n\nUsage: *.withdraw <amount>* or *.withdraw all*\n✦ Shorthand: 10k / 5m / 1b\n\n💰 Cash : $${user.money.toLocaleString()}\n🏦 Bank : $${user.bank.toLocaleString()}`
+        text: `🏦 *Withdraw*\n\nUsage: *.withdraw <amount>* or *.withdraw all*\n✦ Shorthand: 10k / 5m / 1b\n
+
+💰 Cash : $${user.money.toLocaleString()}
+🏦 Bank : $${user.bank.toLocaleString()}
+📌 Max per withdrawal : $${MAX_WITHDRAWAL.toLocaleString()}`
       }, { quoted: msg });
     }
 
@@ -25,6 +31,12 @@ export default {
 
     if (isNaN(amount) || amount <= 0) {
       return sock.sendMessage(msg.key.remoteJid, { text: "❌ Enter a valid amount." }, { quoted: msg });
+    }
+
+    if (amount > MAX_WITHDRAWAL) {
+      return sock.sendMessage(msg.key.remoteJid, {
+        text: `❌ The maximum withdrawal is *$${MAX_WITHDRAWAL.toLocaleString()}* per transaction.`
+      }, { quoted: msg });
     }
 
     if (amount > user.bank) {

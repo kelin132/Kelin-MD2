@@ -2,6 +2,7 @@
 // .pets — Show all owned pets
 import { getAllPets, setActivePet } from "../../lib/petDatabase.js";
 import { RARITIES } from "../../lib/petData.js";
+import { formatAnimeLeaderboard } from "../../lib/animeLeaderboard.mjs";
 
 export default {
   name: "pets",
@@ -35,31 +36,21 @@ export default {
       }, { quoted: msg });
     }
 
-    const lines = all.map((p, i) => {
-      const rarity = RARITIES[p.rarity] || RARITIES.common;
-      const active = p.isActive ? "  🌟 *「ACTIVE」*" : "";
-      return [
-        `  *${i + 1}.* ${rarity.color} *${p.name}*${active}`,
-        `     ⭐ *${rarity.label}*  〔 Lv.*${p.level}* 〕`,
-        `     ⚔️ *${p.attack}*  ❤️ *${p.maxHp}*`,
-        `     🍖 *${p.hunger ?? 100}%*  😊 *${p.happiness ?? 100}%*`,
-        `     🆔 \`${p.petId}\``,
-      ].join("\n");
+    const text = formatAnimeLeaderboard({
+      subtitle: "PET COMPANION COLLECTION",
+      rows: all.map((p) => {
+        const rarity = RARITIES[p.rarity] || RARITIES.common;
+        const active = p.isActive ? " · 🌟 ACTIVE" : "";
+        return {
+          name: p.name,
+          value: Number(p.level) || 0,
+          valueText: `${rarity.color} ${rarity.label}${active} · ⚔️ ${p.attack} · ❤️ ${p.maxHp} · 🍖 ${p.hunger ?? 100}% · 😊 ${p.happiness ?? 100}% · 🆔 ${p.petId}`,
+        };
+      }),
+      valueIcon: "🐾",
+      valueLabel: "𝐋𝐄𝐕𝐄𝐋",
+      footer: `🌸 *.pets select <ID>* · ${all.length}/5 companions`,
     });
-
-    const text = [
-      `꧁━━〔 🐾 *M Y  C O M P A N I O N S* 〕━━꧂`,
-      ``,
-      `  🌸 *Total: ${all.length}/5*`,
-      `  ━━━━━━━━━━━━━━━━━━━━━━━`,
-      ``,
-      lines.join("\n\n"),
-      ``,
-      `  ━━━━━━━━━━━━━━━━━━━━━━━`,
-      `  💡 *.pets select <ID>* to switch`,
-      ``,
-      `꧂━━━━━━━━━━━━━━━━━━━━━━━━꧁`,
-    ].join("\n");
 
     return sock.sendMessage(jid, { text }, { quoted: msg });
   },

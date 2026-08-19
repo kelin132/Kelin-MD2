@@ -5,6 +5,7 @@
  * .heist status    — check who's joined
  */
 import { getUser, saveUser, requireRegistration, isRegistered, addHistory } from "./database.js";
+import { hasActiveGun } from "../../lib/economySecurity.mjs";
 
 const JOIN_WINDOW    = 60 * 1000;  // 60 seconds to join
 const MIN_STAKE      = 500;
@@ -113,6 +114,16 @@ ${names}
       if (heist.members.find(m => m.id === sender)) return reply("❌ You're already in this heist.");
 
       const user = await getUser(sender);
+      if (!hasActiveGun(user)) {
+        return reply(
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ ❌ *Result*  :: *NO GUN 🔴*
+│
+│ 🔫 Buy a gun from *.shop weapons* before joining.
+│ ⏳ A gun remains active for *3 days*.
+╰───────────────❀`
+        );
+      }
       if (user.money < heist.stake) {
         return reply(
 `╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
@@ -154,6 +165,16 @@ ${names}
     if (stake > MAX_STAKE)                  return reply(`❌ Maximum stake is *${fmt(MAX_STAKE)}*.`);
 
     const user = await getUser(sender);
+    if (!hasActiveGun(user)) {
+      return reply(
+`╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮
+│ ❌ *Result*  :: *NO GUN 🔴*
+│
+│ 🔫 Buy a gun from *.shop weapons* before starting.
+│ ⏳ A gun remains active for *3 days*.
+╰───────────────❀`
+      );
+    }
     if (user.money < stake) {
       return reply(
 `╭─❀「 🏦 *𝐇𝐄𝐈𝐒𝐓* 」❀─╮

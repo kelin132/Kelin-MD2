@@ -84,17 +84,29 @@ async function fetchAudio(videoUrl) {
     },
   ];
 
+  let lastError;
   for (const attempt of endpoints) {
     try {
-      const data   = await attempt();
+      const data = await attempt();
       if (data?.buffer) return data;
       const result = data?.result || data?.data || data;
-      const dl     = data?.dl || pickAudio(result);
-      if (dl) return { dl, title: result?.title || data?.title || "" };
-    } catch { /* try next */ }
+      const dl = data?.dl || pickAudio(result);
+      if (!dl) {
+        lastError = new Error("Provider returned no audio URL");
+        continue;
+      }
+      try {
+        const file = await downloadMediaBuffer(dl);
+        return { buffer: file.buffer, mimetype: file.mimetype, title: result?.title || data?.title || "" };
+      } catch (mediaError) {
+        lastError = mediaError;
+      }
+    } catch (error) {
+      lastError = error;
+    }
   }
 
-  throw new Error("All audio download sources failed. Try a direct YouTube URL.");
+  throw new Error(`All audio download sources failed. ${lastError?.message || "No provider returned usable audio."}`);
 }
 
 // ── .play ─────────────────────────────────────────────────────────────────────

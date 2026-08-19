@@ -6,6 +6,7 @@
 
 import { getUser, saveUser, requireRegistration } from "./database.js";
 import { SHOP_ITEMS as shopItems, SHOP_CATEGORIES } from "./_items.js";
+import { grantGun, formatDuration } from "../../lib/economySecurity.mjs";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -175,6 +176,7 @@ async function handleBuy(sock, msg, jid, sender, args) {
   user.xp       = (user.xp || 0) + (item.xpBonus || 0);
   user.inventory = user.inventory || [];
   user.inventory.push(itemName);
+  const gunExpiry = itemName === "gun" ? grantGun(user) : null;
   await saveUser(sender, user);
 
   return reply(
@@ -189,6 +191,7 @@ async function handleBuy(sock, msg, jid, sender, args) {
       `${DIV}`,
       `┃  💰 Paid  ꔫ ${costLine(item)}`,
       `┃  ⭐ XP    ꔫ +${item.xpBonus ?? 0}`,
+      gunExpiry ? `┃  ⏳ Gun    ꔫ Active for ${formatDuration(gunExpiry - Date.now())}` : null,
       `${DIV}`,
       `┃  💼 Wallet ꔫ $${fmtCoins(user.money)}  ·  🔮 ${user.orbs}  ·  💎 ${user.diamonds}`,
       `${DIV}`,

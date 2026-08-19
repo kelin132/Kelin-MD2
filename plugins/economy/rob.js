@@ -1,4 +1,5 @@
 import { getUser, saveUser, requireRegistration, isRegistered, addHistory } from "./database.js";
+import { hasActiveGun } from "../../lib/economySecurity.mjs";
 
 function fmt(n) {
   if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`;
@@ -30,6 +31,7 @@ export default {
 │ 📖 *Usage*   :: *.rob @user*
 │ 🎯 *Rate*    :: *55% success*
 │ 💸 *Risk*    :: *Fine if caught*
+│ 🔫 *Gun*      :: *Required from .shop weapons*
 │ ⏳ *Cooldown* :: *45 minutes*
 ╰───────────────❀`
       }, { quoted: msg });
@@ -45,6 +47,19 @@ export default {
 
     const robber = await getUser(sender);
     const now    = Date.now();
+
+    if (!hasActiveGun(robber, now)) {
+      return sock.sendMessage(jid, {
+        text:
+`╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
+│ ❌ *Result*  :: *NO GUN 🔴*
+│
+│ 🔫 Buy a gun from *.shop weapons* before robbing.
+│ ⏳ A gun remains active for *3 days*.
+╰───────────────❀`
+      }, { quoted: msg });
+    }
+
     const cd     = 45 * 60 * 1000;
 
     if (now - (robber.lastRob || 0) < cd) {
