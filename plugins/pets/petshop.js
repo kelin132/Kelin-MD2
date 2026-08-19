@@ -25,16 +25,16 @@ function shopText(page = 1) {
   const safePage = Math.min(totalPages, Math.max(1, page));
   const start = (safePage - 1) * PAGE_SIZE;
   const list = SHOP.slice(start, start + PAGE_SIZE).map((item, index) =>
-    `  ⚜️ *${start + index + 1}. ${item.name}*  — ${fmt(item.price)}\n    _${item.desc}_`
-  ).join("\n\n");
+    `│  ⚜️ *\`${start + index + 1}.\` ${item.name}*  — \`${fmt(item.price)}\`\n│     _${item.desc}_`
+  ).join("\n│\n");
   return [
     `╭─❀「 🏪 *𝐏𝐄𝐓 𝐒𝐇𝐎𝐏* 」❀─╮`,
-    `│ Page *${safePage}/${totalPages}*  •  ${SHOP.length} items`,
+    `│ Page \`${safePage}/${totalPages}\`  •  \`${SHOP.length}\` items`,
     `│`,
     list,
     `│`,
-    `│ *.petshop ${safePage < totalPages ? safePage + 1 : 1}* — next page`,
-    `│ *.petshop buy <number>* — purchase`,
+    `│ 💡 \`.petshop ${safePage < totalPages ? safePage + 1 : 1}\` — next page`,
+    `│ 💡 \`.petshop buy <number>\` — purchase`,
     `╰───────────────❀`,
   ].join("\n");
 }
@@ -60,17 +60,23 @@ export default {
     const itemNumber = Number(args[1]);
     const item = Number.isInteger(itemNumber) ? SHOP[itemNumber - 1] : null;
     if (!item) {
-      return sock.sendMessage(jid, { text: "❌ Choose a valid item number.\n\nUse *.petshop* or *.petshop 2* to browse." }, { quoted: msg });
+      return sock.sendMessage(jid, { 
+        text: `╭─❀「 🏪 *𝐏𝐄𝐓 𝐒𝐇𝐎𝐏* 」❀─╮\n│ ❌ Choose a valid item number.\n│\n│ 💡 Use \`.petshop\` or \`.petshop 2\` to browse.\n╰───────────────❀` 
+      }, { quoted: msg });
     }
 
     const pet = await getActivePet(sender);
     if (!pet) {
-      return sock.sendMessage(jid, { text: "🐾 You don't have an active pet! Use *.adopt* first." }, { quoted: msg });
+      return sock.sendMessage(jid, { 
+        text: `╭─❀「 🏪 *𝐏𝐄𝐓 𝐒𝐇𝐎𝐏* 」❀─╮\n│ 🐾 You don't have an active pet!\n│\n│ 💡 Use \`.adopt\` to get a companion.\n╰───────────────❀` 
+      }, { quoted: msg });
     }
 
     const user = await getUser(sender);
     if ((user.money || 0) < item.price) {
-      return sock.sendMessage(jid, { text: `❌ Not enough money!\n\n💰 Cost: ${fmt(item.price)}\n💰 Balance: ${fmt(user.money)}` }, { quoted: msg });
+      return sock.sendMessage(jid, { 
+        text: `╭─❀「 🏪 *𝐏𝐄𝐓 𝐒𝐇𝐎𝐏* 」❀─╮\n│ ❌ Not enough money!\n│\n│ 💰 Cost: \`${fmt(item.price)}\`\n│ 💰 Balance: \`${fmt(user.money)}\`\n╰───────────────❀` 
+      }, { quoted: msg });
     }
 
     user.money -= item.price;
@@ -80,16 +86,16 @@ export default {
     if (item.key === "exppotion" || item.key === "superxp") {
       const exp = item.key === "superxp" ? 500 : 150;
       const result = await awardExp(sender, pet.petId, exp);
-      effectText = `✨ *${pet.name}* gained ${exp} EXP!`;
-      if (result?.levelsGained > 0) effectText += `\n🎉 *LEVEL UP!* Now Level ${result.pet.level}!`;
+      effectText = `│ ✨ *${pet.name}* gained \`${exp}\` EXP!`;
+      if (result?.levelsGained > 0) effectText += `\n│ 🎉 *LEVEL UP!* Now Level \`${result.pet.level}\`!`;
     } else {
       const changes = item.apply(pet);
       await savePet(sender, pet.petId, changes);
-      effectText = Object.entries(changes).map(([key, value]) => `${key === "hunger" ? "🍖 Hunger" : "😊 Happiness"}: → ${value}%`).join("\n");
+      effectText = Object.entries(changes).map(([key, value]) => `│ ${key === "hunger" ? "🍖 Hunger" : "😊 Happiness"}: → \`${value}%\``).join("\n");
     }
 
     return sock.sendMessage(jid, {
-      text: `╭─❀「 🏪 *𝐏𝐔𝐑𝐂𝐇𝐀𝐒𝐄* 」❀─╮\n│ ${item.name} bought for *${fmt(item.price)}*\n│\n│ ${effectText}\n│\n│ 💰 Remaining: *${fmt(user.money)}*\n╰───────────────❀`,
+      text: `╭─❀「 🏪 *𝐏𝐔𝐑𝐂𝐇𝐀𝐒𝐄* 」❀─╮\n│ ${item.name} bought for \`${fmt(item.price)}\`\n│\n${effectText}\n│\n│ 💰 Remaining: \`${fmt(user.money)}\`\n╰───────────────❀`,
     }, { quoted: msg });
   },
 };
