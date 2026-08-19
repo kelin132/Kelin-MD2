@@ -7,14 +7,14 @@ import { getUser, saveUser, requireRegistration, addHistory, maybeAwardDiamonds 
 const COOLDOWN = 3 * 60 * 1000; // 3 minutes
 
 const SUCCESS_MSGS = [
-  (n, $) => `🙏 A kind stranger tosses you *$${$}* after you flash your empty pockets.`,
-  (n, $) => `😢 You begged outside the mall and someone dropped *$${$}* in your cup.`,
-  (n, $) => `🎰 A gambler felt guilty and handed you *$${$}*. Every dollar counts!`,
-  (n, $) => `👴 An old man took pity on you and gave you *$${$}*. Don't waste it.`,
-  (n, $) => `🤲 You held a cardboard sign and collected *$${$}* from passing cars.`,
-  (n, $) => `☕ Someone bought you coffee and gave you *$${$}* change. Small wins!`,
-  (n, $) => `🐕 Even a dog felt bad for you — its owner gave you *$${$}*.`,
-  (n, $) => `📢 You performed on the street corner and earned *$${$}* in tips.`,
+  (n, $) => `A kind stranger tosses you \`$${$}\` after you flash your empty pockets.`,
+  (n, $) => `You begged outside the mall and someone dropped \`$${$}\` in your cup.`,
+  (n, $) => `A gambler felt guilty and handed you \`$${$}\`. Every dollar counts!`,
+  (n, $) => `An old man took pity on you and gave you \`$${$}\`. Don't waste it.`,
+  (n, $) => `You held a cardboard sign and collected \`$${$}\` from passing cars.`,
+  (n, $) => `Someone bought you coffee and gave you \`$${$}\` change. Small wins!`,
+  (n, $) => `Even a dog felt bad for you — its owner gave you \`$${$}\`.`,
+  (n, $) => `You performed on the street corner and earned \`$${$}\` in tips.`,
 ];
 
 const FAIL_MSGS = [
@@ -59,10 +59,10 @@ export default {
       const s    = left % 60;
       return reply(
 `╭─❀「 🤲 *𝐁𝐄𝐆* 」❀─╮
-│ ⏳ *Result*  :: *COOLDOWN 🔴*
-│ 🍃 *Flavour* :: _まだ恥ずかしい..._
+│ ⏳ *Result*  :: \`COOLDOWN 🔴\`
+│ 🍃 *Flavour* :: _Still feeling embarrassed..._
 │
-│ 🕐 *Next*    :: *${m}m ${s}s*
+│ 🕐 *Next*    :: \`${m}m ${s}s\`
 │
 │ 😤 *You're still embarrassed from last time!*
 ╰───────────────❀`
@@ -78,11 +78,11 @@ export default {
       const flavour = FAIL_MSGS[Math.floor(Math.random() * FAIL_MSGS.length)];
       return reply(
 `╭─❀「 🤲 *𝐁𝐄𝐆* 」❀─╮
-│ 🌙 *Result*  :: *FAILED 🔴*
+│ 🌙 *Result*  :: \`FAILED 🔴\`
 │ 🍃 *Flavour* :: _${flavour}_
 │
-│ 💰 *Earned*  :: *$0*
-│ 💰 *Wallet*  :: *${fmt(user.money)}*
+│ 💰 *Earned*  :: \`$0\`
+│ 💰 *Wallet*  :: \`${fmt(user.money)}\`
 │
 │ 😤 *Better luck next time!*
 ╰───────────────❀`
@@ -101,13 +101,13 @@ export default {
     const pick = SUCCESS_MSGS[Math.floor(Math.random() * SUCCESS_MSGS.length)];
     return reply(
 `╭─❀「 🤲 *𝐁𝐄𝐆* 」❀─╮
-│ 🌙 *Result*  :: *SUCCESS 🟢*
+│ 🌙 *Result*  :: \`SUCCESS 🟢\`
 │ 🍃 *Flavour* :: _${pick(sender.split("@")[0], amount.toLocaleString())}_
 │
-│ 💰 *Earned*  :: *+${fmt(amount)}*
-│ 💰 *Wallet*  :: *${fmt(user.money)}*${diamondReward ? `\n│ 💎 *Bonus*   :: *+${diamondReward} Gem${diamondReward === 1 ? "" : "s"}*` : ""}
+│ 💰 *Earned*  :: \`+${fmt(amount)}\`
+│ 💰 *Wallet*  :: \`${fmt(user.money)}\`${diamondReward ? `\n│ 💎 *Bonus*   :: \`+${diamondReward}\` Gem${diamondReward === 1 ? "" : "s"}` : ""}
 │
-│ 🙏 *ありがとう！* Keep grinding!
+│ 🙏 *Thank you!* Keep grinding!
 ╰───────────────❀`
     );
   },
