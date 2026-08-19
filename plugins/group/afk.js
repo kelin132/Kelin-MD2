@@ -53,16 +53,13 @@ export default {
       });
 
       return reply(
-`╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮
-┃  💤 *AFK Updated, ${name}~*  ┃
-╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯
-🌸 *@${tag}* is still away~
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-📝 *New reason* ꔫ ${reason}
-⏰ *Timer reset* ꔫ ${formatTime(since)}
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-📌 _Tag them & I'll let you know!_
-╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+`╭───〔 💤 𝗔𝗙𝗞 𝗨𝗣𝗗𝗔𝗧𝗘𝗗 〕───╮
+│
+│ 🌸 *@${tag}* is still away~
+│
+│ 📝 𝗥𝗲𝗮𝘀𝗼𝗻: ${reason}
+│ ⏰ 𝗥𝗲𝘀𝗲𝘁: \`\`${formatTime(since)}\`\`
+╰━━━━━━━━━━━━━━━━━━━━━━╯`,
         { mentions: [sender] }
       );
     }
@@ -79,17 +76,13 @@ export default {
     });
 
     return reply(
-`╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮
-┃  🌙 *A F K  モ ー ド* 🌙  ┃
-╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯
-✦ *@${tag}* has gone away~
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-🌸 *Reason* ꔫ ${reason}
-🕐 *Since*  ꔫ ${formatTime(since)}
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-📌 _Tag them & I'll let you know!_
-💬 _They auto-return when they chat~_
-╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+`╭───〔 🌙 𝗔𝗙𝗞 𝗠𝗢𝗗𝗘 〕───╮
+│
+│ 🌸 *@${tag}* has gone away~
+│
+│ 📝 𝗥𝗲𝗮𝘀𝗼𝗻: ${reason}
+│ 🕐 𝗦𝗶𝗻𝗰𝗲: \`\`${formatTime(since)}\`\`
+╰━━━━━━━━━━━━━━━━━━━━━━╯`,
       { mentions: [sender] }
     );
   },
