@@ -18,7 +18,7 @@ export default {
   async run({ sock, msg, sender, args }) {
     const jid = msg.key.remoteJid;
     const trainer = await getTrainer(sender);
-    if (!trainer) return sock.sendMessage(jid, { text: "❌ Start your journey first with *.startjourney*." }, { quoted: msg });
+    if (!trainer) return sock.sendMessage(jid, { text: "❌ Start your journey first with `.startjourney`." }, { quoted: msg });
     const badges = Array.isArray(trainer.badges) ? trainer.badges.map(String) : [];
     const selected = args[0] ? gymById(args[0]) : null;
 
@@ -26,14 +26,14 @@ export default {
       const lines = GYMS.map((gym, index) => {
         const earned = badges.includes(gymBadgeId(gym.id)) || badges.includes(gym.id);
         const open = unlocked(gym, badges);
-        const status = earned ? "✅ badge earned" : open ? "🔓 unlocked" : `🔒 needs ${gym.unlockAfter}`;
-        return `${index + 1}. *${gym.name}* — ${gym.type}\n   Leader: ${gym.leader} · ${status}\n   Reward: ${gym.rewardCoins.toLocaleString()} coins + ${gym.rewardXp.toLocaleString()} XP`;
+        const status = earned ? "`badge earned` ✅" : open ? "`unlocked` 🔓" : `🔒 needs \`${gym.unlockAfter}\``;
+        return `\`${index + 1}.\` *${gym.name}* — \`${gym.type}\`\n   Leader: *${gym.leader}* · ${status}\n   Reward: \`$${gym.rewardCoins.toLocaleString()}\` coins + \`${gym.rewardXp.toLocaleString()}\` XP`;
       });
-      return sock.sendMessage(jid, { text: `🏟️ *AIDORU GYM CIRCUIT*\n\n${lines.join("\n\n")}\n\nUse *.gym <name>* to open a direct web arena.` }, { quoted: msg });
+      return sock.sendMessage(jid, { text: `🏟️ *AIDORU GYM CIRCUIT*\n\n${lines.join("\n\n")}\n\nUse \`.gym <name>\` to open a direct web arena.` }, { quoted: msg });
     }
 
     if (!unlocked(selected, badges)) {
-      return sock.sendMessage(jid, { text: `🔒 ${selected.name} is locked. Earn the ${gymById(selected.unlockAfter)?.badge || "previous badge"} first.` }, { quoted: msg });
+      return sock.sendMessage(jid, { text: `🔒 *${selected.name}* is locked. Earn the *${gymById(selected.unlockAfter)?.badge || "previous badge"}* first.` }, { quoted: msg });
     }
 
     await healParty(sender);
@@ -96,6 +96,6 @@ export default {
       },
     });
     const url = webBattleUrl(room._id);
-    return sock.sendMessage(jid, { text: `🏟️ *${selected.name.toUpperCase()} READY!*\n\nLeader *${selected.leader}* is waiting with ${selected.team.length} Pokémon.\n\n🎖️ Reward: ${selected.badge}\n💰 ${selected.rewardCoins.toLocaleString()} coins · ⭐ ${selected.rewardXp.toLocaleString()} XP\n\nOpen the direct arena link in AIDORU:\n${url}\n\nThe match starts with your party already loaded.` }, { quoted: msg });
+    return sock.sendMessage(jid, { text: `🏟️ *${selected.name.toUpperCase()} READY!*\n\nLeader *${selected.leader}* is waiting with \`${selected.team.length}\` Pokémon.\n\n🎖️ Badge: *${selected.badge}*\n💰 \`$${selected.rewardCoins.toLocaleString()}\` coins · ⭐ \`${selected.rewardXp.toLocaleString()}\` XP\n\nOpen the direct arena link in AIDORU:\n${url}\n\nThe match starts with your party already loaded.` }, { quoted: msg });
   },
 };
