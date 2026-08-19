@@ -130,16 +130,9 @@ Supported formats:
       }, { quoted: msg });
 
     } catch (err) {
+      console.error("[facebook]", err?.stack || err?.message || err);
       await sock.sendMessage(jid, {
-        text:
-`❌ *Failed to download*
-
-${err.message}
-
-💡 Tips:
-• Make sure the video is set to *Public*
-• Copy the full URL directly from the browser
-• Reels and Watch videos both work`,
+        text: "❌ This video couldn't be downloaded. Try again later!",
       }, { quoted: msg });
     }
   },

@@ -56,17 +56,30 @@ async function fetchVideo(videoUrl) {
     () => princeMedia(PRINCE_ENDPOINTS.ytVideo, { format: "360p", url: videoUrl }),
   ];
 
+  let lastError;
   for (const attempt of endpoints) {
     try {
-      const data   = await attempt();
-      if (data?.buffer) return data;
+      const data = await attempt();
+      if (data?.buffer) {
+        const mimetype = String(data.mimetype || "").toLowerCase();
+        if (mimetype && !mimetype.startsWith("video/")) throw new Error("Provider returned non-video media");
+        return { ...data, mimetype: mimetype || "video/mp4" };
+      }
       const result = data?.result || data?.data || data;
-      const dl     = data?.url || pickVideo(result);
-      if (dl) return { dl, title: result?.title || data?.title || "" };
-    } catch { /* try next */ }
+      const dl = data?.url || data?.dl || pickVideo(result);
+      if (!dl || !/^https?:\/\//i.test(dl)) throw new Error("Provider returned no valid video URL");
+      const file = await downloadMediaBuffer(dl);
+      if (file.mimetype && !file.mimetype.startsWith("video/") && !/\.(mp4|webm|mov)(?:\?|$)/i.test(dl)) {
+        throw new Error("Provider returned non-video media");
+      }
+      return { buffer: file.buffer, mimetype: file.mimetype || "video/mp4", title: result?.title || data?.title || "" };
+    } catch (error) {
+      lastError = error;
+      console.error("[ytdl provider]", error?.message || error);
+    }
   }
 
-  throw new Error("No usable video source returned");
+  throw new Error(`No usable video source returned${lastError?.message ? `: ${lastError.message}` : ""}`);
 }
 
 // ── .ytdl ─────────────────────────────────────────────────────────────────────
@@ -118,8 +131,8 @@ export default {
         await sock.sendMessage(jid, { text: previewCaption }, { quoted: msg });
       }
 
-      const { dl, buffer, mimetype: returnedMimetype, title } = await fetchVideo(meta.url);
-      const file = buffer ? { buffer, mimetype: returnedMimetype || "video/mp4" } : await downloadMediaBuffer(dl);
+      const { buffer, mimetype: returnedMimetype, title } = await fetchVideo(meta.url);
+      const file = { buffer, mimetype: returnedMimetype || "video/mp4" };
       const trackTitle = title || meta.title;
       const mimetype = file.mimetype.startsWith("video/") ? file.mimetype : "video/mp4";
 

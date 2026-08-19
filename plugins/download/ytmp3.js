@@ -1,5 +1,5 @@
-import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
-import { princeMedia, PRINCE_ENDPOINTS } from "../../lib/princeTech.mjs";
+import yts from "yt-search";
+import { fetchAudio } from "./play.js";
 
 export default {
   name: "ytmp3",
@@ -11,13 +11,13 @@ export default {
   isOwner: false,
   isAdmin: false,
   isPremium: false,
-  version: "2.0.0",
+  version: "3.0.0",
 
-  async run({ sock, msg, args }) {
+  async run({ sock, msg, args, text }) {
     const jid = msg.key.remoteJid;
-    const url = args[0];
+    const input = String(text || args.join(" ") || "").trim();
 
-    if (!url || !/youtube\.com|youtu\.be/i.test(url)) {
+    if (!input || !/youtube\.com|youtu\.be/i.test(input)) {
       await sock.sendMessage(jid, {
         text: "Usage: .ytmp3 <YouTube URL>",
       }, { quoted: msg });
@@ -26,27 +26,23 @@ export default {
 
     try {
       await sock.sendMessage(jid, { text: "⏳ Downloading audio…" }, { quoted: msg });
-      let media;
-      try {
-        media = await omegaDownload("play", { url: url.trim(), format: "mp3" });
-      } catch (omegaError) {
-        const prince = await princeMedia(PRINCE_ENDPOINTS.play, { url: url.trim() });
-        media = { url: prince.url, buffer: prince.buffer, title: "YouTube Audio", providerError: omegaError };
-      }
-      const title = media.title || "YouTube Audio";
-      const file = media.buffer
-        ? { buffer: media.buffer, mimetype: "audio/mpeg" }
-        : await downloadMediaBuffer(media.url);
-      const mimetype = file.mimetype.startsWith("audio/") ? file.mimetype : "audio/mpeg";
+      const { videos } = await yts(input);
+      const meta = videos?.[0];
+      const videoUrl = meta?.url || input;
+      const title = meta?.title || "YouTube Audio";
+      const file = await fetchAudio(videoUrl, title);
+      const mimetype = String(file.mimetype || "audio/mpeg").startsWith("audio/")
+        ? file.mimetype
+        : "audio/mpeg";
 
       await sock.sendMessage(jid, {
         audio: file.buffer,
         mimetype,
-        fileName: `${title}.mp3`,
+        fileName: `${title.replace(/[\\/:*?"<>|]/g, "_").slice(0, 120)}.mp3`,
         ptt: false,
       }, { quoted: msg });
     } catch (err) {
-      console.error("[ytmp3]", err.message);
+      console.error("[ytmp3]", err?.stack || err?.message || err);
       await sock.sendMessage(jid, {
         text: "❌ This audio couldn't be downloaded. Try again later!",
       }, { quoted: msg });

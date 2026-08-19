@@ -83,9 +83,9 @@ export default {
       }, { quoted: msg });
 
     } catch (err) {
-      console.error("[tiktok]", err.message);
+      console.error("[tiktok]", err?.stack || err?.message || err);
       await sock.sendMessage(jid, {
-        text: `❌ *TikTok download failed.`,
+        text: "❌ This video couldn't be downloaded. Try again later!",
       }, { quoted: msg });
     }
   },

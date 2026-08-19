@@ -99,7 +99,7 @@ async function valoreAudio(videoUrl) {
 
 // ── Try downloading via multiple endpoints ────────────────────────────────────
 
-async function fetchAudio(videoUrl, searchTitle = "") {
+export async function fetchAudio(videoUrl, searchTitle = "") {
   const endpoints = [
     // Gifted API — primary endpoints
     () => get("/download/ytmp3",   { url: videoUrl }),
@@ -128,7 +128,14 @@ async function fetchAudio(videoUrl, searchTitle = "") {
   for (const attempt of endpoints) {
     try {
       const data = await attempt();
-      if (data?.buffer) return data;
+      if (data?.buffer) {
+        const mimetype = String(data.mimetype || "").toLowerCase();
+        if (mimetype && !mimetype.startsWith("audio/")) {
+          lastError = new Error("Provider returned non-audio media");
+          continue;
+        }
+        return { ...data, mimetype: mimetype || "audio/mpeg" };
+      }
       const result = data?.result || data?.data || data;
       const dl = data?.dl || pickAudio(result);
       if (!dl) {
@@ -137,7 +144,10 @@ async function fetchAudio(videoUrl, searchTitle = "") {
       }
       try {
         const file = await downloadMediaBuffer(dl);
-        return { buffer: file.buffer, mimetype: file.mimetype, title: result?.title || data?.title || "" };
+        if (file.mimetype && !file.mimetype.startsWith("audio/") && !/\.(mp3|m4a|aac|ogg|wav)(?:\?|$)/i.test(dl)) {
+          throw new Error("Provider returned non-audio media");
+        }
+        return { buffer: file.buffer, mimetype: file.mimetype || "audio/mpeg", title: result?.title || data?.title || "" };
       } catch (mediaError) {
         lastError = mediaError;
       }

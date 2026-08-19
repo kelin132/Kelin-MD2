@@ -61,34 +61,44 @@ export default {
       await sock.sendMessage(jid, { text: "⏳ Downloading Instagram media…" }, { quoted: msg });
 
       let media;
-      try {
-        media = await omegaDownload("all", { url: url.trim() });
-      } catch (omegaError) {
-        const prince = await princeMedia(PRINCE_ENDPOINTS.instagram, { url: url.trim() });
-        media = {
-          url: prince.url,
-          buffer: prince.buffer,
-          type: "video",
-          format: "mp4",
-          title: "Instagram Media",
-          providerError: omegaError,
-        };
+      let lastError;
+      const attempts = [
+        () => omegaDownload("all", { url: url.trim() }),
+        () => princeMedia(PRINCE_ENDPOINTS.instagram, { url: url.trim() }),
+      ];
+      for (const attempt of attempts) {
+        try {
+          const candidate = await attempt();
+          if (!candidate?.buffer && !candidate?.url) throw new Error("Provider returned no Instagram media");
+          if (candidate.buffer) {
+            media = candidate;
+            break;
+          }
+          const file = await downloadMediaBuffer(candidate.url);
+          media = { ...candidate, buffer: file.buffer, mimetype: file.mimetype };
+          break;
+        } catch (error) {
+          lastError = error;
+        }
       }
+      if (!media) throw lastError || new Error("No Instagram provider returned usable media");
+
       const title = media.title || "Instagram Media";
       const caption = `📥 *${title.slice(0, 200)}*`;
+      const mimetype = String(media.mimetype || "").toLowerCase();
+      const video = mimetype.startsWith("video/")
+        || (!mimetype.startsWith("image/") && (isVideoUrl(media.url || "", url) || /video|mp4|webm/i.test(`${media.type || ""} ${media.format || ""}`)));
 
-      if (isVideoUrl(media.url || "", url) || /video|mp4|webm/i.test(`${media.type} ${media.format}`)) {
-        const file = media.buffer
-          ? { buffer: media.buffer, mimetype: "video/mp4" }
-          : await downloadMediaBuffer(media.url);
-        const mimetype = file.mimetype.startsWith("video/") ? file.mimetype : "video/mp4";
+      if (video) {
         await sock.sendMessage(jid, {
-          video: file.buffer,
-          mimetype,
+          video: media.buffer,
+          mimetype: mimetype.startsWith("video/") ? mimetype : "video/mp4",
           caption,
         }, { quoted: msg });
       } else {
-        const image = await fetchImage(media.url);
+        const image = mimetype.startsWith("image/")
+          ? media.buffer
+          : await fetchImage(media.url);
         await sock.sendMessage(jid, { image, caption }, { quoted: msg });
       }
 
