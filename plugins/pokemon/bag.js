@@ -7,15 +7,15 @@ import { formatAnimeLeaderboard } from "../../lib/animeLeaderboard.mjs";
 
 // Category display order and labels
 const CAT_META = {
-  ball:    { label: "🎾 *POKÉBALLS*",           hint: (k) => `\`.battle pokeball ${k}\`` },
-  heal:    { label: "💊 *HEALING ITEMS*",        hint: (k) => `\`.battle item ${k}\`` },
-  battle:  { label: "⚔️  *BATTLE ITEMS*",        hint: (k) => `\`.battle item ${k}\`` },
-  stone:   { label: "🪨 *EVOLUTION STONES*",     hint: (k) => `\`.evolve <pokémon> ${k}\`` },
-  mega:    { label: "💠 *MEGA EVOLUTION STONES*", hint: (k) => `\`.evolve <pokémon> ${k}\`` },
-  cure:    { label: "🩹 *STATUS CURES*",         hint: (k) => `\`.battle item ${k}\`` },
-  vitamin: { label: "💊 *VITAMINS & BOOSTERS*",  hint: (k) => `\`.use ${k} <pokémon>\`` },
-  key:     { label: "🔑 *KEY ITEMS*",            hint: (k) => k === "keystone" ? `\`.equip <pokémon>\`` : `\`.item use ${k}\`` },
-  other:   { label: "🎒 *OTHER ITEMS*",          hint: (k) => `\`.use ${k}\`` },
+  ball:    { label: "🎾 *POKÉBALLS*",           hint: (k) => `\`\`.battle pokeball ${k}\`\` ` },
+  heal:    { label: "💊 *HEALING ITEMS*",        hint: (k) => `\`\`.battle item ${k}\`\` ` },
+  battle:  { label: "⚔️  *BATTLE ITEMS*",        hint: (k) => `\`\`.battle item ${k}\`\` ` },
+  stone:   { label: "🪨 *EVOLUTION STONES*",     hint: (k) => `\`\`.evolve <pokémon> ${k}\`\` ` },
+  mega:    { label: "💠 *MEGA EVOLUTION STONES*", hint: (k) => `\`\`.evolve <pokémon> ${k}\`\` ` },
+  cure:    { label: "🩹 *STATUS CURES*",         hint: (k) => `\`\`.battle item ${k}\`\` ` },
+  vitamin: { label: "💊 *VITAMINS & BOOSTERS*",  hint: (k) => `\`\`.use ${k} <pokémon>\`\` ` },
+  key:     { label: "🔑 *KEY ITEMS*",            hint: (k) => k === "keystone" ? `\`\`.equip <pokémon>\`\` ` : `\`\`.item use ${k}\`\` ` },
+  other:   { label: "🎒 *OTHER ITEMS*",          hint: (k) => `\`\`.use ${k}\`\` ` },
 };
 
 export default {
@@ -31,7 +31,7 @@ export default {
 
     const trainer = await getTrainer(sender);
     if (!trainer) {
-      return sock.sendMessage(jid, { text: "❌ Start your journey first! Use *.startjourney*" }, { quoted: msg });
+      return sock.sendMessage(jid, { text: "❌ Start your journey first! Use ``.startjourney``" }, { quoted: msg });
     }
 
     const inv = trainer.inventory || {};
@@ -61,7 +61,7 @@ export default {
 `🎒 *${trainer.username}'s BAG*
 
 Your bag is empty!
-Visit *.mart* to buy items.`,
+Visit \`\`.mart\`\` to buy items.`,
       }, { quoted: msg });
     }
 
@@ -73,7 +73,7 @@ Visit *.mart* to buy items.`,
         const meta = CAT_META[cat] || CAT_META.other;
         return groups[cat].map(it => ({
           name: `${it.emoji} ${it.name}`,
-          valueText: `🎒 × ${it.qty} · ${it.desc || "No description"}\n│    ↳ ${meta.hint(it.key)}`,
+          valueText: `🎒 × \`\`${it.qty}\`\` · ${it.desc || "No description"}\n│    ↳ ${meta.hint(it.key)}`,
         }));
       });
 
@@ -85,7 +85,7 @@ Visit *.mart* to buy items.`,
       valueLabel: "ITEMS",
       footer: "🌸 AIDORU ITEMS",
       limit: rows.length,
-    }) + "\n🛒 Buy more at *.mart*\n⚔️ Use items with *.battle item*";
+    }) + "\n🛒 Buy more at ``.mart``\n⚔️ Use items with ``.battle item``";
 
     await sock.sendMessage(jid, { text }, { quoted: msg });
   },
