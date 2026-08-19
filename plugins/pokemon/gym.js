@@ -1,6 +1,6 @@
 import { GYMS, gymById, gymBadgeId } from "../../lib/pokemon/gymData.mjs";
 import { getTrainer } from "../../lib/pokemon/players.mjs";
-import { getTrainerParty, healParty } from "../../lib/pokemon/pokemonDb.mjs";
+import { healPartyAndGet } from "../../lib/pokemon/pokemonDb.mjs";
 import { createWebBattleRoom, webBattleUrl } from "../../lib/webBattleRoom.mjs";
 
 function unlocked(gym, badges) {
@@ -41,8 +41,7 @@ export default {
       return sock.sendMessage(jid, { text: `🔒 *${selected.name}* is locked. Earn the *${gymById(selected.unlockAfter)?.badge || "previous badge"}* first.` }, { quoted: msg });
     }
 
-    await healParty(sender);
-    const party = await getTrainerParty(sender);
+    const party = await healPartyAndGet(sender);
     if (!party.some((pokemon) => Number(pokemon.hp || 0) > 0)) {
       return sock.sendMessage(jid, { text: "❌ You need at least one healthy Pokémon in your party." }, { quoted: msg });
     }
@@ -74,7 +73,9 @@ export default {
       shiny: false,
     }));
 
-    const avatarUrl = await sock.profilePictureUrl(sender, "image").catch(() => null);
+    // Use the cached trainer avatar when available; a remote WhatsApp profile
+    // lookup unnecessarily delays delivery of the battle link.
+    const avatarUrl = trainer.avatarUrl || trainer.profilePic || trainer.image || null;
     const room = await createWebBattleRoom({
       challengerJid: sender,
       challengerName: trainer.username || msg.pushName || sender.split("@")[0],

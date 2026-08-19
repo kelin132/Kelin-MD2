@@ -2,7 +2,7 @@
 // Create a shared AIDORU web battle arena for a WhatsApp challenge.
 
 import { findTrainerByUsername, getTrainer, pickLeadFromParty } from "../../lib/pokemon/players.mjs";
-import { getTrainerParty, healParty } from "../../lib/pokemon/pokemonDb.mjs";
+import { healPartyAndGet } from "../../lib/pokemon/pokemonDb.mjs";
 import { createWebBattleRoom, webBattleUrl } from "../../lib/webBattleRoom.mjs";
 import { resolveLid } from "../../lib/permissions.mjs";
 
@@ -169,8 +169,13 @@ export default {
     const challengerJid = challenger.jid || sender;
     const opponentJid = opponent.jid || targetJid;
 
+    let party;
+    let opponentParty;
     try {
-      await Promise.all([healParty(challengerJid), healParty(opponentJid)]);
+      [party, opponentParty] = await Promise.all([
+        healPartyAndGet(challengerJid),
+        healPartyAndGet(opponentJid),
+      ]);
     } catch (error) {
       console.error("[chweb] unable to heal battle parties:", error?.message || error);
       return sock.sendMessage(
@@ -180,10 +185,6 @@ export default {
       );
     }
 
-    const [party, opponentParty] = await Promise.all([
-      getTrainerParty(challengerJid),
-      getTrainerParty(opponentJid),
-    ]);
     if (!party.length || !opponentParty.length) {
       return sock.sendMessage(
         jid,
