@@ -23,13 +23,13 @@ function claimText(card, sender, prefix = "𝐂𝐀𝐑𝐃 𝐂𝐋𝐀𝐈𝐌
   return `╭─❀「 🃏 *${prefix}* 」❀─╮
 │ 👤 *Claimed by* :: @${sender.split("@")[0]}
 │
-│ 🃏 *Name*      :: *${card.name}*
-│ ⭐ *Tier*      :: *${card.tier}*
-│ 📺 *Series*    :: *${card.series}*
+│ 🃏 *Name*      :: \`${card.name}\`
+│ ⭐ *Tier*      :: \`${card.tier}\`
+│ 📺 *Series*    :: \`${card.series}\`
 │ 🆔 *ID*        :: \`${card.cardId}\`
 │
 │ ✅ Added to your collection!
-│ 💬 Use *.col* to view it.
+│ 💬 Use \`.col\` to view it.
 ╰───────────────❀`;
 }
 
@@ -73,9 +73,9 @@ export default {
           : `╭─❀「 📦 *𝐏𝐀𝐂𝐊 𝐂𝐋𝐀𝐈𝐌𝐄𝐃* 」❀─╮
 │ 👤 *Claimed by* :: @${sender.split("@")[0]}
 │
-│ 🃏 *Cards added* :: *${selected.length}*
+│ 🃏 *Cards added* :: \`${selected.length}\`
 │ ✨ Your pending summon cards are now in your collection.
-│ 💬 Use *.col* to view them.
+│ 💬 Use \`.col\` to view them.
 ╰───────────────❀`;
 
         if (first?.media) {
@@ -87,7 +87,7 @@ export default {
       }
 
       // Preserve the existing chat-wide auto-spawn claim flow.
-      if (!cardIdInput) return reply("❌ No pending summon or card spawn.\n\nUse *.claim <card_id>* for a chat spawn.");
+      if (!cardIdInput) return reply("❌ No pending summon or card spawn.\n\nUse \`.claim <card_id>\` for a chat spawn.");
       const spawn = activeSpawns[jid];
       if (!spawn) return reply("❌ No active card spawn in this chat.");
       if (spawn.cardId !== cardIdInput) return reply("❌ Wrong Card ID! Try again.");
