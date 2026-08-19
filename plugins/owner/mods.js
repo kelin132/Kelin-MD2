@@ -81,28 +81,23 @@ export default {
       if (!staffMap.size) {
         return sock.sendMessage(jid, {
           text:
-            `*MODS*\n\n` +
-            `No mods set yet.\n\n` +
-            `• *.addmod @user* — grant mod access\n` +
-            `• *.removemod @user* — revoke mod access`,
+            `╭─❀「 🛡️ *𝐌𝐎𝐃𝐒 & 𝐒𝐓𝐀𝐅𝐅* 」❀─╮\n` +
+            `│ No mods set yet.\n` +
+            `│\n` +
+            `│ 💡 \`.addmod @user\` — grant mod access\n` +
+            `│ 💡 \`.removemod @user\` — revoke mod access\n` +
+            `╰───────────────❀`,
         }, { quoted: msg });
       }
 
       // ── Build a clean phone-number map from group participants ─────────────
-      // Baileys group metadata always returns participant IDs in the correct
-      // format (number@s.whatsapp.net). Some users' _id in MongoDB has the
-      // device ID concatenated into the number (e.g. 159545720619137 instead
-      // of 15954572061). We detect those by prefix-matching against participants.
       const cleanNumMap = {}; // storedNum → displayNum
       if (jid?.endsWith('@g.us')) {
         try {
           const meta = await sock.groupMetadata(jid);
           for (const p of meta.participants) {
             const pNum = p.id.split('@')[0].split(':')[0]; // clean phone number
-            // Direct match
             cleanNumMap[pNum] = pNum;
-            // Also index by any stored num that starts with pNum (device-ID suffix)
-            // We'll resolve this in the loop below
             for (const [storedNum] of staffMap) {
               if (storedNum !== pNum && storedNum.startsWith(pNum)) {
                 cleanNumMap[storedNum] = pNum;
@@ -122,20 +117,21 @@ export default {
         const number    = cleanNumMap[storedNum] || storedNum;
         const label     = LEVEL_LABEL[s.level] || 'MOD';
         return [
-          `╭─❖ *${index + 1}. +${number}*`,
-          `│ 👤 Name: ${s.name}`,
-          `│ 🛡️ Role: *${label}*`,
-          '╰──────────────',
+          `│ \`${index + 1}.\` *+${number}*`,
+          `│    👤 Name: *${s.name}*`,
+          `│    🛡️ Role: \`${label}\``,
         ].join('\n');
-      }).join('\n\n');
+      }).join('\n│\n');
 
       const caption =
-        `╭━━━〔 🛡️ *MODS & STAFF* 〕━━━╮\n` +
-        `│ 👥 Members: *${sorted.length}*\n` +
-        `╰━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-        `${rows}\n\n` +
-        `💬 *Need help?* Contact a listed team member.\n` +
-        `📖 Use *.rules* if you are unsure of the rules.`;
+        `╭─❀「 🛡️ *𝐌𝐎𝐃𝐒 & 𝐒𝐓𝐀𝐅𝐅* 」❀─╮\n` +
+        `│ 👥 Members: \`${sorted.length}\`\n` +
+        `│\n` +
+        `${rows}\n` +
+        `│\n` +
+        `│ 💬 Contact a listed team member for assistance.\n` +
+        `│ 📖 Use \`.rules\` to review guidelines.\n` +
+        `╰───────────────❀`;
 
       return sock.sendMessage(jid, {
         text: caption,
@@ -159,10 +155,13 @@ export default {
     if (!targetJid) {
       return sock.sendMessage(jid, {
         text:
-          `❌ Please specify a user.\n\n` +
-          `• @mention them: *.addmod @user*\n` +
-          `• Reply to their message: *.addmod* (while replying)\n` +
-          `• Type their number: *.addmod 27628114340*`,
+          `╭─❀「 🛡️ *𝐌𝐎𝐃𝐒 & 𝐒𝐓𝐀𝐅𝐅* 」❀─╮\n` +
+          `│ ❌ Please specify a user.\n` +
+          `│\n` +
+          `│ 💡 Mention: \`.addmod @user\`\n` +
+          `│ 💡 Reply: \`.addmod\` (reply to target)\n` +
+          `│ 💡 Phone: \`.addmod 27628114340\`\n` +
+          `╰───────────────❀`,
       }, { quoted: msg });
     }
 
@@ -173,7 +172,10 @@ export default {
     if (cmd === 'addmod') {
       if (list.includes(num)) {
         return sock.sendMessage(jid, {
-          text: `❌ @${num} is already a mod.`,
+          text:
+            `╭─❀「 🛡️ *𝐌𝐎𝐃𝐒 & 𝐒𝐓𝐀𝐅𝐅* 」❀─╮\n` +
+            `│ ❌ @${num} is already a mod.\n` +
+            `╰───────────────❀`,
           mentions: [targetJid],
         }, { quoted: msg });
       }
@@ -185,7 +187,13 @@ export default {
       saveModsData(data);
 
       return sock.sendMessage(jid, {
-        text:     `✅ @${num} is now a bot mod!\n\n(MOD) ${name}\n+${num}`,
+        text:
+          `╭─❀「 🛡️ *𝐌𝐎𝐃𝐒 & 𝐒𝐓𝐀𝐅𝐅* 」❀─╮\n` +
+          `│ ✅ @${num} added as bot mod!\n` +
+          `│\n` +
+          `│ 👤 Name: *${name}*\n` +
+          `│ 📞 Phone: \`+${num}\`\n` +
+          `╰───────────────❀`,
         mentions: [targetJid],
       }, { quoted: msg });
     }
@@ -195,7 +203,10 @@ export default {
       const idx = data.findIndex(e => e.num === num);
       if (idx === -1) {
         return sock.sendMessage(jid, {
-          text:     `❌ @${num} is not in the mods list.`,
+          text:
+            `╭─❀「 🛡️ *𝐌𝐎𝐃𝐒 & 𝐒𝐓𝐀𝐅𝐅* 」❀─╮\n` +
+            `│ ❌ @${num} is not in the mods list.\n` +
+            `╰───────────────❀`,
           mentions: [targetJid],
         }, { quoted: msg });
       }
@@ -203,7 +214,10 @@ export default {
       data.splice(idx, 1);
       saveModsData(data);
       return sock.sendMessage(jid, {
-        text:     `✅ @${num} (${name}) removed from mods.`,
+        text:
+          `╭─❀「 🛡️ *𝐌𝐎𝐃𝐒 & 𝐒𝐓𝐀𝐅𝐅* 」❀─╮\n` +
+          `│ ✅ @${num} (*${name}*) removed from mods.\n` +
+          `╰───────────────❀`,
         mentions: [targetJid],
       }, { quoted: msg });
     }
