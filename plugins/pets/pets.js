@@ -20,18 +20,20 @@ export default {
       const all   = await getAllPets(sender);
       const found = all.find(p => p.petId === petId);
       if (!found) {
-        return sock.sendMessage(jid, { text: `❌ No pet found with that ID.\n\nUse *.pets* to see your pet IDs.` }, { quoted: msg });
+        return sock.sendMessage(jid, { 
+          text: `╭─❀「 🐾 *𝐏𝐄𝐓𝐒* 」❀─╮\n│ ❌ No pet found with that ID.\n│\n│ 💡 Use \`.pets\` to view your list.\n╰───────────────❀` 
+        }, { quoted: msg });
       }
       await setActivePet(sender, found.petId);
       return sock.sendMessage(jid, {
-        text: `✅ *${found.name}* is now your active pet!`,
+        text: `╭─❀「 🐾 *𝐏𝐄𝐓𝐒* 」❀─╮\n│ ✅ *${found.name}* is now active!\n╰───────────────❀`,
       }, { quoted: msg });
     }
 
     const all = await getAllPets(sender);
     if (!all || all.length === 0) {
       return sock.sendMessage(jid, {
-        text: `🐾 You have no pets!\n\nUse *.adopt* to get your first companion.`,
+        text: `╭─❀「 🐾 *𝐏𝐄𝐓𝐒* 」❀─╮\n│ 🐾 You have no pets!\n│\n│ 💡 Use \`.adopt\` to get a companion.\n╰───────────────❀`,
       }, { quoted: msg });
     }
 
@@ -43,12 +45,12 @@ export default {
         return {
           name: p.name,
           value: Number(p.level) || 0,
-          valueText: `${rarity.color} ${rarity.label}${active} · ⚔️ ${p.attack} · ❤️ ${p.maxHp} · 🍖 ${p.hunger ?? 100}% · 😊 ${p.happiness ?? 100}% · 🆔 ${p.petId}`,
+          valueText: `${rarity.color} ${rarity.label}${active} · ⚔️ \`${p.attack}\` · ❤️ \`${p.maxHp}\` · 🍖 \`${p.hunger ?? 100}%\` · 😊 \`${p.happiness ?? 100}%\` · 🆔 \`${p.petId}\``,
         };
       }),
       valueIcon: "🐾",
       valueLabel: "𝐋𝐄𝐕𝐄𝐋",
-      footer: `🌸 *.pets select <ID>* · ${all.length}/5 companions`,
+      footer: `🌸 \`.pets select <ID>\` · \`${all.length}/5\` companions`,
     });
 
     return sock.sendMessage(jid, { text }, { quoted: msg });
