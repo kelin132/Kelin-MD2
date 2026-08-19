@@ -30,7 +30,7 @@ export default {
     const party = await getTrainerParty(sender);
     if ((party || []).length >= 6) {
       return sock.sendMessage(jid, {
-        text: `❌ Your party is full! (``6/6``)\nUse ``.t2pc <name>`` to move one out first.`,
+        text: `❌ Your party is full! (\`\`6/6\`\`)\nUse \`\`.t2pc <name>\`\` to move one out first.`,
       }, { quoted: msg });
     }
 
@@ -55,7 +55,7 @@ export default {
 
     if (!target) {
       return sock.sendMessage(jid, {
-        text: `❌ Couldn't find *${query}* in your PC.\nUse ``.pc`` to see your stored Pokémon.`,
+        text: `❌ Couldn't find *${query}* in your PC.\nUse \`\`.pc\`\` to see your stored Pokémon.`,
       }, { quoted: msg });
     }
 
@@ -77,7 +77,7 @@ export default {
     await updatePokemon(target._id, { inParty: true });
 
     await sock.sendMessage(jid, {
-      text: `🎒 *${target.displayName || target.name}* was added to your party! (``${(party || []).length + 1}/6``)\n\nUse ``.party`` to view your team.`,
+      text: `🎒 *${target.displayName || target.name}* was added to your party! (\`\`${(party || []).length + 1}/6\`\`)\n\nUse \`\`.party\`\` to view your team.`,
     }, { quoted: msg });
   },
 };
