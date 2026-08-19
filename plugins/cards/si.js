@@ -106,7 +106,6 @@ async function getOwners(cardId) {
       owners.push({
         jid: ownerJid(user),
         label: user.username || `@${uid(ownerJid(user))}`,
-        spawnId: owned.spawnId || null,
       });
     });
   }
@@ -175,7 +174,7 @@ export default {
 
         const ownerLines = owners.length
           ? owners.map((owner, i) =>
-              `${i + 1}. ${owner.label}${owner.spawnId ? ` · ${owner.spawnId}` : ""}`
+              `${i + 1}. ${owner.label}`
             ).join("\n")
           : "  _No owners yet_";
 
@@ -200,7 +199,7 @@ export default {
 
         const ownerLines = owners.length
           ? owners.map((owner, i) =>
-              `${i + 1}. ${owner.label}${owner.spawnId ? ` · ${owner.spawnId}` : ""}`
+              `${i + 1}. ${owner.label}`
             ).join("\n")
           : "  _No owners yet_";
 
