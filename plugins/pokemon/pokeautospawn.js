@@ -6,7 +6,7 @@
 
 import { fetchRandom, getImageMessage } from "../../lib/pokemon/api.mjs";
 import { getWild, setWild }          from "../../lib/pokemon/wildState.mjs";
-import { wildLevel, getMovesForType } from "../../lib/pokemon/gameLogic.mjs";
+import { randomWildLevel, getMovesForType } from "../../lib/pokemon/gameLogic.mjs";
 import { getDb }                     from "../../lib/mongo.mjs";
 import { getPrefix }                 from "../../lib/bot.mjs";
 import { getRepel }                  from "../../lib/pokemon/itemState.mjs";
@@ -39,7 +39,7 @@ if (!global.__pokeAutoSpawnerRunning) {
     let apiData;
     try { apiData = await fetchRandom(); } catch { return; }
 
-    const level  = wildLevel(5); // level 2–8 range for auto-spawns
+    const level  = randomWildLevel(); // level 5–10 range for auto-spawns
     const maxHp  = Math.max(10, Math.floor(apiData.baseHp * (1 + level * 0.05)));
     const wildPoke = {
       pokedexId:   apiData.pokedexId,

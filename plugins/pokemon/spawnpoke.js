@@ -4,7 +4,7 @@
 import { fetchRandom, getImageMessage } from "../../lib/pokemon/api.mjs";
 import { getWild, setWild } from "../../lib/pokemon/wildState.mjs";
 import { getTrainer } from "../../lib/pokemon/players.mjs";
-import { wildLevel, getMovesForType } from "../../lib/pokemon/gameLogic.mjs";
+import { randomWildLevel, getMovesForType } from "../../lib/pokemon/gameLogic.mjs";
 import { getRepel } from "../../lib/pokemon/itemState.mjs";
 
 const SPAWN_COOLDOWN_MS = 100 * 1000; // 100 seconds between spawns per group
@@ -57,7 +57,7 @@ export default {
       return sock.sendMessage(jid, { text: "❌ Couldn't fetch a Pokémon right now. Try again!" }, { quoted: msg });
     }
 
-    const level = wildLevel(trainer.level || 1);
+    const level = randomWildLevel();
     const maxHp = Math.max(10, Math.floor(apiData.baseHp * (1 + level * 0.05)));
     const wildPoke = {
       pokedexId: apiData.pokedexId,
