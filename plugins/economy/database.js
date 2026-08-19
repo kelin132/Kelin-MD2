@@ -626,6 +626,10 @@ export async function resetPlayer(id) {
         ...DEFAULTS,
         name, registered, registeredAt, staffLevel, isPremium, staffImmunity,
         money: 0, bank: 0, vault: 0, xp: 0, level: 1, inventory: [], history: [],
+        websiteBanned: true,
+        websiteBanReason: "Account reset by staff",
+        websiteBannedAt: new Date(),
+        websiteSessionRevokedAt: new Date(),
       },
     }
   );
@@ -662,7 +666,19 @@ export async function unbanUser(id) {
   const db = await getDb();
   await db.collection("users").updateOne(
     { _id: id },
-    { $set: { banned: false, bannedReason: null, bannedBy: null, bannedAt: null } }
+    {
+      $set: {
+        banned: false,
+        bannedReason: null,
+        bannedBy: null,
+        bannedAt: null,
+        websiteBanned: false,
+        websiteBanReason: null,
+        websiteBannedAt: null,
+        // Keep the revocation timestamp so any pre-unban JWT remains invalid.
+        websiteSessionRevokedAt: new Date(),
+      },
+    }
   );
 }
 

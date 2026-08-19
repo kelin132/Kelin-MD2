@@ -58,8 +58,10 @@ export default {
         `💰 Money   : $0\n` +
         `🏦 Bank    : $0\n` +
         `🔒 Vault   : $0\n` +
-        `⭐ Level   : 1\n\n` +
-        `_Identity and staff rank preserved. Economy wiped._`,
+        `⭐ Level   : 1\n` +
+        `🌐 Website : Access revoked and logged out\n\n` +
+        `_Identity and staff rank preserved. Economy wiped._\n` +
+        `_Use .unban @user to restore website access._`,
       mentions: [targetJid],
     }, { quoted: msg });
   }
