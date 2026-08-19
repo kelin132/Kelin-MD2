@@ -15,6 +15,22 @@ const DEFAULT_STYLE = "Pop";
 const REQUEST_TIMEOUT = 45_000;
 const MAX_PROMPT_LENGTH = 600;
 const activeGenerations = new Set();
+const SUNO_BLOCK_COOLDOWN = 10 * 60 * 1000;
+let sunoBlockedUntil = 0;
+
+function isBlockedOrLimited(error) {
+  return /blocked|abuse|rate.?limit|too many requests|forbidden|429|403/i.test(String(error?.message || error));
+}
+
+function userFacingError(error) {
+  if (isBlockedOrLimited(error)) {
+    return "🎵 Suno is temporarily unavailable because the music provider rate-limited this server. Please try again later.";
+  }
+  if (/timed out|timeout/i.test(String(error?.message || error))) {
+    return "🎵 Suno took too long to respond. Please try again later.";
+  }
+  return "🎵 Music generation failed. Please try again later.";
+}
 
 function cleanText(value, fallback = "") {
   return typeof value === "string" && value.trim() ? value.trim() : fallback;
@@ -69,7 +85,9 @@ async function requestJson(url) {
       throw new Error(`Suno API returned a non-JSON response (HTTP ${response.status})`);
     }
     if (!response.ok || payload?.success === false || payload?.status === "error") {
-      throw new Error(payload?.message || payload?.error || `Suno API request failed (HTTP ${response.status})`);
+      const error = new Error(payload?.message || payload?.error || `Suno API request failed (HTTP ${response.status})`);
+      error.status = response.status;
+      throw error;
     }
     return payload;
   } catch (error) {
@@ -94,6 +112,10 @@ function trackFromPayload(payload) {
 }
 
 async function generateMusic(prompt, style) {
+  if (Date.now() < sunoBlockedUntil) {
+    throw new Error("Suno provider is temporarily rate-limited");
+  }
+
   const query = new URLSearchParams({
     action: "generate",
     prompt,
@@ -108,6 +130,11 @@ async function generateMusic(prompt, style) {
     firstError = new Error("Suno Pro returned no downloadable audio");
   } catch (error) {
     firstError = error;
+    if (isBlockedOrLimited(error)) sunoBlockedUntil = Date.now() + SUNO_BLOCK_COOLDOWN;
+  }
+
+  if (isBlockedOrLimited(firstError)) {
+    throw firstError;
   }
 
   try {
@@ -116,7 +143,10 @@ async function generateMusic(prompt, style) {
     if (result) return result;
     throw new Error("Suno legacy endpoint returned no downloadable audio");
   } catch (fallbackError) {
-    throw new Error(`${firstError?.message || "Suno Pro failed"}; fallback failed: ${fallbackError?.message || "unknown error"}`);
+    if (isBlockedOrLimited(fallbackError)) sunoBlockedUntil = Date.now() + SUNO_BLOCK_COOLDOWN;
+    const combined = new Error(`${firstError?.message || "Suno Pro failed"}; fallback failed: ${fallbackError?.message || "unknown error"}`);
+    combined.providerBlocked = isBlockedOrLimited(firstError) || isBlockedOrLimited(fallbackError);
+    throw combined;
   }
 }
 
@@ -195,7 +225,7 @@ export default {
       await msg.react?.("❌");
       console.error("[suno]", error?.stack || error?.message || error);
       await sock.sendMessage(jid, {
-        text: `❌ *Suno generation failed.*\n\n_${error?.message || "Unknown error"}_\n\nTry a shorter prompt or another style.`,
+        text: `❌ *Suno generation failed.*\n\n${userFacingError(error)}`,
       }, { quoted: msg });
     } finally {
       activeGenerations.delete(generationKey);
