@@ -625,6 +625,7 @@ export async function resetPlayer(id) {
       $set: {
         ...DEFAULTS,
         name, registered, registeredAt, staffLevel, isPremium, staffImmunity,
+        websiteSessionRevokedAt: Date.now(),
         money: 0, bank: 0, vault: 0, xp: 0, level: 1, inventory: [], history: [],
         websiteBanned: true,
         websiteBanReason: "Account reset by staff",
