@@ -37,7 +37,7 @@ export default {
     try {
       const user = await getUser(targetJid);
       if (user?.name)   userName = user.name;
-      if (user?.banned || user?.websiteBanned) wasBanned = true;
+      if (user?.banned) wasBanned = true;
     } catch { /* ignore */ }
 
     if (!wasBanned) {
@@ -61,7 +61,7 @@ export default {
 
       await sock.sendMessage(jid, {
         image:   card,
-                  caption: `✅ *${userName}* has been *unbanned*. Full bot and website access restored.`,
+                  caption: `✅ *${userName}* has been *unbanned*. Bot access restored; website access was not changed.`,
 
         mentions: [targetJid],
       }, { quoted: msg });
@@ -71,7 +71,7 @@ export default {
           `✅ *User Unbanned*\n\n` +
           `👤 User   : ${userName}\n` +
           `📅 Date   : ${new Date().toDateString()}\n\n` +
-          `_All bot commands and website access have been restored._`,
+          `_Bot access has been restored. Use .restore to restore website access separately._`,
         mentions: [targetJid],
       }, { quoted: msg });
     }

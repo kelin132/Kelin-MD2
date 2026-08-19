@@ -672,13 +672,25 @@ export async function unbanUser(id) {
         bannedReason: null,
         bannedBy: null,
         bannedAt: null,
+      },
+    },
+  );
+}
+
+/** Restore AIDORU website access without changing bot ban status. */
+export async function restoreWebsiteUser(id) {
+  const db = await getDb();
+  await db.collection("users").updateOne(
+    { _id: id },
+    {
+      $set: {
         websiteBanned: false,
         websiteBanReason: null,
         websiteBannedAt: null,
-        // Keep the revocation timestamp so any pre-unban JWT remains invalid.
+        // Force a fresh website login after restoration.
         websiteSessionRevokedAt: new Date(),
       },
-    }
+    },
   );
 }
 
