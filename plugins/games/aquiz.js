@@ -30,7 +30,7 @@ function formatScoreboard(scores, players) {
   if (sorted.length === 0) return "  _No players yet_";
   return sorted
     .map(([jid, pts], i) =>
-      `  ${i + 1}. @${jid.split("@")[0]} — *${pts} pt${pts !== 1 ? "s" : ""}*`
+      `  \`${i + 1}.\` @${jid.split("@")[0]} — *\`${pts}\` pt${pts !== 1 ? "s" : ""}*`
     )
     .join("\n");
 }
@@ -68,7 +68,7 @@ export default {
       const session = quizSessions.get(jid);
       if (!session) {
         return sock.sendMessage(jid, {
-          text: "❌ No anime quiz is running.\n\nStart one with *.aquiz*",
+          text: "❌ No anime quiz is running.\n\nStart one with \`.aquiz\`",
         }, { quoted: msg });
       }
       const board    = formatScoreboard(session.scores, session.players);
@@ -79,7 +79,7 @@ export default {
       return sock.sendMessage(jid, {
         text:
           `📊 *Anime Quiz — Scoreboard*\n\n${stateTag}\n\n${board}\n\n` +
-          `🏆 First to *10 points* wins the prize!`,
+          `🏆 First to \`10 points\` wins the prize!`,
         mentions,
       }, { quoted: msg });
     }
