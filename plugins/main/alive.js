@@ -15,8 +15,7 @@ export default {
     const mins = Math.floor((uptime % 3600) / 60);
     const secs = Math.floor(uptime % 60);
     
-    // Escaped backticks satisfy JavaScript template literals and format in WhatsApp as `1h 2m 3s`
-    const text = `\`${hours}h ${mins}m ${secs}s\``;
+    const text = `❀ \`${hours}h ${mins}m ${secs}s\``;
     
     await sock.sendMessage(msg.key.remoteJid, { text });
   },
