@@ -26,7 +26,7 @@ export default {
 │ 🍃 *Flavour* :: _カードがまだない！_
 │
 │ ⚠️ You don't have any cards yet.
-│ 💡 Wait for a spawn and *.claim <ID>*
+│ 💡 Wait for a spawn and \`.claim <ID>\`
 ╰───────────────❀`
         );
       }
@@ -43,19 +43,19 @@ export default {
 
       let cardLines = slice.map((card, i) => {
         const emoji = TIER_EMOJI[card.tier] || "⭐";
-        return `│  *${start + i + 1}.* ${emoji} *${card.name}*`;
+        return `│  \`${start + i + 1}.\` ${emoji} \`${card.name}\``;
       }).join("\n");
 
       let text =
 `╭─❀「 🃏 *𝐂𝐎𝐋𝐋𝐄𝐂𝐓𝐈𝐎𝐍* 」❀─╮
-│ 👤 *User*    :: *@${sender.split("@")[0]}*
-│ 📦 *Cards*   :: *${total} card${total !== 1 ? "s" : ""}*
-│ 📄 *Page*    :: *${page} / ${totalPages}*
+│ 👤 *User*    :: \`@${sender.split("@")[0]}\`
+│ 📦 *Cards*   :: \`${total} card${total !== 1 ? "s" : ""}\`
+│ 📄 *Page*    :: \`${page} / ${totalPages}\`
 │
 ${cardLines}`;
 
       if (totalPages > 1) {
-        text += `\n│\n│ 💡 *.col <page>* to see more`;
+        text += `\n│\n│ 💡 \`.col <page>\` to see more`;
       }
 
       text += `\n╰───────────────❀`;
