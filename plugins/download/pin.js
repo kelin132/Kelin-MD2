@@ -34,6 +34,7 @@ function imageUrlFrom(item) {
   if (typeof item === "string") return item;
   if (!item || typeof item !== "object") return null;
 
+  // Prefer high-resolution or original fields first.
   const nested =
     item.images?.orig?.url ||
     item.images?.original?.url ||
@@ -41,7 +42,7 @@ function imageUrlFrom(item) {
     item.image?.src ||
     item.original?.url;
 
-  return nested ||
+  const url = nested ||
     item.url ||
     item.image ||
     item.image_url ||
@@ -50,16 +51,32 @@ function imageUrlFrom(item) {
     item.media_url ||
     item.download_url ||
     null;
+
+  if (!url || typeof url !== "string") return null;
+
+  // Filter out common "wrong" or low-quality patterns.
+  const lower = url.toLowerCase();
+  if (
+    lower.includes("favicon") ||
+    lower.includes("logo") ||
+    lower.includes("icon") ||
+    lower.includes("avatar") ||
+    /\/(?:small|thumb|100x100|50x50)\//.test(lower)
+  ) {
+    return null;
+  }
+
+  return url;
 }
 
 async function searchPinterestImages(query) {
   const attempts = [
-    () => searchGet("googleimage", { query: `pinterest ${query}` }),
     () => searchGet("pinterest",   { query }),
     () => get("/search/pinterest", { query }),
+    () => davidGet("/search/pinterest", { query }),
+    () => searchGet("googleimage", { query: `pinterest ${query}` }),
     () => searchGet("images",      { query: `${query} pinterest` }),
     () => get("/search/images",    { query: `${query} pinterest` }),
-    () => davidGet("/search/pinterest", { query }),
   ];
 
   const seen = new Set();
