@@ -54,16 +54,21 @@ export default {
       let dbStaff = [];
       try { dbStaff = await getStaffMembers(); } catch { /* MongoDB may be offline */ }
 
-      // Build a unified map: num → { name, level, jid }
+      // Build a unified map: num → { name, level, jid, whatsappNumber }
       const staffMap = new Map();
 
       // DB staff first (authoritative level)
       for (const u of dbStaff) {
         const num = u._id.split('@')[0].split(':')[0];
+        // If it's an LID, check if we have a stored whatsappNumber/jid
+        const realNum = (u.whatsappNumber || u.jid || u.owner || u.websiteId || '')
+          .split('@')[0].split(':')[0].replace(/\D/g, '');
+        
         staffMap.set(num, {
           jid:   u._id,
           name:  u.name || `+${num}`,
           level: u.staffLevel || 1,
+          realNum: realNum && realNum.length >= 7 ? realNum : null
         });
       }
 
@@ -90,29 +95,42 @@ export default {
         }, { quoted: msg });
       }
 
-      // ── Build a clean phone-number map from group participants ─────────────
+      // ── Build a clean phone-number map from all available groups ─────────────
       const cleanNumMap = {}; // storedNum → displayNum
-      if (jid?.endsWith('@g.us')) {
+      
+      // Try current group first
+      const tryResolveGroup = async (chatId) => {
         try {
-          const meta = await sock.groupMetadata(jid);
+          const meta = await sock.groupMetadata(chatId);
           for (const p of meta.participants) {
-            const pNum = p.id.split('@')[0].split(':')[0].replace(/\D/g, ''); // clean phone number
-            cleanNumMap[pNum] = pNum;
+            const pNum = p.id.split('@')[0].split(':')[0].replace(/\D/g, '');
+            const pLid = p.lid?.split('@')[0].split(':')[0].replace(/\D/g, '');
             
-            // Map LID to the real phone number
-            if (p.lid) {
-              const pLid = p.lid.split('@')[0].split(':')[0].replace(/\D/g, '');
-              cleanNumMap[pLid] = pNum;
-            }
+            if (pNum) cleanNumMap[pNum] = pNum;
+            if (pLid && pNum) cleanNumMap[pLid] = pNum;
+          }
+        } catch { /* ignore */ }
+      };
 
-            // Also handle device suffixes in stored staff data
-            for (const [storedNum] of staffMap) {
-              if (storedNum !== pNum && (storedNum.startsWith(pNum) || (p.lid && storedNum.startsWith(p.lid.split('@')[0])))) {
-                cleanNumMap[storedNum] = pNum;
-              }
+      if (jid?.endsWith('@g.us')) {
+        await tryResolveGroup(jid);
+      }
+
+      // If some staff still not resolved, try other groups (if any)
+      const unresolved = [...staffMap.keys()].filter(num => !cleanNumMap[num]);
+      if (unresolved.length > 0) {
+        try {
+          const groups = await sock.groupFetchAllParticipating();
+          for (const gJid in groups) {
+            if (gJid === jid) continue;
+            for (const p of groups[gJid].participants) {
+              const pNum = p.id.split('@')[0].split(':')[0].replace(/\D/g, '');
+              const pLid = p.lid?.split('@')[0].split(':')[0].replace(/\D/g, '');
+              if (pNum) cleanNumMap[pNum] = pNum;
+              if (pLid && pNum) cleanNumMap[pLid] = pNum;
             }
           }
-        } catch { /* not in a group or metadata unavailable */ }
+        } catch { /* ignore */ }
       }
 
       // Sort: highest level first, then alphabetically
@@ -126,11 +144,11 @@ export default {
         const isLid = jidParts[1] === 'lid';
         
         // Use clean number if available, else just the number part
-        const number = cleanNumMap[numPart] || numPart;
+        const number = s.realNum || cleanNumMap[numPart] || numPart;
         const label = LEVEL_LABEL[s.level] || 'MOD';
         
         return [
-          `│ \`${index + 1}.\` *+${number}*${isLid ? ' _(LID)_' : ''}`,
+          `│ \`${index + 1}.\` *+${number}*${isLid && !s.realNum && !cleanNumMap[numPart] ? ' _(LID)_' : ''}`,
           `│    👤 Name: *${s.name}*`,
           `│    🛡️ Role: \`${label}\``,
         ].join('\n');

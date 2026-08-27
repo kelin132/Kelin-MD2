@@ -566,9 +566,9 @@ export async function removeStaffLevel(id) {
 
 export async function getStaffMembers() {
   const db = await getDb();
+  // Project all fields so we can resolve identities (whatsappNumber, jid, etc.)
   return db.collection("users").find(
-    { staffLevel: { $gte: 1 } },
-    { projection: { _id: 1, name: 1, staffLevel: 1 } }
+    { staffLevel: { $gte: 1 } }
   ).toArray();
 }
 
