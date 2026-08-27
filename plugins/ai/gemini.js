@@ -13,7 +13,7 @@ export default {
     await sock.sendPresenceUpdate("composing", jid);
     try {
       const uid = sender?.split("@")[0] || jid;
-      const reply = await askKimi(text, { uid });
+      const reply = await askKimi(text, { uid, model: "gemini" });
       await sock.sendMessage(jid, { text: `🤖 *Kimi:*\n\n${reply}` }, { quoted: msg });
     } catch (err) {
       await sock.sendMessage(jid, { text: `❌ ${err.message}` }, { quoted: msg });
