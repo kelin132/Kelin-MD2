@@ -99,17 +99,21 @@ async function getOwners(cardId) {
     { projection: { userId: 1, whatsappNumber: 1, username: 1, cards: 1 } }
   ).toArray();
 
-  const owners = [];
+  const ownerMap = new Map();
   for (const user of users) {
+    const jid = ownerJid(user);
+    const label = user.username || `@${uid(jid)}`;
+    
+    let count = 0;
     (user.cards || []).forEach((owned) => {
-      if (owned.cardId !== cardId) return;
-      owners.push({
-        jid: ownerJid(user),
-        label: user.username || `@${uid(ownerJid(user))}`,
-      });
+      if (owned.cardId === cardId) count++;
     });
+
+    if (count > 0) {
+      ownerMap.set(jid, { jid, label, count });
+    }
   }
-  return owners;
+  return Array.from(ownerMap.values());
 }
 
 function tierLabel(tierNum) {
@@ -174,7 +178,7 @@ export default {
 
         const ownerLines = owners.length
           ? owners.map((owner, i) =>
-              `${i + 1}. ${owner.label}`
+              `${i + 1}. ${owner.label}${owner.count > 1 ? ` (x${owner.count})` : ""}`
             ).join("\n")
           : "  _No owners yet_";
 
@@ -199,7 +203,7 @@ export default {
 
         const ownerLines = owners.length
           ? owners.map((owner, i) =>
-              `${i + 1}. ${owner.label}`
+              `${i + 1}. ${owner.label}${owner.count > 1 ? ` (x${owner.count})` : ""}`
             ).join("\n")
           : "  _No owners yet_";
 
@@ -228,11 +232,12 @@ export default {
       for (const t of sortedTiers) {
         const card = byTier.get(t)[0];
         const owners = await getOwners(card.cardId);
-        totalOwners += owners.length;
+        const copyCount = owners.reduce((sum, o) => sum + o.count, 0);
+        totalOwners += copyCount;
         mentions.push(...owners.map((o) => o.jid));
 
         const ownerPreview = owners.length
-          ? owners.slice(0, 5).map((o, i) => `   ${i + 1}. ${o.label}`).join("\n") +
+          ? owners.slice(0, 5).map((o, i) => `   ${i + 1}. ${o.label}${o.count > 1 ? ` (x${o.count})` : ""}`).join("\n") +
             (owners.length > 5 ? `\n   _...and ${owners.length - 5} more_` : "")
           : "   _No owners yet_";
 

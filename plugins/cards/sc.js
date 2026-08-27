@@ -48,10 +48,16 @@ export default {
         ).toArray();
 
         for (const u of users) {
+          const label = u.username || `@${u.userId}`;
+          const counts = new Map();
           for (const c of (u.cards || [])) {
-            if (!cardIds.includes(c.cardId)) continue;
-            if (!ownerMap.has(c.cardId)) ownerMap.set(c.cardId, []);
-            ownerMap.get(c.cardId).push(u.username || `@${u.userId}`);
+            if (cardIds.includes(c.cardId)) {
+              counts.set(c.cardId, (counts.get(c.cardId) || 0) + 1);
+            }
+          }
+          for (const [cardId, count] of counts) {
+            if (!ownerMap.has(cardId)) ownerMap.set(cardId, []);
+            ownerMap.get(cardId).push(`${label}${count > 1 ? ` (x${count})` : ""}`);
           }
         }
       } catch { /* DB offline — skip owner info */ }
