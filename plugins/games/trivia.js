@@ -4,7 +4,7 @@
  * Usage: .trivia  — start a question
  *        .trivia <answer>  — answer active question
  */
-import { getUser, saveUser, requireRegistration, addHistory } from "./database.js";
+import { getUser, saveUser, requireRegistration, addHistory } from "../economy/database.js";
 
 const COOLDOWN = 60 * 1000; // 1 minute between new questions
 const ANSWER_TIME = 30 * 1000; // 30 seconds to answer
@@ -33,6 +33,20 @@ const QUESTIONS = [
   { q: "How many hours are in a week?", a: "168", reward: 600 },
   { q: "What is the powerhouse of the cell?", a: "mitochondria", reward: 750 },
   { q: "What country invented pizza?", a: "italy", reward: 500 },
+  { q: "What is the largest land animal?", a: "elephant", reward: 500 },
+  { q: "How many planets are in our solar system?", a: "8", reward: 400 },
+  { q: "What is the closest star to Earth?", a: "sun", reward: 300 },
+  { q: "What is the longest river in the world?", a: "nile", reward: 600 },
+  { q: "What is the hardest natural substance on Earth?", a: "diamond", reward: 700 },
+  { q: "What is the capital of Japan?", a: "tokyo", reward: 500 },
+  { q: "What is the largest country by land area?", a: "russia", reward: 600 },
+  { q: "What is the currency of the United Kingdom?", a: "pound", reward: 400 },
+  { q: "What is the smallest prime number?", a: "2", reward: 500 },
+  { q: "What is the capital of Italy?", a: "rome", reward: 500 },
+  { q: "What is the largest organ in the human body?", a: "skin", reward: 600 },
+  { q: "What is the primary gas in Earth's atmosphere?", a: "nitrogen", reward: 700 },
+  { q: "What is the capital of Canada?", a: "ottawa", reward: 600 },
+  { q: "What is the square root of 81?", a: "9", reward: 400 },
 ];
 
 export default {
@@ -55,7 +69,7 @@ export default {
 
     if (existing && text.trim()) {
       const answer = text.trim().toLowerCase();
-      if (answer === existing.answer) {
+      if (answer === existing.answer.toLowerCase()) {
         clearTimeout(existing.timeout);
         activeQuestions.delete(jid);
 
@@ -72,7 +86,8 @@ export default {
 🏦 Balance: $${user.money.toLocaleString()}`
         );
       }
-      return reply(`❌ Wrong answer! Try again.\n\n❓ ${existing.question}\n\n⏳ ${Math.ceil((existing.endsAt - now) / 1000)}s remaining.`);
+      // Allow multiple attempts without repeating the question every time
+      return sock.sendMessage(jid, { react: { text: "❌", key: msg.key } });
     }
 
     if (existing) {
