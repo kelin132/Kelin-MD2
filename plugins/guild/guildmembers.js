@@ -40,17 +40,7 @@ export default {
     }).join("\n");
 
     await sock.sendMessage(msg.key.remoteJid, {
-      text: `╭─〔 🌸 *𝐆𝐔𝐈𝐋𝐃 𝐌𝐄𝐌𝐁𝐄𝐑𝐒* 〕\n│ 🏯 *${guild.name}* · Lv.${Number(guild.level || 1)}\n│ 👥 ${members.length} member${members.length === 1 ? "" : "s"}\n│\n${lines}\n│\n│ > You can view your guild here\n│ ${WEBSITE_URL}\n└───────────────◆`,
-      contextInfo: {
-        externalAdReply: {
-          title: `${guild.name} · AIDORU Guild`,
-          body: "View your guild’s anime profile and members",
-          sourceUrl: WEBSITE_URL,
-          mediaType: 1,
-          renderLargerThumbnail: true,
-          showAdAttribution: false,
-        },
-      },
+      text: `╭─〔 🌸 *GUILD MEMBERS* 〕\n│ 🏯 *${guild.name}* · Lv.${Number(guild.level || 1)}\n│ 👥 ${members.length} member${members.length === 1 ? "" : "s"}\n│\n${lines}\n│\n│ > You can view your guild here\n│ ${WEBSITE_URL}\n└───────────────◆`,
     }, { quoted: msg });
   },
 };

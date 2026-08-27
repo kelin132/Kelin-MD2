@@ -44,7 +44,7 @@ export default {
       if (!guild) {
         return sock.sendMessage(jid, {
           text:
-`╭─〔 🏰 *𝐌𝐘 𝐆𝐔𝐈𝐋𝐃* 〕
+`╭─〔 🏰 *MY GUILD* 〕
 │ ❌ *You are not in any guild!*
 │
 ├◆ *.createguild <name>* — Create your own
@@ -65,7 +65,7 @@ export default {
     const level = Math.max(1, Number(guild.level) || 1);
 
     const caption =
-`╭─〔 🏰 *𝐆𝐔𝐈𝐋𝐃 𝐏𝐑𝐎𝐅𝐈𝐋𝐄* 〕
+`╭─〔 🏰 *GUILD PROFILE* 〕
 ├◆ *Name*     :: *${guild.name}*
 ├◆ *Owner*    :: *${ownerName}*
 ├◆ *Level*    :: *${level}*
@@ -96,30 +96,10 @@ ${progressLines(guild)}
       await sock.sendMessage(jid, {
         image: imgBuffer,
         caption,
-        contextInfo: {
-          externalAdReply: {
-            title: `${guild.name} · AIDORU Guild`,
-            body: "View your guild’s anime profile and members",
-            sourceUrl: WEBSITE_URL,
-            mediaType: 1,
-            renderLargerThumbnail: true,
-            showAdAttribution: false,
-          },
-        },
       }, { quoted: msg });
     } catch {
       await sock.sendMessage(jid, {
         text: caption,
-        contextInfo: {
-          externalAdReply: {
-            title: `${guild.name} · AIDORU Guild`,
-            body: "View your guild’s anime profile and members",
-            sourceUrl: WEBSITE_URL,
-            mediaType: 1,
-            renderLargerThumbnail: true,
-            showAdAttribution: false,
-          },
-        },
       }, { quoted: msg });
     }
   },
