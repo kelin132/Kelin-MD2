@@ -96,10 +96,18 @@ export default {
         try {
           const meta = await sock.groupMetadata(jid);
           for (const p of meta.participants) {
-            const pNum = p.id.split('@')[0].split(':')[0]; // clean phone number
+            const pNum = p.id.split('@')[0].split(':')[0].replace(/\D/g, ''); // clean phone number
             cleanNumMap[pNum] = pNum;
+            
+            // Map LID to the real phone number
+            if (p.lid) {
+              const pLid = p.lid.split('@')[0].split(':')[0].replace(/\D/g, '');
+              cleanNumMap[pLid] = pNum;
+            }
+
+            // Also handle device suffixes in stored staff data
             for (const [storedNum] of staffMap) {
-              if (storedNum !== pNum && storedNum.startsWith(pNum)) {
+              if (storedNum !== pNum && (storedNum.startsWith(pNum) || (p.lid && storedNum.startsWith(p.lid.split('@')[0])))) {
                 cleanNumMap[storedNum] = pNum;
               }
             }

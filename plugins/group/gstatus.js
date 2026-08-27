@@ -81,45 +81,57 @@ export default {
     let messageText   = null;
     let chosenColor   = null;
 
-    if (!isGroup) {
-      // DM usage — requires owner or staff
+    if (!isGroup || text.startsWith("all,")) {
+      // DM usage or "all" broadcast — requires owner or staff
       if (!isOwner && !isStaff) {
-        return reply("❌ Only staff can use this command from a DM.");
+        return reply("❌ Only staff can use this command from a DM or for broadcast.");
       }
 
       if (hasMedia) {
-        // Reply to media: first arg is the group JID
-        if (!text) {
+        // Reply to media: first arg is the group JID or "all"
+        const target = text.trim() || (isGroup ? jid : null);
+        if (!target) {
           return reply(
-`╭─🖼️「 *GSTATUS — DM USAGE* 」─╮
+`╭─🖼️「 *GSTATUS — USAGE* 」─╮
 │ Reply to an image or video, then:
-│ *.gstatus <groupjid>*
+│ *.gstatus <groupjid | all>*
 │
 │ Example:
+│ .gstatus all
 │ .gstatus 1234567890-123456@g.us
 ╰─────────────────────────────❀`
           );
         }
-        targetGroup = text.trim();
+        targetGroup = target;
       } else {
-        // Text status: groupjid,message[,color]
+        // Text status: [all | groupjid],message[,color]
         const parts = text.split(",").map(p => p.trim());
-        if (parts.length < 2) {
+        if (parts.length < (isGroup ? 1 : 2)) {
           return reply(
-`╭─📝「 *GSTATUS — DM USAGE* 」─╮
-│ *.gstatus <groupjid>,<message>[,<color>]*
+`╭─📝「 *GSTATUS — USAGE* 」─╮
+│ *.gstatus <groupjid | all>,<message>[,<color>]*
 │
 │ Example:
+│ .gstatus all,Hello everyone!
 │ .gstatus 1234567890@g.us,Good morning!,green
 │
 │ Colors: ${Object.keys(COLORS).join(", ")}
 ╰─────────────────────────────❀`
           );
         }
-        targetGroup = parts[0];
-        messageText = parts[1];
-        if (parts[2] && COLORS[parts[2].toLowerCase()]) {
-          chosenColor = COLORS[parts[2].toLowerCase()];
+        
+        if (parts[0] === "all" || parts[0].endsWith("@g.us")) {
+          targetGroup = parts[0];
+          messageText = parts[1];
+          if (parts[2] && COLORS[parts[2].toLowerCase()]) {
+            chosenColor = COLORS[parts[2].toLowerCase()];
+          }
+        } else if (isGroup) {
+          targetGroup = jid;
+          messageText = parts[0];
+          if (parts[1] && COLORS[parts[1].toLowerCase()]) {
+            chosenColor = COLORS[parts[1].toLowerCase()];
+          }
         }
       }
     } else {
@@ -157,20 +169,26 @@ export default {
       }
     }
 
-    // ── Validate group JID ────────────────────────────────────────────────
-    if (!targetGroup?.endsWith("@g.us")) {
-      return reply("❌ Invalid group JID. It must end with *@g.us*.");
+    // ── Resolve targets ──────────────────────────────────────────────────
+    let targets = [];
+    if (targetGroup === "all") {
+      const chats = await sock.groupFetchAllParticipating();
+      targets = Object.keys(chats);
+    } else if (targetGroup?.endsWith("@g.us")) {
+      targets = [targetGroup];
+    } else {
+      return reply("❌ Invalid target. Use a group JID or *all*.");
     }
 
+    if (targets.length === 0) return reply("❌ No target groups found.");
+
     try {
-      // ── MEDIA STATUS (image or video) ─────────────────────────────────
+      let innerMsg = null;
       if (hasMedia) {
         const isImg   = !!quotedImage;
         const rawMsg  = isImg ? quotedImage : quotedVideo;
         const mType   = isImg ? "image" : "video";
-
-        const buffer = await downloadQuoted(rawMsg, mType);
-
+        const buffer  = await downloadQuoted(rawMsg, mType);
         const mediaOptions = isImg
           ? { image: buffer, caption: rawMsg.caption || "" }
           : { video: buffer, caption: rawMsg.caption || "" };
@@ -179,57 +197,44 @@ export default {
           upload: sock.waUploadToServer,
         });
 
-        const innerMsg = isImg
+        innerMsg = isImg
           ? { imageMessage: prepared.imageMessage }
           : { videoMessage: prepared.videoMessage };
-
-        const payload = { groupStatusMessageV2: { message: innerMsg } };
-
-        const waMsg = generateWAMessageFromContent(
-          targetGroup,
-          proto.Message.fromObject(payload),
-          { userJid: sock.user?.id }
-        );
-
-        await sock.relayMessage(targetGroup, waMsg.message, {
-          messageId: waMsg.key.id,
-        });
-
-      // ── TEXT STATUS ───────────────────────────────────────────────────
       } else {
         if (!messageText?.trim()) {
           return reply("❌ Provide a message or reply to an image/video.");
         }
-
         const bgColor = chosenColor ?? randomColor();
-
-        const payload = {
-          groupStatusMessageV2: {
-            message: {
-              extendedTextMessage: {
-                text:            messageText,
-                backgroundArgb:  bgColor,
-                font:            2,
-              },
-            },
+        innerMsg = {
+          extendedTextMessage: {
+            text:            messageText,
+            backgroundArgb:  bgColor,
+            font:            2,
           },
         };
+      }
 
-        const waMsg = generateWAMessageFromContent(
-          targetGroup,
-          proto.Message.fromObject(payload),
-          { userJid: sock.user?.id }
-        );
+      const payload = { groupStatusMessageV2: { message: innerMsg } };
 
-        await sock.relayMessage(targetGroup, waMsg.message, {
-          messageId: waMsg.key.id,
-        });
+      let successCount = 0;
+      for (const t of targets) {
+        try {
+          const waMsg = generateWAMessageFromContent(
+            t,
+            proto.Message.fromObject(payload),
+            { userJid: sock.user?.id }
+          );
+          await sock.relayMessage(t, waMsg.message, { messageId: waMsg.key.id });
+          successCount++;
+        } catch (e) {
+          console.error(`[gstatus] Failed to send to ${t}:`, e.message);
+        }
       }
 
       // ── Success ───────────────────────────────────────────────────────
       await react("✅");
-      if (!isGroup) {
-        await reply("✅ Group status posted successfully.");
+      if (!isGroup || targetGroup === "all") {
+        await reply(`✅ Group status posted to *${successCount}/${targets.length}* groups.`);
       }
 
     } catch (err) {

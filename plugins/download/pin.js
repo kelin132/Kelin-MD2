@@ -86,12 +86,31 @@ async function searchPinterestImages(query) {
   const seen = new Set();
   const urls = [];
 
-  // Try direct scrape first
-  const scraped = await scrapePinterest(query);
-  for (const url of scraped) {
-    if (!seen.has(url)) {
-      seen.add(url);
-      urls.push(url);
+  // Try OmegaTech first as it's often more accurate
+  try {
+    const res = await fetch(`https://api.omegatech.app/api/download/Pinterest?query=${encodeURIComponent(query)}&action=search`);
+    const json = await res.json();
+    if (json.success && Array.isArray(json.data?.results)) {
+      for (const item of json.data.results) {
+        const url = item.thumbnail || item.image || item.url;
+        if (url && !seen.has(url)) {
+          seen.add(url);
+          urls.push(url);
+        }
+      }
+    }
+  } catch (err) {
+    console.error("OmegaTech Pinterest failed:", err.message);
+  }
+
+  // Try direct scrape next
+  if (urls.length < 10) {
+    const scraped = await scrapePinterest(query);
+    for (const url of scraped) {
+      if (!seen.has(url)) {
+        seen.add(url);
+        urls.push(url);
+      }
     }
   }
 

@@ -32,16 +32,26 @@ export default {
     console.log("[restart] Owner triggered a restart — attempting to reboot...");
 
     try {
-      const { spawn } = await import("child_process");
-      const child = spawn(process.argv[0], process.argv.slice(1), {
-        detached: true,
-        stdio: "inherit",
-      });
-      child.unref();
-      process.exit(0);
+      const { execSync } = await import("child_process");
+      // Try PM2 first as it's common on many panels/VPS
+      try {
+        execSync("pm2 restart all", { stdio: "ignore" });
+        return; // PM2 will handle the restart
+      } catch {
+        // PM2 not available, try to spawn a new process and exit
+        const { spawn } = await import("child_process");
+        const child = spawn(process.argv[0], process.argv.slice(1), {
+          detached: true,
+          stdio: "inherit",
+        });
+        child.unref();
+        
+        // For panels like Katabump, a non-zero exit code is often required 
+        // to trigger the container's restart policy.
+        process.exit(1);
+      }
     } catch (err) {
-      console.error("[restart] Failed to spawn new process:", err);
-      // Fallback: Exit with non-zero code to trigger panel auto-restart
+      console.error("[restart] Failed to reboot:", err);
       process.exit(1);
     }
   },

@@ -3,6 +3,7 @@
  * All economy / staff plugins import from here.
  */
 import { getDb } from "../../lib/mongo.mjs";
+import { normalizeJid } from "../../lib/identity.mjs";
 
 export const DEFAULTS = {
   name:          "User",
@@ -63,7 +64,8 @@ export const DEFAULTS = {
 
 export async function getUser(id) {
   const db   = await getDb();
-  const user = await db.collection("users").findOne({ _id: id });
+  const normalizedId = normalizeJid(id);
+  const user = await db.collection("users").findOne({ _id: normalizedId });
   if (!user) return { ...DEFAULTS };
   const { _id, ...rest } = user;
   const merged = { ...DEFAULTS, ...rest };
@@ -116,6 +118,7 @@ const MONOTONIC_FIELDS = new Set(["level"]);
 
 export async function saveUser(id, data) {
   const db = await getDb();
+  const normalizedId = normalizeJid(id);
   // Strip _id and _snap — neither should be stored in MongoDB
   const { _id, _snap, ...safeData } = data;
 
@@ -159,13 +162,13 @@ export async function saveUser(id, data) {
     if (Object.keys(setOp).length > 0) update.$set = setOp;
     if (Object.keys(update).length === 0) return; // nothing changed
 
-    await db.collection("users").updateOne({ _id: id }, update, { upsert: true });
+    await db.collection("users").updateOne({ _id: normalizedId }, update, { upsert: true });
 
     // Clamp any balance that went negative due to concurrent bets both losing.
     // The aggregation pipeline syntax ($max) is available in MongoDB 4.2+.
     await db.collection("users").updateOne(
       {
-        _id: id,
+        _id: normalizedId,
         $or: [{ money: { $lt: 0 } }, { bank: { $lt: 0 } }, { vault: { $lt: 0 } }],
       },
       [{ $set: {
@@ -177,7 +180,7 @@ export async function saveUser(id, data) {
   } else {
     // New user (no snapshot) — safe to $set everything since nobody else has this doc yet
     await db.collection("users").updateOne(
-      { _id: id },
+      { _id: normalizedId },
       { $set: safeData },
       { upsert: true }
     );
@@ -207,9 +210,10 @@ export async function claimWorkShift(id, {
   historyDescription,
 }) {
   const db = await getDb();
+  const normalizedId = normalizeJid(id);
   const result = await db.collection("users").findOneAndUpdate(
     {
-      _id: id,
+      _id: normalizedId,
       registered: true,
       job: jobKey,
       $or: [
@@ -260,9 +264,10 @@ export async function claimWorkShift(id, {
  */
 export async function restoreWorkEnergy(id, now, cooldownMs, amount) {
   const db = await getDb();
+  const normalizedId = normalizeJid(id);
   const result = await db.collection("users").findOneAndUpdate(
     {
-      _id: id,
+      _id: normalizedId,
       registered: true,
       $and: [
         {
@@ -309,9 +314,10 @@ export async function restoreWorkEnergy(id, now, cooldownMs, amount) {
  */
 export async function startInvestment(id, investment, amount) {
   const db = await getDb();
+  const normalizedId = normalizeJid(id);
   return db.collection("users").findOneAndUpdate(
     {
-      _id: id,
+      _id: normalizedId,
       money: { $gte: amount },
       $or: [
         { activeInvestment: { $exists: false } },
@@ -333,9 +339,10 @@ export async function startInvestment(id, investment, amount) {
  */
 export async function collectInvestment(id, investment, payout) {
   const db = await getDb();
+  const normalizedId = normalizeJid(id);
   return db.collection("users").findOneAndUpdate(
     {
-      _id: id,
+      _id: normalizedId,
       "activeInvestment.plan": investment.plan,
       "activeInvestment.amount": investment.amount,
       "activeInvestment.startedAt": investment.startedAt,
@@ -357,15 +364,17 @@ export async function getAllUsers() {
 
 export async function isRegistered(id) {
   const db   = await getDb();
-  const user = await db.collection("users").findOne({ _id: id }, { projection: { registered: 1 } });
+  const normalizedId = normalizeJid(id);
+  const user = await db.collection("users").findOne({ _id: normalizedId }, { projection: { registered: 1 } });
   return !!(user?.registered);
 }
 
 export async function registerUser(id, name) {
   const db = await getDb();
+  const normalizedId = normalizeJid(id);
   const { name: _n, registered: _r, registeredAt: _ra, ...insertDefaults } = DEFAULTS;
   await db.collection("users").updateOne(
-    { _id: id },
+    { _id: normalizedId },
     {
       $setOnInsert: { ...insertDefaults, money: 100_000 },
       $set: { name: name || "User", registered: true, registeredAt: new Date().toISOString() },
@@ -398,9 +407,10 @@ export async function requireRegistration(sock, msg, sender) {
  */
 export async function addHistory(id, type, amount, desc) {
   const db = await getDb();
+  const normalizedId = normalizeJid(id);
   const entry = { type, amount, desc, ts: Date.now() };
   await db.collection("users").updateOne(
-    { _id: id },
+    { _id: normalizedId },
     {
       $push: {
         history: {
@@ -418,8 +428,9 @@ export async function addHistory(id, type, amount, desc) {
  */
 export async function addMoney(id, amount) {
   const db = await getDb();
+  const normalizedId = normalizeJid(id);
   await db.collection("users").updateOne(
-    { _id: id },
+    { _id: normalizedId },
     { $inc: { money: amount } }
   );
 }

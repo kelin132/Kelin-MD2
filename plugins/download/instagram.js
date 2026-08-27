@@ -63,6 +63,13 @@ export default {
       let media;
       let lastError;
       const attempts = [
+        async () => {
+          const res = await fetch(`https://api.omegatech.app/api/download/All-downloader-v2?url=${encodeURIComponent(url.trim())}&action=download`);
+          const json = await res.json();
+          if (!json.success || !json.data?.status) throw new Error("OmegaTech IG failed");
+          const mediaData = json.data.result?.[0] || json.data.result || json.data;
+          return { url: mediaData.url || mediaData.video || mediaData.image, title: mediaData.title || "" };
+        },
         () => omegaDownload("all", { url: url.trim() }),
         () => princeMedia(PRINCE_ENDPOINTS.instagram, { url: url.trim() }),
       ];

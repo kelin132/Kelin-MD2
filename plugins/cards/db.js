@@ -3,6 +3,7 @@
  * Collections: mn_users, mn_cards, mn_card_market, mn_spawn_settings
  */
 import { getDb } from "../../lib/mongo.mjs";
+import { normalizeJid } from "../../lib/identity.mjs";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -36,13 +37,21 @@ export const Col = {
  */
 export async function findOrCreateUser(sender) {
   const col    = await Col.users();
-  const userId = uid(sender);
+  // Normalize the sender to strip device suffixes and handle JID/LID split
+  const normalized = normalizeJid(sender);
+  const userId = normalized.split("@")[0];
 
+  // Try finding by normalized userId first
   let user = await col.findOne({ userId });
+  
+  // Fallback: if sender is an LID, we might have a JID record we should be using
+  // but since we don't have 'sock' here, we rely on the normalized userId 
+  // which is at least consistent for that identity.
+  
   if (!user) {
     user = {
       userId,
-      whatsappNumber: sender,
+      whatsappNumber: normalized,
       balance:    0,
       cards:      [],
       cardLimit:  Infinity,
@@ -69,7 +78,8 @@ export async function findOrCreateUser(sender) {
  */
 export async function getUser(sender) {
   const col    = await Col.users();
-  const userId = uid(sender);
+  const normalized = normalizeJid(sender);
+  const userId = normalized.split("@")[0];
   const user   = await col.findOne({ userId });
   if (!user) return null;
 
