@@ -9,43 +9,31 @@ const categoryEmojis = {
   pokemon: "🎮", cards: "🃏", pets: "🐾", anime: "🍡", staff: "🛡️",
   company: "🏢", games: "🎲", fun: "🎀", ai: "🪄", search: "🔎",
   image: "🎨", utilities: "🔧", download: "📥", group: "🌸", admin: "⚜️",
-  owner: "👑",
+  owner: "👑", rpg: "🛡️", tools: "⚒️", weapons: "⚔️", armor: "🛡️",
+  potions: "🧪", consumables: "🍱", scrolls: "📜", cosmetics: "💍",
+  exchange: "⚖️", gacha: "💎", bases: "🏠",
 };
 
 const categoryTitles = {
-  main: "MAIN",
-  economy: "ECONOMY",
-  guild: "GUILD",
-  pets: "PETS",
-  cards: "CARDS",
-  pokemon: "POKEMON",
-  dragonball: "DRAGON BALL",
-  games: "GAMES",
-  fun: "FUN",
-  ai: "AI",
-  search: "SEARCH",
-  image: "IMAGE",
-  utilities: "UTILITIES",
-  download: "DOWNLOAD",
-  group: "GROUP",
-  anime: "ANIME",
-  staff: "STAFF",
-  owner: "OWNER",
-  company: "COMPANY",
-  naruto: "NARUTO",
-  media: "MEDIA",
-  admin: "ADMIN",
+  main: "MAIN", economy: "ECONOMY", guild: "GUILD", pets: "PETS",
+  cards: "CARDS", pokemon: "POKEMON", dragonball: "DRAGON BALL",
+  rpg: "RPG ADVENTURE", games: "GAMES", fun: "FUN", ai: "AI",
+  search: "SEARCH", image: "IMAGE", utilities: "UTILITIES",
+  download: "DOWNLOAD", group: "GROUP", anime: "ANIME",
+  staff: "STAFF", owner: "OWNER", company: "COMPANY",
+  naruto: "NARUTO", media: "MEDIA", admin: "ADMIN",
+  tools: "TOOLS", weapons: "WEAPONS", armor: "ARMOR",
+  potions: "POTIONS", consumables: "CONSUMABLES", scrolls: "SCROLLS",
+  cosmetics: "COSMETICS", exchange: "EXCHANGE", gacha: "GACHA",
+  bases: "BASES",
 };
-
-const PUBLIC_CATS = new Set([
-  "main", "economy", "company", "guild", "games", "fun", "ai", "search",
-  "media", "utilities", "download", "group", "anime", "cards",
-  "naruto", "pokemon", "pets", "image", "dragonball",
-]);
 
 function normalizeCategory(value = "") {
   const normalized = String(value).trim().toLowerCase().replace(/é/g, "e");
-  return normalized === "poke" ? "pokemon" : normalized;
+  if (normalized === "poke") return "pokemon";
+  if (normalized === "dbz") return "dragonball";
+  if (normalized === "dragon ball") return "dragonball";
+  return normalized;
 }
 
 function formatUsage(usage, menuPrefix) {
@@ -100,7 +88,8 @@ export default {
     const map = new Map();
     for (const plugin of allPlugins) {
       if (plugin.hidden) continue;
-      const cat = plugin.category || "other";
+      let cat = plugin.category || "other";
+      cat = normalizeCategory(cat);
       if (!map.has(cat)) map.set(cat, []);
       map.get(cat).push(plugin);
     }
@@ -108,17 +97,24 @@ export default {
     const showStaff = isOwner || isStaff || isMod;
     const order = [
       "main", "economy", "company", "guild", "pets", "cards", "naruto",
-      "pokemon", "dragonball", "games", "fun", "ai", "search", "media",
+      "pokemon", "dragonball", "dbz", "rpg", "games", "fun", "ai", "search", "media",
       "image", "utilities", "download", "group", "admin", "anime",
-      ...(showStaff ? ["staff"] : []),
-      ...(showStaff ? ["owner"] : []),
+      "tools", "weapons", "armor", "potions", "consumables", "scrolls",
+      "cosmetics", "exchange", "gacha", "bases",
     ];
+
     const sortedCats = [
       ...order.filter((cat) => map.has(cat)),
-      ...[...map.keys()].filter((cat) => !order.includes(cat) && PUBLIC_CATS.has(cat)).sort(),
+      ...[...map.keys()].filter((cat) => !order.includes(cat) && cat !== "staff" && cat !== "owner").sort(),
+      ...(showStaff && map.has("staff") ? ["staff"] : []),
+      ...(showStaff && map.has("owner") ? ["owner"] : []),
     ];
 
     if (requestedCategory && !sortedCats.includes(requestedCategory)) {
+      // Check if it's a hidden staff category requested by non-staff
+      if (["staff", "owner"].includes(requestedCategory) && !showStaff) {
+         return sock.sendMessage(jid, { text: "❌ Access denied." }, { quoted: msg });
+      }
       return sock.sendMessage(jid, {
         text: `❌ That category is unavailable here.\n\nTry *.menu pokemon* to open the Pokémon command guide.`,
       }, { quoted: msg });

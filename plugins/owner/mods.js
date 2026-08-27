@@ -121,11 +121,16 @@ export default {
       );
 
       const rows = sorted.map((s, index) => {
-        const storedNum = s.jid.split('@')[0].split(':')[0].replace(/\D/g, '');
-        const number    = cleanNumMap[storedNum] || storedNum;
-        const label     = LEVEL_LABEL[s.level] || 'MOD';
+        const jidParts = s.jid.split('@');
+        const numPart = jidParts[0].split(':')[0].replace(/\D/g, '');
+        const isLid = jidParts[1] === 'lid';
+        
+        // Use clean number if available, else just the number part
+        const number = cleanNumMap[numPart] || numPart;
+        const label = LEVEL_LABEL[s.level] || 'MOD';
+        
         return [
-          `│ \`${index + 1}.\` *+${number}*`,
+          `│ \`${index + 1}.\` *+${number}*${isLid ? ' _(LID)_' : ''}`,
           `│    👤 Name: *${s.name}*`,
           `│    🛡️ Role: \`${label}\``,
         ].join('\n');

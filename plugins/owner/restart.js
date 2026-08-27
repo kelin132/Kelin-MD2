@@ -1,8 +1,7 @@
 /**
  * KELIN MD — .restart
  * Sends a confirmation message then exits the process cleanly.
- * PM2 / forever / systemd will auto-restart the bot.
- * Owner / staff only.
+ * PM2 / forever / systemd / panel-watchers will auto-restart the bot.
  */
 
 export default {
@@ -29,30 +28,11 @@ export default {
     // Small delay so the message is delivered before the process exits
     await new Promise(r => setTimeout(r, 2000));
 
-    console.log("[restart] Owner triggered a restart — attempting to reboot...");
+    console.log("[restart] Owner triggered a restart — exiting process to trigger auto-restart...");
 
-    try {
-      const { execSync } = await import("child_process");
-      // Try PM2 first as it's common on many panels/VPS
-      try {
-        execSync("pm2 restart all", { stdio: "ignore" });
-        return; // PM2 will handle the restart
-      } catch {
-        // PM2 not available, try to spawn a new process and exit
-        const { spawn } = await import("child_process");
-        const child = spawn(process.argv[0], process.argv.slice(1), {
-          detached: true,
-          stdio: "inherit",
-        });
-        child.unref();
-        
-        // For panels like Katabump, a non-zero exit code is often required 
-        // to trigger the container's restart policy.
-        process.exit(1);
-      }
-    } catch (err) {
-      console.error("[restart] Failed to reboot:", err);
-      process.exit(1);
-    }
+    // On many panels (Katabump, Render, Pterodactyl), the container 
+    // is configured to restart whenever the process exits.
+    // Exit code 0 is a clean exit.
+    process.exit(0);
   },
 };

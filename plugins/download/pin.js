@@ -71,6 +71,7 @@ function imageUrlFrom(item) {
 
 async function scrapePinterest(query) {
   try {
+    // Try a different Pinterest internal search endpoint
     const url = `https://www.pinterest.com/resource/BaseSearchResource/get/?source_url=%2Fsearch%2Fpins%2F%3Fq%3D${encodeURIComponent(query)}&data=%7B%22options%22%3A%7B%22isPrefetch%22%3Afalse%2C%22query%22%3A%22${encodeURIComponent(query)}%22%2C%22scope%22%3A%22pins%22%2C%22no_fetch_context_on_resource%22%3Afalse%7D%2C%22context%22%3A%7B%7D%7D&_=1714450000000`;
     const res = await fetch(url, { headers: IMAGE_HEADERS });
     const json = await res.json();
@@ -86,7 +87,7 @@ async function searchPinterestImages(query) {
   const seen = new Set();
   const urls = [];
 
-  // Try OmegaTech first as it's often more accurate
+  // 1. Try OmegaTech Pinterest Downloader (search action)
   try {
     const res = await fetch(`https://api.omegatech.app/api/download/Pinterest?query=${encodeURIComponent(query)}&action=search`);
     const json = await res.json();
@@ -103,7 +104,26 @@ async function searchPinterestImages(query) {
     console.error("OmegaTech Pinterest failed:", err.message);
   }
 
-  // Try direct scrape next
+  // 2. Try OmegaTech Google Image search limited to Pinterest
+  if (urls.length < 5) {
+    try {
+      const res = await fetch(`https://api.omegatech.app/api/Search/google-image?query=site:pinterest.com+${encodeURIComponent(query)}`);
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        for (const item of json.data) {
+          const url = item.url || item.thumbnail;
+          if (url && !seen.has(url)) {
+            seen.add(url);
+            urls.push(url);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("OmegaTech Google Image Pinterest failed:", err.message);
+    }
+  }
+
+  // 3. Try direct scrape next
   if (urls.length < 10) {
     const scraped = await scrapePinterest(query);
     for (const url of scraped) {
@@ -114,6 +134,7 @@ async function searchPinterestImages(query) {
     }
   }
 
+  // 4. Try other gifttech/david APIs
   if (urls.length < 5) {
     const attempts = [
       () => searchGet("pinterest",   { query }),

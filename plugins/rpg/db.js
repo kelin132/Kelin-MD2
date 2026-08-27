@@ -53,6 +53,13 @@ export async function createRpgUser(sender, className, username) {
     createdAt: new Date(),
   };
   
-  await col.insertOne(user);
+  await col.updateOne({ _id: id }, { $set: user }, { upsert: true });
   return await getRpgUser(sender);
+}
+
+export async function saveRpgUser(sender, data) {
+  const col = await Col.rpg();
+  const id = normalizeJid(sender);
+  const { _id, save, ...safeData } = data;
+  await col.updateOne({ _id: id }, { $set: safeData }, { upsert: true });
 }

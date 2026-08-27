@@ -20,7 +20,7 @@ const CAT_META = {
 
 export default {
   name: "bag",
-  aliases: ["inventory", "inv", "items"],
+  aliases: ["inventory", "inv", "items", "pokeitem"],
   description: "View everything in your trainer bag",
   category: "pokemon",
   usage: ".bag",

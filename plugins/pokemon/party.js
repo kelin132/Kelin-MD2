@@ -22,7 +22,7 @@ const TYPE_EMOJIS = {
 
 export default {
   name: "party",
-  aliases: ["team", "lineup"],
+  aliases: ["team", "lineup", "poketeam"],
   description: "View your party  |  .party <1-6> for detailed stats",
   category: "pokemon",
   usage: ".party  or  .party <slot>",

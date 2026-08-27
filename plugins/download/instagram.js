@@ -64,9 +64,20 @@ export default {
       let lastError;
       const attempts = [
         async () => {
+          const res = await fetch(`https://omegatech-api.dixonomega.tech/api/download/Instagram?url=${encodeURIComponent(url.trim())}&action=download`);
+          const json = await res.json();
+          if (!json.success || !json.data) throw new Error("OmegaTech IG failed");
+          const mediaData = Array.isArray(json.data) ? json.data[0] : json.data;
+          return { 
+            url: mediaData.url || mediaData.video || mediaData.image || mediaData.thumbnail, 
+            title: mediaData.title || "",
+            mimetype: mediaData.type === "video" ? "video/mp4" : "image/jpeg"
+          };
+        },
+        async () => {
           const res = await fetch(`https://api.omegatech.app/api/download/All-downloader-v2?url=${encodeURIComponent(url.trim())}&action=download`);
           const json = await res.json();
-          if (!json.success || !json.data?.status) throw new Error("OmegaTech IG failed");
+          if (!json.success || !json.data?.status) throw new Error("OmegaTech All-DL failed");
           const mediaData = json.data.result?.[0] || json.data.result || json.data;
           return { url: mediaData.url || mediaData.video || mediaData.image, title: mediaData.title || "" };
         },

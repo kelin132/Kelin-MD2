@@ -43,7 +43,9 @@ export default {
 
 🎒 *Inventory:* ${user.inventory.length ? user.inventory.join(", ") : "_Empty_"}
 ━━━━━━━━━━━━━━━━━━━━━
-💡 _Use .rpg-hunt to grow stronger!_`;
+💡 _Use .rpg-hunt to grow stronger!_
+🌐 _Edit your profile at:_
+_https://aidoru.zone.id/profile_`;
 
       return reply(text);
 
