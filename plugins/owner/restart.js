@@ -27,9 +27,22 @@ export default {
     }, { quoted: msg });
 
     // Small delay so the message is delivered before the process exits
-    await new Promise(r => setTimeout(r, 1500));
+    await new Promise(r => setTimeout(r, 2000));
 
-    console.log("[restart] Owner triggered a restart — exiting now.");
-    process.exit(0);
+    console.log("[restart] Owner triggered a restart — attempting to reboot...");
+
+    try {
+      const { spawn } = await import("child_process");
+      const child = spawn(process.argv[0], process.argv.slice(1), {
+        detached: true,
+        stdio: "inherit",
+      });
+      child.unref();
+      process.exit(0);
+    } catch (err) {
+      console.error("[restart] Failed to spawn new process:", err);
+      // Fallback: Exit with non-zero code to trigger panel auto-restart
+      process.exit(1);
+    }
   },
 };
