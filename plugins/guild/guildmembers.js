@@ -1,8 +1,6 @@
 import { guildSystem } from "../../lib/guildSystem.js";
 import { requireRegistration } from "./database.js";
 
-const WEBSITE_URL = "https://aidoru.zone.id/guild";
-
 export default {
   name: "guildmembers",
   description: "Show all members in your guild",
@@ -40,7 +38,7 @@ export default {
     }).join("\n");
 
     await sock.sendMessage(msg.key.remoteJid, {
-      text: `╭─〔 🌸 *GUILD MEMBERS* 〕\n│ 🏯 *${guild.name}* · Lv.${Number(guild.level || 1)}\n│ 👥 ${members.length} member${members.length === 1 ? "" : "s"}\n│\n${lines}\n│\n│ > You can view your guild here\n│ ${WEBSITE_URL}\n└───────────────◆`,
+      text: `╭─〔 🌸 *GUILD MEMBERS* 〕\n│ 🏯 *${guild.name}* · Lv.${Number(guild.level || 1)}\n│ 👥 ${members.length} member${members.length === 1 ? "" : "s"}\n│\n${lines}\n└───────────────◆`,
     }, { quoted: msg });
   },
 };
