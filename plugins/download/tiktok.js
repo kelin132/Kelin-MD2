@@ -4,7 +4,6 @@
  * API: https://apis.davidcyril.name.ng/endpoints/download/#tiktok-downloader
  */
 import { davidGet } from "../../lib/gifted.js";
-import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
 
 // Deduplicate rapid re-triggers
 const processed = new Set();
@@ -17,8 +16,6 @@ const DAVID_BASE = "https://apis.davidcyril.name.ng";
  */
 async function fetchTikTok(url) {
   const attempts = [
-    // OmegaTech all-downloader
-    () => omegaDownload("all", { url }),
     () => davidGet("/download/tiktok",    { url }),
     () => davidGet("/download/tiktokdl",  { url }),
     () => davidGet("/download/tt",        { url }),
@@ -73,19 +70,17 @@ export default {
       await sock.sendMessage(jid, { text: "⏳ Downloading TikTok video, please wait..." }, { quoted: msg });
 
       const { dl, title } = await fetchTikTok(url.trim());
-      const file = await downloadMediaBuffer(dl);
-      const mimetype = file.mimetype.startsWith("video/") ? file.mimetype : "video/mp4";
 
       await sock.sendMessage(jid, {
-        video: file.buffer,
-        mimetype,
-        caption: `🎵 *${title}*`,
+        video:    { url: dl },
+        mimetype: "video/mp4",
+        caption:  `🎵 *${title}*\n\n✨ Downloaded by *AKIRA*`,
       }, { quoted: msg });
 
     } catch (err) {
-      console.error("[tiktok]", err?.stack || err?.message || err);
+      console.error("[tiktok]", err.message);
       await sock.sendMessage(jid, {
-        text: "❌ This video couldn't be downloaded. Try again later!",
+        text: `❌ *TikTok download failed.`,
       }, { quoted: msg });
     }
   },
