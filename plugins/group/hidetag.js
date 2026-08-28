@@ -9,7 +9,7 @@ export default {
   category: "group",
   usage: ".hidetag <message>",
   aliases: ["htag"],
-  adminOnly: true,
+  isAdmin: "true",
   groupOnly: true,
 
   async run({ sock, msg, text }) {
