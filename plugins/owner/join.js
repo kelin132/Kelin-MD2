@@ -136,14 +136,7 @@ ${BOT_NAME} is now in the group.`
     const introText =
 `╭━━━『 ${BOT_NAME} 』━━━╮
 
-👋 Hey everyone! I'm *${BOT_NAME}*.
-
-📌 *IMPORTANT INFORMATION*
-• Use *${PREFIX}menu* to see all available commands
-• Do NOT spam commands
-• Bot DMs are disabled
-
-> Use *${PREFIX}mods* if you need support
+Thank you for adding me into this group, type *${PREFIX}menu* to begin.
 
 ╰━━━━━━━━━━━━━━━━━━━━╯`;
 
