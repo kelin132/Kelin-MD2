@@ -2,8 +2,7 @@
  * KELIN MD — .instagram command
  * Downloads Instagram posts, reels, and videos through OmegaTech.
  */
-import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
-import { princeMedia, PRINCE_ENDPOINTS } from "../../lib/princeTech.mjs";
+import { omegaDownload } from "../../lib/omegaDownload.js";
 
 const processedMessages = new Set();
 
@@ -44,14 +43,14 @@ export default {
     setTimeout(() => processedMessages.delete(msg.key.id), 5 * 60 * 1000);
 
     const raw = text || args.join(" ");
-    const match = raw.match(/https?:\/\/[^\s<>()]+/i);
-    const url = match?.[0]?.replace(/[<>\])},.!?]+$/g, "");
+    const match = raw.match(/https?:\/\/\S+/);
+    const url = match?.[0]?.replace(/[<>]/g, "");
 
-    if (!url || !/(?:instagram\.com|instagr\.am)/i.test(url)) {
+    if (!url || !/instagram\.com/i.test(url)) {
       return sock.sendMessage(jid, {
         text:
           "📸 *Instagram Downloader*\n\n" +
-          "Usage: *.ig <Instagram URL>*\n\n" +
+          "Usage: *.instagram <URL>*\n\n" +
           "Supported: posts, reels, TV videos, and public media.",
       }, { quoted: msg });
     }
@@ -60,63 +59,18 @@ export default {
       await sock.sendMessage(jid, { react: { text: "⏳", key: msg.key } });
       await sock.sendMessage(jid, { text: "⏳ Downloading Instagram media…" }, { quoted: msg });
 
-      let media;
-      let lastError;
-      const attempts = [
-        async () => {
-          const res = await fetch(`https://omegatech-api.dixonomega.tech/api/download/Instagram?url=${encodeURIComponent(url.trim())}&action=download`);
-          const json = await res.json();
-          if (!json.success || !json.data) throw new Error("OmegaTech IG failed");
-          const mediaData = Array.isArray(json.data) ? json.data[0] : json.data;
-          return { 
-            url: mediaData.url || mediaData.video || mediaData.image || mediaData.thumbnail, 
-            title: mediaData.title || "",
-            mimetype: mediaData.type === "video" ? "video/mp4" : "image/jpeg"
-          };
-        },
-        async () => {
-          const res = await fetch(`https://api.omegatech.app/api/download/All-downloader-v2?url=${encodeURIComponent(url.trim())}&action=download`);
-          const json = await res.json();
-          if (!json.success || !json.data?.status) throw new Error("OmegaTech All-DL failed");
-          const mediaData = json.data.result?.[0] || json.data.result || json.data;
-          return { url: mediaData.url || mediaData.video || mediaData.image, title: mediaData.title || "" };
-        },
-        () => omegaDownload("all", { url: url.trim() }),
-        () => princeMedia(PRINCE_ENDPOINTS.instagram, { url: url.trim() }),
-      ];
-      for (const attempt of attempts) {
-        try {
-          const candidate = await attempt();
-          if (!candidate?.buffer && !candidate?.url) throw new Error("Provider returned no Instagram media");
-          if (candidate.buffer) {
-            media = candidate;
-            break;
-          }
-          const file = await downloadMediaBuffer(candidate.url);
-          media = { ...candidate, buffer: file.buffer, mimetype: file.mimetype };
-          break;
-        } catch (error) {
-          lastError = error;
-        }
-      }
-      if (!media) throw lastError || new Error("No Instagram provider returned usable media");
-
-      const title = String(media.title || "Instagram Media").trim().slice(0, 200);
+      const media = await omegaDownload("all", { url: url.trim() });
+      const title = media.title || "Instagram Media";
       const caption = `📥 *${title.slice(0, 200)}*`;
-      const mimetype = String(media.mimetype || "").toLowerCase();
-      const video = mimetype.startsWith("video/")
-        || (!mimetype.startsWith("image/") && (isVideoUrl(media.url || "", url) || /video|mp4|webm/i.test(`${media.type || ""} ${media.format || ""}`)));
 
-      if (video) {
+      if (isVideoUrl(media.url, url)) {
         await sock.sendMessage(jid, {
-          video: media.buffer,
-          mimetype: mimetype.startsWith("video/") ? mimetype : "video/mp4",
+          video: { url: media.url },
+          mimetype: "video/mp4",
           caption,
         }, { quoted: msg });
       } else {
-        const image = mimetype.startsWith("image/")
-          ? media.buffer
-          : await fetchImage(media.url);
+        const image = await fetchImage(media.url);
         await sock.sendMessage(jid, { image, caption }, { quoted: msg });
       }
 
@@ -125,7 +79,7 @@ export default {
       console.error("[instagram]", err.message);
       await sock.sendMessage(jid, { react: { text: "❌", key: msg.key } });
       await sock.sendMessage(jid, {
-        text: "❌ This media couldn't be downloaded. Try again later!",
+        text: `❌ *Instagram download failed.*\n\n_${err.message.slice(0, 300)}_\n\n💡 Make sure the post is public and the URL is correct.`,
       }, { quoted: msg });
     }
   },
