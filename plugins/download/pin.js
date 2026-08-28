@@ -34,7 +34,6 @@ function imageUrlFrom(item) {
   if (typeof item === "string") return item;
   if (!item || typeof item !== "object") return null;
 
-  // Prefer high-resolution or original fields first.
   const nested =
     item.images?.orig?.url ||
     item.images?.original?.url ||
@@ -42,7 +41,7 @@ function imageUrlFrom(item) {
     item.image?.src ||
     item.original?.url;
 
-  const url = nested ||
+  return nested ||
     item.url ||
     item.image ||
     item.image_url ||
@@ -51,108 +50,39 @@ function imageUrlFrom(item) {
     item.media_url ||
     item.download_url ||
     null;
-
-  if (!url || typeof url !== "string") return null;
-
-  // Filter out common "wrong" or low-quality patterns.
-  const lower = url.toLowerCase();
-  if (
-    lower.includes("favicon") ||
-    lower.includes("logo") ||
-    lower.includes("icon") ||
-    lower.includes("avatar") ||
-    /\/(?:small|thumb|100x100|50x50)\//.test(lower)
-  ) {
-    return null;
-  }
-
-  return url;
-}
-
-async function scrapePinterest(query) {
-  try {
-    // Try a different Pinterest internal search endpoint
-    const url = `https://www.pinterest.com/resource/BaseSearchResource/get/?source_url=%2Fsearch%2Fpins%2F%3Fq%3D${encodeURIComponent(query)}&data=%7B%22options%22%3A%7B%22isPrefetch%22%3Afalse%2C%22query%22%3A%22${encodeURIComponent(query)}%22%2C%22scope%22%3A%22pins%22%2C%22no_fetch_context_on_resource%22%3Afalse%7D%2C%22context%22%3A%7B%7D%7D&_=1714450000000`;
-    const res = await fetch(url, { headers: IMAGE_HEADERS });
-    const json = await res.json();
-    const items = json?.resource_response?.data?.results || [];
-    return items.map(i => i.images?.orig?.url || i.images?.["736x"]?.url).filter(Boolean);
-  } catch (err) {
-    console.error("Pinterest scrape failed:", err.message);
-    return [];
-  }
 }
 
 async function searchPinterestImages(query) {
+  const attempts = [
+    () => searchGet("googleimage", { query: `pinterest ${query}` }),
+    () => searchGet("pinterest",   { query }),
+    () => get("/search/pinterest", { query }),
+    () => searchGet("images",      { query: `${query} pinterest` }),
+    () => get("/search/images",    { query: `${query} pinterest` }),
+    () => davidGet("/search/pinterest", { query }),
+  ];
+
   const seen = new Set();
   const urls = [];
 
-  // 1. Try OmegaTech Pinterest Downloader (search action)
-  try {
-    const res = await fetch(`https://api.omegatech.app/api/download/Pinterest?query=${encodeURIComponent(query)}&action=search`);
-    const json = await res.json();
-    if (json.success && Array.isArray(json.data?.results)) {
-      for (const item of json.data.results) {
-        const url = item.thumbnail || item.image || item.url;
-        if (url && !seen.has(url)) {
-          seen.add(url);
-          urls.push(url);
-        }
-      }
-    }
-  } catch (err) {
-    console.error("OmegaTech Pinterest failed:", err.message);
-  }
-
-  // 2. Try OmegaTech Google Image search limited to Pinterest
-  if (urls.length < 5) {
+  for (const attempt of attempts) {
     try {
-      const res = await fetch(`https://api.omegatech.app/api/Search/google-image?query=site:pinterest.com+${encodeURIComponent(query)}`);
-      const json = await res.json();
-      if (json.success && Array.isArray(json.data)) {
-        for (const item of json.data) {
-          const url = item.url || item.thumbnail;
-          if (url && !seen.has(url)) {
-            seen.add(url);
-            urls.push(url);
-          }
-        }
-      }
-    } catch (err) {
-      console.error("OmegaTech Google Image Pinterest failed:", err.message);
-    }
-  }
-
-  // 3. Try direct scrape next
-  if (urls.length < 10) {
-    const scraped = await scrapePinterest(query);
-    for (const url of scraped) {
-      if (!seen.has(url)) {
+      const data = await attempt();
+      for (const item of resultItems(data)) {
+        const url = imageUrlFrom(item);
+        if (!url || !/^https?:\/\//i.test(url) || seen.has(url)) continue;
         seen.add(url);
         urls.push(url);
       }
-    }
-  }
 
-  // 4. Try other gifttech/david APIs
-  if (urls.length < 5) {
-    const attempts = [
-      () => searchGet("pinterest",   { query }),
-      () => get("/search/pinterest", { query }),
-      () => davidGet("/search/pinterest", { query }),
-    ];
+      const direct = imageUrlFrom(data);
+      if (direct && /^https?:\/\//i.test(direct) && !seen.has(direct)) {
+        seen.add(direct);
+        urls.push(direct);
+      }
 
-    for (const attempt of attempts) {
-      try {
-        const data = await attempt();
-        for (const item of resultItems(data)) {
-          const url = imageUrlFrom(item);
-          if (!url || !/^https?:\/\//i.test(url) || seen.has(url)) continue;
-          seen.add(url);
-          urls.push(url);
-        }
-      } catch { /* try next */ }
-    }
+      if (urls.length >= 8) break;
+    } catch { /* try next */ }
   }
 
   if (!urls.length) throw new Error("No Pinterest results found.");
