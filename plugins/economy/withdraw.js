@@ -1,7 +1,7 @@
 import { getUser, saveUser, requireRegistration, addHistory } from "./database.js";
 import { parseAmount } from "./parseAmount.js";
 
-const MAX_WITHDRAWAL = 300_000_000_000;
+const MAX_WITHDRAWAL = 500_000_000_000;
 
 export default {
   name: "withdraw",
