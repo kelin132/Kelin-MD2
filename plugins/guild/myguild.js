@@ -2,8 +2,6 @@ import { guildSystem, guildTaxRate, guildUpgradeRequirements } from "../../lib/g
 import { requireRegistration } from "./database.js";
 import { generateGuildProfile, getProfilePic, getContactName } from "../../lib/guildGen.mjs";
 
-const WEBSITE_URL = "https://aidoru.zone.id/guild";
-
 function progressLines(guild) {
   const level = Math.max(1, Number(guild.level) || 1);
   const requirements = guildUpgradeRequirements(level);
@@ -75,9 +73,6 @@ ${progressLines(guild)}
 ├◆ *Created*  :: *${created}*${guild.description ? `\n├◆ *Desc*     :: _${guild.description}_` : ""}
 │
 ├◆ *Your Role* :: *${isOwner ? "👑 Owner" : isMember ? "👥 Member" : "👀 Visitor"}*
-│
-│ > You can view your guild here
-│ ${WEBSITE_URL}
 └───────────────◆`;
 
     try {
