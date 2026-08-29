@@ -16,8 +16,8 @@ export default {
     const jid = msg.key.remoteJid;
     const user = await getRpgUser(sender);
     
-    if (!user.registered) {
-      return sock.sendMessage(jid, { text: "❌ Start your RPG journey with *.startrpg* first!" }, { quoted: msg });
+    if (!user) {
+      return sock.sendMessage(jid, { text: "❌ You haven't started your RPG journey yet! Use *.rpg-start* to begin." }, { quoted: msg });
     }
 
     if (user.hp >= user.maxHp) {
@@ -25,11 +25,11 @@ export default {
     }
 
     const potionCost = 100;
-    if (user.money < potionCost) {
+    if ((user.gold || 0) < potionCost) {
       return sock.sendMessage(jid, { text: `❌ You need ${potionCost} Gold to buy a healing potion.` }, { quoted: msg });
     }
 
-    user.money -= potionCost;
+    user.gold = (user.gold || 0) - potionCost;
     user.hp = user.maxHp;
     await saveRpgUser(sender, user);
 
