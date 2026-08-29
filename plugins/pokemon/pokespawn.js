@@ -27,7 +27,7 @@ export default {
   category:    "pokemon",
   usage:       ".pokespawn on | off | status",
   isMod:       true,
-  isAdmin:    "true",
+  isAdmin:     true,
   async run({ sock, msg, sender, args }) {
     const jid = msg.key.remoteJid;
     const sub = (args[0] || "status").toLowerCase();
