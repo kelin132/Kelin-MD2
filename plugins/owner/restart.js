@@ -1,13 +1,15 @@
 /**
  * KELIN MD — .restart
- * Sends a confirmation message then exits the process cleanly.
- * PM2 / forever / systemd / panel-watchers will auto-restart the bot.
+ * Sends a confirmation message then reconnects WhatsApp in-process.
+ * This keeps panel hosts running instead of terminating the application.
  */
+
+import { restartConnection } from "../../lib/bot.mjs";
 
 export default {
   name: "restart",
   aliases: ["reboot", "rs"],
-  description: "Restart the bot process (owner only)",
+  description: "Restart the WhatsApp connection without stopping the panel (owner only)",
   category: "owner",
   usage: ".restart",
   isStaff: true,
@@ -25,14 +27,9 @@ export default {
 ╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
     }, { quoted: msg });
 
-    // Small delay so the message is delivered before the process exits
+    // Small delay so the message is delivered before the socket reconnects
     await new Promise(r => setTimeout(r, 2000));
 
-    console.log("[restart] Owner triggered a restart — exiting process to trigger auto-restart...");
-
-    // On many panels (Katabump, Render, Pterodactyl), the container 
-    // is configured to restart whenever the process exits.
-    // Exit code 0 is a clean exit.
-    process.exit(0);
+    restartConnection();
   },
 };
