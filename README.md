@@ -174,7 +174,7 @@ sessions/
 - **Session persistence**: `sessions/auth/` is created automatically. Keep it backed up.
 - **Re-pairing**: Delete `sessions/auth/` and restart to re-pair.
 - **Owner commands**: Set `OWNER_NUMBER` — without it owner plugins won't work.
-- **AI commands** (`.chatgpt`, `.gemini`, `.deepseek`, and Akira auto-replies): use OmegaTech's public Kimi endpoint without an API key, with a same-gateway fallback when Kimi is temporarily rate-limited.
+- **AI commands** (`.chatgpt`, `.gemini`, `.deepseek`, and Akira auto-replies): use OmegaTech's public Kimi endpoint without an API key. Akira only uses the primary API route and stays silent when that route fails instead of sending a fabricated reply.
 - **Akira continuity**: Akira remembers each sender by their normalized WhatsApp JID in MongoDB, including their saved name and recent conversation turns. Memory survives restarts and can be cleared with `.akira reset`; `.akira info` shows the saved message count.
 
 ---
