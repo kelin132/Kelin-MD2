@@ -5,6 +5,7 @@
  */
 
 import { restartConnection } from "../../lib/bot.mjs";
+import { reloadAkiraAI } from "../../lib/akiraHandler.mjs";
 
 export default {
   name: "restart",
@@ -26,6 +27,9 @@ export default {
 │
 ╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
     }, { quoted: msg });
+
+    // Refresh the AI module before reconnecting so a pulled update is active.
+    await reloadAkiraAI();
 
     // Small delay so the message is delivered before the socket reconnects
     await new Promise(r => setTimeout(r, 2000));

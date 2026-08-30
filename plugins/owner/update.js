@@ -195,6 +195,8 @@ export default {
             // ── Step 3: hot-reload plugins ────────────────────────────────────────
             try {
                 const { totalPlugins, totalCommands } = await loadPlugins(prefix);
+                const { reloadAkiraAI } = await import("../../lib/akiraHandler.mjs");
+                await reloadAkiraAI();
 
                 await sock.sendMessage(jid, {
                     text:
