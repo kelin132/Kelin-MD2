@@ -21,7 +21,7 @@ export default {
     const existing = await getAllPets(sender);
     if (existing.length > 0) {
       return sock.sendMessage(jid, {
-        text: `🐾 You already have a pet!\n\nUse *.pets* to see your pets or *.hatch* to get more.`,
+        text: `⚠️ *You already own a pet!*\n\nUse *.pets* to view your companions or *.hatch* to obtain more.`,
       }, { quoted: msg });
     }
 
@@ -30,10 +30,18 @@ export default {
     if (!choice || !STARTER_SPECIES.includes(choice)) {
       const list = STARTER_SPECIES.map(s => {
         const sp = PET_SPECIES[s];
-        return `• *${s}* — ${sp.name} (${RARITIES[sp.rarity].label})`;
+        return `> • *${sp.name}* \`(${s})\` — ${RARITIES[sp.rarity].label}`;
       }).join("\n");
+
       return sock.sendMessage(jid, {
-        text: `🐾 *PET ADOPTION*\n\nChoose your starter companion:\n\n${list}\n\nUsage: *.adopt <name>*\nExample: *.adopt cat*`,
+        text: `╭━━━〔 🐾 *STARTER ADOPTION* 〕━━━\n` +
+              `┃ Choose your first companion:\n` +
+              `┃\n` +
+              `${list}\n` +
+              `┃\n` +
+              `┃ 💡 *Usage:* \`.adopt <id>\`\n` +
+              `┃ 📌 *Example:* \`.adopt cat\`\n` +
+              `╰━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
       }, { quoted: msg });
     }
 
@@ -43,28 +51,26 @@ export default {
     const rarity    = RARITIES[pet.rarity];
 
     const caption = [
-      `꧁━━〔 🐾 *N E W  C O M P A N I O N!* 〕━━꧂`,
+      `┌─  🐾 *NEW COMPANION ADOPTED!*`,
+      `├──────────────────────────`,
+      `│ 🏷️ *Name:* ${pet.name}`,
+      `│ 📖 *Species:* ${sp.name}`,
+      `│ ⭐ *Rarity:* ${rarity.color} ${rarity.label}`,
+      `│ ✨ *Level:* 1`,
+      `├──────────────────────────`,
+      `│ 📊 *BASE STATS*`,
+      `│ ❤️  *HP:* ${pet.maxHp}`,
+      `│ ⚔️  *ATK:* ${pet.attack}  │  🛡️ *DEF:* ${pet.defense}`,
+      `│ ⚡  *SPD:* ${pet.speed}`,
+      `├──────────────────────────`,
+      `│ ❇️ *STATUS*`,
+      `│ 🍖 *Hunger:* 100% [████████]`,
+      `│ 😊 *Happy:*  100% [████████]`,
+      `├──────────────────────────`,
+      `│ 🎁 *Skill:* ${pet.skill}`,
+      `└──────────────────────────`,
       ``,
-      `  ${rarity.color} *${pet.name}*`,
-      `  📖 *${sp.name}*  ✦  ⭐ *${rarity.label}*`,
-      ``,
-      `  〔 ⚔️ *BATTLE STATS* 〕`,
-      `  ━━━━━━━━━━━━━━━━━━━━━━━`,
-      `  ❤️  *HP*       *${pet.maxHp}*`,
-      `  ⚔️  *Attack*   *${pet.attack}*`,
-      `  🛡  *Defense*  *${pet.defense}*`,
-      `  ⚡  *Speed*    *${pet.speed}*`,
-      ``,
-      `  〔 🌸 *STATUS* 〕`,
-      `  ━━━━━━━━━━━━━━━━━━━━━━━`,
-      `  🍖 *Hunger*    *100%*  ▰▰▰▰▰▰▰▰`,
-      `  😊 *Happy*     *100%*  ▰▰▰▰▰▰▰▰`,
-      ``,
-      `  ✨ *Level 1*  〔 🎁 *${pet.skill}* 〕`,
-      ``,
-      `  *.pet* ✦ *.feed* ✦ *.play* ✦ *.trainpet*`,
-      ``,
-      `꧂━━━━━━━━━━━━━━━━━━━━━━━━━━━━꧁`,
+      `🎮 *Commands:* \`.pet\` • \`.feed\` • \`.play\` • \`.trainpet\``,
     ].join("\n");
 
     if (imageUrl) {
