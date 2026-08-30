@@ -76,7 +76,12 @@ export default {
 
     const village = villages[choice - 1];
     const base = ranks[0];
-    const bonus = { ...(session.clan.bonus || {}), ...(village.bonus || {}) };
+    const bonus = {};
+    for (const source of [session.clan.bonus || {}, village.bonus || {}]) {
+      for (const [stat, value] of Object.entries(source)) {
+        bonus[stat] = (bonus[stat] || 0) + value;
+      }
+    }
     const stats = {
       hp: base.hp + (bonus.hp || 0),
       chakra: base.chakra + (bonus.chakra || 0),
