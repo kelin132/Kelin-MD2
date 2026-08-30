@@ -2,26 +2,62 @@
  * KELIN MD — Akira command plugin
  *
  * Auto-replies are handled by akiraHandler.mjs. This command remains useful
- * for private prompts and for managing the current user's memory.
+ * for group prompts, group AI controls, and managing the current user's memory.
  */
 import {
   callAkira,
   resetAkiraSession,
 } from "../../lib/akiraAI.mjs";
 import { getAkiraMemory } from "../../lib/akiraMemory.mjs";
+import { groupSettings } from "../../lib/groupSettings.js";
 
 export default {
   name: "akira",
-  description: "Chat with Akira — a short, mixed-personality anime girl companion",
+  description: "Chat with Akira in groups and control the group AI mode",
   category: "ai",
-  usage: ".akira <message> | .akira reset | .akira info",
+  usage: ".akira <message> | .akira on | .akira off | .akira status | .akira reset | .akira info",
   aliases: ["ak"],
   cooldown: 5,
   hidden: false,
+  isAdmin: true,
 
   async run({ sock, msg, text, args }) {
+    const chatJid = msg.key.remoteJid || "";
+    if (!chatJid.endsWith("@g.us")) return;
+
     const userJid = msg.key.participant || msg.key.remoteJid || "";
     const subcommand = String(args?.[0] || "").toLowerCase();
+
+    if (subcommand === "on" || subcommand === "off") {
+      const enabled = subcommand === "on";
+      groupSettings.set(chatJid, { akiraEnabled: enabled });
+      await sock.sendMessage(
+        chatJid,
+        {
+          text: enabled
+            ? "✅ Akira AI is now *ON* in this group.\nMention her, reply to her, or say her name to chat."
+            : "✅ Akira AI is now *OFF* in this group.\nUse *.akira on* whenever you want to turn her back on.",
+        },
+        { quoted: msg }
+      );
+      return;
+    }
+
+    if (subcommand === "status") {
+      const enabled = groupSettings.get(chatJid).akiraEnabled !== false;
+      await sock.sendMessage(
+        chatJid,
+        {
+          text: `🤖 Akira AI is currently *${enabled ? "ON" : "OFF"}* in this group.\n${
+            enabled
+              ? "Use *.akira off* to disable her."
+              : "Use *.akira on* to enable her."
+          }`,
+        },
+        { quoted: msg }
+      );
+      return;
+    }
 
     if (subcommand === "reset") {
       await resetAkiraSession(userJid);
