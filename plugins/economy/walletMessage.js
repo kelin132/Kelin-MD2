@@ -7,29 +7,17 @@ function tagFor(jid) {
 }
 
 export function formatWalletTransfer({
-  action,
   amount,
-  senderJid,
   targetJid,
   receiverName,
   balance,
 }) {
   const recipient = receiverName
-    ? `${tagFor(targetJid)} • ${clean(receiverName)}`
+    ? `${tagFor(targetJid)} (${clean(receiverName)})`
     : tagFor(targetJid);
 
-  return [
-    "╭━━━〔 🔖 WALLET 〕━━━╮",
-    "┃",
-    `┃  ✅ ${action}`,
-    "┃  ─────────────────────",
-    `┃  FROM    ${tagFor(senderJid)}`,
-    `┃  TO      ${recipient}`,
-    `┃  AMOUNT  $${Number(amount || 0).toLocaleString()}`,
-    "┃",
-    "┃  ─────────────────────",
-    `┃  BALANCE $${Number(balance || 0).toLocaleString()}`,
-    "┃",
-    "╰━━━━━━━━━━━━━━━━━━━━━━━━╯",
-  ].join("\n");
+  const formattedAmount = Number(amount || 0).toLocaleString();
+  const formattedBalance = Number(balance || 0).toLocaleString();
+
+  return `You have sent ${recipient} $${formattedAmount}\nBalance ~ $${formattedBalance} 🪙`;
 }
