@@ -6,7 +6,7 @@ const READMORE = "\u200B".repeat(4000);
 
 const categoryEmojis = {
   main: "🏡", economy: "💰", guild: "⚔️", naruto: "🪾", dragonball: "🐉",
-  pokemon: "🎮", cards: "🃏", pets: "🐾", anime: "🍡", staff: "🛡️",
+  pokemon: "🎮", ptcg: "🎴", cards: "🃏", pets: "🐾", anime: "🍡", staff: "🛡️",
   company: "🏢", games: "🎲", fun: "🎀", ai: "🪄", search: "🔎",
   image: "🎨", utilities: "🔧", download: "📥", group: "🌸", admin: "⚜️",
   owner: "👑", rpg: "🛡️", tools: "⚒️", weapons: "⚔️", armor: "🛡️",
@@ -16,7 +16,7 @@ const categoryEmojis = {
 
 const categoryTitles = {
   main: "MAIN", economy: "ECONOMY", guild: "GUILD", pets: "PETS",
-  cards: "CARDS", pokemon: "POKEMON", dragonball: "DRAGON BALL",
+  cards: "CARDS", ptcg: "POKÉMON TCG POCKET", pokemon: "POKEMON", dragonball: "DRAGON BALL",
   rpg: "RPG ADVENTURE", games: "GAMES", fun: "FUN", ai: "AI",
   search: "SEARCH", image: "IMAGE", utilities: "UTILITIES",
   download: "DOWNLOAD", group: "GROUP", anime: "ANIME",
@@ -96,7 +96,7 @@ export default {
 
     const showStaff = isOwner || isStaff || isMod;
     const order = [
-      "main", "economy", "company", "guild", "pets", "cards", "naruto",
+      "main", "economy", "company", "guild", "pets", "cards", "ptcg", "naruto",
       "pokemon", "dragonball", "dbz", "rpg", "games", "fun", "ai", "search", "media",
       "image", "utilities", "download", "group", "admin", "anime",
       "tools", "weapons", "armor", "potions", "consumables", "scrolls",
