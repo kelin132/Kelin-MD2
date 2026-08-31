@@ -19,6 +19,7 @@ import {
 } from "../../lib/ptcg/database.mjs";
 import {
   PACK_PRICE,
+  PACK_COOLDOWN_MS,
   RARITY_INFO,
   allCards,
   cardKey,
@@ -27,6 +28,7 @@ import {
   findCardByKey,
   formatCard,
   listSetPacks,
+  pickSpawnCard,
   rarityEmoji,
   rarityLabel,
   rarityOrder,
@@ -39,7 +41,8 @@ import {
 const spawns = new Map();
 const spawnCooldowns = new Map();
 const SPAWN_TTL = 10 * 60 * 1000;
-const SPAWN_COOLDOWN = 60 * 1000;
+const SPAWN_COOLDOWN = 20 * 60 * 1000;
+const packCooldowns = new Map();
 const MARKET_PAGE_SIZE = 10;
 const COLLECTION_PAGE_SIZE = 15;
 
@@ -118,11 +121,11 @@ async function sendCard(sock, msg, card, caption, mentions = []) {
 function helpText() {
   return `🎴 *POKÉMON TCG POCKET*
 
-Open real Pokémon TCG Pocket packs using your economy coins.
+Collect real Pokémon TCG Pocket cards using the anime-style spawn system.
 
 📦 *Packs*
 • *.ptcg packs* — show available sets
-• *.ptcg open A1* — open a 5-card pack (${money(PACK_PRICE)} coins)
+• *.ptcg open A1* — open a 5-card pack (${money(PACK_PRICE)} coins, 1-minute cooldown)
 
 🔎 *Collection*
 • *.ptcg collection [page]* — view your cards
@@ -133,7 +136,7 @@ Open real Pokémon TCG Pocket packs using your economy coins.
 • *.ptcg rarities* — rarity values and labels
 
 🎁 *Group spawns*
-• *.ptcg spawn [set]* — spawn a card in this chat
+• *.ptcg spawn [set]* — spawn one random card (20-minute group cooldown)
 • *.ptcg claim* — claim the current spawn
 
 💱 *Trading*
@@ -183,6 +186,12 @@ async function openPack({ sock, msg, sender, setCode }) {
   if (!set) return reply(sock, msg, `❌ Unknown set "*${setCode}*".\n\nUse *.ptcg packs* to see valid set codes.`);
   if (!await requireRegistration(sock, msg, sender)) return;
 
+  const lastPack = packCooldowns.get(sender) || 0;
+  if (Date.now() - lastPack < PACK_COOLDOWN_MS) {
+    const left = Math.ceil((PACK_COOLDOWN_MS - (Date.now() - lastPack)) / 1000);
+    return reply(sock, msg, `⏳ Your Pokémon pack is on cooldown. Try again in *${left}s*.`);
+  }
+
   const charged = await debitEconomy(sender, PACK_PRICE);
   if (!charged) {
     return reply(
@@ -192,6 +201,7 @@ async function openPack({ sock, msg, sender, setCode }) {
     );
   }
 
+  packCooldowns.set(sender, Date.now());
   try {
     const pulled = drawPack(set.code);
     if (!pulled.length) throw new Error("No cards were drawn");
@@ -216,6 +226,7 @@ async function openPack({ sock, msg, sender, setCode }) {
     const first = pulled[0];
     return sendCard(sock, msg, first, caption, [sender]);
   } catch (error) {
+    packCooldowns.delete(sender);
     await creditEconomy(sender, PACK_PRICE);
     console.error("PTCG OPEN ERROR:", error);
     return reply(sock, msg, "❌ The pack could not be opened, so your coins were refunded.");
@@ -224,8 +235,8 @@ async function openPack({ sock, msg, sender, setCode }) {
 
 async function spawnCard({ sock, msg, sender, setCode }) {
   const gid = msg.key.remoteJid;
-  const set = setByCode(setCode || "A1");
-  if (!set) return reply(sock, msg, `❌ Unknown set "*${setCode}*". Use *.ptcg packs*.`);
+  const set = setCode ? setByCode(setCode) : null;
+  if (setCode && !set) return reply(sock, msg, `❌ Unknown set "*${setCode}*". Use *.ptcg packs*.`);
 
   const last = spawnCooldowns.get(gid) || 0;
   if (Date.now() - last < SPAWN_COOLDOWN) {
@@ -234,7 +245,7 @@ async function spawnCard({ sock, msg, sender, setCode }) {
   }
   if (spawns.has(gid)) return reply(sock, msg, "🎴 A Pokémon card is already waiting to be claimed in this chat.");
 
-  const card = drawPack(set.code)?.[0];
+  const card = pickSpawnCard(set?.code);
   if (!card) return reply(sock, msg, "❌ Could not draw a card from that set.");
   spawns.set(gid, { card, expiresAt: Date.now() + SPAWN_TTL });
   spawnCooldowns.set(gid, Date.now());
@@ -243,7 +254,7 @@ async function spawnCard({ sock, msg, sender, setCode }) {
     sock,
     msg,
     card,
-    `🎴 *POKÉMON CARD SPAWNED!*\n\n${formatCard(card)}\n\n💬 Type *.ptcg claim* to collect it.\n⚡ First person to claim it wins!\n⏳ Expires in 10 minutes.`,
+    `🎴 *POKÉMON CARD SPAWNED!*\n\n${formatCard(card)}\n📦 Set: ${setName(card.set)}\n\n💬 Type *.ptcg claim* to collect it.\n⚡ First person to claim it wins!\n⏳ Expires in 10 minutes.\n\n⏱️ The next group spawn can happen in 20 minutes.`,
   );
 }
 
