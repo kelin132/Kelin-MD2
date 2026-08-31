@@ -134,11 +134,7 @@ ${BOT_NAME} is now in the group.`
     if (!groupJid) return; // safety — can't send without a valid JID
 
     const introText =
-`╭━━━『 ${BOT_NAME} 』━━━╮
-
-Thank you for adding me into this group, type *${PREFIX}menu* to begin.
-
-╰━━━━━━━━━━━━━━━━━━━━╯`;
+`Thank you for adding me into this group,type *${PREFIX}menu* to begin.`;
 
     try {
       await sock.sendMessage(groupJid, { text: introText });
