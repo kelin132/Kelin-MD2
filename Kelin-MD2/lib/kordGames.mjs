@@ -120,17 +120,6 @@ export async function deleteWordChain({ sock, msg }) {
   return send(sock, jid, "🎮 Word Chain game deleted successfully.", msg);
 }
 
-export async function processTicTacToeMove({ sock, msg, sender, input }) {
-  const jid = msg.key.remoteJid;
-  const room = tttGames.get(jid);
-  if (!room) return send(sock, jid, "❌ No active TicTacToe game here.", msg);
-  if (room.state !== "PLAYING") return send(sock, jid, "⏳ The game is still waiting for Player 2.", msg);
-  if (![room.playerX, room.playerO].includes(sender)) {
-    return send(sock, jid, "❌ You are not a player in this game.", msg);
-  }
-  return applyTttInput(sock, jid, room, sender, input, msg);
-}
-
 async function applyTttInput(sock, jid, room, sender, input, msg) {
   const normalized = String(input || "").trim().toLowerCase();
   if (!/^(?:[1-9]|(?:me)?give[ _]?up|surr?ender|off|skip)$/.test(normalized)) return false;
