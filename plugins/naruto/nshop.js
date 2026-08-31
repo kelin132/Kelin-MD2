@@ -11,7 +11,7 @@ export default {
   description: "Buy ninja items",
   category: "naruto",
   usage: ".nshop [number]",
-  cooldown: 120,
+  cooldown: 40,
 
   async run({ sock, msg, sender, text }) {
     const jid = msg.key.remoteJid;
