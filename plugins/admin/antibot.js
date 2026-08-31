@@ -4,7 +4,7 @@ export default {
   name: "antibot",
   aliases: ["nobot", "antibots"],
   description: "Detect and manage bots in the group",
-  category: "admin",
+  category: "group",
   usage: ".antibot on | off | warn | kick | status | scan",
   isAdmin: true,
   cooldown: 5,

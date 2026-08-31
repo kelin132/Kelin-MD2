@@ -1,245 +1,151 @@
 /**
- * KELIN MD — .gstatus
- * Post a status update to the current group (text, image, or video).
- * Reply to an image or video then run .gstatus to post that media as status.
- *
- * Usage (inside a group):
- *   .gstatus <text>              — coloured text status (random bg)
- *   .gstatus <text>,<color>      — text status with chosen colour
- *   [reply to image/video] .gstatus — post that media as group status
- *
- * Usage (in DM — owner/staff only):
- *   .gstatus <groupjid>,<text>            — text status to specific group
- *   .gstatus <groupjid>,<text>,<color>    — with colour
- *   [reply to image/video] .gstatus <groupjid>  — media status to specific group
- *
- * Colors: green, red, blue, yellow, purple, black, white, orange
+ * KELIN MD — group status
+ * Group-only implementation of SUKUNA's group status command.
  */
 import {
   downloadContentFromMessage,
-  prepareWAMessageMedia,
+  generateWAMessageContent,
   generateWAMessageFromContent,
   proto,
 } from "@whiskeysockets/baileys";
 
 const COLORS = {
-  green:  0xFF25D366,
-  red:    0xFFFF0000,
-  blue:   0xFF0000FF,
+  green: 0xFF25D366,
+  red: 0xFFFF0000,
+  blue: 0xFF0000FF,
   yellow: 0xFFFFFF00,
   purple: 0xFF800080,
-  black:  0xFF000000,
-  white:  0xFFFFFFFF,
+  black: 0xFF000000,
+  white: 0xFFFFFFFF,
   orange: 0xFFFFA500,
 };
 
-/** Random opaque ARGB colour */
-function randomColor() {
-  const hex = Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0");
-  return 0xff000000 + parseInt(hex, 16);
+export default {
+  name: "gstatus",
+  aliases: ["gcstatus", "groupstatus"],
+  description: "Post a text, image, or video status to the current group",
+  category: "group",
+  usage: ".gstatus <text[,color]> or reply to media",
+  cooldown: 5,
+
+  async run({ sock, msg, text }) {
+    const jid = msg.key.remoteJid;
+    if (!jid?.endsWith("@g.us")) {
+      return sock.sendMessage(jid, {
+        text: "👥 Use .gstatus inside the group where the status should be posted.",
+      }, { quoted: msg });
+    }
+
+    const ctx =
+      msg.message?.extendedTextMessage?.contextInfo ||
+      msg.message?.imageMessage?.contextInfo ||
+      msg.message?.videoMessage?.contextInfo ||
+      msg.message?.audioMessage?.contextInfo ||
+      msg.message?.documentMessage?.contextInfo ||
+      msg.message?.stickerMessage?.contextInfo ||
+      null;
+    const quoted = ctx?.quotedMessage || null;
+    const media = findMedia(quoted);
+
+    if (!text?.trim() && !media) {
+      return sock.sendMessage(jid, {
+        text:
+`📢 *Group Status*
+
+Text:
+.gstatus Good morning!
+.gstatus Good morning!,blue
+
+Media:
+Reply to an image, video, audio, document, or sticker, then use .gstatus
+
+Colors: ${Object.keys(COLORS).join(", ")}`,
+      }, { quoted: msg });
+    }
+
+    try {
+      if (media) {
+        const buffer = await downloadQuoted(media.message, media.type);
+        const content = buildMediaContent(media, buffer);
+        await relayGroupStatus(sock, jid, content);
+      } else {
+        const { message, color } = parseTextStatus(text);
+        await relayGroupStatus(sock, jid, {
+          extendedTextMessage: {
+            text: message,
+            backgroundArgb: color,
+            font: 2,
+          },
+        });
+      }
+
+      return sock.sendMessage(jid, { text: "✅ Group status posted." }, { quoted: msg });
+    } catch (err) {
+      console.error("[gstatus]", err.message);
+      return sock.sendMessage(jid, { text: `❌ Failed to post group status: ${err.message}` }, { quoted: msg });
+    }
+  },
+};
+
+function findMedia(message) {
+  if (!message) return null;
+  if (message.imageMessage) return { type: "image", message: message.imageMessage };
+  if (message.videoMessage) return { type: "video", message: message.videoMessage };
+  if (message.audioMessage) return { type: "audio", message: message.audioMessage };
+  if (message.documentMessage) return { type: "document", message: message.documentMessage };
+  if (message.stickerMessage) return { type: "sticker", message: message.stickerMessage };
+  return null;
 }
 
-/** Download a quoted media message into a Buffer */
-async function downloadQuoted(mediaMsg, type) {
-  const stream = await downloadContentFromMessage(mediaMsg, type);
+async function downloadQuoted(message, type) {
+  const stream = await downloadContentFromMessage(message, type);
   const chunks = [];
   for await (const chunk of stream) chunks.push(chunk);
   return Buffer.concat(chunks);
 }
 
-export default {
-  name: "gstatus",
-  aliases: ["gcstatus", "groupstatus"],
-  description: "Post a text, image, or video status to the group",
-  category: "group",
-  usage: ".gstatus <text[,color]>  |  reply to image/video + .gstatus",
-  isMod: true,
-  cooldown: 5,
+function buildMediaContent(media, buffer) {
+  if (media.type === "image") return { image: buffer, caption: media.message.caption || "" };
+  if (media.type === "video") return { video: buffer, caption: media.message.caption || "" };
+  if (media.type === "audio") {
+    return {
+      audio: buffer,
+      mimetype: media.message.mimetype || "audio/ogg; codecs=opus",
+      ptt: !!media.message.ptt,
+    };
+  }
+  if (media.type === "document") {
+    return {
+      document: buffer,
+      mimetype: media.message.mimetype || "application/octet-stream",
+      fileName: media.message.fileName || "group_status_file",
+      caption: media.message.caption || "",
+    };
+  }
+  return { sticker: buffer };
+}
 
-  async run({ sock, msg, args, text, sender, isOwner, isStaff }) {
-    const jid     = msg.key.remoteJid;
-    const isGroup = jid?.endsWith("@g.us");
+function parseTextStatus(value) {
+  const parts = String(value || "").split(",");
+  const possibleColor = parts.at(-1)?.trim().toLowerCase();
+  const hasColor = Boolean(COLORS[possibleColor]);
+  return {
+    message: (hasColor ? parts.slice(0, -1) : parts).join(",").trim(),
+    color: hasColor ? COLORS[possibleColor] : randomColor(),
+  };
+}
 
-    const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
-    const react = (e) => sock.sendMessage(jid, { react: { text: e, key: msg.key } });
+function randomColor() {
+  return 0xFF000000 + Math.floor(Math.random() * 0xFFFFFF);
+}
 
-    // ── Resolve quoted media from contextInfo ─────────────────────────────
-    const ctx =
-      msg.message?.extendedTextMessage?.contextInfo ||
-      msg.message?.imageMessage?.contextInfo        ||
-      msg.message?.videoMessage?.contextInfo        ||
-      msg.message?.audioMessage?.contextInfo        ||
-      null;
-
-    const quotedMsg   = ctx?.quotedMessage || null;
-    const quotedImage = quotedMsg?.imageMessage   || null;
-    const quotedVideo = quotedMsg?.videoMessage   || null;
-    const hasMedia    = !!(quotedImage || quotedVideo);
-
-    // ── Parse target group and message text ───────────────────────────────
-    let targetGroup   = null;
-    let messageText   = null;
-    let chosenColor   = null;
-
-    if (!isGroup || text.startsWith("all,")) {
-      // DM usage or "all" broadcast — requires owner or staff
-      if (!isOwner && !isStaff) {
-        return reply("❌ Only staff can use this command from a DM or for broadcast.");
-      }
-
-      if (hasMedia) {
-        // Reply to media: first arg is the group JID or "all"
-        const target = text.trim() || (isGroup ? jid : null);
-        if (!target) {
-          return reply(
-`╭─🖼️「 *GSTATUS — USAGE* 」─╮
-│ Reply to an image or video, then:
-│ *.gstatus <groupjid | all>*
-│
-│ Example:
-│ .gstatus all
-│ .gstatus 1234567890-123456@g.us
-╰─────────────────────────────❀`
-          );
-        }
-        targetGroup = target;
-      } else {
-        // Text status: [all | groupjid],message[,color]
-        const parts = text.split(",").map(p => p.trim());
-        if (parts.length < (isGroup ? 1 : 2)) {
-          return reply(
-`╭─📝「 *GSTATUS — USAGE* 」─╮
-│ *.gstatus <groupjid | all>,<message>[,<color>]*
-│
-│ Example:
-│ .gstatus all,Hello everyone!
-│ .gstatus 1234567890@g.us,Good morning!,green
-│
-│ Colors: ${Object.keys(COLORS).join(", ")}
-╰─────────────────────────────❀`
-          );
-        }
-        
-        if (parts[0] === "all" || parts[0].endsWith("@g.us")) {
-          targetGroup = parts[0];
-          messageText = parts[1];
-          if (parts[2] && COLORS[parts[2].toLowerCase()]) {
-            chosenColor = COLORS[parts[2].toLowerCase()];
-          }
-        } else if (isGroup) {
-          targetGroup = jid;
-          messageText = parts[0];
-          if (parts[1] && COLORS[parts[1].toLowerCase()]) {
-            chosenColor = COLORS[parts[1].toLowerCase()];
-          }
-        }
-      }
-    } else {
-      // Group usage
-      targetGroup = jid;
-      if (!hasMedia) {
-        if (!text) {
-          return reply(
-`╭─📢「 *GSTATUS* 」─╮
-│ Post a status update to this group.
-│
-│ *Text status:*
-│ *.gstatus Hello group!*
-│ *.gstatus Hello!,blue*
-│
-│ *Image / video status:*
-│ Reply to an image or video, then:
-│ *.gstatus*
-│
-│ 🎨 Colors: ${Object.keys(COLORS).join(", ")}
-╰─────────────────────────────❀`
-          );
-        }
-
-        // Parse inline color: "Hello!,red"
-        if (text.includes(",")) {
-          const parts  = text.split(",").map(p => p.trim());
-          messageText  = parts[0];
-          if (parts[1] && COLORS[parts[1].toLowerCase()]) {
-            chosenColor = COLORS[parts[1].toLowerCase()];
-          }
-        } else {
-          messageText = text;
-        }
-      }
-    }
-
-    // ── Resolve targets ──────────────────────────────────────────────────
-    let targets = [];
-    if (targetGroup === "all") {
-      const chats = await sock.groupFetchAllParticipating();
-      targets = Object.keys(chats);
-    } else if (targetGroup?.endsWith("@g.us")) {
-      targets = [targetGroup];
-    } else {
-      return reply("❌ Invalid target. Use a group JID or *all*.");
-    }
-
-    if (targets.length === 0) return reply("❌ No target groups found.");
-
-    try {
-      let innerMsg = null;
-      if (hasMedia) {
-        const isImg   = !!quotedImage;
-        const rawMsg  = isImg ? quotedImage : quotedVideo;
-        const mType   = isImg ? "image" : "video";
-        const buffer  = await downloadQuoted(rawMsg, mType);
-        const mediaOptions = isImg
-          ? { image: buffer, caption: rawMsg.caption || "" }
-          : { video: buffer, caption: rawMsg.caption || "" };
-
-        const prepared = await prepareWAMessageMedia(mediaOptions, {
-          upload: sock.waUploadToServer,
-        });
-
-        innerMsg = isImg
-          ? { imageMessage: prepared.imageMessage }
-          : { videoMessage: prepared.videoMessage };
-      } else {
-        if (!messageText?.trim()) {
-          return reply("❌ Provide a message or reply to an image/video.");
-        }
-        const bgColor = chosenColor ?? randomColor();
-        innerMsg = {
-          extendedTextMessage: {
-            text:            messageText,
-            backgroundArgb:  bgColor,
-            font:            2,
-          },
-        };
-      }
-
-      const payload = { groupStatusMessageV2: { message: innerMsg } };
-
-      let successCount = 0;
-      for (const t of targets) {
-        try {
-          const waMsg = generateWAMessageFromContent(
-            t,
-            proto.Message.fromObject(payload),
-            { userJid: sock.user?.id }
-          );
-          await sock.relayMessage(t, waMsg.message, { messageId: waMsg.key.id });
-          successCount++;
-        } catch (e) {
-          console.error(`[gstatus] Failed to send to ${t}:`, e.message);
-        }
-      }
-
-      // ── Success ───────────────────────────────────────────────────────
-      await react("✅");
-      if (!isGroup || targetGroup === "all") {
-        await reply(`✅ Group status posted to *${successCount}/${targets.length}* groups.`);
-      }
-
-    } catch (err) {
-      await react("❌");
-      return reply(`❌ Failed to post group status: ${err.message}`);
-    }
-  },
-};
+async function relayGroupStatus(sock, jid, innerMessage) {
+  const content = innerMessage.extendedTextMessage
+    ? innerMessage
+    : await generateWAMessageContent(innerMessage, { upload: sock.waUploadToServer });
+  const wrapped = proto.Message.fromObject({
+    groupStatusMessageV2: { message: content },
+  });
+  const message = generateWAMessageFromContent(jid, wrapped, { userJid: sock.user?.id });
+  await sock.relayMessage(jid, message.message, { messageId: message.key.id });
+}
