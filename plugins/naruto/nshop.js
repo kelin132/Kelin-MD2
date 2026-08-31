@@ -15,7 +15,7 @@ export default {
 
   async run({ sock, msg, sender, text }) {
     const jid = msg.key.remoteJid;
-    const SHOP_COOLDOWN_MS = 120 * 1000;
+    const SHOP_COOLDOWN_MS = 40 * 1000;
 
     try {
       const player = await players.get(sender);
