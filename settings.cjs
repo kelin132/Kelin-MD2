@@ -2,9 +2,9 @@ const settings = {
   packname: 'AKIRA',
   botName: "AKIRA",
   botOwner: 'KELIN-MD', // Your name
-  ownerNumber: '27628114340', // Your number without + symbol
-  ownerContact: '2348152077346', // Number shown when someone uses .owner command
-  giphyApiKey: 'NrSjG6var2uiuSYDm0xTqCX0xcFgGj4s',
+  ownerNumber: process.env.OWNER_NUMBER || '', // Your number without + symbol
+  ownerContact: process.env.OWNER_CONTACT || process.env.OWNER_NUMBER || '',
+  giphyApiKey: process.env.GIPHY_API_KEY || '',
   commandMode: "private",
   maxStoreMessages: 20,
   storeWriteInterval: 10000,

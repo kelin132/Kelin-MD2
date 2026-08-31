@@ -1,126 +1,91 @@
-import players from "../../lib/player.js";
-import clans from "../../lib/clans.js";
-import villages from "../../lib/villages.js";
-import ranks from "../../lib/ranks.js";
+// plugins/naruto/start.js (nstart)
+// Creates the ninja profile and shows real clan character art
 
-const sessions = new Map();
-
-function clanMenu() {
-  return [
-    "🍃 *CHOOSE YOUR NARUTO CLAN*",
-    "",
-    ...clans.map((clan, index) => `*${index + 1}.* ${clan.name} — ${clan.ability}`),
-    "",
-    "Reply with `.nstart <number>`.",
-  ].join("\n");
-}
-
-function villageMenu() {
-  return [
-    "🍃 *CHOOSE YOUR HIDDEN VILLAGE*",
-    "",
-    ...villages.map((village, index) => `*${index + 1}.* ${village.emoji} ${village.name} — ${village.description}`),
-    "",
-    "Reply with `.nstart <number>`.",
-  ].join("\n");
-}
+import players  from "../../lib/naruto/players.js";
+import villages from "../../lib/naruto/villages.js";
+import clans    from "../../lib/naruto/clans.js";
+import { random } from "../../lib/naruto/utils.js";
+import { sendWithClanImage } from "../../lib/gifHelper.mjs";
 
 export default {
   name: "nstart",
-  aliases: ["narutostart", "shinobistart"],
-  description: "Create your Naruto shinobi",
+  description: "Create your Naruto ninja profile",
   category: "naruto",
   usage: ".nstart",
-  cooldown: 3,
 
-  async run({ sock, msg, text, sender }) {
+  async run({ sock, msg, sender }) {
     const jid = msg.key.remoteJid;
-    const existing = await players.get(sender);
-    if (existing) {
-      return sock.sendMessage(jid, {
-        text: `🍃 You already have a shinobi, *${existing.username}*.\nUse *.nprofile* to view the profile.`,
-      }, { quoted: msg });
-    }
 
-    const input = String(text || "").trim();
-    let session = sessions.get(sender);
+    try {
+      const existing = await players.get(sender);
 
-    if (!session) {
-      if (!input) {
-        sessions.set(sender, { step: "clan" });
-        return sock.sendMessage(jid, { text: clanMenu() }, { quoted: msg });
+      if (existing) {
+        return sock.sendMessage(jid, {
+          text: "🥷 You already have a ninja profile!\n\nUse .nprofile to view your stats."
+        }, { quoted: msg });
       }
-      session = { step: "clan" };
+
+      const village = random(villages);
+      const clan    = random(clans);
+
+      const baseHp     = 100 + (clan.bonus?.hp     || 0);
+      const baseChakra = 100 + (clan.bonus?.chakra  || 0);
+      const baseAtk    = 10  + (clan.bonus?.attack  || 0);
+      const baseDef    = 10  + (clan.bonus?.defense || 0);
+      const baseSpd    = 10  + (clan.bonus?.speed   || 0);
+
+      const player = await players.create({
+        jid: sender,
+        username:     msg.pushName || "Unknown Ninja",
+        village:      { id: village.id, name: village.name, emoji: village.emoji },
+        clan:         { name: clan.name, ability: clan.ability },
+        rank:         "Academy Student",
+        title:        "Rookie Ninja",
+        level:        1,
+        xp:           0,
+        xpNeeded:     100,
+        hp:           baseHp,
+        maxHp:        baseHp,
+        chakra:       baseChakra,
+        maxChakra:    baseChakra,
+        attack:       baseAtk,
+        defense:      baseDef,
+        speed:        baseSpd,
+        ryo:          500,
+        wins:         0,
+        losses:       0,
+        jutsu:        [{ id: "basic_taijutsu", name: "Basic Taijutsu" }],
+        inventory:    [],
+        createdAt:    new Date(),
+      });
+
+      await player.save();
+
+      const caption =
+`🍃 *NINJA REGISTRATION COMPLETE* 🍃
+
+🥷 Name: *${player.username}*
+🏯 Village: ${village.emoji} *${village.name}*
+👁️ Clan: *${clan.name}*
+🌟 Clan Ability: ${clan.ability}
+
+⭐ Rank: Academy Student
+❤️ HP: ${player.hp}/${player.maxHp}
+💙 Chakra: ${player.chakra}/${player.maxChakra}
+⚔️ Attack: ${player.attack}
+🛡️ Defense: ${player.defense}
+💨 Speed: ${player.speed}
+💰 Starting Ryo: 500
+
+Your ninja journey begins! 🥷
+Use *.nprofile* | *.nmission* | *.ntrain*`;
+
+      // Show real character art from the player's clan
+      return sendWithClanImage(sock, jid, msg, caption, clan.name, "start");
+
+    } catch (err) {
+      console.error("NSTART ERROR:", err);
+      return sock.sendMessage(jid, { text: "❌ Failed to create ninja profile." }, { quoted: msg });
     }
-
-    const choice = Number.parseInt(input, 10);
-    if (!Number.isInteger(choice)) {
-      return sock.sendMessage(jid, {
-        text: session.step === "clan" ? clanMenu() : villageMenu(),
-      }, { quoted: msg });
-    }
-
-    if (session.step === "clan") {
-      if (choice < 1 || choice > clans.length) {
-        return sock.sendMessage(jid, { text: `❌ Choose a clan from 1 to ${clans.length}.` }, { quoted: msg });
-      }
-      session.clan = clans[choice - 1];
-      session.step = "village";
-      sessions.set(sender, session);
-      return sock.sendMessage(jid, { text: villageMenu() }, { quoted: msg });
-    }
-
-    if (choice < 1 || choice > villages.length) {
-      return sock.sendMessage(jid, { text: `❌ Choose a village from 1 to ${villages.length}.` }, { quoted: msg });
-    }
-
-    const village = villages[choice - 1];
-    const base = ranks[0];
-    const bonus = {};
-    for (const source of [session.clan.bonus || {}, village.bonus || {}]) {
-      for (const [stat, value] of Object.entries(source)) {
-        bonus[stat] = (bonus[stat] || 0) + value;
-      }
-    }
-    const stats = {
-      hp: base.hp + (bonus.hp || 0),
-      chakra: base.chakra + (bonus.chakra || 0),
-      attack: base.attack + (bonus.attack || 0),
-      defense: base.defense + (bonus.defense || 0),
-      speed: base.speed + (bonus.speed || 0),
-    };
-    const username = msg.pushName || sender.split("@")[0];
-
-    const player = await players.create({
-      jid: sender,
-      username,
-      clan: session.clan.name,
-      village: village.id,
-      hp: stats.hp,
-      maxHp: stats.hp,
-      chakra: stats.chakra,
-      maxChakra: stats.chakra,
-      attack: stats.attack,
-      defense: stats.defense,
-      speed: stats.speed,
-    });
-    sessions.delete(sender);
-
-    return sock.sendMessage(jid, {
-      text: [
-        `🍃 *WELCOME, ${username.toUpperCase()}*`,
-        "",
-        `👤 Clan: *${player.clan}*`,
-        `${village.emoji} Village: *${village.name}*`,
-        "🎖️ Rank: *Academy Student*",
-        "",
-        `❤️ HP: ${player.hp}/${player.maxHp}`,
-        `💠 Chakra: ${player.chakra}/${player.maxChakra}`,
-        `⚔️ ATK: ${player.attack}  🛡️ DEF: ${player.defense}  💨 SPD: ${player.speed}`,
-        `💰 Starting ryo: ${player.ryo}`,
-        "",
-        "Use *.nmission* to earn rewards or *.nbattle* to test your chakra.",
-      ].join("\n"),
-    }, { quoted: msg });
-  },
+  }
 };
