@@ -19,5 +19,5 @@ export function formatWalletTransfer({
   const formattedAmount = Number(amount || 0).toLocaleString();
   const formattedBalance = Number(balance || 0).toLocaleString();
 
-  return `You have sent ${recipient} $${formattedAmount}\nBalance ~ $${formattedBalance} 🪙`;
+  return `You have sent ${recipient} $${formattedAmount}\nbalance - $${formattedBalance} 🪙`;
 }
