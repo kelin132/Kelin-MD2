@@ -2,7 +2,7 @@ import { getAnimeGif } from "./_helper.js";
 
 export default {
   name: "waifu",
-  aliases: ["anime"],
+  aliases: [],
   description: "Get a random anime waifu image",
   category: "anime",
   usage: ".waifu",

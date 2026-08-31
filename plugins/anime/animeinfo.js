@@ -4,11 +4,11 @@
 import { searchAnimeIndo } from "../../lib/davidcyrilAPI.mjs";
 
 export default {
-  name: "anime",
+  name: "animeinfo",
   description: "Search anime information",
   category: "anime",
   usage: ".anime <anime name>",
-  aliases: ["animeinfo", "ani"],
+  aliases: ["ani"],
   cooldown: 5,
 
   async run({ sock, msg, text }) {
