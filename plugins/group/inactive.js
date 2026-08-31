@@ -9,6 +9,7 @@ export default {
   category: "group",
   usage: ".inactive [days]",
   cooldown: 10,
+  IsAdmin: true,
 
   async run({ sock, msg, args }) {
     const jid = msg.key.remoteJid;
