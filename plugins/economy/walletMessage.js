@@ -13,7 +13,7 @@ export function formatWalletTransfer({
   balance,
 }) {
   const recipient = receiverName
-    ? `${tagFor(targetJid)} (${clean(receiverName)})`
+    ? `${tagFor(targetJid)}`
     : tagFor(targetJid);
 
   const formattedAmount = Number(amount || 0).toLocaleString();
