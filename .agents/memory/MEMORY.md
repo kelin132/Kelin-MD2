@@ -1,1 +1,2 @@
 - [Native canvas dependency](native-canvas.md) — the bot’s canvas renderer needs a successful native `canvas` build; syntax and plugin loading can still pass while renderer plugins warn.
+- [Workflow restart persistence](workflow-restart-persistence.md) — commit bot changes before workflow restarts because uncommitted batches may be reconciled away.
