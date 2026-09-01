@@ -6,7 +6,8 @@
 import { getRpgUser, saveRpgUser } from "./db.js";
 
 export default {
-  name: "heal",
+  name: "rpg-heal",
+  aliases: ["rpgheal", "rheal"],
   description: "Heal your RPG character",
   category: "rpg",
   usage: ".rpg-heal",

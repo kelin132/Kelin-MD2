@@ -2,7 +2,7 @@ import { getRpgUser, createRpgUser, CLASSES } from "./db.js";
 
 export default {
   name: "rpg-start",
-  aliases: ["rpgstart", "startrpg"],
+  aliases: ["rpg", "rpgstart", "startrpg", "rpgbegin"],
   category: "rpg",
   description: "Start your RPG journey and pick a class",
   usage: ".rpg-start <warrior|mage|rogue>",
@@ -17,7 +17,8 @@ export default {
         return reply(`❌ You have already started your journey as a *${existing.class}*!\nUse *.rpg-profile* to see your stats.`);
       }
 
-      const choice = (args[0] || "").toLowerCase();
+      const first = (args[0] || "").toLowerCase();
+      const choice = (first === "start" ? args[1] : first || "").toLowerCase();
       if (!CLASSES[choice]) {
         let text = "🎮 *WELCOME TO THE KELIN RPG* 🎮\n\nPick a class to begin your adventure:\n\n";
         for (const [key, c] of Object.entries(CLASSES)) {

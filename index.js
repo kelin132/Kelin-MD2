@@ -67,9 +67,11 @@ if (!isRegistered()) {
 }
 
 // ── Connect to MongoDB ────────────────────────────────────────────────────────
+let databaseReady = false;
 try {
   await connectDb();
   await initGroupSettings();   // load group settings (welcome, antilink, etc.) from MongoDB
+  databaseReady = true;
 
   // ── One-time migration: bump cardLimit from 100 → 250 for existing users ──
   try {
@@ -87,8 +89,7 @@ try {
   }
 } catch (err) {
   log("error", "MongoDB startup failed: " + String(err));
-  log("error", "Bot startup stopped before plugins loaded. Check MONGO_URI, MongoDB network access, and database permissions.");
-  process.exit(1);
+  log("warn", "Starting in degraded mode. Database-backed commands (RPG/economy) will retry after MongoDB is fixed.");
 }
 
 // ── Load plugins ──────────────────────────────────────────────────────────────
@@ -99,10 +100,10 @@ log("info", `Plugins loaded: ${totalPlugins} plugins, ${totalCommands} commands`
 await connectBot(BOT_NUMBER || null, PREFIX);
 
 // ── Card auto-spawner (drops a card in enabled groups every 15 min) ───────────
-startCardSpawner();
+if (databaseReady) startCardSpawner();
 
 // ── Tax scheduler (deducts 10% of wallet + bank every 48 h) ──────────────────
-startTaxScheduler();
+if (databaseReady) startTaxScheduler();
 
 // ── Auto-update check ─────────────────────────────────────────────────────────
 // Do not compete with the first connection/message burst for network and disk.

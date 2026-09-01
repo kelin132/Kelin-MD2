@@ -1,4 +1,4 @@
-import { getRpgUser } from "./db.js";
+import { advanceQuest, getRpgUser } from "./db.js";
 
 const DUNGEONS = [
   { name: "Dark Cave", minLevel: 5, bosses: ["Giant Bat", "Spider Queen"], gold: 500, xp: 200, emoji: "🕳️" },
@@ -58,6 +58,9 @@ export default {
         const xp = Math.floor(dungeon.xp * (0.8 + Math.random() * 0.4));
         user.gold += gold;
         user.xp += xp;
+        advanceQuest(user, "dungeon", 1);
+        advanceQuest(user, "xp", xp);
+        advanceQuest(user, "money", gold);
         
         await user.save();
         return reply(`🎊 *DUNGEON CLEARED!* 🎊\n\nYou defeated the *${boss}* in the *${dungeon.name}*!\n\n✨ XP: +${xp}\n💰 Gold: +${gold}`);

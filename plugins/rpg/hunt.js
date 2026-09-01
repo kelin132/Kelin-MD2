@@ -1,4 +1,4 @@
-import { getRpgUser } from "./db.js";
+import { addXp, advanceQuest, getRpgUser } from "./db.js";
 
 const MONSTERS = [
   { name: "Slime", hp: 30, atk: 5, xp: 10, gold: 20, emoji: "💧" },
@@ -65,23 +65,18 @@ export default {
       if (userHp > 0) {
         const xpGained = monster.xp + (user.level * 5);
         const goldGained = monster.gold + (user.level * 10);
-        user.xp += xpGained;
         user.gold += goldGained;
+        advanceQuest(user, "hunt", 1);
+        advanceQuest(user, "xp", xpGained);
+        advanceQuest(user, "money", goldGained);
         
         log += `\n🏆 *VICTORY!* 🏆\n`;
         log += `✨ XP: +${xpGained}\n`;
         log += `💰 Gold: +${goldGained}\n`;
 
-        // Level up check
-        const xpNeeded = user.level * 100;
-        if (user.xp >= xpNeeded) {
-          user.level++;
-          user.xp -= xpNeeded;
-          user.maxHp += 20;
-          user.hp = user.maxHp;
-          user.atk += 5;
-          user.def += 3;
-          log += `\n🎊 *LEVEL UP!* 🎊\nYou are now *Level ${user.level}*!\nStats increased!`;
+        const levels = addXp(user, xpGained);
+        if (levels > 0) {
+          log += `\n🎊 *LEVEL UP!* 🎊\nYou are now *Level ${user.level}* (+${levels} level${levels === 1 ? "" : "s"})!\nStats increased!`;
         }
       } else {
         log += `\n💀 *DEFEAT...*\nYou were knocked out by the ${monster.name}. No rewards gained.`;
