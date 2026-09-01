@@ -14,7 +14,7 @@ export default {
     const config = getEconomyPreviewConfig("mart");
     const text = `🏪 *AIDORU POKÉMON MART*
 
-Vist the mart on the website to make your purchases.💠
+ Visit the mart on the website to make your purchases.💠
 
 🔗 ${config.url}`;
     const externalAdReply = await buildEconomyExternalAdReply("mart");

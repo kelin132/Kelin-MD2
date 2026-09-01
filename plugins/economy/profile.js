@@ -86,7 +86,7 @@ export default {
   aliases: ["me", "acc", "account", "p"],
   cooldown: 5,
 
-  async run({ sock, msg, sender, isOwner, isMod, isStaff }) {
+  async run({ sock, msg, sender, cmd, isOwner, isMod, isStaff }) {
     const jid = msg.key.remoteJid;
 
     const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
@@ -174,7 +174,9 @@ export default {
 ╰━━━━━━━━━━━━━━━━━━━━━━╯`;
 
     let imgBuffer;
-    const externalAdReply = await buildEconomyExternalAdReply("profile");
+    const externalAdReply = cmd === "profile"
+      ? await buildEconomyExternalAdReply("profile")
+      : null;
     try {
       imgBuffer = await generateProfileImage({
         username:     registeredName,
