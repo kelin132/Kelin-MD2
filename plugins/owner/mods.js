@@ -4,6 +4,14 @@
 
 import { getModsData, saveModsData, getMods } from '../../lib/permissions.mjs';
 import { getStaffMembers } from '../economy/database.js';
+import {
+  bareNumber,
+  getAllGroupNumberMap,
+  getGroupNumberMap,
+  getSocketLidNumberMap,
+  mergeNumberMaps,
+  storedRealNumber,
+} from '../../lib/staffNumbers.mjs';
 
 const LEVEL_LABEL = {
   1:  'MOD',
@@ -16,23 +24,6 @@ const CACHE_TTL_MS = 30_000;
 let staffCache = null;
 let staffCacheAt = 0;
 let staffCacheInFlight = null;
-const groupNumberCaches = new Map();
-const groupNumberInFlight = new Map();
-let allGroupNumberCache = null;
-let allGroupNumberInFlight = null;
-
-function bareNumber(value) {
-  return String(value || '').split('@')[0].split(':')[0].replace(/\D/g, '');
-}
-
-function addParticipantsToNumberMap(numberMap, participants = []) {
-  for (const participant of participants) {
-    const phoneNumber = bareNumber(participant.id);
-    const lidNumber = bareNumber(participant.lid);
-    if (phoneNumber) numberMap.set(phoneNumber, phoneNumber);
-    if (lidNumber && phoneNumber) numberMap.set(lidNumber, phoneNumber);
-  }
-}
 
 async function getCachedStaffMembers() {
   if (staffCache && Date.now() - staffCacheAt < CACHE_TTL_MS) return staffCache;
@@ -54,99 +45,6 @@ async function getCachedStaffMembers() {
     });
 
   return staffCacheInFlight;
-}
-
-async function getGroupNumberMap(sock, groupJid) {
-  if (!groupJid?.endsWith('@g.us') || typeof sock?.groupMetadata !== 'function') {
-    return new Map();
-  }
-
-  const cached = groupNumberCaches.get(groupJid);
-  if (cached && Date.now() - cached.createdAt < CACHE_TTL_MS) return cached.map;
-  if (groupNumberInFlight.has(groupJid)) return groupNumberInFlight.get(groupJid);
-
-  const request = Promise.resolve()
-    .then(() => sock.groupMetadata(groupJid))
-    .then((meta) => {
-      const map = new Map();
-      addParticipantsToNumberMap(map, meta?.participants);
-      groupNumberCaches.set(groupJid, { createdAt: Date.now(), map });
-      return map;
-    })
-    .catch(() => new Map())
-    .finally(() => {
-      groupNumberInFlight.delete(groupJid);
-    });
-
-  groupNumberInFlight.set(groupJid, request);
-  return request;
-}
-
-async function getAllGroupNumberMap(sock) {
-  if (allGroupNumberCache && Date.now() - allGroupNumberCache.createdAt < CACHE_TTL_MS) {
-    return allGroupNumberCache.map;
-  }
-  if (allGroupNumberInFlight) return allGroupNumberInFlight;
-  if (typeof sock?.groupFetchAllParticipating !== 'function') return new Map();
-
-  allGroupNumberInFlight = Promise.resolve()
-    .then(() => sock.groupFetchAllParticipating())
-    .then((groups) => {
-      const map = new Map();
-      for (const group of Object.values(groups || {})) {
-        addParticipantsToNumberMap(map, group?.participants);
-      }
-      allGroupNumberCache = { createdAt: Date.now(), map };
-      return map;
-    })
-    .catch(() => new Map())
-    .finally(() => {
-      allGroupNumberInFlight = null;
-    });
-
-  return allGroupNumberInFlight;
-}
-
-async function getSocketLidNumberMap(sock, lidNumbers) {
-  const mapping = sock?.signalRepository?.lidMapping;
-  if (!mapping || lidNumbers.length === 0) return new Map();
-
-  try {
-    const lids = lidNumbers.map((number) => `${number}@lid`);
-    const pairs = typeof mapping.getPNsForLIDs === 'function'
-      ? await mapping.getPNsForLIDs(lids)
-      : await Promise.all(lids.map(async (lid) => ({
-        lid,
-        pn: await mapping.getPNForLID(lid),
-      })));
-    const result = new Map();
-    for (const pair of pairs || []) {
-      const lidNumber = bareNumber(pair?.lid);
-      const phoneNumber = bareNumber(pair?.pn);
-      if (lidNumber && phoneNumber) result.set(lidNumber, phoneNumber);
-    }
-    return result;
-  } catch {
-    return new Map();
-  }
-}
-
-function mergeNumberMaps(target, source) {
-  for (const [key, value] of source) target.set(key, value);
-}
-
-function storedRealNumber(user) {
-  for (const value of [
-    user.whatsappNumber,
-    user.phoneNumber,
-    user.phone,
-    user.jid,
-    user.owner,
-  ]) {
-    const number = bareNumber(value);
-    if (number.length >= 7 && !String(value).includes('@lid')) return number;
-  }
-  return null;
 }
 
 /** Try every available source to get a display name for a JID. */

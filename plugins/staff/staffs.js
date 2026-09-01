@@ -3,6 +3,11 @@
  * List all staff members and their ranks.
  */
 import { getStaffMembers } from "../economy/database.js";
+import {
+  bareNumber,
+  resolveStaffNumberMap,
+  storedRealNumber,
+} from "../../lib/staffNumbers.mjs";
 
 const LEVEL_NAMES = { 1: "🔧 Mod", 2: "🛡️ Staff", 3: "👑 Admin", 99: "⚡ Owner" };
 
@@ -25,10 +30,12 @@ export default {
 
     // Sort by level descending
     list.sort((a, b) => (b.staffLevel || 0) - (a.staffLevel || 0));
+    const numberMap = await resolveStaffNumberMap(sock, list, jid);
 
     const rows = list.map((u, i) => {
       const rank = LEVEL_NAMES[u.staffLevel] || "Unknown";
-      const num  = u._id?.split("@")[0]?.split(":")[0]?.replace(/\D/g, "") || "?";
+      const sourceNumber = bareNumber(u._id || u.jid || u.userId);
+      const num = numberMap.get(sourceNumber) || storedRealNumber(u) || sourceNumber || "?";
       return [
         `╭─❖ *${i + 1}. ${u.name || "Unknown"}*`,
         `│ 📱 Number: +${num}`,
