@@ -1,4 +1,4 @@
-import { buildEconomyExternalAdReply, getEconomyPreviewConfig } from "../../lib/economyPreview.mjs";
+import { buildEconomyLinkPreview, getEconomyPreviewConfig } from "../../lib/economyPreview.mjs";
 
 export default {
   name: "mart",
@@ -17,12 +17,12 @@ export default {
  Visit the mart on the website to make your purchases.💠
 
 🔗 ${config.url}`;
-    const externalAdReply = await buildEconomyExternalAdReply("mart");
+    const linkPreview = await buildEconomyLinkPreview("mart");
 
     try {
       return await sock.sendMessage(
         jid,
-        { text, contextInfo: externalAdReply ? { externalAdReply } : undefined },
+        { text, linkPreview },
         { quoted: msg },
       );
     } catch (error) {
