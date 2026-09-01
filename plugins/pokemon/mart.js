@@ -1,4 +1,4 @@
-import { buildEconomyLinkPreview, getEconomyPreviewConfig } from "../../lib/economyPreview.mjs";
+import { buildEconomyExternalAdReply, getEconomyPreviewConfig } from "../../lib/economyPreview.mjs";
 
 export default {
   name: "mart",
@@ -17,10 +17,14 @@ export default {
 Vist the mart on the website to make your purchases.💠
 
 🔗 ${config.url}`;
-    const linkPreview = await buildEconomyLinkPreview("mart");
+    const externalAdReply = await buildEconomyExternalAdReply("mart");
 
     try {
-      return await sock.sendMessage(jid, { text, linkPreview }, { quoted: msg });
+      return await sock.sendMessage(
+        jid,
+        { text, contextInfo: externalAdReply ? { externalAdReply } : undefined },
+        { quoted: msg },
+      );
     } catch (error) {
       console.warn("[mart] website preview failed; sending text fallback:", error?.message || error);
       return sock.sendMessage(jid, { text }, { quoted: msg });

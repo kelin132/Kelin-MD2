@@ -6,6 +6,7 @@ import { countTrainerPokemon } from "../../lib/pokemon/pokemonDb.mjs";
 import { guildSystem } from "../../lib/guildSystem.js";
 import { GYMS } from "../../lib/pokemon/gymData.mjs";
 import { getTrainer } from "../../lib/pokemon/players.mjs";
+import { buildEconomyExternalAdReply } from "../../lib/economyPreview.mjs";
 
 const xpForLevel = (level) => level * 100;
 
@@ -17,12 +18,13 @@ function withTimeout(promise, timeoutMs, fallback = null) {
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
-async function sendProfileFallback({ sock, jid, msg, caption, profilePic, target }) {
+async function sendProfileFallback({ sock, jid, msg, caption, profilePic, target, externalAdReply }) {
+  const contextInfo = externalAdReply ? { externalAdReply } : undefined;
   if (profilePic) {
     try {
       await sock.sendMessage(
         jid,
-        { image: { url: profilePic }, caption },
+        { image: { url: profilePic }, caption, contextInfo },
         { quoted: msg }
       );
       return;
@@ -36,7 +38,7 @@ async function sendProfileFallback({ sock, jid, msg, caption, profilePic, target
 
   await sock.sendMessage(
     jid,
-    { text: caption, mentions: [target] },
+    { text: caption, mentions: [target], contextInfo },
     { quoted: msg }
   );
 }
@@ -172,6 +174,7 @@ export default {
 ╰━━━━━━━━━━━━━━━━━━━━━━╯`;
 
     let imgBuffer;
+    const externalAdReply = await buildEconomyExternalAdReply("profile");
     try {
       imgBuffer = await generateProfileImage({
         username:     registeredName,
@@ -205,18 +208,26 @@ export default {
         "[profile] Canvas generation failed:",
         err.stack || err.message || err
       );
-      await sendProfileFallback({ sock, jid, msg, caption, profilePic, target });
+      await sendProfileFallback({ sock, jid, msg, caption, profilePic, target, externalAdReply });
       return;
     }
 
     try {
-      await sock.sendMessage(jid, { image: imgBuffer, caption }, { quoted: msg });
+      await sock.sendMessage(
+        jid,
+        {
+          image: imgBuffer,
+          caption,
+          contextInfo: externalAdReply ? { externalAdReply } : undefined,
+        },
+        { quoted: msg },
+      );
     } catch (err) {
       console.error(
         "[profile] Canvas image delivery failed:",
         err.stack || err.message || err
       );
-      await sendProfileFallback({ sock, jid, msg, caption, profilePic, target });
+      await sendProfileFallback({ sock, jid, msg, caption, profilePic, target, externalAdReply });
     }
   },
 };
