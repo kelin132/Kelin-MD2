@@ -18,10 +18,87 @@ const WEALTH_TIERS = [
   ["🔥", "Flame Bearer"], ["💧", "Tide Turner"], ["🌿", "Forest Spirit"], ["⭐", "Chosen One"],
 ];
 const WEALTH_SEPARATOR = "  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈";
+const WEALTH_CACHE_TTL_MS = 15_000;
+let wealthCache = null;
+let wealthRefresh = null;
 const formatMoney = (value) => `$${Number(value || 0).toLocaleString()}`;
 const numericField = (field) => ({
   $convert: { input: { $ifNull: [field, 0] }, to: "double", onError: 0, onNull: 0 },
 });
+
+async function refreshWealthText(db) {
+  // Share one refresh when several groups request .lb together. Without this,
+  // each simultaneous command repeats the full users sort and enrichment reads.
+  if (!wealthRefresh) {
+    wealthRefresh = (async () => {
+      const users = await db.collection("users").aggregate([
+        { $match: { registered: true } },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            totalWealth: { $add: [numericField("$money"), numericField("$bank")] },
+          },
+        },
+        { $sort: { totalWealth: -1, _id: 1 } },
+        { $limit: 10 },
+      ]).toArray();
+
+      if (!users.length) return "💰 No registered players yet!";
+
+      const userJids = users
+        .map((user) => String(user._id || user.jid || user.whatsappNumber || ""))
+        .filter(Boolean);
+      const [cardDocs, pokemonDocs, companyDocs] = await Promise.all([
+        db.collection("mn_users").find({
+          $or: [{ whatsappNumber: { $in: userJids } }, { userId: { $in: userJids } }],
+        }, { projection: { userId: 1, whatsappNumber: 1, cards: 1 } }).toArray(),
+        db.collection("pokemon_owned").aggregate([
+          { $match: { ownerJid: { $in: userJids } } },
+          { $group: { _id: "$ownerJid", total: { $sum: 1 } } },
+        ]).toArray(),
+        db.collection("companies").find({ ownerId: { $in: userJids } }, {
+          projection: { ownerId: 1, name: 1 },
+        }).toArray(),
+      ]);
+      const cardCounts = new Map();
+      for (const doc of cardDocs) {
+        const count = Array.isArray(doc.cards) ? doc.cards.length : 0;
+        for (const key of [doc.whatsappNumber, doc.userId].filter(Boolean)) {
+          const normalized = String(key);
+          cardCounts.set(normalized, Math.max(cardCounts.get(normalized) || 0, count));
+        }
+      }
+      const pokemonCounts = new Map(pokemonDocs.map((doc) => [String(doc._id), Number(doc.total || 0)]));
+      const companies = new Map(companyDocs.map((company) => [String(company.ownerId), company]));
+      return formatWealthLeaderboard(users, cardCounts, pokemonCounts, companies);
+    })();
+  }
+
+  try {
+    const text = await wealthRefresh;
+    wealthCache = { createdAt: Date.now(), text };
+    return text;
+  } finally {
+    wealthRefresh = null;
+  }
+}
+
+async function getWealthText(db) {
+  if (wealthCache) {
+    if (Date.now() - wealthCache.createdAt < WEALTH_CACHE_TTL_MS) {
+      return wealthCache.text;
+    }
+
+    // Do not make users wait for a refresh after the short TTL. Serve the
+    // last complete snapshot and update it in the background.
+    void refreshWealthText(db).catch(() => {});
+    return wealthCache.text;
+  }
+
+  return refreshWealthText(db);
+}
+
 function formatWealthLeaderboard(users, cardCounts, pokemonCounts, companies) {
   const lines = [
     "⛩️  *𝗪𝗘𝗔𝗟𝗧𝗛  𝗥𝗔𝗡𝗞𝗜𝗡𝗚𝗦* ⛩️",
@@ -83,52 +160,9 @@ export default {
 
     const db = await getDb();
 
-    // ── Default: wealth leaderboard (kept inline so deployed containers do not
-    // depend on a separate leaderboard.js file that may not exist). ─────────
+    // ── Default: wealth leaderboard ─────────────────────────────────────────
     if (!flag) {
-      // Let MongoDB calculate and limit the leaderboard. Loading every user
-      // into Node and sorting in memory becomes slow as the economy grows.
-      const users = await db.collection("users").aggregate([
-        { $match: { registered: true } },
-        {
-          $project: {
-            _id: 1,
-            name: 1,
-            totalWealth: { $add: [numericField("$money"), numericField("$bank")] },
-          },
-        },
-        { $sort: { totalWealth: -1, _id: 1 } },
-        { $limit: 10 },
-      ]).toArray();
-
-      if (!users.length) {
-        return sock.sendMessage(jid, { text: "💰 No registered players yet!" }, { quoted: msg });
-      }
-
-      const userJids = users.map((user) => String(user._id || user.jid || user.whatsappNumber || "")).filter(Boolean);
-      const [cardDocs, pokemonDocs, companyDocs] = await Promise.all([
-        db.collection("mn_users").find({
-          $or: [{ whatsappNumber: { $in: userJids } }, { userId: { $in: userJids } }],
-        }, { projection: { userId: 1, whatsappNumber: 1, cards: 1 } }).toArray(),
-        db.collection("pokemon_owned").aggregate([
-          { $match: { ownerJid: { $in: userJids } } },
-          { $group: { _id: "$ownerJid", total: { $sum: 1 } } },
-        ]).toArray(),
-        db.collection("companies").find({ ownerId: { $in: userJids } }, {
-          projection: { ownerId: 1, name: 1 },
-        }).toArray(),
-      ]);
-      const cardCounts = new Map();
-      for (const doc of cardDocs) {
-        const count = Array.isArray(doc.cards) ? doc.cards.length : 0;
-        for (const key of [doc.whatsappNumber, doc.userId].filter(Boolean)) {
-          const normalized = String(key);
-          cardCounts.set(normalized, Math.max(cardCounts.get(normalized) || 0, count));
-        }
-      }
-      const pokemonCounts = new Map(pokemonDocs.map((doc) => [String(doc._id), Number(doc.total || 0)]));
-      const companies = new Map(companyDocs.map((company) => [String(company.ownerId), company]));
-      const text = formatWealthLeaderboard(users, cardCounts, pokemonCounts, companies);
+      const text = await getWealthText(db);
       return sock.sendMessage(jid, { text }, { quoted: msg });
     }
 

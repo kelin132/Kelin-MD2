@@ -31,7 +31,8 @@ export default {
   description: "Guess the 5-letter word in 6 tries! Use .wordle stop | hint",
   category: "games",
   usage: ".wordle [stop|hint]",
-  aliases: ["wd"],
+  // "wd" is reserved for the withdrawal command.
+  aliases: [],
   cooldown: 5,
 
   async run({ sock, msg, sender, prefix, args }) {
