@@ -9,6 +9,7 @@
  *   .lb            → Shows usage menu
  */
 import { getDb } from "../../lib/mongo.mjs";
+import { formatLeaderboard } from "../../lib/leaderboardFormat.mjs";
 
 const MEDALS = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
 const WEALTH_RANKS = ["𝟏", "𝟐", "𝟑", "𝟒", "𝟓", "𝟔", "𝟕", "𝟖", "𝟗", "𝟏𝟎"];
@@ -186,8 +187,7 @@ export default {
         return sock.sendMessage(jid, { text: "⭐ No registered players yet!" }, { quoted: msg });
       }
 
-      const text = formatCategoryLeaderboard({
-        heading: "LEVEL RANKINGS",
+      const text = formatLeaderboard({
         subtitle: "Top 10 Players by Level",
         rows: users.map((user) => ({ name: user.name || "User", value: user.level || 1 })),
         valueIcon: "⭐",
@@ -249,8 +249,7 @@ export default {
         mnNameMap[doc.userId] = econName || doc.username || null;
       }
 
-      const text = formatCategoryLeaderboard({
-        heading: "CARD RANKINGS",
+      const text = formatLeaderboard({
         subtitle: "Top 10 Card Collectors",
         rows: results.map((r) => ({ name: mnNameMap[r.userId] || `User_${String(r.userId).slice(-4)}`, value: r.cardCount })),
         valueIcon: "🃏",
@@ -292,8 +291,7 @@ export default {
       for (const u of userDocs)    nameMap[u._id]    = u.name     || null;
       for (const t of trainerDocs) nameMap[t.jid]    = t.username || nameMap[t.jid] || null;
 
-      const text = formatCategoryLeaderboard({
-        heading: "POKÉMON RANKINGS",
+      const text = formatLeaderboard({
         subtitle: "Top 10 Pokémon Trainers",
         rows: results.map((r) => {
           const ownerId = String(r._id || "");
