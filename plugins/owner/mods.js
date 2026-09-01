@@ -12,11 +12,149 @@ const LEVEL_LABEL = {
   99: 'OWNER',
 };
 
+const CACHE_TTL_MS = 30_000;
+let staffCache = null;
+let staffCacheAt = 0;
+let staffCacheInFlight = null;
+const groupNumberCaches = new Map();
+const groupNumberInFlight = new Map();
+let allGroupNumberCache = null;
+let allGroupNumberInFlight = null;
+
+function bareNumber(value) {
+  return String(value || '').split('@')[0].split(':')[0].replace(/\D/g, '');
+}
+
+function addParticipantsToNumberMap(numberMap, participants = []) {
+  for (const participant of participants) {
+    const phoneNumber = bareNumber(participant.id);
+    const lidNumber = bareNumber(participant.lid);
+    if (phoneNumber) numberMap.set(phoneNumber, phoneNumber);
+    if (lidNumber && phoneNumber) numberMap.set(lidNumber, phoneNumber);
+  }
+}
+
+async function getCachedStaffMembers() {
+  if (staffCache && Date.now() - staffCacheAt < CACHE_TTL_MS) return staffCache;
+  if (staffCacheInFlight) return staffCacheInFlight;
+
+  staffCacheInFlight = getStaffMembers()
+    .then((members) => {
+      staffCache = Array.isArray(members) ? members : [];
+      staffCacheAt = Date.now();
+      return staffCache;
+    })
+    .catch(() => {
+      staffCache = [];
+      staffCacheAt = Date.now();
+      return staffCache;
+    })
+    .finally(() => {
+      staffCacheInFlight = null;
+    });
+
+  return staffCacheInFlight;
+}
+
+async function getGroupNumberMap(sock, groupJid) {
+  if (!groupJid?.endsWith('@g.us') || typeof sock?.groupMetadata !== 'function') {
+    return new Map();
+  }
+
+  const cached = groupNumberCaches.get(groupJid);
+  if (cached && Date.now() - cached.createdAt < CACHE_TTL_MS) return cached.map;
+  if (groupNumberInFlight.has(groupJid)) return groupNumberInFlight.get(groupJid);
+
+  const request = Promise.resolve()
+    .then(() => sock.groupMetadata(groupJid))
+    .then((meta) => {
+      const map = new Map();
+      addParticipantsToNumberMap(map, meta?.participants);
+      groupNumberCaches.set(groupJid, { createdAt: Date.now(), map });
+      return map;
+    })
+    .catch(() => new Map())
+    .finally(() => {
+      groupNumberInFlight.delete(groupJid);
+    });
+
+  groupNumberInFlight.set(groupJid, request);
+  return request;
+}
+
+async function getAllGroupNumberMap(sock) {
+  if (allGroupNumberCache && Date.now() - allGroupNumberCache.createdAt < CACHE_TTL_MS) {
+    return allGroupNumberCache.map;
+  }
+  if (allGroupNumberInFlight) return allGroupNumberInFlight;
+  if (typeof sock?.groupFetchAllParticipating !== 'function') return new Map();
+
+  allGroupNumberInFlight = Promise.resolve()
+    .then(() => sock.groupFetchAllParticipating())
+    .then((groups) => {
+      const map = new Map();
+      for (const group of Object.values(groups || {})) {
+        addParticipantsToNumberMap(map, group?.participants);
+      }
+      allGroupNumberCache = { createdAt: Date.now(), map };
+      return map;
+    })
+    .catch(() => new Map())
+    .finally(() => {
+      allGroupNumberInFlight = null;
+    });
+
+  return allGroupNumberInFlight;
+}
+
+async function getSocketLidNumberMap(sock, lidNumbers) {
+  const mapping = sock?.signalRepository?.lidMapping;
+  if (!mapping || lidNumbers.length === 0) return new Map();
+
+  try {
+    const lids = lidNumbers.map((number) => `${number}@lid`);
+    const pairs = typeof mapping.getPNsForLIDs === 'function'
+      ? await mapping.getPNsForLIDs(lids)
+      : await Promise.all(lids.map(async (lid) => ({
+        lid,
+        pn: await mapping.getPNForLID(lid),
+      })));
+    const result = new Map();
+    for (const pair of pairs || []) {
+      const lidNumber = bareNumber(pair?.lid);
+      const phoneNumber = bareNumber(pair?.pn);
+      if (lidNumber && phoneNumber) result.set(lidNumber, phoneNumber);
+    }
+    return result;
+  } catch {
+    return new Map();
+  }
+}
+
+function mergeNumberMaps(target, source) {
+  for (const [key, value] of source) target.set(key, value);
+}
+
+function storedRealNumber(user) {
+  for (const value of [
+    user.whatsappNumber,
+    user.phoneNumber,
+    user.phone,
+    user.jid,
+    user.owner,
+  ]) {
+    const number = bareNumber(value);
+    if (number.length >= 7 && !String(value).includes('@lid')) return number;
+  }
+  return null;
+}
+
 /** Try every available source to get a display name for a JID. */
 async function resolveName(sock, targetJid, chatJid) {
-  const num = targetJid.split('@')[0].split(':')[0];
+  const num = bareNumber(targetJid);
 
-  const c = sock.contacts?.[targetJid] ?? sock.contacts?.[`${num}@s.whatsapp.net`] ?? {};
+  const contacts = sock.store?.contacts || sock.contacts || {};
+  const c = contacts[targetJid] ?? contacts[`${num}@s.whatsapp.net`] ?? {};
   const fromContacts = c.notify || c.verifiedName || c.name;
   if (fromContacts) return fromContacts;
 
@@ -50,19 +188,24 @@ export default {
     // ── .mods / .modlist ─────────────────────────────────────────────────
     if (cmd === 'mods' || cmd === 'modlist') {
 
-      // Try to enrich with DB staff (staffLevel ≥ 1)
-      let dbStaff = [];
-      try { dbStaff = await getStaffMembers(); } catch { /* MongoDB may be offline */ }
+      // Start the independent database and current-group lookups together.
+      // Both are cached briefly because .mods is commonly checked repeatedly.
+      const staffPromise = getCachedStaffMembers();
+      const currentGroupPromise = jid?.endsWith('@g.us')
+        ? getGroupNumberMap(sock, jid)
+        : Promise.resolve(new Map());
+      const [dbStaff, currentGroupNumbers] = await Promise.all([
+        staffPromise,
+        currentGroupPromise,
+      ]);
 
       // Build a unified map: num → { name, level, jid, whatsappNumber }
       const staffMap = new Map();
 
       // DB staff first (authoritative level)
       for (const u of dbStaff) {
-        const num = u._id.split('@')[0].split(':')[0];
-        // If it's an LID, check if we have a stored whatsappNumber/jid
-        const realNum = (u.whatsappNumber || u.jid || u.owner || u.websiteId || '')
-          .split('@')[0].split(':')[0].replace(/\D/g, '');
+        const num = bareNumber(u._id);
+        const realNum = storedRealNumber(u);
         
         staffMap.set(num, {
           jid:   u._id,
@@ -73,7 +216,8 @@ export default {
       }
 
       // mods.json (level 1) — add any not already in DB
-      for (const { num, name } of data) {
+      for (const { num: rawNum, name } of data) {
+        const num = bareNumber(rawNum);
         if (!staffMap.has(num)) {
           staffMap.set(num, {
             jid:   `${num}@s.whatsapp.net`,
@@ -95,42 +239,21 @@ export default {
         }, { quoted: msg });
       }
 
-      // ── Build a clean phone-number map from all available groups ─────────────
-      const cleanNumMap = {}; // storedNum → displayNum
-      
-      // Try current group first
-      const tryResolveGroup = async (chatId) => {
-        try {
-          const meta = await sock.groupMetadata(chatId);
-          for (const p of meta.participants) {
-            const pNum = p.id.split('@')[0].split(':')[0].replace(/\D/g, '');
-            const pLid = p.lid?.split('@')[0].split(':')[0].replace(/\D/g, '');
-            
-            if (pNum) cleanNumMap[pNum] = pNum;
-            if (pLid && pNum) cleanNumMap[pLid] = pNum;
-          }
-        } catch { /* ignore */ }
-      };
-
-      if (jid?.endsWith('@g.us')) {
-        await tryResolveGroup(jid);
-      }
+      // ── Build a clean phone-number map from available group metadata ─────
+      const cleanNumMap = new Map(currentGroupNumbers);
 
       // If some staff still not resolved, try other groups (if any)
-      const unresolved = [...staffMap.keys()].filter(num => !cleanNumMap[num]);
+      const unresolved = [...staffMap.keys()].filter((num) => !cleanNumMap.has(num));
       if (unresolved.length > 0) {
-        try {
-          const groups = await sock.groupFetchAllParticipating();
-          for (const gJid in groups) {
-            if (gJid === jid) continue;
-            for (const p of groups[gJid].participants) {
-              const pNum = p.id.split('@')[0].split(':')[0].replace(/\D/g, '');
-              const pLid = p.lid?.split('@')[0].split(':')[0].replace(/\D/g, '');
-              if (pNum) cleanNumMap[pNum] = pNum;
-              if (pLid && pNum) cleanNumMap[pLid] = pNum;
-            }
-          }
-        } catch { /* ignore */ }
+        // Baileys keeps a native LID → phone mapping. Use it before scanning
+        // every group; this is both faster and works when the mod is not in
+        // the group where .mods was requested.
+        mergeNumberMaps(cleanNumMap, await getSocketLidNumberMap(sock, unresolved));
+      }
+
+      const stillUnresolved = unresolved.filter((num) => !cleanNumMap.has(num));
+      if (stillUnresolved.length > 0) {
+        mergeNumberMaps(cleanNumMap, await getAllGroupNumberMap(sock));
       }
 
       // Sort: highest level first, then alphabetically
@@ -139,16 +262,15 @@ export default {
       );
 
       const rows = sorted.map((s, index) => {
-        const jidParts = s.jid.split('@');
-        const numPart = jidParts[0].split(':')[0].replace(/\D/g, '');
-        const isLid = jidParts[1] === 'lid';
+        const numPart = bareNumber(s.jid);
+        const isLid = s.jid.endsWith('@lid');
         
-        // Use clean number if available, else just the number part
-        const number = s.realNum || cleanNumMap[numPart] || numPart;
+        // Prefer a stored phone number, then resolve a LID through group metadata.
+        const number = s.realNum || cleanNumMap.get(numPart) || numPart;
         const label = LEVEL_LABEL[s.level] || 'MOD';
         
         return [
-          `│ \`${index + 1}.\` *+${number}*${isLid && !s.realNum && !cleanNumMap[numPart] ? ' _(LID)_' : ''}`,
+          `│ \`${index + 1}.\` *+${number}*${isLid && !s.realNum && !cleanNumMap.has(numPart) ? ' _(LID unresolved)_' : ''}`,
           `│    👤 Name: *${s.name}*`,
           `│    🛡️ Role: \`${label}\``,
         ].join('\n');

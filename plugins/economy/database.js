@@ -566,9 +566,22 @@ export async function removeStaffLevel(id) {
 
 export async function getStaffMembers() {
   const db = await getDb();
-  // Project all fields so we can resolve identities (whatsappNumber, jid, etc.)
+  // Keep this list focused: .mods only needs identity and role fields, and
+  // projecting avoids transferring large economy documents for every refresh.
   return db.collection("users").find(
-    { staffLevel: { $gte: 1 } }
+    { staffLevel: { $gte: 1 } },
+    {
+      projection: {
+        _id: 1,
+        name: 1,
+        staffLevel: 1,
+        whatsappNumber: 1,
+        phoneNumber: 1,
+        phone: 1,
+        jid: 1,
+        owner: 1,
+      },
+    }
   ).toArray();
 }
 
