@@ -17,9 +17,9 @@ export default {
  Visit the mart on the website to make your purchases.💠
 
 🔗 ${config.url}`;
-    const linkPreview = await buildEconomyLinkPreview("mart");
 
     try {
+      const linkPreview = await buildEconomyLinkPreview("mart");
       return await sock.sendMessage(
         jid,
         { text, linkPreview },
