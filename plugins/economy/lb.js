@@ -19,6 +19,9 @@ const WEALTH_TIERS = [
 ];
 const WEALTH_SEPARATOR = "  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈";
 const formatMoney = (value) => `$${Number(value || 0).toLocaleString()}`;
+const numericField = (field) => ({
+  $convert: { input: { $ifNull: [field, 0] }, to: "double", onError: 0, onNull: 0 },
+});
 function formatWealthLeaderboard(users, cardCounts, pokemonCounts, companies) {
   const lines = [
     "⛩️  *𝗪𝗘𝗔𝗟𝗧𝗛  𝗥𝗔𝗡𝗞𝗜𝗡𝗚𝗦* ⛩️",
@@ -83,15 +86,20 @@ export default {
     // ── Default: wealth leaderboard (kept inline so deployed containers do not
     // depend on a separate leaderboard.js file that may not exist). ─────────
     if (!flag) {
-      const { getAllUsers } = await import("./database.js");
-      const users = (await getAllUsers())
-        .filter((user) => user?.registered !== false)
-        .map((user) => ({
-          ...user,
-          totalWealth: Number(user.money || 0) + Number(user.bank || 0),
-        }))
-        .sort((a, b) => b.totalWealth - a.totalWealth)
-        .slice(0, 10);
+      // Let MongoDB calculate and limit the leaderboard. Loading every user
+      // into Node and sorting in memory becomes slow as the economy grows.
+      const users = await db.collection("users").aggregate([
+        { $match: { registered: true } },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            totalWealth: { $add: [numericField("$money"), numericField("$bank")] },
+          },
+        },
+        { $sort: { totalWealth: -1, _id: 1 } },
+        { $limit: 10 },
+      ]).toArray();
 
       if (!users.length) {
         return sock.sendMessage(jid, { text: "💰 No registered players yet!" }, { quoted: msg });
@@ -126,10 +134,19 @@ export default {
 
     // ── TOP LEVELS ────────────────────────────────────────────────────────────
     if (flag === "level" || flag === "levels" || flag === "xp") {
-      const { getAllUsers } = await import("./database.js");
-      const users = (await getAllUsers())
-        .sort((a, b) => (b.level || 1) - (a.level || 1) || (b.xp || 0) - (a.xp || 0))
-        .slice(0, 10);
+      const users = await db.collection("users").aggregate([
+        { $match: { registered: true } },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            level: numericField("$level"),
+            xp: numericField("$xp"),
+          },
+        },
+        { $sort: { level: -1, xp: -1, _id: 1 } },
+        { $limit: 10 },
+      ]).toArray();
 
       if (!users.length) {
         return sock.sendMessage(jid, { text: "⭐ No registered players yet!" }, { quoted: msg });
