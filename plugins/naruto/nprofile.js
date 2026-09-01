@@ -5,6 +5,33 @@
 import { generateProfileImage, generateLeaderboardImage } from '../../lib/naruto-canvas-image-generator.mjs';
 import Players from '../../lib/naruto/players.js';
 import { getDb } from '../../lib/mongo.mjs';
+import clans from '../../lib/naruto/clans.js';
+
+function clanDetails(player) {
+  const raw = player.clan ?? player.clanName ?? player.clanId;
+  const rawName = typeof raw === 'string'
+    ? raw
+    : raw?.name || raw?.clanName || raw?.clan;
+  const rawId = typeof raw === 'object' ? raw?.id : null;
+  const normalizedName = String(rawName || rawId || '').trim().toLowerCase();
+  if (['', 'none', 'null', 'unknown', 'clanless', 'common'].includes(normalizedName)) {
+    return null;
+  }
+
+  const found = clans.find((clan) =>
+    [clan.name, clan.id].filter(Boolean).some((value) =>
+      String(value).toLowerCase() === normalizedName
+    )
+  );
+
+  return found || (rawName ? { name: rawName, ability: raw?.ability } : null);
+}
+
+function stableClanFor(jid) {
+  let hash = 0;
+  for (const char of String(jid || '')) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  return clans[hash % clans.length];
+}
 
 export default {
   name: 'nprofile',
@@ -82,6 +109,18 @@ export default {
       const player = await Players.get(sender);
       if (!player) return sock.sendMessage(jid, { text: '❌ You must register first!\nUse: .nstart' }, { quoted: msg });
 
+      // Older profiles were created before clan data was stored as an object.
+      // Repair those records on first profile view so .nprofile and .nclan agree.
+      let clan = clanDetails(player);
+      if (!clan) {
+        clan = stableClanFor(player.jid || sender);
+        player.clan = { name: clan.name, ability: clan.ability };
+        await player.save();
+      } else if (player.clan !== clan.name && (!player.clan || typeof player.clan === 'string')) {
+        player.clan = { name: clan.name, ability: clan.ability };
+        await player.save();
+      }
+
       const img          = await generateProfileImage(player);
       const level        = Math.floor((player.xp || 0) / 100) + 1;
       const nextLevelXp  = (level * 100) - (player.xp || 0);
@@ -91,8 +130,9 @@ export default {
         caption: `👤 *${player.username}'s PROFILE*\n\n` +
           `*Rank:* ${player.rank || 'Academy Student'}\n` +
           `*Level:* ${level} (${nextLevelXp} XP to next)\n` +
-          `*Village:* ${player.village || 'Unknown'}\n` +
-          `*Clan:* ${player.clan || 'Common'}\n\n` +
+           `*Village:* ${typeof player.village === 'object' ? player.village.name : (player.village || 'Unknown')}\n` +
+           `*Clan:* ${clan.name}\n` +
+           `*Clan Ability:* ${clan.ability || '—'}\n\n` +
           `*Stats:*\n⚔️ ATK ${player.attack || 10} | 🛡️ DEF ${player.defense || 10}\n💨 SPD ${player.speed || 10} | ❤️ HP ${player.hp || 100}/${player.maxHp || 100}\n⚡ Chakra ${player.chakra || 100}/${player.maxChakra || 100}\n\n` +
           `💰 Ryo: ${player.ryo || 0} | XP: ${player.xp || 0}\n\n` +
           `*.ntrain <stat>* — Train\n*.nmission* — Battle\n*.nprofile leaderboard* — Rankings`,
