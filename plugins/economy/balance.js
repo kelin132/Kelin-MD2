@@ -1,17 +1,5 @@
-import { readFile } from "node:fs/promises";
 import { getUser, requireRegistration } from "./database.js";
 import { formatAccountBalance } from "./balanceFormat.js";
-
-const BALANCE_PREVIEW_URL = "https://aidoru.zone.id/mart";
-const BALANCE_PREVIEW_IMAGE = new URL("../../assets/economy-preview-mart.jpg", import.meta.url);
-let balanceThumbnailPromise;
-
-function getBalanceThumbnail() {
-  if (!balanceThumbnailPromise) {
-    balanceThumbnailPromise = readFile(BALANCE_PREVIEW_IMAGE).catch(() => null);
-  }
-  return balanceThumbnailPromise;
-}
 
 export default {
   name: "balance",
@@ -31,20 +19,8 @@ export default {
       bank: user.bank,
       gems: user.diamonds,
       footerLines: ["Use .ebal", "for account breakdown"],
-    }) + `\n\n${BALANCE_PREVIEW_URL}`;
+    });
 
-    try {
-      const linkPreview = {
-        "canonical-url": BALANCE_PREVIEW_URL,
-        "matched-text": BALANCE_PREVIEW_URL,
-        title: "🏪 AIDORU Pokémon Mart",
-        description: "Pokémon items",
-        jpegThumbnail: await getBalanceThumbnail(),
-      };
-      await sock.sendMessage(jid, { text, mentions: [sender], linkPreview }, { quoted: msg });
-    } catch (error) {
-      console.warn("[balance] link preview failed; sending text fallback:", error?.message || error);
-      await sock.sendMessage(jid, { text, mentions: [sender] }, { quoted: msg });
-    }
+    await sock.sendMessage(jid, { text, mentions: [sender] }, { quoted: msg });
   },
 };
