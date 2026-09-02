@@ -6,15 +6,15 @@ import { MART_ITEMS } from "../../lib/pokemon/martItems.mjs";
 
 // Category display order and labels
 const CAT_META = {
-  ball:    { label: "🎾 *POKÉBALLS*",           hint: (k) => `\`\`.battle pokeball ${k}\`\` ` },
-  heal:    { label: "💊 *HEALING ITEMS*",        hint: (k) => `\`\`.battle item ${k}\`\` ` },
-  battle:  { label: "⚔️  *BATTLE ITEMS*",        hint: (k) => `\`\`.battle item ${k}\`\` ` },
-  stone:   { label: "🪨 *EVOLUTION STONES*",     hint: (k) => `\`\`.evolve <pokémon> ${k}\`\` ` },
-  mega:    { label: "💠 *MEGA EVOLUTION STONES*", hint: (k) => `\`\`.evolve <pokémon> ${k}\`\` ` },
-  cure:    { label: "🩹 *STATUS CURES*",         hint: (k) => `\`\`.battle item ${k}\`\` ` },
-  vitamin: { label: "💊 *VITAMINS & BOOSTERS*",  hint: (k) => `\`\`.use ${k} <pokémon>\`\` ` },
-  key:     { label: "🔑 *KEY ITEMS*",            hint: (k) => k === "keystone" ? `\`\`.equip <pokémon>\`\` ` : `\`\`.item use ${k}\`\` ` },
-  other:   { label: "🎒 *OTHER ITEMS*",          hint: (k) => `\`\`.use ${k}\`\` ` },
+  ball:    { label: "🎾 *POKÉBALLS*" },
+  heal:    { label: "💊 *HEALING ITEMS*" },
+  battle:  { label: "⚔️  *BATTLE ITEMS*" },
+  stone:   { label: "🪨 *EVOLUTION STONES*" },
+  mega:    { label: "💠 *MEGA EVOLUTION STONES*" },
+  cure:    { label: "🩹 *STATUS CURES*" },
+  vitamin: { label: "💊 *VITAMINS & BOOSTERS*" },
+  key:     { label: "🔑 *KEY ITEMS*" },
+  other:   { label: "🎒 *OTHER ITEMS*" },
 };
 
 export default {
@@ -30,7 +30,7 @@ export default {
 
     const trainer = await getTrainer(sender);
     if (!trainer) {
-      return sock.sendMessage(jid, { text: "❌ Start your journey first! Use ``.startjourney``" }, { quoted: msg });
+      return sock.sendMessage(jid, { text: "❌ Start your journey first! Use `.startjourney`" }, { quoted: msg });
     }
 
     const inv = trainer.inventory || {};
@@ -60,11 +60,11 @@ export default {
 `🎒 *${trainer.username}'s BAG*
 
 Your bag is empty!
-Visit \`\`.mart\`\` to buy items.`,
+Visit \`.mart\` to buy items.`,
       }, { quoted: msg });
     }
 
-  // Keep the bag compact and readable; quantities use inline code formatting.
+    // Keep the bag compact and readable; quantities use inline code formatting.
     const catOrder = ["ball", "heal", "cure", "battle", "vitamin", "stone", "mega", "key", "other"];
     const rows = catOrder
       .filter(cat => groups[cat] && groups[cat].length > 0)
