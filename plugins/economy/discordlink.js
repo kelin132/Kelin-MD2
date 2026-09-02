@@ -26,7 +26,7 @@ export default {
         `Your one-time code is: *${code}*`,
         "",
         "Open Discord and send:",
-        `*.link ${code}*`,
+        `*.connect ${code}*`,
         "",
         "This code expires in 10 minutes and can only be used once.",
         "Never share this code with anyone else.",
