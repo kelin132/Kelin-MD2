@@ -1,4 +1,4 @@
-import { buildEconomyExternalAdReply } from "../../lib/economyPreview.mjs";
+import { buildEconomyLinkPreview, getEconomyPreviewConfig } from "../../lib/economyPreview.mjs";
 
 export default {
   name: "mart",
@@ -11,15 +11,18 @@ export default {
     const jid = msg.key.remoteJid || msg.key.participant;
     if (!jid) return;
 
+    const config = getEconomyPreviewConfig("mart");
     const text = `🏪 *AIDORU POKÉMON MART*
 
- Visit the mart on the website to make your purchases.💠`;
+ Visit the mart on the website to make your purchases.💠
+
+🔗 ${config.url}`;
 
     try {
-      const externalAdReply = await buildEconomyExternalAdReply("mart");
+      const linkPreview = await buildEconomyLinkPreview("mart");
       return await sock.sendMessage(
         jid,
-        { text, contextInfo: { externalAdReply } },
+        { text, linkPreview },
         { quoted: msg },
       );
     } catch (error) {
