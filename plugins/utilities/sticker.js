@@ -3,10 +3,8 @@
 // Uses the repository's sticker formatter so pack metadata stays attached to the sticker.
 
 import { downloadContentFromMessage } from "@whiskeysockets/baileys";
-import stickerFormatter from "wa-sticker-formatter";
 import settings from "../../settings.cjs";
-
-const { Sticker, StickerTypes } = stickerFormatter;
+import { createSticker } from "../../lib/stickerTools.mjs";
 
 function getContext(msg) {
   return (
@@ -79,12 +77,10 @@ export default {
         : "AIDORU";
       const publisher = settings.botName || "AIDORU";
 
-      const stickerBuffer = await new Sticker(buffer, {
+      const stickerBuffer = await createSticker(buffer, {
         pack: packName,
         author: publisher,
-        type: StickerTypes.FULL,
-        quality: 80,
-      }).toBuffer();
+      });
 
       await sock.sendMessage(jid, { sticker: stickerBuffer }, { quoted: msg });
       await sock.sendMessage(jid, { react: { text: "✅", key: msg.key } });
