@@ -17,8 +17,12 @@ function number(value) {
   return Number(value ?? 0).toLocaleString();
 }
 
+function inline(value) {
+  return `\`${value}\``;
+}
+
 function row(icon, label, value) {
-  return `│ ${icon} ${label.padEnd(7)} › ${value}`;
+  return `${icon} ${label}: ${inline(value)}`;
 }
 
 export function formatAccountBalance({
@@ -39,22 +43,20 @@ export function formatAccountBalance({
 
   if (vault !== undefined) rows.push(row("🔒", "Vault", money(vault)));
   if (orbs !== undefined) rows.push(row("🔮", "Orbs", number(orbs)));
-  rows.push("│", row("🌌", "Worth", money(netWorth)));
+  rows.push(row("🌌", "Net worth", money(netWorth)));
 
   if (extraRows.length) {
-    rows.push("│", ...extraRows.map((value) => `│ ${value}`));
+    rows.push("", ...extraRows);
   }
 
   if (footerLines.length) {
-    rows.push("│", `│ ✦ ${footerLines[0]}`);
-    rows.push(...footerLines.slice(1).map((line) => `│   ${line}`));
+    rows.push("", ...footerLines.map((line) => `💡 ${line}`));
   }
 
   return [
-    "🎴 𝐀𝐂𝐂𝐎𝐔𝐍𝐓",
+    "💳 Account Balance",
     "",
-    "╭─「 🌸 𝐁𝐀𝐋𝐀𝐍𝐂𝐄 」─╮",
+    "🌸 Balance",
     ...rows,
-    "╰────────────────╯",
   ].join("\n");
 }

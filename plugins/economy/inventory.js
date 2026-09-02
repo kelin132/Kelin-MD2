@@ -16,15 +16,12 @@ export default {
 
     if (inv.length === 0) {
       return sock.sendMessage(msg.key.remoteJid, {
-        text:
-`꧁━━〔 🎒 *I N V E N T O R Y* 〕━━꧂
-
-  ⚠️ *Your bag is empty!*
-
-  Go shopping, warrior! 🏯
-  *.shop buy <item>*
-
-꧂━━━━━━━━━━━━━━━━━━━━━━꧁`
+        text: [
+          "🎒 Inventory",
+          "",
+          "Your bag is empty.",
+          "Use *.shop buy <item>* to get started.",
+        ].join("\n"),
       }, { quoted: msg });
     }
 
@@ -32,19 +29,17 @@ export default {
     inv.forEach(item => { count[item] = (count[item] || 0) + 1; });
 
     const list = Object.entries(count)
-      .map(([item, qty]) => `  ⚜️ *${item}*  ×*${qty}*`)
+      .map(([item, qty]) => `• ${item}: \`${qty}\``)
       .join("\n");
 
     await sock.sendMessage(msg.key.remoteJid, {
-      text:
-`꧁━━〔 🎒 *I N V E N T O R Y* 〕━━꧂
-
-${list}
-
-  ━━━━━━━━━━━━━━━━━━━━━━━
-  📦 *Total: ${inv.length} item${inv.length !== 1 ? "s" : ""}*
-
-꧂━━━━━━━━━━━━━━━━━━━━━━꧁`
+      text: [
+        `🎒 Inventory — ${user.name || "User"}`,
+        "",
+        list,
+        "",
+        `Total items: \`${inv.length}\``,
+      ].join("\n"),
     }, { quoted: msg });
   }
 };

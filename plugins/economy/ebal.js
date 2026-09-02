@@ -22,12 +22,12 @@ export default {
     const loan  = user.loan?.active ? user.loan.amount : 0;
 
     const extraRows = [
-      `⭐ 𝗟𝗲𝘃𝗲𝗹   ୨୧ ${user.level ?? 1}`,
-      `🔮 𝗫𝗣      ୨୧ ${(user.xp ?? 0).toLocaleString()}`,
-      `🎒 𝗜𝘁𝗲𝗺𝘀   ୨୧ ${(user.inventory ?? []).length}`,
+      `⭐ Level: \`${user.level ?? 1}\``,
+      `🔮 XP: \`${(user.xp ?? 0).toLocaleString()}\``,
+      `🎒 Items: \`${(user.inventory ?? []).length}\``,
     ];
 
-    if (loan > 0) extraRows.push(`⚠️ 𝗟𝗼𝗮𝗻    ୨୧ $${loan.toLocaleString()}`);
+    if (loan > 0) extraRows.push(`⚠️ Loan: \`$${loan.toLocaleString()}\``);
 
     await sock.sendMessage(msg.key.remoteJid, {
       text: formatAccountBalance({

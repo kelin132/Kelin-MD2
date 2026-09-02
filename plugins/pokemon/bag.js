@@ -3,7 +3,6 @@
 
 import { getTrainer } from "../../lib/pokemon/players.mjs";
 import { MART_ITEMS } from "../../lib/pokemon/martItems.mjs";
-import { formatAnimeLeaderboard } from "../../lib/animeLeaderboard.mjs";
 
 // Category display order and labels
 const CAT_META = {
@@ -65,27 +64,29 @@ Visit \`\`.mart\`\` to buy items.`,
       }, { quoted: msg });
     }
 
-    // Render inventory rows with the same boxed leaderboard layout as `.lb`.
+  // Keep the bag compact and readable; quantities use inline code formatting.
     const catOrder = ["ball", "heal", "cure", "battle", "vitamin", "stone", "mega", "key", "other"];
     const rows = catOrder
       .filter(cat => groups[cat] && groups[cat].length > 0)
       .flatMap(cat => {
-        const meta = CAT_META[cat] || CAT_META.other;
         return groups[cat].map(it => ({
-          name: `${it.emoji} ${it.name}`,
-          valueText: `🎒 × \`\`${it.qty}\`\` · ${it.desc || "No description"}\n│    ↳ ${meta.hint(it.key)}`,
+          category: CAT_META[cat]?.label || "🎒 ITEMS",
+          text: `• ${it.emoji} ${it.name}: \`${it.qty}\``,
         }));
       });
 
-    const text = formatAnimeLeaderboard({
-      title: "INVENTORY",
-      subtitle: `${trainer.username}'S BAG · ${totalItems} ITEMS`,
-      rows,
-      valueIcon: "🎒",
-      valueLabel: "ITEMS",
-      footer: "🌸 AIDORU ITEMS",
-      limit: rows.length,
-    }) + "\n🛒 Buy more at ``.mart``\n⚔️ Use items with ``.battle item``";
+    const lines = [`🎒 ${trainer.username}'s Bag`, ""];
+    let lastCategory = "";
+    for (const row of rows) {
+      if (row.category !== lastCategory) {
+        if (lastCategory) lines.push("");
+        lines.push(row.category);
+        lastCategory = row.category;
+      }
+      lines.push(row.text);
+    }
+    lines.push("", `Total items: \`${totalItems}\``, "", "Buy more at `.mart`.");
+    const text = lines.join("\n");
 
     await sock.sendMessage(jid, { text }, { quoted: msg });
   },
