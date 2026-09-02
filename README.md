@@ -135,6 +135,20 @@ export default {
 
 Battle, transformation, villain-arrival, victory, and roster-selection images now crop transparent character art to its visible silhouette and anchor it to the arena floor for consistent cutouts.
 
+### 🔗 Link WhatsApp progress to Discord
+
+The Discord companion uses the same MongoDB database. To link one user's existing
+WhatsApp progress:
+
+1. Send `.discordlink` to Kelin-MD2 on WhatsApp.
+2. Copy the one-time code.
+3. Send `.link CODE` to AKIRA-DISCORD.
+
+The code expires after 10 minutes and can only be used once. After confirmation,
+Discord commands resolve to the WhatsApp account, so economy, cards, Pokémon,
+guild, and profile progress remains shared. Use `.link status` or `.link remove`
+on Discord to manage the connection. Both bots must point to the same `MONGO_URI`.
+
 ## 🗂 File Structure
 
 ```
