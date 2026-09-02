@@ -1,15 +1,20 @@
 // plugins/economy/ll.js
-// .ll          — show lottery pool status
-// .ll draw     — owner-only: draw winner (requires ≥7 entries)
+// .ll          — show lottery pool status; auto-draws at 7 entries
+// .ll draw     — owner-only: draw the three configured prizes
 
 import { getDb } from "../../lib/mongo.mjs";
 import { generateWAMessageFromContent, proto } from "@whiskeysockets/baileys";
+import {
+  formatLotteryResults,
+  LOTTERY_MAX_ENTRIES,
+  maybeAutoDraw,
+} from "../../lib/lotteryAutoDraw.mjs";
 
-const REQUIRED = 7; // minimum total tickets before a draw can happen
+const REQUIRED = LOTTERY_MAX_ENTRIES;
 
 export default {
   name: "ll",
-  description: "Lottery status or owner draw",
+  description: "Lottery status with automatic three-winner draw",
   category: "economy",
   usage: ".ll | .ll draw",
   cooldown: 5,
@@ -33,48 +38,17 @@ export default {
           return reply(`❌ Need at least ${REQUIRED} total tickets to draw.\nCurrent: ${totalTickets}`);
         }
 
-        // Build weighted pool
-        const pool = [];
-        for (const t of lot.tickets) {
-          for (let i = 0; i < (t.count || 0); i++) pool.push(t);
-        }
-
-        const winner = pool[Math.floor(Math.random() * pool.length)];
-        const prize  = lot.jackpot || 0;
-
-        // Award prize
-        const winnerJid = `${winner.userId}@s.whatsapp.net`;
-        await db.collection("economy_users").updateOne(
-          { jid: winnerJid },
-          { $inc: { money: prize } }
-        );
-
-        // Reset lottery with a fresh jackpot
-        const newBase = Math.floor(Math.random() * (50_000_000 - 10_000_000 + 1)) + 10_000_000;
-        await db.collection("lottery").updateOne(
-          { _id: "current" },
-          { $set: { tickets: [], totalTickets: 0, jackpot: newBase, baseJackpot: newBase, createdAt: new Date() } }
-        );
-
-        return sock.sendMessage(jid, {
-          text:
-`╭━━━〔 🎰 𝑳𝑶𝑻𝑻𝑬𝑹𝒀 𝑫𝑹𝑨𝑾 🏆 〕━━━╮
-┃ ✦ The winning ticket has been drawn...
-┃
-┃ 🏆 Winner  ➜ 『 @${winner.userId} 』
-┃ 🎫 Tickets ➜ 『 ${winner.count} 』
-┃
-┣━━━━━━━━━━━━━━━━━━━━
-┃ 💰 Jackpot Won › $${prize.toLocaleString()}
-┣━━━━━━━━━━━━━━━━━━━━
-┃ 🎉 𝗖𝗢𝗡𝗚𝗥𝗔𝗧𝗨𝗟𝗔𝗧𝗜𝗢𝗡𝗦!
-┃ A new lottery has started!
-╰━━━━━━━━━━━━━━━━━━━━╯`,
-          mentions: [winnerJid],
-        }, { quoted: msg });
+        const result = await maybeAutoDraw();
+        if (!result) return reply("❌ The lottery draw is already in progress.");
+        return sock.sendMessage(jid, formatLotteryResults(result), { quoted: msg });
       }
 
       // ── STATUS (poll-style) ───────────────────────────────────────────────
+      const automaticDraw = await maybeAutoDraw();
+      if (automaticDraw) {
+        return sock.sendMessage(jid, formatLotteryResults(automaticDraw), { quoted: msg });
+      }
+
       const tickets = lot?.tickets || [];
       const totalEntries = lot?.totalTickets || 0;
 

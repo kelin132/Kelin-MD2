@@ -1,10 +1,16 @@
 /**
  * .lottery buy [tickets]  — buy lottery tickets ($500 each, max 10 per person)
- * .lottery draw           — owner-only: draw the winning ticket
+ * .lottery draw           — owner-only: draw the jackpot
  * .lottery info           — show jackpot + your tickets
+ * The round auto-draws three prizes when it reaches seven total tickets.
  */
 import { getUser, saveUser, requireRegistration, addHistory, getAllUsers } from "./database.js";
 import { getDb } from "../../lib/mongo.mjs";
+import {
+  formatLotteryResults,
+  LOTTERY_MAX_ENTRIES,
+  maybeAutoDraw,
+} from "../../lib/lotteryAutoDraw.mjs";
 
 const TICKET_PRICE  = 500;
 const MAX_TICKETS   = 10;
@@ -56,7 +62,7 @@ export default {
 ┃ ✦ Try your luck — win big!
 ┃
 ┃ 💰 Jackpot      › $${lot.jackpot.toLocaleString()}
-┃ 🎫 Total Tickets › ${lot.totalTickets}
+┃ 🎫 Total Tickets › ${lot.totalTickets} / ${LOTTERY_MAX_ENTRIES}
 ┃ 🎟️  Your Tickets  › ${myCount}
 ┃ 🎯 Your Chance  › ${chance}%
 ┃
@@ -76,6 +82,13 @@ export default {
       if (isNaN(count) || count < 1) return reply("❌ Usage: .lottery buy <amount>");
 
       const lot     = await getLottery();
+      if (lot.totalTickets >= LOTTERY_MAX_ENTRIES) {
+        const automaticDraw = await maybeAutoDraw();
+        if (automaticDraw) {
+          return sock.sendMessage(jid, formatLotteryResults(automaticDraw), { quoted: msg });
+        }
+      }
+
       const userId  = sender.split("@")[0];
       const myEntry = lot.tickets.find(t => t.userId === userId);
       const myCount = myEntry?.count ?? 0;
@@ -92,7 +105,11 @@ export default {
         );
       }
 
-      const canBuy = Math.min(count, MAX_TICKETS - myCount);
+      const availableEntries = Math.max(0, LOTTERY_MAX_ENTRIES - lot.totalTickets);
+      const canBuy = Math.min(count, MAX_TICKETS - myCount, availableEntries);
+      if (canBuy < 1) {
+        return reply("⏳ The lottery is drawing now. Please try again in a moment.");
+      }
       const cost   = canBuy * TICKET_PRICE;
       const user   = await getUser(sender);
 
@@ -125,12 +142,20 @@ export default {
       const newTotal = (myCount + canBuy);
       const chance   = ((newTotal / lot.totalTickets) * 100).toFixed(1);
 
+      if (lot.totalTickets >= LOTTERY_MAX_ENTRIES) {
+        const automaticDraw = await maybeAutoDraw();
+        if (automaticDraw) {
+          return sock.sendMessage(jid, formatLotteryResults(automaticDraw), { quoted: msg });
+        }
+      }
+
       return reply(
 `╭━━━〔 🎟️ 𝑻𝑰𝑪𝑲𝑬𝑻𝑺 𝑩𝑶𝑼𝑮𝑯𝑻 ✨ 〕━━━╮
 ┃ ✦ You're in the draw!
 ┃
 ┃ 🎫 Bought   › ${canBuy} ticket(s)
-┃ 🎟️  Total   › ${newTotal} / ${MAX_TICKETS}
+┃ 🎟️  Your tickets › ${newTotal} / ${MAX_TICKETS}
+┃ 🎫  Round total  › ${lot.totalTickets} / ${LOTTERY_MAX_ENTRIES}
 ┃ 🎯 Chance  › ${chance}%
 ┃
 ┣━━━━━━━━━━━━━━━━━━━━
