@@ -60,6 +60,8 @@ export const DEFAULTS = {
   bannedAt:      null,
 };
 
+export const REGISTRATION_STARTING_MONEY = 100_000;
+
 // ─── Core CRUD ────────────────────────────────────────────────────────────────
 
 export async function getUser(id) {
@@ -373,13 +375,32 @@ export async function registerUser(id, name) {
   const db = await getDb();
   const normalizedId = normalizeJid(id);
   const { name: _n, registered: _r, registeredAt: _ra, ...insertDefaults } = DEFAULTS;
+  const registrationFields = {
+    name: name || "User",
+    registered: true,
+    registeredAt: new Date().toISOString(),
+    money: REGISTRATION_STARTING_MONEY,
+  };
+
+  // Update an existing placeholder, but never touch an account that is
+  // already registered. This also fixes users created by pre-registration
+  // identity/economy lookups.
+  const placeholderUpdate = await db.collection("users").updateOne(
+    { _id: normalizedId, registered: { $ne: true } },
+    {
+      $set: registrationFields,
+    },
+    { upsert: false },
+  );
+
+  if (placeholderUpdate.matchedCount > 0) return;
+
+  // No document existed. $setOnInsert makes this safe if another request
+  // registered the same user between the two operations.
   await db.collection("users").updateOne(
     { _id: normalizedId },
-    {
-      $setOnInsert: { ...insertDefaults, money: 100_000 },
-      $set: { name: name || "User", registered: true, registeredAt: new Date().toISOString() },
-    },
-    { upsert: true }
+    { $setOnInsert: { ...insertDefaults, ...registrationFields } },
+    { upsert: true },
   );
 }
 

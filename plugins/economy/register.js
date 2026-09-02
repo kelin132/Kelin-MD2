@@ -1,4 +1,4 @@
-import { isRegistered, registerUser } from "./database.js";
+import { isRegistered, registerUser, REGISTRATION_STARTING_MONEY } from "./database.js";
 
 export default {
   name: "register",
@@ -50,7 +50,7 @@ export default {
 
     await sock.sendMessage(msg.key.remoteJid, {
       text: `🎉 *Welcome to AKIRA Economy, ${name}!*\n\n✅ Account created successfully!\n\n` +
-            `💰 Starting Balance : $100,000\n🏦 Bank Balance     : $0\n💎 Diamonds        : 0\n⭐ Level            : 1\n\n` +
+             `💰 Starting Balance : $${REGISTRATION_STARTING_MONEY.toLocaleString()}\n🏦 Bank Balance     : $0\n💎 Diamonds        : 0\n⭐ Level            : 1\n\n` +
             `📋 *Get started:*\n• *.daily* — Claim daily reward\n• *.work* — Earn money working\n• *.balance* — Check your wallet\n• *.shop* — Buy items\n• *.guildhelp* — Join a guild\n\nGood luck! 🍀\n\nMake sure to create an account on the website https://aidoru.zone.id`
     }, { quoted: msg });
   }
