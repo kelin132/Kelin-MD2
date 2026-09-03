@@ -1,32 +1,46 @@
-# Multi-bot configuration
+# Multi-bot setup
 
-Add one JSON file per WhatsApp account in this directory. The supervisor
-checks this directory at startup and every 10 seconds, so new or changed bots
-are picked up without editing `index.js` or restarting the server.
+The simple setup is one folder per WhatsApp account. Put that account's
+`cred.json` or `creds.json` inside the folder:
 
-Example: `.bots/elyra.json`
+```text
+.bots/
+├── elyra/
+│   └── cred.json
+└── viora/
+    └── cred.json
+```
+
+That is enough. You do not need a JSON config file. The folder name becomes the
+bot name, and the server automatically checks `.bots/` every 10 seconds.
+
+If your old credentials are inside an `auth` folder, this also works:
+
+```text
+.bots/
+└── elyra/
+    └── auth/
+        └── cred.json
+```
+
+Each WhatsApp account must have its own folder and its own credential file.
+Do not use one credential file for two accounts.
+
+For a new account with no credential file yet, use the optional config format:
+`.bots/elyra.json`
 
 ```json
 {
-  "id": "Elyra",
-  "sessionFolder": ".bots/Elyra",
+  "id": "elyra",
+  "sessionFolder": ".bots/elyra",
   "phoneNumber": "2637xxxxxxxx",
   "ownerNumber": ["2637xxxxxxxx"],
-  "ownerName": "Elyra",
-  "botName": "XYTHERA",
   "prefix": "!"
 }
 ```
 
-Use the phone number with country code, without `+`, spaces, or dashes.
+Use the phone number with country code, without `+`, spaces, or dashes. The
+pairing code appears in the workflow logs. QR login is disabled.
 
-- If `.bots/Elyra/creds.json` already exists, that account reconnects using it.
-- If there is no saved session, the bot prints a pairing code for
-  `phoneNumber`. Link it from WhatsApp → Settings → Linked devices → Link a
-  device. QR login is disabled.
-- Keep each bot's session folder separate.
-- Set `"enabled": false` to stop a bot without deleting its definition.
-
-You can also use `.bots/sessions.config.json` with an array of the same
-objects. That file is ignored as a session credential file and is not required
-when using one file per bot.
+The server copies legacy `cred.json` to Baileys' `creds.json` automatically.
+Credentials are private and should never be committed to GitHub.

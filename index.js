@@ -58,7 +58,7 @@ const botDefinitions = loadBotConfigs();
 const multiBotMode =
   hasBotConfigDirectory() && (botDefinitions.length > 0 || !BOT_NUMBER);
 if (multiBotMode) {
-  log("info", `[bots] Found ${botDefinitions.length} bot definition(s) in .bots/`);
+  log("info", `[bots] Found ${botDefinitions.length} bot(s) in .bots/`);
   await startBotSupervisor();
 } else {
 
