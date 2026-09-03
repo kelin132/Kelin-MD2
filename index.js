@@ -54,10 +54,11 @@ console.log("═".repeat(50) + "\n");
 // account, so one slow reconnect or one account's auth state cannot affect the
 // others. The legacy single-bot environment remains supported when .bots is
 // not configured.
-const multiBotMode = hasBotConfigDirectory() && loadBotConfigs().length > 0;
+const botDefinitions = loadBotConfigs();
+const multiBotMode =
+  hasBotConfigDirectory() && (botDefinitions.length > 0 || !BOT_NUMBER);
 if (multiBotMode) {
-  const botConfigs = loadBotConfigs();
-  log("info", `[bots] Found ${botConfigs.length} bot definition(s) in .bots/`);
+  log("info", `[bots] Found ${botDefinitions.length} bot definition(s) in .bots/`);
   await startBotSupervisor();
 } else {
 
