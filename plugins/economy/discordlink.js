@@ -3,10 +3,10 @@ import { createWhatsAppLinkCode } from "../../lib/accountLink.mjs";
 import { getDatabaseId } from "../../lib/identity.mjs";
 
 export default {
-  name: "discordlink",
+  name: "discord",
   description: "Generate a one-time code for linking your WhatsApp progress to Discord",
   category: "economy",
-  usage: ".discordlink",
+  usage: ".discord",
   aliases: ["linkdiscord"],
   cooldown: 10,
 
