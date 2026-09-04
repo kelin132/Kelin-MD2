@@ -1,0 +1,1 @@
+- [Bot startup behavior](bot-startup.md) — malformed .bots config can trigger the wrong single-bot startup path.
