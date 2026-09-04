@@ -12,32 +12,89 @@ import { getDb } from "./mongo.mjs";
  */
 export function normalizeJid(jid = "") {
   if (typeof jid !== "string") return jid;
-  return jid.split(":")[0].split("@")[0] + "@" + (jid.split("@")[1] || "s.whatsapp.net");
+  const [local = "", server = "s.whatsapp.net"] = jid.trim().split("@");
+  return local.split(":")[0] + "@" + server;
+}
+
+export function bareJidNumber(value = "") {
+  return String(value || "").split("@")[0].split(":")[0].replace(/\D/g, "");
 }
 
 /**
- * Resolve an LID to a JID (phone number) using group metadata if available.
+ * Return the common legacy spellings of one WhatsApp identity.
+ * Older records use raw numbers, @c.us, device-qualified JIDs, or a mix of
+ * those forms. Keeping the variants together prevents an identity change from
+ * looking like a new account.
+ */
+export function whatsappIdentityVariants(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return [];
+
+  const normalized = normalizeJid(raw);
+  const [local = "", server = "s.whatsapp.net"] = normalized.split("@");
+  const digits = local.replace(/\D/g, "");
+
+  return [...new Set([
+    raw,
+    normalized,
+    normalized.replace(/:\d+(?=@)/, ""),
+    digits,
+    digits ? `${digits}@${server}` : "",
+    digits ? `${digits}@s.whatsapp.net` : "",
+    digits ? `${digits}@c.us` : "",
+    digits ? `${digits}:0@s.whatsapp.net` : "",
+    digits ? `${digits}:0@c.us` : "",
+  ].filter(Boolean))];
+}
+
+/**
+ * Resolve an LID to a JID (phone number).
+ * Baileys' native mapping works in private chats as well as groups; group
+ * metadata remains the fallback for older sessions and privacy JIDs.
  */
 export async function resolveLidToJid(sender, sock, chatId) {
   if (!sender || !sender.endsWith("@lid")) return normalizeJid(sender);
-  if (!sock || !chatId?.endsWith("@g.us")) return normalizeJid(sender);
+  if (!sock) return normalizeJid(sender);
 
   try {
-    const lidNum = sender.split("@")[0].split(":")[0];
-    const meta = await sock.groupMetadata(chatId);
-    for (const p of meta.participants || []) {
-      if (p.lid && p.lid.split("@")[0].split(":")[0] === lidNum) {
-        return normalizeJid(p.id);
+    const lidNum = bareJidNumber(sender);
+    const mapping = sock.signalRepository?.lidMapping;
+
+    if (typeof mapping?.getPNForLID === "function") {
+      const phoneJid = await mapping.getPNForLID(`${lidNum}@lid`);
+      if (phoneJid && !String(phoneJid).endsWith("@lid")) {
+        return normalizeJid(String(phoneJid));
+      }
+    }
+
+    if (typeof mapping?.getPNsForLIDs === "function") {
+      const mapped = await mapping.getPNsForLIDs([`${lidNum}@lid`]);
+      const phoneJid = mapped instanceof Map
+        ? mapped.get(`${lidNum}@lid`) || mapped.get(lidNum)
+        : Array.isArray(mapped)
+          ? mapped[0]?.pn || mapped[0]?.phoneNumber || mapped[0]
+          : mapped?.[`${lidNum}@lid`] || mapped?.[lidNum];
+      if (phoneJid && !String(phoneJid).endsWith("@lid")) {
+        return normalizeJid(String(phoneJid));
+      }
+    }
+
+    if (chatId?.endsWith("@g.us") && typeof sock.groupMetadata === "function") {
+      const meta = await sock.groupMetadata(chatId);
+      for (const participant of meta.participants || []) {
+        if (bareJidNumber(participant?.lid) === lidNum && participant?.id) {
+          return normalizeJid(participant.id);
+        }
       }
     }
     
     // Check if it's the bot itself
     const botLid = sock.user?.lid || "";
-    if (botLid && botLid.split("@")[0].split(":")[0] === lidNum) {
+    if (botLid && bareJidNumber(botLid) === lidNum && sock.user?.id) {
       return normalizeJid(sock.user.id);
     }
-  } catch (err) {
-    // console.error("[identity] Failed to resolve LID:", err.message);
+  } catch {
+    // A missing native mapping or group metadata must not block a command.
   }
 
   return normalizeJid(sender);
@@ -73,17 +130,19 @@ export async function migrateLidData(lid, jid) {
       if (lidDoc) {
         const jidDoc = await col.findOne({ _id: jid });
         if (!jidDoc) {
-          // No JID record yet, rename LID record to JID
-          await col.updateOne({ _id: lid }, { $set: { _id: jid, migratedFrom: lid } });
-          console.log(`[identity] Migrated ${colName} record from ${lid} to ${jid}`);
+          // MongoDB _id is immutable. Copy first, then remove the old key.
+          // This only runs when the destination is empty.
+          const { _id: ignoredId, ...copy } = lidDoc;
+          await col.insertOne({ ...copy, _id: jid, migratedFrom: lid, migratedAt: new Date() });
+          await col.deleteOne({ _id: lid });
         } else {
           // Both exist — merging is complex and risky, so we just log it for now
           // or we could potentially merge simple numeric fields.
-          console.warn(`[identity] Both LID and JID records exist for ${jid} in ${colName}. Skipping auto-merge.`);
         }
       }
-    } catch (err) {
-      console.error(`[identity] Migration failed for ${colName}:`, err.message);
+    } catch {
+      // A concurrent command may have created the destination between the
+      // reads. Leave both records intact rather than risking data loss.
     }
   }
 }

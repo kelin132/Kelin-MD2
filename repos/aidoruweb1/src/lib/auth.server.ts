@@ -57,12 +57,37 @@ export function normalisePhoneNumber(countryCode: string, localNumber: string): 
   if (country.length < 1 || country.length > 4 || local.length < 5 || local.length > 14) {
     throw new Error("Enter a valid WhatsApp phone number.");
   }
-  return `${country}${local}`;
+  // Accept both the intended national input and a pasted international number
+  // while the country field is already populated.
+  return local.startsWith(country) && local.length >= country.length + 7
+    ? local
+    : `${country}${local}`;
 }
 
-function phoneLookupIds(phoneNumber: string): string[] {
+function phoneLookupIds(phoneNumber: string): Array<string | number> {
   const digits = phoneNumber.replace(/\D/g, "");
-  return [...new Set([digits, `${digits}@s.whatsapp.net`, `${digits}:0@s.whatsapp.net`])];
+  const numeric = Number(digits);
+  return [
+    ...new Set([
+      digits,
+      `+${digits}`,
+      `${digits}@s.whatsapp.net`,
+      `${digits}@c.us`,
+      `${digits}:0@s.whatsapp.net`,
+      `${digits}:0@c.us`,
+      ...(Number.isSafeInteger(numeric) ? [numeric] : []),
+    ]),
+  ];
+}
+
+function phoneLookupClauses(phoneNumber: string) {
+  const digits = phoneNumber.replace(/\D/g, "");
+  const jidPattern = new RegExp(`^${digits}(?::\\d+)?@(s\\.whatsapp\\.net|c\\.us)$`, "i");
+  const fields = ["_id", "phoneNumber", "whatsappNumber", "jid", "userId"];
+  return fields.flatMap((field) => [
+    { [field]: { $in: phoneLookupIds(phoneNumber) } },
+    { [field]: { $regex: jidPattern } },
+  ]);
 }
 
 async function hashWebsitePassword(password: string): Promise<string> {
@@ -232,14 +257,21 @@ export async function toPublicUser(doc: UserDoc): Promise<PublicUser> {
   const parts = withoutDevice.split("@");
   const bare = parts[0] ?? withoutDevice;
   const domain = parts[1] || "s.whatsapp.net";
-  
-  const trainerJids = [...new Set([
-    jid, 
-    withoutDevice, 
-    bare, 
-    `${bare}@${domain}`,
-    ...(domain === "s.whatsapp.net" ? [`${bare}:0@s.whatsapp.net`] : [])
-  ].filter(Boolean))];
+
+  const trainerJids = [
+    ...new Set(
+      [
+        jid,
+        withoutDevice,
+        bare,
+        `${bare}@${domain}`,
+        `${bare}@s.whatsapp.net`,
+        `${bare}@c.us`,
+        `${bare}:0@s.whatsapp.net`,
+        `${bare}:0@c.us`,
+      ].filter(Boolean),
+    ),
+  ];
   const db = await getDb();
   const [guild, pokemonDocs, trainer] = await Promise.all([
     (await guilds()).findOne({ members: { $in: trainerJids } } as never),
@@ -351,11 +383,10 @@ async function ensureWebsiteId(user: UserDoc): Promise<string> {
 
 async function findUserByPhoneNumber(phoneNumber: string): Promise<UserDoc | null> {
   const col = await users();
-  const ids = phoneLookupIds(phoneNumber);
   return col.findOne({
     registered: true,
     websiteBanned: { $ne: true },
-    $or: [{ _id: { $in: ids } }, { phoneNumber: { $in: ids } }],
+    $or: phoneLookupClauses(phoneNumber),
   } as never);
 }
 

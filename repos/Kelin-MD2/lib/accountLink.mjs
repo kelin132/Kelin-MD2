@@ -1,5 +1,6 @@
 import { createHash, randomInt } from "crypto";
 import { getDb } from "./mongo.mjs";
+import { normalizeJid } from "./identity.mjs";
 
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const LINK_TTL_MS = 10 * 60 * 1000;
@@ -13,8 +14,7 @@ function normalizeWhatsAppId(value) {
   if (!normalized.includes("@")) {
     return /^\d+$/.test(normalized) ? `${normalized}@s.whatsapp.net` : normalized;
   }
-  const [number, server] = normalized.split("@");
-  return `${number.split(":")[0]}@${server || "s.whatsapp.net"}`;
+  return normalizeJid(normalized);
 }
 
 function whatsappIdentityVariants(value) {
@@ -30,7 +30,10 @@ function whatsappIdentityVariants(value) {
     normalized,
     digits,
     digits ? `${digits}@${server}` : "",
+    digits ? `${digits}@s.whatsapp.net` : "",
+    digits ? `${digits}@c.us` : "",
     digits && server === "s.whatsapp.net" ? `${digits}:0@s.whatsapp.net` : "",
+    digits && server === "c.us" ? `${digits}:0@c.us` : "",
   ].filter(Boolean))];
 }
 

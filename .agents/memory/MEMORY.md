@@ -1,1 +1,2 @@
 - [Bot startup behavior](bot-startup.md) — malformed .bots config can trigger the wrong single-bot startup path.
+- [WhatsApp identity bridge](whatsapp-identity-bridge.md) — resolve Baileys LIDs before DB access and copy legacy records because MongoDB IDs are immutable.

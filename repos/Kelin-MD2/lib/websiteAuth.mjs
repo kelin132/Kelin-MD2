@@ -93,13 +93,13 @@ export async function verifyWebsitePassword(password, encodedHash) {
 }
 
 export async function getOrCreateWebsiteId(jid) {
-  const normalizedJid = String(jid || "").trim();
+  const normalizedJid = normalizeJid(String(jid || "").trim());
   if (!normalizedJid) throw new Error("A valid WhatsApp account is required.");
 
   await ensureWebsiteIdIndex();
   const col = users();
   const existing = await col.findOne(
-    { _id: normalizedJid },
+    identityLookup(normalizedJid),
     { projection: { registered: 1, websiteId: 1 } },
   );
   if (!existing?.registered) {
@@ -112,7 +112,7 @@ export async function getOrCreateWebsiteId(jid) {
     try {
       const updated = await col.findOneAndUpdate(
         {
-          _id: normalizedJid,
+          _id: existing._id,
           registered: true,
           $or: [
             { websiteId: { $exists: false } },
@@ -130,7 +130,7 @@ export async function getOrCreateWebsiteId(jid) {
   }
 
   const retry = await col.findOne(
-    { _id: normalizedJid },
+    { _id: existing._id },
     { projection: { websiteId: 1 } },
   );
   if (retry?.websiteId) return String(retry.websiteId);
@@ -138,12 +138,12 @@ export async function getOrCreateWebsiteId(jid) {
 }
 
 export async function setWebsitePassword(jid, password) {
-  const normalizedJid = String(jid || "").trim();
+  const normalizedJid = normalizeJid(String(jid || "").trim());
   validatePassword(password);
 
   const col = users();
   const user = await col.findOne(
-    { _id: normalizedJid },
+    identityLookup(normalizedJid),
     { projection: { registered: 1 } },
   );
   if (!user?.registered) {
@@ -152,7 +152,7 @@ export async function setWebsitePassword(jid, password) {
 
   const passwordHash = await hashPassword(password);
   const result = await col.updateOne(
-    { _id: normalizedJid, registered: true },
+    { _id: user._id, registered: true },
     {
       $set: {
         websitePasswordHash: passwordHash,
@@ -181,9 +181,22 @@ function whatsappIdentityVariants(value) {
     normalized,
     withoutDevice,
     digits,
+    digits ? `+${digits}` : "",
     digits ? `${digits}@${domain}` : "",
-    digits && domain === "s.whatsapp.net" ? `${digits}:0@s.whatsapp.net` : "",
+    digits ? `${digits}@s.whatsapp.net` : "",
+    digits ? `${digits}@c.us` : "",
+    digits ? `${digits}:0@s.whatsapp.net` : "",
+    digits ? `${digits}:0@c.us` : "",
   ].filter(Boolean))];
+}
+
+function identityLookup(value) {
+  const variants = whatsappIdentityVariants(value);
+  return {
+    $or: ["_id", "phoneNumber", "whatsappNumber", "jid", "userId"].map((field) => ({
+      [field]: { $in: variants },
+    })),
+  };
 }
 
 function hashOtp(websiteId, otp, saltHex) {
@@ -272,13 +285,7 @@ export async function getPendingWebsiteCode(jid) {
   if (!normalizedJid) throw new Error("A valid WhatsApp account is required.");
 
   const user = await users().findOne(
-    {
-      registered: true,
-      $or: [
-        { _id: { $in: whatsappIdentityVariants(normalizedJid) } },
-        { phoneNumber: { $in: whatsappIdentityVariants(normalizedJid) } },
-      ],
-    },
+    { registered: true, ...identityLookup(normalizedJid) },
     {
       projection: {
         websiteVerificationCode: 1,
@@ -313,15 +320,24 @@ export async function getPendingWebsiteCode(jid) {
 }
 
 export async function syncWebsiteProfilePicture(jid, profilePictureUrl) {
-  const normalizedJid = String(jid || "").trim();
+  const normalizedJid = normalizeJid(String(jid || "").trim());
   if (!normalizedJid || !profilePictureUrl) return;
-  await users().updateOne(
+  const col = users();
+  const existing = await col.findOne(identityLookup(normalizedJid), { projection: { _id: 1 } });
+  const update = {
+    $set: {
+      profilePictureUrl: String(profilePictureUrl),
+      profilePictureUpdatedAt: new Date(),
+    },
+  };
+  if (existing?._id) {
+    await col.updateOne({ _id: existing._id }, update);
+    return;
+  }
+  await col.updateOne(
     { _id: normalizedJid },
     {
-      $set: {
-        profilePictureUrl: String(profilePictureUrl),
-        profilePictureUpdatedAt: new Date(),
-      },
+      ...update,
       $setOnInsert: {
         registered: false,
         createdAt: new Date(),
