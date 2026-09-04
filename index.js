@@ -18,7 +18,7 @@ import path from "path";
 import { createRequire } from "module";
 import { log } from "./lib/logger.mjs";
 import { getRuntimeSettings } from "./lib/runtimeSettings.mjs";
-import { hasBotConfigDirectory, loadBotConfigs } from "./lib/botConfig.mjs";
+import { hasBotConfigDirectory, hasBotEntries, loadBotConfigs } from "./lib/botConfig.mjs";
 import { startBotSupervisor } from "./lib/botSupervisor.mjs";
 
 // settings.js is CommonJS — import via createRequire
@@ -49,8 +49,11 @@ console.log("═".repeat(50) + "\n");
 // not configured.
 const botDefinitions = loadBotConfigs();
 const multiBotMode =
-  hasBotConfigDirectory() && (botDefinitions.length > 0 || !BOT_NUMBER);
+  hasBotConfigDirectory() && (botDefinitions.length > 0 || hasBotEntries() || !BOT_NUMBER);
 if (multiBotMode) {
+  if (!botDefinitions.length && BOT_NUMBER) {
+    log("error", "[bots] .bots contains entries but no valid bot definitions were loaded. Fix the JSON/config before restarting.");
+  }
   log("info", `[bots] Found ${botDefinitions.length} bot(s) in .bots/`);
   await startBotSupervisor();
 } else {
