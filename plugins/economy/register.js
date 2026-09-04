@@ -13,45 +13,53 @@ export default {
 
     if (already) {
       return sock.sendMessage(msg.key.remoteJid, {
-        text: "✅ You are already registered!\n\n💡 Use *.profile* to view your account."
+        text: "❌ *You are already registered.*\n\nUse *.profile* to view your account."
       }, { quoted: msg });
     }
 
     const name = text?.trim();
 
-    // Name is required — no auto-generation
     if (!name) {
       return sock.sendMessage(msg.key.remoteJid, {
         text: [
-          `❌ *You must provide a name to register!*`,
-          ``,
-          `Usage: *.register <your_name>*`,
-          `Example: *.register Kelin*`,
-          ``,
-          `• Name must be 2–20 characters`,
-          `• No special characters`,
+          "❌ *Name required*",
+          "",
+          "*Usage:* .register <your_name>",
+          "*Example:* .register Kelin",
+          "",
+          "• 2–20 characters",
+          "• No special characters"
         ].join("\n")
       }, { quoted: msg });
     }
 
     if (name.length < 2) {
       return sock.sendMessage(msg.key.remoteJid, {
-        text: "❌ Name is too short! Minimum 2 characters.\n\nExample: *.register Kelin*"
+        text: "❌ *Name too short.*\n\nMinimum: *2 characters*."
       }, { quoted: msg });
     }
 
     if (name.length > 20) {
       return sock.sendMessage(msg.key.remoteJid, {
-        text: "❌ Name is too long! Maximum 20 characters.\n\nExample: *.register Kelin*"
+        text: "❌ *Name too long.*\n\nMaximum: *20 characters*."
       }, { quoted: msg });
     }
 
     await registerUser(sender, name);
 
     await sock.sendMessage(msg.key.remoteJid, {
-      text: `🎉 *Welcome to AKIRA Economy, ${name}!*\n\n✅ Account created successfully!\n\n` +
-             `💰 Starting Balance : $${REGISTRATION_STARTING_MONEY.toLocaleString()}\n🏦 Bank Balance     : $0\n💎 Diamonds        : 0\n⭐ Level            : 1\n\n` +
-            `📋 *Get started:*\n• *.daily* — Claim daily reward\n• *.work* — Earn money working\n• *.balance* — Check your wallet\n• *.shop* — Buy items\n• *.guildhelp* — Join a guild\n\nGood luck! 🍀\n\nMake sure to create an account on the website https://aidoru.zone.id`
+      text:
+        `🎉 *Welcome to AKIRA Economy, ${name}!*\n\n` +
+        `✅ *Account created successfully.*\n\n` +
+        `💰 *Wallet:* $${REGISTRATION_STARTING_MONEY.toLocaleString()}\n` +
+        `🏦 *Bank:* $0\n` +
+        `💎 *Diamonds:* 0\n` +
+        `⭐ *Level:* 1\n\n` +
+        `📋 *Get Started*\n` +
+        `• *.daily* — Claim your reward\n\n` +
+        `🍀 *Good luck!*\n\n` +
+        `🌐 Create your account on the website:\n` +
+        `https://aidoru.zone.id`
     }, { quoted: msg });
   }
 };
