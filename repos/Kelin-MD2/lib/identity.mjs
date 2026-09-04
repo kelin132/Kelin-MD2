@@ -240,8 +240,13 @@ export async function resolveAndMigrateIdentity(sender, sock, chatId, alternateS
     : await resolveJidToLid(resolvedJid, sock);
 
   if (sourceLid && resolvedJid.endsWith("@s.whatsapp.net")) {
-    await rememberIdentityAlias(sourceLid, resolvedJid);
-    await migrateLidData(sourceLid, resolvedJid);
+    try {
+      await rememberIdentityAlias(sourceLid, resolvedJid);
+      await migrateLidData(sourceLid, resolvedJid);
+    } catch {
+      // Identity repair is best-effort. The resolved JID is still safe to use,
+      // and command handlers can continue through their normal DB retry path.
+    }
   }
 
   return resolvedJid;

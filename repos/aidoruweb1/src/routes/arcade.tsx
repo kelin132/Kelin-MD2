@@ -102,8 +102,8 @@ function ArcadeBody() {
       writeSession(result.user);
       if (result.won) {
         void confetti({ particleCount: 100, spread: 70 });
-        toast.success(`Dice landed ${result.result} · +${formatCoins(result.delta)} coins`);
-      } else toast.error(`Dice landed ${result.result} · ${formatCoins(Math.abs(result.delta))} coins`);
+        toast.success(`Dice landed ${result.roll} · +${formatCoins(result.delta)} coins`);
+      } else toast.error(`Dice landed ${result.roll} · ${formatCoins(Math.abs(result.delta))} coins`);
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -114,8 +114,8 @@ function ArcadeBody() {
       writeSession(result.user);
       if (result.won) {
         void confetti({ particleCount: 100, spread: 70 });
-        toast.success(`Roulette landed ${result.result} (${result.color}) · +${formatCoins(result.delta)} coins`);
-      } else toast.error(`Roulette landed ${result.result} (${result.color}) · ${formatCoins(Math.abs(result.delta))} coins`);
+        toast.success(`Roulette landed ${result.roll} (${result.rollColor}) · +${formatCoins(result.delta)} coins`);
+      } else toast.error(`Roulette landed ${result.roll} (${result.rollColor}) · ${formatCoins(Math.abs(result.delta))} coins`);
     },
     onError: (error: Error) => toast.error(error.message),
   });

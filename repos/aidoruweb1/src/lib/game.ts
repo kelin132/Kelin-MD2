@@ -272,6 +272,8 @@ export type PublicUser = {
   avatar: string;
   avatarUrl: string | null;
   avatarVideoUrl: string | null;
+  age: number;
+  birthday: string | null;
   banner: string;
   profileBackground: string | null;
   coins: number;

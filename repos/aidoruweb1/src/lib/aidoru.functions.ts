@@ -280,7 +280,11 @@ export const updateGuildSettings = createServerFn({ method: "POST" })
       })
       .parse(data),
   )
-  .handler(({ data }) => updateGuildInfo(data));
+  .handler(({ data }) => updateGuildInfo({
+    description: data.description,
+    iconUrl: data.iconUrl,
+    bannerUrl: data.bannerUrl,
+  }));
 
 export const flipCoin = createServerFn({ method: "POST" })
   .inputValidator((data) =>

@@ -567,7 +567,7 @@ export async function listGyms() {
   const user = await requireUser();
   const aliases = userIdentityAliases(user as unknown as Record<string, unknown>);
   const trainer = await (await getDb()).collection("pokemon_trainers").findOne({ $or: aliases.map((jid) => ({ jid })) } as never) as Record<string, unknown> | null;
-  const badges = new Set(gymBadgeIds(trainer?.badges));
+  const badges = new Set(gymBadgeIds(trainer?.["badges"]));
   return (await Promise.resolve(GYM_DEFINITIONS.map((gym) => gymById(gym.id)).filter(Boolean))).map((gym) => ({
     ...gym!,
     unlocked: !gym!.unlockAfter || badges.has(gym!.unlockAfter.toLowerCase()),
@@ -583,8 +583,8 @@ export async function createGymBattleRoom(gymId: string) {
   const jid = await resolveBattleJid(user as unknown as Record<string, unknown>);
   const db = await getDb();
   const trainerDoc = await db.collection("pokemon_trainers").findOne({ $or: identityVariants(jid).map((value) => ({ jid: value })) } as never) as Record<string, unknown> | null;
-  const badges = new Set(gymBadgeIds(trainerDoc?.badges));
-  const cooldownUntil = trainerDoc?.gymCooldownUntil ? new Date(String(trainerDoc.gymCooldownUntil)).getTime() : 0;
+  const badges = new Set(gymBadgeIds(trainerDoc?.["badges"]));
+  const cooldownUntil = trainerDoc?.["gymCooldownUntil"] ? new Date(String(trainerDoc["gymCooldownUntil"])).getTime() : 0;
   if (Number.isFinite(cooldownUntil) && cooldownUntil > Date.now()) {
     const remainingHours = Math.ceil((cooldownUntil - Date.now()) / 3600000);
     throw new Error(`Gym cooldown active. You can challenge the next gym in about ${remainingHours} hour${remainingHours === 1 ? "" : "s"}.`);
@@ -631,7 +631,7 @@ async function grantGymReward(room: WebBattleRoomDoc) {
   const db = await getDb();
   const aliases = identityVariants(room.challenger.id);
   const now = new Date();
-  const trainerFilter = { $or: aliases.map((jid) => ({ jid })) } as never;
+  const trainerFilter = { $or: aliases.map((jid) => ({ jid })) };
   const claimed = await db.collection("pokemon_trainers").updateOne(
     { ...trainerFilter, [`gymRewards.${room.gym.id}`]: { $ne: true } } as never,
     { $set: { [`gymRewards.${room.gym.id}`]: true, gymCooldownUntil: new Date(now.getTime() + GYM_PROGRESS_COOLDOWN_MS) }, $addToSet: { badges: gymBadgeId(room.gym.id) }, $inc: { coins: room.gym.rewardCoins, xp: room.gym.rewardXp } } as never,
@@ -858,6 +858,10 @@ export async function performBattleAction(roomId: string, action: BattleAction) 
       // Update index immediately so the next poll sees the new Pokémon
       gymOpponent.activeIndex = nextIndex;
       const nextPoke = gymOpponent.party[nextIndex];
+      if (!nextPoke) {
+        await saveRoom(room);
+        return serializeRoom(room, role);
+      }
       addLog(room, `${room.gym.leader} sent out ${nextPoke.displayName}.`);
       
       // Save and return immediately. The client handles the faint/send-out animation sequence.

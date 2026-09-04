@@ -86,7 +86,7 @@ function identityVariants(value: unknown): string[] {
   return [...new Set(variants.filter(Boolean))];
 }
 
-function identityLookup(ids: string[]) {
+function identityLookup(ids: unknown[]) {
   const variants = [...new Set(ids.flatMap(identityVariants))];
   if (variants.length === 0) return { _id: "__none__" };
   const objectIds = variants.filter((id) => typeof id === "string" && id.length === 24 && ObjectId.isValid(id)).map((id) => new ObjectId(id));
@@ -225,8 +225,9 @@ async function guildMembersToPublic(doc: GuildDoc, preloaded?: Map<string, Recor
   const ownerAliases = new Set(identityVariants(doc.owner));
   return memberIds.map((memberId) => {
     const record = identityVariants(memberId).map((alias) => byAlias!.get(alias)).find(Boolean) ?? {};
+    const memberLocal = memberId.split("@")[0] ?? memberId;
     const name = recordString(record, ["name", "username", "pushName", "notifyName", "ownerName"])
-      ?? `Trainer ${(memberId.split("@")[0] ?? memberId).split(":")[0].slice(-4)}`;
+      ?? `Trainer ${(memberLocal.split(":")[0] ?? memberLocal).slice(-4)}`;
     return {
       id: memberId,
       name,
@@ -251,16 +252,16 @@ async function guildToPublic(doc: GuildDoc, userId: string, preloadedMembers?: M
     tag: (String(doc.tag ?? doc.name ?? "GUILD")).slice(0, 5).toUpperCase(),
     description: doc.description ?? "",
     iconUrl: typeof doc.icon === "string" && doc.icon.trim() ? doc.icon : null,
-    leaderId: doc.owner ?? (record.leaderId as string) ?? "",
+    leaderId: doc.owner ?? (record["leaderId"] as string) ?? "",
     memberCount: members.length,
     memberCapacity: requirements.memberCapacity,
     level,
-    guildXp: Number(record.guildXp) || 0,
+    guildXp: Number(record["guildXp"]) || 0,
     guildXpRequired: requirements.guildXp,
     bank: Number(doc.treasury) || 0,
     upgradeTreasuryRequired: requirements.treasury,
     upgradeMembersRequired: requirements.members,
-    taxRate: Number(record.taxRate) || guildTaxRateForLevel(level),
+    taxRate: Number(record["taxRate"]) || guildTaxRateForLevel(level),
     isMember: members.some((member) => identityVariants(member).some((alias) => userAliases.has(alias))),
     isOwner: identityVariants(doc.owner).some((alias) => userAliases.has(alias)),
     members: await guildMembersToPublic(doc, preloadedMembers),
@@ -372,6 +373,7 @@ function rowFromUser(
     trainerLevel: Number(doc["trainerLevel"] ?? 1) || 1,
     coins: (Number(doc["money"]) || 0) + (Number(doc["bank"]) || 0),
     avatarUrl: avatar ? String(doc[avatar]) : null,
+    avatarVideoUrl: recordString(doc, ["avatarVideo", "avatarVideoUrl", "profileVideoUrl", "videoUrl", "profileVideo"]) || null,
     pokemonCount: counts?.pokemonCount ?? 0,
     cardCount: counts?.cardCount ?? 0,
   };
@@ -400,7 +402,7 @@ export async function leaderboard(metric: LeaderboardMetric = "xp"): Promise<Lea
   }
 
   if (metric === "cards") {
-    const cardDocs = await cardUsers()
+    const cardDocs = await (await cardUsers())
       .find({} as never)
       .limit(1000)
       .toArray();
@@ -452,7 +454,7 @@ export async function leaderboard(metric: LeaderboardMetric = "xp"): Promise<Lea
           username: [doc?.["username"], entry.username, doc?.["name"], fallbackName].find(
             (value) => typeof value === "string" && value.trim().length > 0,
           ),
-          registered: doc?.registered || entry.cardRecord?.registered || false,
+          registered: doc?.["registered"] || entry.cardRecord?.["registered"] || false,
         };
         return rowFromUser(publicDoc, metric, entry.score, { cardCount: entry.count });
       });
@@ -489,7 +491,7 @@ export async function leaderboard(metric: LeaderboardMetric = "xp"): Promise<Lea
       const publicDoc = {
         ...(userDoc ?? {}),
         _id: userDoc?.["_id"] ?? entry.jid,
-        name: userDoc?.["name"] ?? userDoc?.["username"] ?? trainerName ?? `Trainer_${entry.jid.split("@")[0].slice(-4)}`,
+        name: userDoc?.["name"] ?? userDoc?.["username"] ?? trainerName ?? `Trainer_${(entry.jid.split("@")[0] ?? entry.jid).slice(-4)}`,
         username: userDoc?.["username"] ?? trainerName,
       } as Record<string, unknown>;
       return rowFromUser(publicDoc, metric, entry.score);
@@ -1202,11 +1204,14 @@ export async function upgradeGuild(): Promise<PublicUser> {
   if (currentLevel >= 20) throw new Error("Guild has already reached the maximum level.");
 
   const requirements = guildUpgradeRequirementsForLevel(currentLevel);
-  if ((guild.guildXp ?? 0) < requirements.guildXp)
-    throw new Error(`Guild needs ${requirements.guildXp.toLocaleString()} XP to upgrade (Current: ${guild.guildXp.toLocaleString()}).`);
-  if ((guild.treasury ?? 0) < requirements.treasury)
-    throw new Error(`Guild treasury needs ${requirements.treasury.toLocaleString()} coins to upgrade (Current: ${guild.treasury.toLocaleString()}).`);
-  if (guild.members.length < requirements.members)
+  const guildXp = Number(guild.guildXp ?? 0);
+  const treasury = Number(guild.treasury ?? 0);
+  const memberCount = guild.members?.length ?? 0;
+  if (guildXp < requirements.guildXp)
+    throw new Error(`Guild needs ${requirements.guildXp.toLocaleString()} XP to upgrade (Current: ${guildXp.toLocaleString()}).`);
+  if (treasury < requirements.treasury)
+    throw new Error(`Guild treasury needs ${requirements.treasury.toLocaleString()} coins to upgrade (Current: ${treasury.toLocaleString()}).`);
+  if (memberCount < requirements.members)
     throw new Error(`Guild needs at least ${requirements.members} members to upgrade.`);
 
   await (await guilds()).updateOne(
@@ -1220,7 +1225,7 @@ export async function upgradeGuild(): Promise<PublicUser> {
   return publicCurrentUser();
 }
 
-export async function updateGuildInfo(data: { description?: string; iconUrl?: string; bannerUrl?: string }): Promise<PublicUser> {
+export async function updateGuildInfo(data: { description?: string | undefined; iconUrl?: string | undefined; bannerUrl?: string | undefined }): Promise<PublicUser> {
   const user = await requireUser();
   const jid = userKey(user);
   const guild = await (await guilds()).findOne({ owner: jid } as never);

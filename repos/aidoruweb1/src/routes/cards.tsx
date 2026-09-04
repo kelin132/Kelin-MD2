@@ -123,7 +123,14 @@ function CardsBody() {
       {!isLoading && !isError && visible.length === 0 && <EmptyPanel title={view === "market" ? "No cards for sale" : cards.length ? "No cards match" : "No cards claimed yet"} body={view === "market" ? "Use .vs in WhatsApp to list one of your cards for other trainers." : cards.length ? "Try another search or tier filter." : "Claim cards in the bot and they will appear here automatically."} />}
       {!isLoading && !isError && visible.length > 0 && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {renderedItems.map((card, index) => view === "market" ? <MarketTile key={card.id} listing={card} index={index} onBuy={() => purchase.mutate(card.id)} busy={purchase.isPending && purchase.variables === card.id} /> : <CardTile key={`${card.cardId}-${index}`} card={card} index={index} global={view === "global"} />)}
+          {renderedItems.map((card, index) => {
+            if (view === "market") {
+              const listing = card as CardMarketListing;
+              return <MarketTile key={listing.id} listing={listing} index={index} onBuy={() => purchase.mutate(listing.id)} busy={purchase.isPending && purchase.variables === listing.id} />;
+            }
+            const ownedCard = card as OwnedCard;
+            return <CardTile key={`${ownedCard.cardId}-${index}`} card={ownedCard} index={index} global={view === "global"} />;
+          })}
         </div>
       )}
       {!isLoading && !isError && visible.length > renderedItems.length && (
