@@ -31,7 +31,7 @@ import { getUser, saveUser } from "../plugins/economy/database.js";
 import { handleGroupParticipants } from "./groupEventHandler.mjs";
 import { recordGroupActivity } from "./groupSettings.js";
 import { handleKordGameText } from "./kordGames.mjs";
-import { migrateLidData, resolveLidToJid } from "./identity.mjs";
+import { migrateKnownLidUsers, resolveAndMigrateIdentity } from "./identity.mjs";
 import { createRequire } from "module";
 import pino from "pino";
 import { getRuntimeSettings } from "./runtimeSettings.mjs";
@@ -262,6 +262,9 @@ export async function connectBot(phoneNumber, prefix) {
         const num = jid.split(":")[0].replace("@s.whatsapp.net", "");
         log("info", `✅  Connected as +${num}`);
         log("info", "Bot is ready. Listening for messages...");
+        void migrateKnownLidUsers(sock).catch((err) => {
+          log("warn", `Known LID migration failed: ${err.message}`);
+        });
 
         if (heartbeatTimer) clearInterval(heartbeatTimer);
         await markBotOnline({
@@ -310,6 +313,7 @@ export async function connectBot(phoneNumber, prefix) {
         if (!msg.message) continue;
         // fromMe = owner sent message from bot device — pass as flag, don't skip
         const rawSenderJid = msg.key.participant || msg.key.remoteJid || "";
+        const alternateSenderJid = msg.key.participantAlt || msg.key.remoteJidAlt || "";
         if (msg.key.remoteJid?.endsWith("@g.us") && rawSenderJid && !msg.key.fromMe) {
           // Activity tracking must not wait behind a slow command.
           recordGroupActivity(msg.key.remoteJid, rawSenderJid);
@@ -317,14 +321,12 @@ export async function connectBot(phoneNumber, prefix) {
 
         queueIncomingMessage(msg, async () => {
         try {
-          const senderJid = await resolveLidToJid(
+          const senderJid = await resolveAndMigrateIdentity(
             rawSenderJid,
             sock,
             msg.key.remoteJid,
+            alternateSenderJid,
           );
-          if (rawSenderJid.endsWith("@lid") && senderJid.endsWith("@s.whatsapp.net")) {
-            await migrateLidData(rawSenderJid, senderJid);
-          }
           const runtime = getRuntimeSettings();
           const gameText =
             msg.message?.conversation ||

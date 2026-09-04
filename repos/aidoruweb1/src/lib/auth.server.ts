@@ -257,6 +257,7 @@ export async function toPublicUser(doc: UserDoc): Promise<PublicUser> {
   const parts = withoutDevice.split("@");
   const bare = parts[0] ?? withoutDevice;
   const domain = parts[1] || "s.whatsapp.net";
+  const storedIdentityFields = doc as UserDoc & Record<string, unknown>;
 
   const trainerJids = [
     ...new Set(
@@ -269,6 +270,9 @@ export async function toPublicUser(doc: UserDoc): Promise<PublicUser> {
         `${bare}@c.us`,
         `${bare}:0@s.whatsapp.net`,
         `${bare}:0@c.us`,
+        storedIdentityFields["phoneNumber"],
+        storedIdentityFields["whatsappNumber"],
+        storedIdentityFields["jid"],
       ].filter(Boolean),
     ),
   ];

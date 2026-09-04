@@ -16,7 +16,7 @@ import { getPermissions } from "./permissions.mjs";
 import { groupSettings } from "./groupSettings.js";
 import { ensureDb } from "./mongo.mjs";
 import { syncWebsiteProfilePicture } from "./websiteAuth.mjs";
-import { migrateLidData, resolveLidToJid } from "./identity.mjs";
+import { resolveAndMigrateIdentity } from "./identity.mjs";
 import { buildEconomyLinkPreview, getEconomyPreviewConfig } from "./economyPreview.mjs";
 
 const PLUGINS_DIR = path.resolve("plugins");
@@ -113,10 +113,8 @@ export async function routeMessage(sock, msg, prefix = ".", ownerNumber = "", fr
   // LIDs before plugins touch MongoDB so existing phone-keyed records remain
   // the same account.
   const rawSender = msg.key.participant || msg.key.remoteJid || "";
-  const sender = await resolveLidToJid(rawSender, sock, chatId);
-  if (rawSender.endsWith("@lid") && sender.endsWith("@s.whatsapp.net")) {
-    await migrateLidData(rawSender, sender);
-  }
+  const alternateSender = msg.key.participantAlt || msg.key.remoteJidAlt || "";
+  const sender = await resolveAndMigrateIdentity(rawSender, sock, chatId, alternateSender);
 
   // Resolve the plugin before touching MongoDB. Unknown commands should be
   // rejected locally instead of paying for a permission lookup.
