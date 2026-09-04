@@ -16,14 +16,7 @@ import "dotenv/config";
 import { readFileSync, existsSync } from "fs";
 import path from "path";
 import { createRequire } from "module";
-import { connectBot } from "./lib/bot.mjs";
-import { loadPlugins } from "./lib/pluginManager.mjs";
 import { log } from "./lib/logger.mjs";
-import { autoUpdate } from "./lib/updater.js";
-import { connectDb } from "./lib/mongo.mjs";
-import { initGroupSettings } from "./lib/groupSettings.js";
-import { startCardSpawner }  from "./lib/cardSpawner.mjs";
-import { startTaxScheduler } from "./lib/taxScheduler.mjs";
 import { getRuntimeSettings } from "./lib/runtimeSettings.mjs";
 import { hasBotConfigDirectory, loadBotConfigs } from "./lib/botConfig.mjs";
 import { startBotSupervisor } from "./lib/botSupervisor.mjs";
@@ -61,6 +54,16 @@ if (multiBotMode) {
   log("info", `[bots] Found ${botDefinitions.length} bot(s) in .bots/`);
   await startBotSupervisor();
 } else {
+const [{ connectBot }, { loadPlugins }, { autoUpdate }, { connectDb }, { initGroupSettings }, { startCardSpawner }, { startTaxScheduler }] =
+  await Promise.all([
+    import("./lib/bot.mjs"),
+    import("./lib/pluginManager.mjs"),
+    import("./lib/updater.js"),
+    import("./lib/mongo.mjs"),
+    import("./lib/groupSettings.js"),
+    import("./lib/cardSpawner.mjs"),
+    import("./lib/taxScheduler.mjs"),
+  ]);
 
 // ── Session check ─────────────────────────────────────────────────────────────
 const CREDS = path.resolve("sessions", "auth", "creds.json");
