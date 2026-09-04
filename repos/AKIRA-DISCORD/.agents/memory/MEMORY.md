@@ -1,0 +1,3 @@
+- [Native media dependencies](native-media-dependencies.md) — image packages require install lifecycle scripts and their system runtime libraries in container deployments.
+- [Discord message limits](discord-message-limits.md) — WhatsApp-sized menu output must be paginated before sending through Discord.
+- [Platform command boundaries](platform-command-boundaries.md) — keep WhatsApp-only commands out of Discord and adapt server moderation through Discord permissions.

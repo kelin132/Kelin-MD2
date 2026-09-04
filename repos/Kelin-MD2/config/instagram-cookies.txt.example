@@ -1,0 +1,17 @@
+# Instagram cookies for yt-dlp — Netscape format
+#
+# How to get this file:
+#   1. Install the "Get cookies.txt LOCALLY" extension in Chrome or Firefox
+#      Chrome:  https://chrome.google.com/webstore/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc
+#      Firefox: https://addons.mozilla.org/en-US/firefox/addon/get-cookies-txt-locally/
+#   2. Log into https://www.instagram.com in your browser
+#   3. Click the extension → select instagram.com → Export
+#   4. Save / rename the downloaded file to: config/instagram-cookies.txt
+#   5. Restart the bot — the .instagram command will work immediately
+#
+# IMPORTANT: Never share or commit your real cookies.txt — treat it like a password.
+# This .example file is safe to commit; the real cookies.txt is gitignored.
+
+# Netscape HTTP Cookie File
+# https://curl.se/docs/http-cookies.html
+# (your exported cookies go here)
