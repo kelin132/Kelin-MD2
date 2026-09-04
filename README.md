@@ -36,17 +36,13 @@ Copy `.env.example` to `.env` and fill in your details:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `BOT_NUMBER` | ✅* | Your WhatsApp number with country code, no `+` (e.g. `2348012345678`) |
-| `OWNER_NUMBER` | ✅* | Your number for owner-only commands (same format) |
+| `BOT_NUMBER` | ✅ | Your WhatsApp number with country code, no `+` (e.g. `2348012345678`) |
+| `OWNER_NUMBER` | ✅ | Your number for owner-only commands (same format) |
 | `BOT_NAME` | ❌ | Display name (default: `KELIN MD`) |
 | `PREFIX` | ❌ | Command prefix (default: `.`) |
 | `TZ` | ❌ | Timezone (default: `Africa/Lagos`) |
 
 On **Pterodactyl / katabump** you can paste these directly into the panel's **Startup → Environment Variables** tab instead of using a `.env` file.
-
-> **Multi-bot mode:** `BOT_NUMBER` and `OWNER_NUMBER` are only required for the
-> legacy single-bot setup. To run multiple accounts, add one JSON definition
-> per account under `.bots/` instead. See `.bots/README.md`.
 
 ### 3. Start
 ```
@@ -79,30 +75,7 @@ On first run (no saved session) the pairing code will appear in the console:
 ╚══════════════════════════════════════════╝
 ```
 
-Once paired the session is saved in `sessions/auth/`. The bot will reconnect automatically after that — no pairing needed again unless you log out. QR login is not used.
-
-## 🤖 Run multiple bots
-
-Create `.bots/<id>.json` for every WhatsApp account:
-
-```json
-{
-  "id": "Elyra",
-  "sessionFolder": ".bots/Elyra",
-  "phoneNumber": "2637xxxxxxxx",
-  "ownerNumber": ["2637xxxxxxxx"],
-  "ownerName": "Elyra",
-  "botName": "XYTHERA",
-  "prefix": "!"
-}
-```
-
-Start the server normally with `node index.js`. Every enabled definition gets
-its own worker, socket, reconnect loop, message queue, and `creds.json`.
-Existing credentials reconnect automatically; accounts without credentials
-receive a pairing code in the console. The server rescans `.bots/` every 10
-seconds, so adding or disabling a definition does not require an `index.js`
-change.
+Once paired the session is saved in `sessions/auth/`. The bot will reconnect automatically after that — no pairing needed again unless you log out.
 
 ---
 
@@ -176,6 +149,13 @@ Discord commands resolve to the WhatsApp account, so economy, cards, Pokémon,
 guild, and profile progress remains shared. Use `.connect status` or `.connect remove`
 on Discord to manage the connection. Both bots must point to the same `MONGO_URI`.
 
+### 🔐 AIDORU website sign-in
+
+Use the phone number registered with Kelin-MD2 to sign in to AIDORU. On first
+sign-in, or when recovering a password, open a private chat with Kelin-MD2 and
+send `.otp`. The bot returns the active six-digit website code; it expires after
+10 minutes and is consumed after one successful verification.
+
 ## 🗂 File Structure
 
 ```
@@ -199,9 +179,6 @@ plugins/
   anime/              ← Anime content
 sessions/
   auth/               ← WhatsApp session (auto-created)
-.bots/
-  <id>.json           ← One config per WhatsApp account
-  <id>/creds.json     ← Per-account credentials (never commit)
 ```
 
 ---
@@ -215,7 +192,7 @@ sessions/
 
 ## 📝 Notes
 
-- **Session persistence**: `sessions/auth/` and `.bots/<id>/` are created automatically. Keep them backed up.
+- **Session persistence**: `sessions/auth/` is created automatically. Keep it backed up.
 - **Re-pairing**: Delete `sessions/auth/` and restart to re-pair.
 - **Owner commands**: Set `OWNER_NUMBER` — without it owner plugins won't work.
 - **AI commands** (`.chatgpt`, `.gemini`, `.deepseek`, and Akira auto-replies): use their configured public AI routes without a user API key. Akira uses PrinceTech's `gpt4o-mini`, `gpt4`, then `gpt` endpoints and stays silent if all three fail instead of sending a fabricated reply.

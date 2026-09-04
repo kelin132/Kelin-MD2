@@ -1,8 +1,8 @@
-import { generateOtp, getOrCreateWebsiteId } from "../../lib/websiteAuth.mjs";
+import { getPendingWebsiteCode } from "../../lib/websiteAuth.mjs";
 
 export default {
   name: "otp",
-  description: "Send a one-time AIDORU password reset code in a group",
+  description: "Show the one-time AIDORU website code for this WhatsApp account",
   category: "utilities",
   usage: ".otp",
   cooldown: 30,
@@ -12,29 +12,27 @@ export default {
     const senderJid = String(sender || msg.key.participant || sourceChat || "").trim();
     const quoted = { quoted: msg };
 
-    if (!sourceChat.endsWith("@g.us")) {
-      if (sourceChat) {
-        await sock.sendMessage(sourceChat, {
-          text: "❌ Use *.otp* in a group chat. For your safety, reset codes are never sent in private messages.",
-        }, quoted);
-      }
+    if (sourceChat.endsWith("@g.us")) {
+      await sock.sendMessage(sourceChat, {
+        text: "❌ For your safety, send *.otp* in a private chat with the bot.",
+      }, quoted);
       return;
     }
 
     if (!senderJid) return;
 
     try {
-      const websiteId = await getOrCreateWebsiteId(senderJid);
-      const code = await generateOtp(websiteId);
+      const pending = await getPendingWebsiteCode(senderJid);
       await sock.sendMessage(sourceChat, {
         text: [
-          "🔐 *AIDORU PASSWORD RESET CODE*",
+          pending.kind === "verification"
+            ? "🔐 *AIDORU WEBSITE VERIFICATION CODE*"
+            : "🔐 *AIDORU PASSWORD RESET CODE*",
           "",
           `For: *${senderJid.split("@")[0]}*`,
-          `AIDORU ID: *${websiteId}*`,
-          `One-time code: *${code}*`,
+          `One-time code: *${pending.code}*`,
           "",
-          "Enter this six-digit code on the AIDORU website within 10 minutes.",
+          `Enter this six-digit code on the AIDORU website before ${new Date(pending.expiresAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}.`,
         ].join("\n"),
       }, quoted);
     } catch (error) {

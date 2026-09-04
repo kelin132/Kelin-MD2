@@ -9,7 +9,7 @@
  *
  * On first run a pairing code will appear in this console.
  * Enter it in WhatsApp → Settings → Linked Devices → Link a Device.
- * Multiple accounts can be configured under .bots/.
+ * If the pairing code doesn't appear, a QR code will be shown instead — scan it.
  */
 
 import "dotenv/config";
@@ -25,8 +25,6 @@ import { initGroupSettings } from "./lib/groupSettings.js";
 import { startCardSpawner }  from "./lib/cardSpawner.mjs";
 import { startTaxScheduler } from "./lib/taxScheduler.mjs";
 import { getRuntimeSettings } from "./lib/runtimeSettings.mjs";
-import { hasBotConfigDirectory, loadBotConfigs } from "./lib/botConfig.mjs";
-import { startBotSupervisor } from "./lib/botSupervisor.mjs";
 
 // settings.js is CommonJS — import via createRequire
 const _require  = createRequire(import.meta.url);
@@ -47,20 +45,6 @@ console.log("═".repeat(50));
 console.log(`  Prefix  : ${PREFIX}`);
 console.log(`  Number  : ${BOT_NUMBER || "⚠  Not set — add BOT_NUMBER to .env"}`);
 console.log("═".repeat(50) + "\n");
-
-// ── Multi-bot mode ───────────────────────────────────────────────────────────
-// A .bots directory with at least one JSON definition switches startup to the
-// supervisor. The supervisor owns one isolated child process per WhatsApp
-// account, so one slow reconnect or one account's auth state cannot affect the
-// others. The legacy single-bot environment remains supported when .bots is
-// not configured.
-const botDefinitions = loadBotConfigs();
-const multiBotMode =
-  hasBotConfigDirectory() && (botDefinitions.length > 0 || !BOT_NUMBER);
-if (multiBotMode) {
-  log("info", `[bots] Found ${botDefinitions.length} bot(s) in .bots/`);
-  await startBotSupervisor();
-} else {
 
 // ── Session check ─────────────────────────────────────────────────────────────
 const CREDS = path.resolve("sessions", "auth", "creds.json");
@@ -125,4 +109,3 @@ if (databaseReady) startTaxScheduler();
 // Do not compete with the first connection/message burst for network and disk.
 const updateTimer = setTimeout(() => autoUpdate(), 30_000);
 updateTimer.unref?.();
-}

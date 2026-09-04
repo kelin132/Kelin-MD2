@@ -4,7 +4,7 @@
 let canvasModulePromise;
 
 async function getCanvasModule() {
-  canvasModulePromise ??= import("@napi-rs/canvas");
+  canvasModulePromise ??= import("canvas");
   return canvasModulePromise;
 }
 
