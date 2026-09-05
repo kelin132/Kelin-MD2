@@ -3,7 +3,11 @@
  * All economy / staff plugins import from here.
  */
 import { getDb } from "../../lib/mongo.mjs";
-import { normalizeJid, whatsappIdentityVariants } from "../../lib/identity.mjs";
+import {
+  normalizeJid,
+  phoneIdentityFields,
+  whatsappIdentityVariants,
+} from "../../lib/identity.mjs";
 
 export const DEFAULTS = {
   name:          "User",
@@ -76,6 +80,10 @@ function identityQuery(id) {
       { phoneNumber: { $in: variants } },
       { phone: { $in: variants } },
       { jid: { $in: variants } },
+      { whatsappId: { $in: variants } },
+      { whatsappJid: { $in: variants } },
+      { userJid: { $in: variants } },
+      { sender: { $in: variants } },
       { owner: { $in: variants } },
     ],
   };
@@ -93,6 +101,12 @@ async function findIdentityUser(db, id) {
   if (canonical) return canonical;
 
   return collection.findOne(identityQuery(id));
+}
+
+async function ensurePhoneIdentityFields(db, id) {
+  const fields = phoneIdentityFields(id);
+  if (Object.keys(fields).length === 0) return;
+  await db.collection("users").updateOne({ _id: normalizeJid(id) }, { $set: fields });
 }
 
 /**
@@ -131,6 +145,7 @@ export async function getUser(id) {
   const found = await findIdentityUser(db, id);
   const user = found ? await migrateIdentityUser(db, found, normalizedId) : null;
   if (!user) return { ...DEFAULTS };
+  if (user.registered) await ensurePhoneIdentityFields(db, normalizedId);
   const { _id, ...rest } = user;
   const merged = { ...DEFAULTS, ...rest };
 
@@ -443,6 +458,7 @@ export async function registerUser(id, name) {
   }
   const { name: _n, registered: _r, registeredAt: _ra, ...insertDefaults } = DEFAULTS;
   const registrationFields = {
+    ...phoneIdentityFields(normalizedId),
     name: name || "User",
     registered: true,
     registeredAt: new Date().toISOString(),

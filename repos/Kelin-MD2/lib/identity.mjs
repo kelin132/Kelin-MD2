@@ -22,6 +22,26 @@ export function bareJidNumber(value = "") {
 }
 
 /**
+ * Return the canonical phone fields used by the website lookup.
+ * Privacy LIDs do not produce phone aliases until Baileys supplies a verified
+ * LID-to-phone mapping.
+ */
+export function phoneIdentityFields(value) {
+  const normalized = normalizeJid(String(value || ""));
+  if (!normalized.endsWith("@s.whatsapp.net")) return {};
+
+  const digits = bareJidNumber(normalized);
+  if (!digits) return {};
+
+  return {
+    phoneNumber: digits,
+    whatsappNumber: normalized,
+    jid: normalized,
+    userId: normalized,
+  };
+}
+
+/**
  * Return the common legacy spellings of one WhatsApp identity.
  * Older records use raw numbers, @c.us, device-qualified JIDs, or a mix of
  * those forms. Keeping the variants together prevents an identity change from
@@ -41,6 +61,7 @@ export function whatsappIdentityVariants(value) {
     normalized,
     normalized.replace(/:\d+(?=@)/, ""),
     digits,
+    digits ? `+${digits}` : "",
     digits && isLid ? `${digits}@lid` : "",
     digits && !isLid ? `${digits}@${server}` : "",
     digits && !isLid ? `${digits}@s.whatsapp.net` : "",
@@ -223,9 +244,7 @@ export async function rememberIdentityAlias(lid, jid) {
       { _id: normalizeJid(lid), registered: true },
       {
         $set: {
-          phoneNumber: bareJidNumber(jid),
-          whatsappNumber: normalizeJid(jid),
-          jid: normalizeJid(jid),
+          ...phoneIdentityFields(jid),
         },
       },
     );
