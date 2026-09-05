@@ -8,6 +8,7 @@ import { resolveDiscordAccount } from "./accountLink.mjs";
 import { isDiscordSupported } from "./discordSupport.mjs";
 import { akiraHandler } from "./akiraHandler.mjs";
 import { toDiscordPayload } from "./discordPayload.mjs";
+import { buildEconomyLinkPreview, getEconomyPreviewConfig } from "./economyPreview.mjs";
 import {
   AIDORU_FOOTER,
   discordAccentColor,
@@ -279,8 +280,44 @@ export async function routeDiscordMessage(client, message, prefix = ".", ownerId
       ...discordGroupSocket(client, message, message.channel),
     };
 
+    const previewCommand = String(plugin.name || command || "").toLowerCase();
+    const shouldAttachPreview = new Set(["daily", "weekly", "monthly"]).has(previewCommand);
+    let previewSent = false;
+    const commandSock = shouldAttachPreview
+      ? new Proxy(mockSock, {
+          get(target, property, receiver) {
+            if (property !== "sendMessage") return Reflect.get(target, property, receiver);
+            return async (id, content, options = {}) => {
+              if (
+                !previewSent &&
+                content &&
+                typeof content === "object" &&
+                typeof content.text === "string" &&
+                !content.linkPreview
+              ) {
+                const config = getEconomyPreviewConfig(previewCommand);
+                const linkPreview = await buildEconomyLinkPreview(previewCommand);
+                if (config && linkPreview) {
+                  previewSent = true;
+                  return target.sendMessage(
+                    id,
+                    {
+                      ...content,
+                      text: `${content.text}\n\n🔗 ${config.url}`,
+                      linkPreview,
+                    },
+                    options,
+                  );
+                }
+              }
+              return target.sendMessage(id, content, options);
+            };
+          },
+        })
+      : mockSock;
+
     await plugin.run({
-      sock: mockSock,
+      sock: commandSock,
       msg: compatibilityMessage(message),
       args,
       text,

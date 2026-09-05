@@ -46,12 +46,23 @@ function embedTitle(content, options = {}) {
 }
 
 function textEmbed(content, options = {}) {
+  const linkPreview = content.linkPreview || {};
   const embed = new EmbedBuilder()
     .setColor(discordStateColor(content.text, options.accentColor))
     .setDescription(String(content.text || "").trim() || "\u200b");
 
-  const title = embedTitle(content, options);
+  const title = linkPreview.title || embedTitle(content, options);
   if (title) embed.setTitle(String(title));
+  if (linkPreview["canonical-url"]) {
+    embed.setURL(String(linkPreview["canonical-url"]));
+  }
+  if (linkPreview.jpegThumbnail) {
+    embed.setImage(
+      Buffer.isBuffer(linkPreview.jpegThumbnail) || linkPreview.jpegThumbnail instanceof Uint8Array
+        ? "attachment://aidoru-preview.jpg"
+        : String(linkPreview.jpegThumbnail),
+    );
+  }
   if (options.author?.name) {
     embed.setAuthor({
       name: String(options.author.name),
@@ -134,7 +145,7 @@ export function toDiscordPayload(content, options = {}) {
   }
 
   if (content.text && !isMediaContent(content)) {
-    return {
+    const payload = {
       ...mentionPayload(content.mentions),
       embeds: [textEmbed(content, {
         ...options,
@@ -142,6 +153,13 @@ export function toDiscordPayload(content, options = {}) {
         footer: content.discordFooter || options.footer,
       })],
     };
+    if (
+      Buffer.isBuffer(content.linkPreview?.jpegThumbnail) ||
+      content.linkPreview?.jpegThumbnail instanceof Uint8Array
+    ) {
+      payload.files = [toAttachment(content.linkPreview.jpegThumbnail, "aidoru-preview.jpg")];
+    }
+    return payload;
   }
 
   const payload = {};

@@ -2,13 +2,35 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
 const WEBSITE_ORIGIN = "https://aidoru.zone.id";
-const ASSET_DIR = fileURLToPath(new URL("../assets/", import.meta.url));
+const ASSET_DIRS = [
+  fileURLToPath(new URL("../assets/", import.meta.url)),
+  fileURLToPath(new URL("../../Kelin-MD2/assets/", import.meta.url)),
+];
+const REMOTE_ASSET_ORIGIN = "https://raw.githubusercontent.com/kelin132/Kelin-MD2/main/assets";
 
 const PREVIEW_CONFIG = {
   arcade: {
     url: `${WEBSITE_ORIGIN}/arcade`,
     title: "🎰 AIDORU Arcade",
     description: "Play, bet, spin, and grow your trainer fortune in the AIDORU arcade.",
+    image: "economy-preview-arcade.jpg",
+  },
+  daily: {
+    url: `${WEBSITE_ORIGIN}/journey`,
+    title: "🎁 AIDORU Daily Rewards",
+    description: "Claim your daily coins, build your streak, and manage your trainer journey.",
+    image: "aidoru-web-preview.jpg",
+  },
+  weekly: {
+    url: `${WEBSITE_ORIGIN}/arcade`,
+    title: "🗓️ AIDORU Weekly Rewards",
+    description: "Keep your AIDORU trainer progress growing with weekly rewards and arcade games.",
+    image: "economy-preview-arcade.jpg",
+  },
+  monthly: {
+    url: `${WEBSITE_ORIGIN}/arcade`,
+    title: "📅 AIDORU Monthly Rewards",
+    description: "Return each month for your reward and keep building your AIDORU fortune.",
     image: "economy-preview-arcade.jpg",
   },
   money: {
@@ -55,7 +77,7 @@ const COMMAND_KIND = new Map([
   ["vault", "money"], ["history", "money"], ["diamonds", "money"], ["orbs", "money"],
   ["beg", "arcade"], ["work", "arcade"], ["crime", "arcade"], ["rob", "arcade"],
   ["heist", "arcade"], ["invest", "arcade"], ["pool", "arcade"], ["lottery", "arcade"],
-  ["daily", "arcade"], ["weekly", "arcade"], ["monthly", "arcade"], ["gamble", "arcade"],
+  ["daily", "daily"], ["weekly", "weekly"], ["monthly", "monthly"], ["gamble", "arcade"],
   ["bet", "arcade"], ["blackjack", "arcade"], ["coinflip", "arcade"], ["roulette", "arcade"],
   ["slots", "arcade"], ["richg", "arcade"],
   ["challenge", "pokemon"],
@@ -70,6 +92,9 @@ const COMMAND_KIND = new Map([
 
 const COMMAND_COPY = new Map([
   ["balance", ["AIDORU Account", "Balance"]],
+  ["daily", ["🎁 AIDORU Daily Rewards", "Claim your daily coins and keep your streak alive."]],
+  ["weekly", ["🗓️ AIDORU Weekly Rewards", "Keep your trainer progress growing with weekly rewards."]],
+  ["monthly", ["📅 AIDORU Monthly Rewards", "Return each month for your AIDORU reward."]],
   ["ebal", ["AIDORU Account", "Account"]],
   ["deposit", ["Deposit successful!", "Bank"]],
   ["withdraw", ["Withdrawal", "Withdraw"]],
@@ -107,7 +132,18 @@ const thumbnailPromises = new Map();
 
 function getThumbnail(fileName) {
   if (!thumbnailPromises.has(fileName)) {
-    thumbnailPromises.set(fileName, readFile(`${ASSET_DIR}${fileName}`).catch(() => null));
+    thumbnailPromises.set(fileName, (async () => {
+      for (const directory of ASSET_DIRS) {
+        try {
+          return await readFile(`${directory}${fileName}`);
+        } catch {
+          // Try the next known checkout when the Discord repo is deployed alone.
+        }
+      }
+      // AKIRA-DISCORD is also deployed as a standalone checkout. Keep the
+      // preview artwork available there without duplicating binary assets.
+      return `${REMOTE_ASSET_ORIGIN}/${encodeURIComponent(fileName)}`;
+    })());
   }
   return thumbnailPromises.get(fileName);
 }
