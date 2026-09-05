@@ -45,5 +45,7 @@ For an existing account with a config file, use:
 
 The `sessionFolder` field is optional. If credentials are in `.bots/elyra/auth/`,
 that folder is used directly; the server does not create a second session
-folder. A legacy `cred.json` is renamed once to Baileys' canonical `creds.json`.
+folder or rename/copy credential files. Use exactly one credential file per
+session: either `cred.json` or `creds.json`. The bot reads and updates that
+existing file and keeps all session key files in the same existing folder.
 Credentials are private and should never be committed to GitHub.
