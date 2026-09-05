@@ -6,3 +6,4 @@
 - [Panel code freshness](panel-code-freshness.md) — a panel can keep running an older bot loader after GitHub is updated; verify the deployed source before debugging folders.
 - [Nested bot dependencies](nested-bot-dependencies.md) — nested bot repositories need their own lockfile install because root workspace installation does not cover them.
 - [Discord website authentication](discord-website-auth.md) — website Discord sign-in resolves an active shared WhatsApp link and needs separate login OAuth redirect configuration.
+- [GitHub push authentication](github-push-auth.md) — this workspace's GitHub token may reject bearer auth; basic auth with x-access-token works without exposing the token.
