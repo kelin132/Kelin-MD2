@@ -1,4 +1,3 @@
-```javascript
 import { getUser, saveUser, requireRegistration, addHistory, maybeAwardDiamonds, checkLevelUp } from "./database.js";
 import { DIG_LOOT, SHOP_ITEMS, rollLoot } from "./_items.js";
 
@@ -31,11 +30,7 @@ export default {
       const rem  = COOLDOWN - (now - user.lastDig);
       const secs = Math.ceil(rem / 1000);
       
-      const limitCaption = 
-`⏳ You've already dug recently! Next dig available in ${secs}s.
-
-│ Reminder: You have a web daily reward waiting to be claimed!
-Claim it here: https://aidoru.zone.id/arcade`;
+      const limitCaption = `⏳ You've already dug recently! Next dig available in ${secs}s.`;
 
       return reply(limitCaption);
     }
@@ -74,14 +69,8 @@ Claim it here: https://aidoru.zone.id/arcade`;
 
     const digToolEmoji = hasDiamondShovel ? "🪏" : "⛏️";
 
-    const claimCaption = 
-`🎉 You dug deep into the ground ${digToolEmoji} and found ${resultText}! Your new balance is 💰 ${fmt(user.money || 0)} coins.${diamondReward ? ` (Bonus: 💎 +${diamondReward} Gem${diamondReward === 1 ? "" : "s"})` : ""}${leveled ? `\n\n⭐ *LEVEL UP!* You are now Level ${newLevel}!` : ""}
-
-│ Reminder: You have a web daily reward waiting to be claimed!
-Claim it here: https://aidoru.zone.id/arcade`;
+    const claimCaption = `🎉 You dug deep into the ground ${digToolEmoji} and found ${resultText}! Your new balance is 💰 ${fmt(user.money || 0)} coins.${diamondReward ? ` (Bonus: 💎 +${diamondReward} Gem${diamondReward === 1 ? "" : "s"})` : ""}${leveled ? `\n\n⭐ *LEVEL UP!* You are now Level ${newLevel}!` : ""}`;
 
     return reply(claimCaption);
   },
 };
-
-```
