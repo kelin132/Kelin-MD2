@@ -20,7 +20,7 @@ import {
   requestPasswordReset,
   resetPassword,
   verifyPhone,
-  finishDiscordWebsiteLogin,
+  finishDiscordCallback,
   startDiscordWebsiteLogin,
 } from "@/lib/aidoru.functions";
 import type { PublicUser } from "@/lib/game";
@@ -68,7 +68,7 @@ function Portal() {
   const doVerifyPhone = useServerFn(verifyPhone);
   const doResetPassword = useServerFn(resetPassword);
   const startDiscordLogin = useServerFn(startDiscordWebsiteLogin);
-  const finishDiscordLogin = useServerFn(finishDiscordWebsiteLogin);
+  const finishDiscordCallbackRequest = useServerFn(finishDiscordCallback);
 
   const finishAuth = useCallback(
     (user: PublicUser) => {
@@ -138,10 +138,14 @@ function Portal() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("discord") !== "login") return;
-
     const code = params.get("code");
     const state = params.get("state");
+    const intent = params.get("discord");
+    const isDiscordCallback =
+      Boolean(code && state) && (intent === "login" || intent === "callback" || !intent);
+    const hasDiscordError = intent === "login" || intent === "callback";
+    if (!isDiscordCallback && !(hasDiscordError && params.get("error"))) return;
+
     if (!code || !state) {
       const error = params.get("error");
       window.history.replaceState({}, "", window.location.pathname);
@@ -149,16 +153,20 @@ function Portal() {
       return;
     }
 
-    void finishDiscordLogin({ data: { code, state } })
-      .then((user) => {
+    void finishDiscordCallbackRequest({ data: { code, state } })
+      .then((result) => {
         window.history.replaceState({}, "", window.location.pathname);
-        finishAuth(user);
+        if (result.kind === "login") {
+          finishAuth(result.user);
+          return;
+        }
+        toast.success("Discord account linked. You can now continue with Discord.");
       })
       .catch((error: Error) => {
         window.history.replaceState({}, "", window.location.pathname);
         toast.error(error.message || "Discord sign-in failed.");
       });
-  }, [finishAuth, finishDiscordLogin]);
+  }, [finishAuth, finishDiscordCallbackRequest]);
 
   useEffect(() => {
     if (!session) return;
@@ -276,10 +284,11 @@ function Portal() {
                 <div className="grid grid-cols-[7rem_1fr] gap-3">
                   <Field
                     icon={MessageCircle}
-                    label="COUNTRY"
+                    label="COUNTRY CODE"
                     value={countryCode}
                     onChange={(value) => setCountryCode(value.replace(/\D/g, "").slice(0, 4))}
                     placeholder="263"
+                    prefix="+"
                     inputMode="numeric"
                     autoComplete="tel-country-code"
                   />
@@ -336,7 +345,7 @@ function Portal() {
                     className="mt-2 text-sm font-semibold text-cyan-300 transition hover:text-white"
                     onClick={() =>
                       setNotice(
-                        "Start in WhatsApp: send .register <your_name> to the bot, then return here and sign in with your phone number.",
+                        "New AIDORU accounts start with your WhatsApp phone number. Open https://aidoru.zone.id, register with the WhatsApp bot using .register <your_name>, then return here and use your + country code and phone number.",
                       )
                     }
                   >
@@ -357,10 +366,11 @@ function Portal() {
                 <div className="grid grid-cols-[7rem_1fr] gap-3">
                   <Field
                     icon={MessageCircle}
-                    label="COUNTRY"
+                    label="COUNTRY CODE"
                     value={countryCode}
                     onChange={(value) => setCountryCode(value.replace(/\D/g, "").slice(0, 4))}
                     placeholder="263"
+                    prefix="+"
                     inputMode="numeric"
                     autoComplete="tel-country-code"
                   />
@@ -449,8 +459,10 @@ function Portal() {
             </div>
             {isLogin && (
               <p className="mt-4 text-center text-[11px] leading-relaxed text-slate-400">
-                Use the same phone number you use with the WhatsApp bot. New accounts and password
-                recovery are verified with <span className="text-cyan-300">.otp</span> in a private bot chat.
+                Use the same phone number you use with the WhatsApp bot. The{" "}
+                <span className="text-cyan-300">+</span> country code and number identify the
+                WhatsApp trainer whose progress AIDORU displays. New accounts and password recovery
+                are verified with <span className="text-cyan-300">.otp</span> in a private bot chat.
               </p>
             )}
           </div>
@@ -506,6 +518,7 @@ function Field({
   value,
   onChange,
   placeholder,
+  prefix,
   type = "text",
   autoComplete,
   inputMode,
@@ -515,6 +528,7 @@ function Field({
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  prefix?: string;
   type?: string;
   autoComplete?: string;
   inputMode?: "numeric" | "text";
@@ -524,6 +538,7 @@ function Field({
       <span className="landing-kicker mb-2 block">{label}</span>
       <span className="landing-input flex items-center gap-3 rounded-full border border-white/15 px-4 py-3.5 transition focus-within:border-cyan-300/70">
         <Icon className="size-4 shrink-0 text-slate-400" />
+        {prefix && <span className="text-sm font-semibold text-cyan-300">{prefix}</span>}
         <input
           value={value}
           onChange={(event) => onChange(event.target.value)}
