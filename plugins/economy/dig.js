@@ -1,12 +1,13 @@
+```javascript
 import { getUser, saveUser, requireRegistration, addHistory, maybeAwardDiamonds, checkLevelUp } from "./database.js";
 import { DIG_LOOT, SHOP_ITEMS, rollLoot } from "./_items.js";
 
 const COOLDOWN = 10 * 1000; // 10 seconds
 
 function fmt(n) {
-  if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
-  if (n >= 1e3) return `$${(n/1e3).toFixed(1)}K`;
-  return `$${n.toLocaleString()}`;
+  if (n >= 1e6) return `${(n/1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `${(n/1e3).toFixed(1)}K`;
+  return `${n.toLocaleString()}`;
 }
 
 export default {
@@ -29,14 +30,14 @@ export default {
     if (now - (user.lastDig || 0) < COOLDOWN) {
       const rem  = COOLDOWN - (now - user.lastDig);
       const secs = Math.ceil(rem / 1000);
-      return reply(
-`╭─❀「 ⛏️ *𝐃𝐈𝐆* 」❀─╮
-│ ⏳ *Result*  :: *TIRED 🔴*
-│ 🍃 *Flavour* :: _腕が疲れた...もう少し待て！_
-│
-│ 🕐 *Next*    :: *${secs}s remaining*
-╰───────────────❀`
-      );
+      
+      const limitCaption = 
+`⏳ You've already dug recently! Next dig available in ${secs}s.
+
+│ Reminder: You have a web daily reward waiting to be claimed!
+Claim it here: https://aidoru.zone.id/arcade`;
+
+      return reply(limitCaption);
     }
 
     const loot = rollLoot(DIG_LOOT);
@@ -44,62 +45,43 @@ export default {
     const hasDiamondShovel = (user.inventory || []).includes("diamond_shovel");
     const diamondReward = maybeAwardDiamonds(user, hasDiamondShovel ? 0.01 : 0.005, 1, 2);
 
-    let resultLine = "";
-    let resultType = "";
+    let resultText = "";
 
     if (loot.type === "cash") {
       const amount  = Math.floor(Math.random() * (loot.max - loot.min + 1)) + loot.min;
       user.money    = (user.money || 0) + amount;
       await addHistory(sender, "dig", amount, `Dug up $${amount.toLocaleString()}`);
-      resultLine = `💰 Found *${fmt(amount)}* in the ground!`;
-      resultType = `+${fmt(amount)}`;
+      resultText    = `💰 ${fmt(amount)} coins`;
     } else if (loot.type === "item") {
       user.inventory = user.inventory || [];
       user.inventory.push(loot.name);
-      const def  = SHOP_ITEMS[loot.name];
-      resultLine = `${def?.emoji || "📦"} Found a *${loot.name}*!`;
-      resultType = loot.name;
+      const def     = SHOP_ITEMS[loot.name];
+      const itemEmoji = def?.emoji || "📦";
+      resultText    = `${itemEmoji} ${loot.name}`;
       await addHistory(sender, "dig", 0, `Dug up ${loot.name}`);
     } else if (loot.type === "orbs") {
       const amount  = Math.floor(Math.random() * (loot.max - loot.min + 1)) + loot.min;
       user.orbs     = (user.orbs || 0) + amount;
-      resultLine    = `🔮 Found *${amount} orb(s)*!`;
-      resultType    = `+${amount} orbs`;
+      resultText    = `🔮 ${amount} orbs`;
       await addHistory(sender, "dig", 0, `Dug up ${amount} orbs`);
     } else {
-      resultLine = "🪨 You just found a rock. Useless.";
-      resultType = "Nothing";
+      resultText    = "🪨 nothing useful";
     }
 
     user.xp = (user.xp || 0) + 10;
     const { leveled, newLevel } = checkLevelUp(user);
     await saveUser(sender, user);
 
-    const digMessages = [
-      hasDiamondShovel
-        ? "🪏 Your Diamond Shovel glints as you dig deep..."
-        : "⛏️ You dig deep into the earth...",
-      hasDiamondShovel
-        ? "🪏 Your lucky shovel sweeps through the soil..."
-        : "⛏️ You strike something with your pickaxe...",
-      hasDiamondShovel
-        ? "🪏 The Diamond Shovel finds a promising glimmer..."
-        : "⛏️ The ground gives way beneath your feet...",
-    ];
-    const flavour = digMessages[Math.floor(Math.random() * digMessages.length)];
+    const digToolEmoji = hasDiamondShovel ? "🪏" : "⛏️";
 
-    return reply(
-`╭─❀「 ⛏️ *𝐃𝐈𝐆* 」❀─╮
-│ 🌙 *Result*  :: *${resultType}*
-│ 🍃 *Flavour* :: _${flavour}_
-│
-│ ${resultLine}
-│
-│ 💰 *Cash*    :: *${fmt(user.money || 0)}*
-│ 🔮 *Orbs*    :: *${user.orbs || 0}*
-│ 🎒 *Items*   :: *${(user.inventory || []).length}*
-│ ⭐ *XP*      :: *+10*${diamondReward ? `\n│ 💎 *Bonus*   :: *+${diamondReward} Gem${diamondReward === 1 ? "" : "s"}*` : ""}${leveled ? `\n│\n│ 🎉 *LEVEL UP!* — Now Level ${user.level}` : ""}
-╰───────────────❀`
-    );
+    const claimCaption = 
+`🎉 You dug deep into the ground ${digToolEmoji} and found ${resultText}! Your new balance is 💰 ${fmt(user.money || 0)} coins.${diamondReward ? ` (Bonus: 💎 +${diamondReward} Gem${diamondReward === 1 ? "" : "s"})` : ""}${leveled ? `\n\n⭐ *LEVEL UP!* You are now Level ${newLevel}!` : ""}
+
+│ Reminder: You have a web daily reward waiting to be claimed!
+Claim it here: https://aidoru.zone.id/arcade`;
+
+    return reply(claimCaption);
   },
 };
+
+```
