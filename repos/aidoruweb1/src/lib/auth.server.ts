@@ -37,6 +37,7 @@ const WEBSITE_ID_PATTERN = /^AID-[0-9A-F]{10}$/;
 const DISCORD_STATE_COOKIE = "aidoru_discord_oauth_state";
 const DISCORD_LOGIN_STATE_COOKIE = "aidoru_discord_login_oauth_state";
 const DISCORD_STATE_TTL_SECONDS = 10 * 60;
+const DISCORD_CALLBACK_URI = "https://aidoru.zone.id/profile?discord=callback";
 
 function secret(): Uint8Array {
   const value = process.env["SESSION_SECRET"];
@@ -775,16 +776,13 @@ function whatsappIdentityVariants(value: string): string[] {
   ].filter(Boolean))];
 }
 
-function discordConfiguration(flow: "link" | "login" = "link") {
+function discordConfiguration(_flow: "link" | "login" = "link") {
   const clientId = process.env["DISCORD_CLIENT_ID"]?.trim();
   const clientSecret = process.env["DISCORD_CLIENT_SECRET"]?.trim();
-  const redirectUri =
-    flow === "login"
-      ? process.env["DISCORD_LOGIN_REDIRECT_URI"]?.trim() ||
-        process.env["DISCORD_REDIRECT_URI"]?.trim() ||
-        "https://aidoru.zone.id"
-      : process.env["DISCORD_REDIRECT_URI"]?.trim() ||
-        "https://aidoru.zone.id";
+  // Both website login and account linking use the callback registered in the
+  // Discord application. Ignore legacy redirect overrides so an old hosting
+  // environment cannot send OAuth to an invalid path.
+  const redirectUri = DISCORD_CALLBACK_URI;
   if (!clientId || !clientSecret) {
     throw new Error(
       "Discord sign-in is not configured yet. Add DISCORD_CLIENT_ID and DISCORD_CLIENT_SECRET.",
