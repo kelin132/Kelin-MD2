@@ -44,10 +44,38 @@ function readJson(filePath) {
   }
 }
 
+function resolveLocalSessionFolder(botRoot, value) {
+  if (!value) return null;
+  const candidate = path.resolve(botRoot, String(value));
+  const relative = path.relative(botRoot, candidate);
+  if (relative.startsWith("..") || path.isAbsolute(relative)) {
+    log(
+      "warn",
+      `[bots] Ignoring sessionFolder outside ${botRoot}: ${value}`,
+    );
+    return null;
+  }
+  return candidate;
+}
+
 function findSessionFolder(botRoot, config = {}) {
   // The bot folder owns its session. Do not follow sessionFolder/auth values
   // from config.json into another bot's directory; that is how one account
   // can accidentally start with another account's credentials.
+  const configuredFolders = [
+    config.sessionFolder,
+    config.sessionDir,
+    config.authFolder,
+    config.auth,
+    config.session,
+  ]
+    .map((value) => resolveLocalSessionFolder(botRoot, value))
+    .filter(Boolean);
+
+  for (const candidate of configuredFolders) {
+    if (hasCreds(candidate)) return candidate;
+  }
+
   // The most common layout is .bots/<name>/auth/creds.json.
   const auth = path.join(botRoot, "auth");
   if (hasCreds(auth)) return auth;
@@ -69,7 +97,7 @@ function findSessionFolder(botRoot, config = {}) {
   // A bot with a phone number is allowed to start without an existing
   // credential file so Baileys can create the session and request pairing.
   if (config.botNumber || config.number || config.phoneNumber) {
-    return auth;
+    return configuredFolders[0] || auth;
   }
 
   return null;

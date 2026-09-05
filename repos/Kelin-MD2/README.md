@@ -74,15 +74,27 @@ changing the startup code:
 ```
 
 The loader accepts an optional `config.json` file with `botName`, `ownerNumber`,
-`botNumber`, `prefix`, `menuImage` (or `botImage`), and `layout`. The session
-always belongs to the bot's own folder; do not set `sessionFolder` to another
-bot's directory. A missing or malformed config file will not hide a valid
-session folder.
+`botNumber`, `prefix`, `menuImage` (or `botImage`), `layout`, and
+`sessionFolder`. The session folder must stay inside that bot's own folder;
+paths such as `../mikasa/auth` are rejected. A missing or malformed config
+file will not hide a valid session folder.
 
 Each session must contain exactly one credential file: `cred.json` or
 `creds.json`. `cred.json` is treated as the active filename; the bot creates a
 local compatibility link named `creds.json` for Baileys without copying or
 duplicating the credentials. Do not keep both as separate files.
+
+Example config for a bot using its own `auth` folder:
+
+```json
+{
+  "botName": "zhongli",
+  "sessionFolder": "auth",
+  "botNumber": "2637xxxxxxxx",
+  "ownerNumber": "2637xxxxxxxx",
+  "prefix": "."
+}
+```
 
 Each bot runs in its own process and keeps its own settings and menu image.
 From the owner account, use `.botconfig image <https://...>` or reply to an
