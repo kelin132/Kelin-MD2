@@ -16,7 +16,7 @@ export default {
     if (!action) {
       return reply(
         "🔗 *Link your WhatsApp progress*\n\n" +
-        "1. Open the WhatsApp bot and send *.discordlink*\n" +
+        "1. Open the WhatsApp bot and send *.discord* (or *.discordlink*)\n" +
         "2. Copy the one-time code it gives you\n" +
         "3. Return here and send *.connect CODE*\n\n" +
         "The code expires after 10 minutes and can only be used once.",
@@ -40,7 +40,7 @@ export default {
 
     const result = await claimWhatsAppLink(action.split(/\s+/)[0], discordId);
     if (!result) {
-      return reply("❌ That link code is invalid, expired, or already used.\n\nGenerate a new one with *.discordlink* on WhatsApp.");
+      return reply("❌ That link code is invalid, expired, or already used.\n\nGenerate a new one with *.discord* on WhatsApp.");
     }
 
     return reply(

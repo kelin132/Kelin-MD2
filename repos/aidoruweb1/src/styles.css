@@ -600,6 +600,33 @@
 .landing-button:disabled {
   opacity: 0.5;
 }
+.landing-discord-button {
+  display: inline-flex;
+  min-height: 3.2rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 999px;
+  background: #5865f2;
+  color: white;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  transition:
+    transform 180ms ease,
+    filter 180ms ease,
+    opacity 180ms ease;
+}
+.landing-discord-button:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+.landing-discord-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
 .landing-hero {
   animation: aidoru-float 7s ease-in-out infinite;
   filter: drop-shadow(0 30px 36px oklch(0.02 0.01 245 / 75%));

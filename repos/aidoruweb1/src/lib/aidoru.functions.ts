@@ -11,6 +11,8 @@ import {
   getDiscordLinkStatus,
   startDiscordLink,
   completeDiscordLink,
+  startDiscordLogin,
+  completeDiscordLogin,
   unlinkDiscordAccount,
   clearSession,
 } from "./auth.server";
@@ -130,6 +132,16 @@ export const finishDiscordAccountLink = createServerFn({ method: "POST" })
     z.object({ code: z.string().min(1).max(2048), state: z.string().min(1).max(256) }).parse(data),
   )
   .handler(({ data }) => completeDiscordLink(data));
+
+export const startDiscordWebsiteLogin = createServerFn({ method: "POST" }).handler(() =>
+  startDiscordLogin(),
+);
+
+export const finishDiscordWebsiteLogin = createServerFn({ method: "POST" })
+  .inputValidator((data) =>
+    z.object({ code: z.string().min(1).max(2048), state: z.string().min(1).max(256) }).parse(data),
+  )
+  .handler(({ data }) => completeDiscordLogin(data));
 
 export const fetchDiscordLinkStatus = createServerFn({ method: "GET" }).handler(() =>
   getDiscordLinkStatus(),

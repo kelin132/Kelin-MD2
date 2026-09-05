@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -20,6 +20,8 @@ import {
   requestPasswordReset,
   resetPassword,
   verifyPhone,
+  finishDiscordWebsiteLogin,
+  startDiscordWebsiteLogin,
 } from "@/lib/aidoru.functions";
 import type { PublicUser } from "@/lib/game";
 
@@ -65,15 +67,20 @@ function Portal() {
   const doRequestReset = useServerFn(requestPasswordReset);
   const doVerifyPhone = useServerFn(verifyPhone);
   const doResetPassword = useServerFn(resetPassword);
+  const startDiscordLogin = useServerFn(startDiscordWebsiteLogin);
+  const finishDiscordLogin = useServerFn(finishDiscordWebsiteLogin);
 
-  const finishAuth = (user: PublicUser) => {
-    queryClient.setQueryData(sessionKey, user);
-    toast.success(`Welcome back, ${user.name}`);
-    const returnTo = new URLSearchParams(window.location.search).get("returnTo");
-    const destination = normalizeBattleDestination(returnTo);
-    if (destination) window.location.assign(destination);
-    else void navigate({ to: "/dashboard" });
-  };
+  const finishAuth = useCallback(
+    (user: PublicUser) => {
+      queryClient.setQueryData(sessionKey, user);
+      toast.success(`Welcome back, ${user.name}`);
+      const returnTo = new URLSearchParams(window.location.search).get("returnTo");
+      const destination = normalizeBattleDestination(returnTo);
+      if (destination) window.location.assign(destination);
+      else void navigate({ to: "/dashboard" });
+    },
+    [navigate, queryClient],
+  );
 
   const submit = useMutation({
     mutationFn: async () => {
@@ -121,6 +128,38 @@ function Portal() {
     onError: (error: Error) => toast.error(error.message || "That code could not be verified."),
   });
 
+  const discordLogin = useMutation({
+    mutationFn: async () => {
+      const { authorizationUrl } = await startDiscordLogin({});
+      window.location.assign(authorizationUrl);
+    },
+    onError: (error: Error) => toast.error(error.message || "Could not start Discord sign-in."),
+  });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("discord") !== "login") return;
+
+    const code = params.get("code");
+    const state = params.get("state");
+    if (!code || !state) {
+      const error = params.get("error");
+      window.history.replaceState({}, "", window.location.pathname);
+      if (error) toast.error("Discord sign-in was cancelled.");
+      return;
+    }
+
+    void finishDiscordLogin({ data: { code, state } })
+      .then((user) => {
+        window.history.replaceState({}, "", window.location.pathname);
+        finishAuth(user);
+      })
+      .catch((error: Error) => {
+        window.history.replaceState({}, "", window.location.pathname);
+        toast.error(error.message || "Discord sign-in failed.");
+      });
+  }, [finishAuth, finishDiscordLogin]);
+
   useEffect(() => {
     if (!session) return;
     const returnTo = new URLSearchParams(window.location.search).get("returnTo");
@@ -138,7 +177,8 @@ function Portal() {
   if (sessionError)
     return <ConnectionNotice error={sessionError} onRetry={() => window.location.reload()} />;
 
-  const isBusy = submit.isPending || requestReset.isPending || verify.isPending;
+  const isBusy =
+    submit.isPending || requestReset.isPending || verify.isPending || discordLogin.isPending;
   const isLogin = mode === "login";
   const isForgot = mode === "forgot";
   const isVerify = mode === "verify";
@@ -268,6 +308,44 @@ function Portal() {
               </form>
             )}
 
+            {isLogin && (
+              <>
+                <div className="my-5 flex items-center gap-3 text-[10px] font-bold tracking-[0.22em] text-slate-500">
+                  <span className="h-px flex-1 bg-white/10" />
+                  <span>OR</span>
+                  <span className="h-px flex-1 bg-white/10" />
+                </div>
+                <button
+                  type="button"
+                  disabled={isBusy}
+                  className="landing-discord-button w-full"
+                  onClick={() => discordLogin.mutate()}
+                >
+                  <DiscordMark />
+                  {discordLogin.isPending ? "OPENING DISCORD…" : "CONTINUE WITH DISCORD"}
+                </button>
+                <p className="mt-3 text-center text-[11px] leading-relaxed text-slate-400">
+                  Already linked your WhatsApp trainer? Discord sign-in opens that same account.
+                </p>
+                <div className="mt-5 border-t border-white/10 pt-5 text-center">
+                  <p className="text-[11px] font-bold tracking-[0.16em] text-slate-300">
+                    NEW TO AIDORU?
+                  </p>
+                  <button
+                    type="button"
+                    className="mt-2 text-sm font-semibold text-cyan-300 transition hover:text-white"
+                    onClick={() =>
+                      setNotice(
+                        "Start in WhatsApp: send .register <your_name> to the bot, then return here and sign in with your phone number.",
+                      )
+                    }
+                  >
+                    CREATE AN ACCOUNT
+                  </button>
+                </div>
+              </>
+            )}
+
             {isForgot && (
               <form
                 onSubmit={(event) => {
@@ -390,6 +468,14 @@ function normalizeBattleDestination(value: string | null): string | null {
   const params = new URLSearchParams(query);
   const reference = params.get("room") || params.get("code");
   return reference ? `/battle/${encodeURIComponent(reference)}` : "/battle";
+}
+
+function DiscordMark() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5 fill-current">
+      <path d="M19.54 5.01A16.1 16.1 0 0 0 15.56 3.8l-.49 1a14.7 14.7 0 0 0-6.14 0l-.49-1c-1.4.24-2.73.65-3.98 1.21C1.94 8.8 1.26 12.5 1.6 16.14a16.2 16.2 0 0 0 4.9 2.46l1.19-1.63c-.65-.24-1.27-.54-1.86-.9l.45-.35c3.58 1.68 7.46 1.68 11 0l.46.35c-.6.36-1.22.67-1.87.9l1.19 1.63a16.2 16.2 0 0 0 4.9-2.46c.4-4.3-.69-7.96-2.42-11.13ZM8.93 14.1c-1.06 0-1.93-.98-1.93-2.18s.85-2.18 1.93-2.18 1.94.98 1.93 2.18c0 1.2-.85 2.18-1.93 2.18Zm6.14 0c-1.06 0-1.93-.98-1.93-2.18s.85-2.18 1.93-2.18 1.94.98 1.93 2.18c0 1.2-.85 2.18-1.93 2.18Z" />
+    </svg>
+  );
 }
 
 function Feature({

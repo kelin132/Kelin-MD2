@@ -7,7 +7,7 @@ export default {
   description: "Generate a one-time code for linking your WhatsApp progress to Discord",
   category: "economy",
   usage: ".discordlink",
-  aliases: ["linkdiscord"],
+  aliases: ["linkdiscord", "discord"],
   cooldown: 10,
 
   async run({ sock, msg, sender }) {
