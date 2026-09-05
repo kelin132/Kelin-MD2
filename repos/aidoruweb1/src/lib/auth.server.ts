@@ -781,7 +781,8 @@ function discordConfiguration(flow: "link" | "login" = "link") {
   const redirectUri =
     flow === "login"
       ? process.env["DISCORD_LOGIN_REDIRECT_URI"]?.trim() ||
-        "https://aidoru.zone.id/?discord=login"
+        process.env["DISCORD_REDIRECT_URI"]?.trim() ||
+        "https://aidoru.zone.id/profile?discord=callback"
       : process.env["DISCORD_REDIRECT_URI"]?.trim() ||
         "https://aidoru.zone.id/profile?discord=callback";
   if (!clientId || !clientSecret) {
@@ -948,6 +949,22 @@ export async function completeDiscordLogin(input: {
   }
   await issueSession(String(user._id));
   return toPublicUser(user);
+}
+
+export async function completeDiscordCallback(
+  input: { code: string; state: string },
+): Promise<
+  | { kind: "login"; user: PublicUser }
+  | { kind: "link"; status: DiscordLinkStatus }
+> {
+  // The existing Discord application is registered with the profile callback.
+  // Use the state cookie to distinguish a website sign-in from an account link
+  // without requiring a second redirect URI in the Discord developer portal.
+  const loginState = getCookie(DISCORD_LOGIN_STATE_COOKIE);
+  if (loginState && loginState === input.state) {
+    return { kind: "login", user: await completeDiscordLogin(input) };
+  }
+  return { kind: "link", status: await completeDiscordLink(input) };
 }
 
 export async function completeDiscordLink(input: {

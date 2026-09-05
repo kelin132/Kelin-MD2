@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Backpack, Camera, Coins, ImageUp, Landmark, Link2, Save, Sparkles, Trophy, Unlink, X } from "lucide-react";
 import { motion } from "motion/react";
@@ -11,7 +11,7 @@ import { useSession, useSessionWriter } from "@/components/aidoru/session";
 import {
   fetchDiscordLinkStatus,
   fetchShopItems,
-  finishDiscordAccountLink,
+  finishDiscordCallback,
   removeDiscordAccountLink,
   saveProfile,
   startDiscordAccountLink,
@@ -57,10 +57,48 @@ async function compressGalleryImage(file: File, options: { maxWidth: number; max
 
 function ProfilePage() {
   return (
-    <AppShell title="Profile" subtitle="Your trainer identity and live Pokémon records only.">
-      <ProfileBody />
-    </AppShell>
+    <>
+      <DiscordCallback />
+      <AppShell title="Profile" subtitle="Your trainer identity and live Pokémon records only.">
+        <ProfileBody />
+      </AppShell>
+    </>
   );
+}
+
+function DiscordCallback() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const writeSession = useSessionWriter();
+  const finish = useServerFn(finishDiscordCallback);
+  const handled = useRef(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const state = params.get("state");
+    if (handled.current || params.get("discord") !== "callback" || !code || !state) return;
+    handled.current = true;
+
+    void finish({ data: { code, state } })
+      .then((result) => {
+        window.history.replaceState({}, "", window.location.pathname);
+        if (result.kind === "login") {
+          writeSession(result.user);
+          toast.success(`Welcome back, ${result.user.name}`);
+          void navigate({ to: "/dashboard", replace: true });
+          return;
+        }
+        void queryClient.invalidateQueries({ queryKey: ["aidoru", "discord-link"] });
+        toast.success("Discord account linked.");
+      })
+      .catch((error: Error) => {
+        window.history.replaceState({}, "", window.location.pathname);
+        toast.error(error.message || "Discord sign-in failed.");
+      });
+  }, []);
+
+  return null;
 }
 
 function ProfileBody() {
@@ -152,7 +190,6 @@ function ProfileBody() {
   const itemsQuery = useQuery({ queryKey: ["aidoru", "items"], queryFn: fetchItems, retry: false });
   const fetchDiscordStatus = useServerFn(fetchDiscordLinkStatus);
   const startDiscord = useServerFn(startDiscordAccountLink);
-  const finishDiscord = useServerFn(finishDiscordAccountLink);
   const removeDiscord = useServerFn(removeDiscordAccountLink);
   const discordQuery = useQuery({
     queryKey: ["aidoru", "discord-link"],
@@ -174,19 +211,6 @@ function ProfileBody() {
     },
     onError: (error: Error) => toast.error(error.message || "Could not unlink Discord."),
   });
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
-    const state = params.get("state");
-    if (params.get("discord") !== "callback" || !code || !state) return;
-    void finishDiscord({ data: { code, state } })
-      .then(() => {
-        window.history.replaceState({}, "", window.location.pathname);
-        void discordQuery.refetch();
-        toast.success("Discord account linked.");
-      })
-      .catch((error: Error) => toast.error(error.message || "Discord linking failed."));
-  }, []);
   if (!user) return null;
 
   const progress = trainerLevelProgress(user.trainerLevel, user.trainerXp);
