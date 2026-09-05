@@ -4,6 +4,14 @@ import { getMongoUri } from "./config.server";
 export type UserDoc = {
   _id: string;
   phoneNumber?: string | null;
+  phone?: string | null;
+  whatsappNumber?: string | null;
+  whatsappId?: string | null;
+  whatsappJid?: string | null;
+  jid?: string | null;
+  userId?: string | number | null;
+  userJid?: string | null;
+  sender?: string | null;
   discordId?: string | null;
   websiteId?: string;
   websitePasswordHash?: string;

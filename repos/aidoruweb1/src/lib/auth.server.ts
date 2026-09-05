@@ -77,6 +77,7 @@ function phoneLookupIds(phoneNumber: string): Array<string | number> {
       `${digits}@c.us`,
       `${digits}:0@s.whatsapp.net`,
       `${digits}:0@c.us`,
+      `${digits}@lid`,
       ...(Number.isSafeInteger(numeric) ? [numeric] : []),
     ]),
   ];
@@ -84,11 +85,27 @@ function phoneLookupIds(phoneNumber: string): Array<string | number> {
 
 function phoneLookupClauses(phoneNumber: string) {
   const digits = phoneNumber.replace(/\D/g, "");
-  const jidPattern = new RegExp(`^${digits}(?::\\d+)?@(s\\.whatsapp\\.net|c\\.us)$`, "i");
-  const fields = ["_id", "phoneNumber", "whatsappNumber", "jid", "userId"];
+  const jidPattern = new RegExp(
+    `^\\+?${digits}(?::\\d+)?@(s\\.whatsapp\\.net|c\\.us|lid)$`,
+    "i",
+  );
+  const compactPhonePattern = new RegExp(`^\\+?${digits}$`, "i");
+  const fields = [
+    "_id",
+    "phoneNumber",
+    "phone",
+    "whatsappNumber",
+    "whatsappId",
+    "whatsappJid",
+    "jid",
+    "userId",
+    "userJid",
+    "sender",
+  ];
   return fields.flatMap((field) => [
     { [field]: { $in: phoneLookupIds(phoneNumber) } },
     { [field]: { $regex: jidPattern } },
+    { [field]: { $regex: compactPhonePattern } },
   ]);
 }
 
