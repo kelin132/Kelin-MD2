@@ -84,7 +84,7 @@ function Portal() {
 
   const submit = useMutation({
     mutationFn: async () => {
-      if (!phoneNumber.trim()) throw new Error("Enter the phone number or AIDORU ID from the bot.");
+      if (!phoneNumber.trim()) throw new Error("Enter the phone number registered with the bot.");
       if (password.length < 8) throw new Error("Enter your website password.");
       return doLogin({ data: { countryCode, phoneNumber, password } });
     },
@@ -93,7 +93,6 @@ function Portal() {
         finishAuth(result.user);
         return;
       }
-      setPhoneNumber(result.phoneNumber);
       setVerificationKind("login");
       setNotice(
         `Open a private chat with the WhatsApp bot and send *.otp*. Then enter the six-digit code here. It expires at ${new Date(result.expiresAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}.`,
@@ -105,7 +104,7 @@ function Portal() {
 
   const requestReset = useMutation({
     mutationFn: async () => {
-      if (!phoneNumber.trim()) throw new Error("Enter the phone number or AIDORU ID from the bot.");
+      if (!phoneNumber.trim()) throw new Error("Enter the phone number registered with the bot.");
       if (newPassword.length < 8) throw new Error("Your new password must be at least 8 characters.");
       if (newPassword !== confirmPassword) throw new Error("Your passwords do not match.");
       return doRequestReset({ data: { countryCode, phoneNumber, password: newPassword } });
@@ -295,14 +294,12 @@ function Portal() {
                   />
                   <Field
                     icon={Fingerprint}
-                    label="PHONE NUMBER OR AIDORU ID"
+                    label="PHONE NUMBER"
                     value={phoneNumber}
-                    onChange={(value) =>
-                      setPhoneNumber(value.toUpperCase().replace(/[^0-9A-Z-]/g, "").slice(0, 18))
-                    }
-                    placeholder="771234567 or AID-XXXXXXXXXX"
-                    inputMode="text"
-                    autoComplete="username"
+                    onChange={(value) => setPhoneNumber(value.replace(/\D/g, "").slice(0, 14))}
+                    placeholder="771234567"
+                    inputMode="numeric"
+                    autoComplete="tel-national"
                   />
                 </div>
                 <Field
@@ -379,14 +376,12 @@ function Portal() {
                   />
                   <Field
                     icon={Fingerprint}
-                    label="PHONE NUMBER OR AIDORU ID"
+                    label="PHONE NUMBER"
                     value={phoneNumber}
-                    onChange={(value) =>
-                      setPhoneNumber(value.toUpperCase().replace(/[^0-9A-Z-]/g, "").slice(0, 18))
-                    }
-                    placeholder="771234567 or AID-XXXXXXXXXX"
-                    inputMode="text"
-                    autoComplete="username"
+                    onChange={(value) => setPhoneNumber(value.replace(/\D/g, "").slice(0, 14))}
+                    placeholder="771234567"
+                    inputMode="numeric"
+                    autoComplete="tel-national"
                   />
                 </div>
                 <Field
