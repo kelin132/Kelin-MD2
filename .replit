@@ -42,3 +42,8 @@ timeoutMs = 20000
 [nix]
 channel = "stable-25_05"
 packages = ["pkg-config", "cairo", "pango", "libjpeg", "giflib", "libuuid"]
+
+[userenv]
+
+[userenv.shared]
+DISCORD_CLIENT_ID = "1544332979277533214"
