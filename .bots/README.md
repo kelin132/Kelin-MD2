@@ -26,21 +26,24 @@ If your old credentials are inside an `auth` folder, this also works:
 Each WhatsApp account must have its own folder and its own credential file.
 Do not use one credential file for two accounts.
 
-For a new account with no credential file yet, use the optional config format:
-`.bots/elyra.json`
+Only registered sessions are started in `.bots`; pairing codes are disabled in
+multi-bot mode. For a new account, create and pair the session outside the
+`.bots` supervisor first, then place the complete registered Baileys auth folder
+under its bot directory.
+
+For an existing account with a config file, use:
+`.bots/elyra/config.json`
 
 ```json
 {
   "id": "elyra",
   "sessionFolder": ".bots/elyra",
-  "phoneNumber": "2637xxxxxxxx",
   "ownerNumber": ["2637xxxxxxxx"],
   "prefix": "!"
 }
 ```
 
-Use the phone number with country code, without `+`, spaces, or dashes. The
-pairing code appears in the workflow logs. QR login is disabled.
-
-The server copies legacy `cred.json` to Baileys' `creds.json` automatically.
+The `sessionFolder` field is optional. If credentials are in `.bots/elyra/auth/`,
+that folder is used directly; the server does not create a second session
+folder. A legacy `cred.json` is renamed once to Baileys' canonical `creds.json`.
 Credentials are private and should never be committed to GitHub.

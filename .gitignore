@@ -8,6 +8,7 @@ sessions/*.log
 # Multi-bot WhatsApp auth files — definitions in .bots/*.json remain tracked
 .bots/*/creds.json
 .bots/*/cred.json
+.bots/*/creds.js
 .bots/*/pre-key-*.json
 .bots/*/session-*.json
 .bots/*/sender-key-*.json
