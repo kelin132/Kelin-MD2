@@ -1,16 +1,16 @@
-import { isRegistered, registerUser } from "./database.js";
+import { isRegistered } from "./database.js";
 
 export default {
   name: "register",
   description: "Register your account to access economy commands",
   category: "economy",
-  usage: ".register <your_name>",
+  usage: ".register",
   aliases: ["reg", "signup"],
   discordColor: "#57B894",
   discordTitle: "✅ Welcome to AKIRA Economy",
   cooldown: 5,
 
-  async run({ sock, msg, sender, text }) {
+  async run({ sock, msg, sender }) {
     const already = await isRegistered(sender);
 
     if (already) {
@@ -19,41 +19,19 @@ export default {
       }, { quoted: msg });
     }
 
-    const name = text?.trim();
-
-    // Name is required — no auto-generation
-    if (!name) {
-      return sock.sendMessage(msg.key.remoteJid, {
-        text: [
-          `❌ *You must provide a name to register!*`,
-          ``,
-          `Usage: *.register <your_name>*`,
-          `Example: *.register Kelin*`,
-          ``,
-          `• Name must be 2–20 characters`,
-          `• No special characters`,
-        ].join("\n")
-      }, { quoted: msg });
-    }
-
-    if (name.length < 2) {
-      return sock.sendMessage(msg.key.remoteJid, {
-        text: "❌ Name is too short! Minimum 2 characters.\n\nExample: *.register Kelin*"
-      }, { quoted: msg });
-    }
-
-    if (name.length > 20) {
-      return sock.sendMessage(msg.key.remoteJid, {
-        text: "❌ Name is too long! Maximum 20 characters.\n\nExample: *.register Kelin*"
-      }, { quoted: msg });
-    }
-
-    await registerUser(sender, name);
-
     await sock.sendMessage(msg.key.remoteJid, {
-      text: `🎉 *Welcome to AKIRA Economy, ${name}!*\n\n✅ Account created successfully!\n\n` +
-            `💰 Starting Balance : $100,000\n🏦 Bank Balance     : $0\n💎 Diamonds        : 0\n⭐ Level            : 1\n\n` +
-             `📋 *Get started:*\n• *.daily* — Claim daily reward\n• *.work* — Earn money working\n• *.balance* — Check your wallet\n• *.shop* — Buy items\n• *.guildhelp* — Join a guild\n\n🔗 *Already have an account on WhatsApp?*\nGo to a WhatsApp group and type *.discord* to get your existing data. Then send *.connect CODE* here.\n\nGood luck! 🍀\n\nMake sure to create an account on the website https://aidoru.zone.id`
+      text: [
+        "🔗 *Start your AIDORU account*",
+        "",
+        "AIDORU uses your WhatsApp phone number as the identity for your trainer data. Discord cannot safely create a separate account that would match your WhatsApp progress.",
+        "",
+        "1. Open https://aidoru.zone.id",
+        "2. Register your new trainer with the WhatsApp bot using *.register YourName*.",
+        "3. Return to the website and sign in with your WhatsApp country code and phone number.",
+        "4. In your profile, choose *Link Discord*, or send *.discordlink* on WhatsApp and then *.connect CODE* here.",
+        "",
+        "After linking, Discord uses the same trainer, coins, Pokémon, cards, and other progress.",
+      ].join("\n"),
     }, { quoted: msg });
   }
 };
