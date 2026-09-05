@@ -153,10 +153,23 @@ export default {
       text += `\n\n🔒 *Disabled in this group:* ${[...disabledCats].join(", ")}\n_Ask a staff member to enable them._`;
     }
 
-    return sock.sendMessage(jid, {
-      image: { url: runtime.botImage },
+    const message = {
       caption: text,
       mentions: [sender],
-    }, { quoted: msg });
+    };
+
+    // A bad or temporarily unavailable image must never make .menu fail.
+    // Owners can change this with .botconfig image <url>, or clear it with
+    // .botconfig image off to use the text menu.
+    if (runtime.botImage && runtime.botImage !== "off" && runtime.botImage !== "none") {
+      message.image = { url: runtime.botImage };
+      try {
+        return await sock.sendMessage(jid, message, { quoted: msg });
+      } catch {
+        // Fall through to a text-only menu when the image host rejects the URL.
+      }
+    }
+
+    return sock.sendMessage(jid, { text, mentions: [sender] }, { quoted: msg });
   },
 };

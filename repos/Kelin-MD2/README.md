@@ -56,6 +56,34 @@ node index.js
 
 ---
 
+## 🤖 Run multiple bots
+
+Create one folder for each WhatsApp account inside `.bots/`. Every account is
+discovered independently, so adding a fourth or fifth bot does not require
+changing the startup code:
+
+```text
+.bots/
+├── eris/
+│   ├── auth/creds.json
+│   └── config.json
+├── mikasa/
+│   └── creds.json
+└── zhongli/
+    └── auth/creds.json
+```
+
+The loader also accepts a `config.json` file with `botName`, `ownerNumber`,
+`botNumber`, `prefix`, `menuImage` (or `botImage`), and `layout`. A missing or
+malformed config file will not hide a valid session folder.
+
+Each bot runs in its own process and keeps its own settings and menu image.
+From the owner account, use `.botconfig image <https://...>` or reply to an
+image with `.botconfig image` to set that bot's menu image. Use
+`.botconfig image off` for a text-only menu.
+
+---
+
 ## 📱 First-Time Pairing
 
 On first run (no saved session) the pairing code will appear in the console:

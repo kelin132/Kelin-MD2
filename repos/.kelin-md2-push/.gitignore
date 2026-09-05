@@ -1,0 +1,58 @@
+# Dependencies
+node_modules/
+
+# WhatsApp session — NEVER commit auth keys
+sessions/auth/
+sessions/*.log
+
+# Multi-bot WhatsApp auth files — definitions in .bots/*.json remain tracked
+.bots/*/creds.json
+.bots/*/cred.json
+.bots/*/pre-key-*.json
+.bots/*/session-*.json
+.bots/*/sender-key-*.json
+.bots/*/app-state-sync-*.json
+
+# Runtime data
+backups/
+*.log
+*.log.*
+
+# Environment secrets
+.env
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ── Replit workspace files (not needed for bot deployment) ──
+.replit
+.replitignore
+.npmrc
+replit.md
+pnpm-workspace.yaml
+pnpm-lock.yaml
+tsconfig.json
+tsconfig.base.json
+.agents/
+.local/
+
+# Dashboard & API server (Replit-only, not needed on hosting panels)
+artifacts/
+
+# Shared TypeScript libs (Replit-only)
+lib/api-client-react/
+lib/api-spec/
+lib/api-zod/
+lib/db/
+
+# Build scripts (Replit-only)
+scripts/
+
+# yt-dlp binary (auto-downloaded on first use)
+bin/
+
+# Instagram cookies — add yours manually, never commit real cookies
+config/instagram-cookies.txt

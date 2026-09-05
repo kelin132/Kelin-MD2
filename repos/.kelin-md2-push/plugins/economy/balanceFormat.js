@@ -1,0 +1,62 @@
+function money(value) {
+  const amount = Number(value ?? 0);
+  const absolute = Math.abs(amount);
+  const sign = amount < 0 ? "-" : "";
+  if (absolute >= 1e12) return `${sign}$${compact(absolute / 1e12)}T`;
+  if (absolute >= 1e9) return `${sign}$${compact(absolute / 1e9)}B`;
+  if (absolute >= 1e6) return `${sign}$${compact(absolute / 1e6)}M`;
+  if (absolute >= 1e3) return `${sign}$${compact(absolute / 1e3)}K`;
+  return `${sign}$${absolute.toLocaleString()}`;
+}
+
+function compact(value) {
+  return value.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+}
+
+function number(value) {
+  return Number(value ?? 0).toLocaleString();
+}
+
+function inline(value) {
+  return `\`${value}\``;
+}
+
+function row(icon, label, value) {
+  return `${icon} ${label}: ${inline(value)}`;
+}
+
+export function formatAccountBalance({
+  wallet = 0,
+  bank = 0,
+  gems = 0,
+  vault,
+  orbs,
+  netWorth = Number(wallet ?? 0) + Number(bank ?? 0),
+  extraRows = [],
+  footerLines = [],
+}) {
+  const rows = [
+    row("💰", "Wallet", money(wallet)),
+    row("🏦", "Bank", money(bank)),
+    row("💎", "Gems", number(gems)),
+  ];
+
+  if (vault !== undefined) rows.push(row("🔒", "Vault", money(vault)));
+  if (orbs !== undefined) rows.push(row("🔮", "Orbs", number(orbs)));
+  rows.push(row("🌌", "Net worth", money(netWorth)));
+
+  if (extraRows.length) {
+    rows.push("", ...extraRows);
+  }
+
+  if (footerLines.length) {
+    rows.push("", ...footerLines.map((line) => `💡 ${line}`));
+  }
+
+  return [
+    "💳 Account Balance",
+    "",
+    "🌸 Balance",
+    ...rows,
+  ].join("\n");
+}

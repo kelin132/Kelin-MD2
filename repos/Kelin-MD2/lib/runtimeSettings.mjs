@@ -12,6 +12,9 @@ const require = createRequire(import.meta.url);
 const staticSettings = require("../settings.cjs");
 const DATA_DIR = path.resolve("data");
 const SETTINGS_FILE = path.join(DATA_DIR, "botSettings.json");
+const BOT_SETTINGS_FILE = process.env.BOT_SETTINGS_FILE
+  ? path.resolve(process.env.BOT_SETTINGS_FILE)
+  : null;
 const ENV_FILE = path.resolve(".env");
 
 const DEFAULT_BOT_IMAGE =
@@ -26,9 +29,10 @@ const ENV_KEYS = {
 };
 
 function readSnapshot() {
-  if (!existsSync(SETTINGS_FILE)) return {};
+  const file = BOT_SETTINGS_FILE || SETTINGS_FILE;
+  if (!existsSync(file)) return {};
   try {
-    const value = JSON.parse(readFileSync(SETTINGS_FILE, "utf8"));
+    const value = JSON.parse(readFileSync(file, "utf8"));
     return value && typeof value === "object" ? value : {};
   } catch {
     return {};
@@ -41,14 +45,15 @@ function digits(value) {
 
 function baseSettings() {
   const saved = readSnapshot();
+  const preferSaved = Boolean(BOT_SETTINGS_FILE);
   return {
-    // Per-bot workers set these environment values before importing the bot.
-    // Environment values therefore take precedence over the shared snapshot.
-    ownerNumber: digits(process.env.OWNER_NUMBER || saved.ownerNumber || staticSettings.ownerNumber),
-    botName: String(process.env.BOT_NAME || saved.botName || staticSettings.botName || "KELIN MD"),
-    botImage: String(process.env.BOT_IMAGE || saved.botImage || DEFAULT_BOT_IMAGE),
-    prefix: String(process.env.PREFIX || saved.prefix || "."),
-    layout: Number(saved.layout || process.env.BOT_LAYOUT || 1),
+    // A worker gets defaults from its bot definition. Once an owner changes a
+    // value, the per-bot snapshot must win on the next restart.
+    ownerNumber: digits((preferSaved && saved.ownerNumber) || process.env.OWNER_NUMBER || saved.ownerNumber || staticSettings.ownerNumber),
+    botName: String((preferSaved && saved.botName) || process.env.BOT_NAME || saved.botName || staticSettings.botName || "KELIN MD"),
+    botImage: String((preferSaved && saved.botImage) || process.env.BOT_IMAGE || saved.botImage || DEFAULT_BOT_IMAGE),
+    prefix: String((preferSaved && saved.prefix) || process.env.PREFIX || saved.prefix || "."),
+    layout: Number((preferSaved && saved.layout) || saved.layout || process.env.BOT_LAYOUT || 1),
   };
 }
 
@@ -87,8 +92,10 @@ export function updateRuntimeSetting(setting, value) {
     throw new Error("Owner number must include a country code and at least 7 digits.");
   }
   if (setting === "botName" && !next.botName) throw new Error("Bot name cannot be empty.");
-  if (setting === "botImage" && !/^https?:\/\/\S+$/i.test(next.botImage)) {
-    throw new Error("Bot image must be a valid http(s) URL.");
+  if (setting === "botImage" && next.botImage !== "off" && next.botImage !== "none"
+    && !/^https?:\/\/\S+$/i.test(next.botImage)
+    && !/^(?:file:\/\/|\/|\.\.?[\\/])\S+$/i.test(next.botImage)) {
+    throw new Error("Bot image must be a valid http(s) URL, local file path, or 'off'.");
   }
   if (setting === "prefix" && (!next.prefix || /\s/.test(next.prefix))) {
     throw new Error("Prefix must be 1–4 non-space characters.");
@@ -97,9 +104,10 @@ export function updateRuntimeSetting(setting, value) {
     throw new Error("Menu layout must be 1, 2, 3, or 4.");
   }
 
-  mkdirSync(DATA_DIR, { recursive: true });
-  writeFileSync(SETTINGS_FILE, JSON.stringify(next, null, 2), "utf8");
-  writeEnvValue(envKey, next[setting]);
+  const targetFile = BOT_SETTINGS_FILE || SETTINGS_FILE;
+  mkdirSync(path.dirname(targetFile), { recursive: true });
+  writeFileSync(targetFile, JSON.stringify(next, null, 2), "utf8");
+  if (!BOT_SETTINGS_FILE) writeEnvValue(envKey, next[setting]);
   process.env[envKey] = String(next[setting]);
   return next;
 }
