@@ -7,4 +7,4 @@ Resolve privacy LIDs through Baileys' native lidMapping before database-backed c
 
 **Why:** WhatsApp can expose a privacy LID instead of the phone JID, while older Mongo records may use several phone/JID spellings. Treating the new value as a fresh account can hide progress or create duplicates.
 
-**How to apply:** Keep the website and bot identity variant lists in sync, and use `participantAlt`/`remoteJidAlt` when present. MongoDB `_id` is immutable, so an LID-to-JID migration must copy only when the destination is absent, then remove the old key; never `$set` `_id`. Identity repair is best-effort during command routing so a temporary database outage can reach the normal retry path.
+**How to apply:** Keep the website and bot identity variant lists in sync, and use `participantAlt`/`remoteJidAlt` when present. MongoDB `_id` is immutable, so an LID-to-JID migration must copy only when the destination is absent, then remove the old key; never `$set` `_id`. Identity repair is best-effort during command routing so a temporary database outage can reach the normal retry path. Economy reads must query identity aliases before creating or updating profiles.

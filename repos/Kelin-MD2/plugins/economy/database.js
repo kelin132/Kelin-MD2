@@ -3,7 +3,7 @@
  * All economy / staff plugins import from here.
  */
 import { getDb } from "../../lib/mongo.mjs";
-import { normalizeJid } from "../../lib/identity.mjs";
+import { normalizeJid, whatsappIdentityVariants } from "../../lib/identity.mjs";
 
 export const DEFAULTS = {
   name:          "User",
@@ -64,10 +64,72 @@ export const REGISTRATION_STARTING_MONEY = 100_000;
 
 // ─── Core CRUD ────────────────────────────────────────────────────────────────
 
+function identityQuery(id) {
+  const variants = whatsappIdentityVariants(id);
+  if (variants.length === 0) return { _id: "__missing_identity__" };
+
+  return {
+    $or: [
+      { _id: { $in: variants } },
+      { userId: { $in: variants } },
+      { whatsappNumber: { $in: variants } },
+      { phoneNumber: { $in: variants } },
+      { phone: { $in: variants } },
+      { jid: { $in: variants } },
+      { owner: { $in: variants } },
+    ],
+  };
+}
+
+/**
+ * Find an economy account by any supported WhatsApp spelling.
+ * The canonical phone JID is preferred so an old alias cannot shadow a
+ * newer record created during a profile sync.
+ */
+async function findIdentityUser(db, id) {
+  const collection = db.collection("users");
+  const normalizedId = normalizeJid(id);
+  const canonical = await collection.findOne({ _id: normalizedId });
+  if (canonical) return canonical;
+
+  return collection.findOne(identityQuery(id));
+}
+
+/**
+ * Move a legacy account key to the canonical phone JID without ever mutating
+ * MongoDB's immutable _id field. If the destination already exists, keep both
+ * records and use the canonical destination as the source of truth.
+ */
+async function migrateIdentityUser(db, user, normalizedId) {
+  const sourceId = user?._id;
+  if (sourceId === normalizedId || !sourceId) return user;
+
+  const collection = db.collection("users");
+  const destination = await collection.findOne({ _id: normalizedId });
+  if (destination) return destination;
+
+  const { _id: ignoredId, ...copy } = user;
+  try {
+    await collection.insertOne({
+      ...copy,
+      _id: normalizedId,
+      migratedFrom: sourceId,
+      migratedAt: new Date(),
+    });
+    await collection.deleteOne({ _id: sourceId });
+    return { ...copy, _id: normalizedId };
+  } catch {
+    // A concurrent registration may have won the insert race. Prefer the
+    // canonical document if it now exists; otherwise retain the old record.
+    return (await collection.findOne({ _id: normalizedId })) || user;
+  }
+}
+
 export async function getUser(id) {
   const db   = await getDb();
   const normalizedId = normalizeJid(id);
-  const user = await db.collection("users").findOne({ _id: normalizedId });
+  const found = await findIdentityUser(db, id);
+  const user = found ? await migrateIdentityUser(db, found, normalizedId) : null;
   if (!user) return { ...DEFAULTS };
   const { _id, ...rest } = user;
   const merged = { ...DEFAULTS, ...rest };
@@ -367,13 +429,18 @@ export async function getAllUsers() {
 export async function isRegistered(id) {
   const db   = await getDb();
   const normalizedId = normalizeJid(id);
-  const user = await db.collection("users").findOne({ _id: normalizedId }, { projection: { registered: 1 } });
+  const found = await findIdentityUser(db, id);
+  const user = found ? await migrateIdentityUser(db, found, normalizedId) : null;
   return !!(user?.registered);
 }
 
 export async function registerUser(id, name) {
   const db = await getDb();
   const normalizedId = normalizeJid(id);
+  const existing = await findIdentityUser(db, id);
+  if (existing && existing._id !== normalizedId) {
+    await migrateIdentityUser(db, existing, normalizedId);
+  }
   const { name: _n, registered: _r, registeredAt: _ra, ...insertDefaults } = DEFAULTS;
   const registrationFields = {
     name: name || "User",
@@ -524,7 +591,9 @@ export function levelFromTotalXp(totalXp) {
  */
 export async function repairUserLevel(id) {
   const db   = await getDb();
-  const doc  = await db.collection("users").findOne({ _id: id }, { projection: { level: 1, xp: 1 } });
+  const normalizedId = normalizeJid(id);
+  const found = await findIdentityUser(db, id);
+  const doc = found ? await migrateIdentityUser(db, found, normalizedId) : null;
   if (!doc) return null;
 
   const storedLevel = doc.level ?? 1;
@@ -545,7 +614,7 @@ export async function repairUserLevel(id) {
   }
 
   await db.collection("users").updateOne(
-    { _id: id },
+    { _id: normalizedId },
     { $set: { level: correctLevel, xp: correctXp } }
   );
   return { oldLevel: storedLevel, newLevel: correctLevel, changed: true };
@@ -755,7 +824,9 @@ export async function findUserByName(name) {
 
 /** Quick banned check (projection-only — no full user load). */
 export async function isBanned(id) {
-  const db   = await getDb();
-  const user = await db.collection("users").findOne({ _id: id }, { projection: { banned: 1 } });
+  const db = await getDb();
+  const normalizedId = normalizeJid(id);
+  const found = await findIdentityUser(db, id);
+  const user = found ? await migrateIdentityUser(db, found, normalizedId) : null;
   return !!(user?.banned);
 }

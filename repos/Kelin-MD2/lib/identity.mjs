@@ -13,7 +13,8 @@ import { getDb } from "./mongo.mjs";
 export function normalizeJid(jid = "") {
   if (typeof jid !== "string") return jid;
   const [local = "", server = "s.whatsapp.net"] = jid.trim().split("@");
-  return local.split(":")[0] + "@" + server;
+  const normalizedServer = server.toLowerCase() === "c.us" ? "s.whatsapp.net" : server;
+  return local.split(":")[0] + "@" + normalizedServer;
 }
 
 export function bareJidNumber(value = "") {
@@ -33,18 +34,22 @@ export function whatsappIdentityVariants(value) {
   const normalized = normalizeJid(raw);
   const [local = "", server = "s.whatsapp.net"] = normalized.split("@");
   const digits = local.replace(/\D/g, "");
+  const isLid = server.toLowerCase() === "lid";
 
-  return [...new Set([
+  const variants = [
     raw,
     normalized,
     normalized.replace(/:\d+(?=@)/, ""),
     digits,
-    digits ? `${digits}@${server}` : "",
-    digits ? `${digits}@s.whatsapp.net` : "",
-    digits ? `${digits}@c.us` : "",
-    digits ? `${digits}:0@s.whatsapp.net` : "",
-    digits ? `${digits}:0@c.us` : "",
-  ].filter(Boolean))];
+    digits && isLid ? `${digits}@lid` : "",
+    digits && !isLid ? `${digits}@${server}` : "",
+    digits && !isLid ? `${digits}@s.whatsapp.net` : "",
+    digits && !isLid ? `${digits}@c.us` : "",
+    digits && !isLid ? `${digits}:0@s.whatsapp.net` : "",
+    digits && !isLid ? `${digits}:0@c.us` : "",
+  ];
+
+  return [...new Set(variants.filter(Boolean))];
 }
 
 /**
