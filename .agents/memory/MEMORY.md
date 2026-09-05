@@ -4,3 +4,4 @@
 - [Workflow restart persistence](workflow-restart-persistence.md) — commit bot changes before workflow restarts because uncommitted batches may be reconciled away.
 - [Multi-bot runtime](multi-bot-runtime.md) — isolate each WhatsApp account in its own worker because bot and plugin state is module-global.
 - [Panel code freshness](panel-code-freshness.md) — a panel can keep running an older bot loader after GitHub is updated; verify the deployed source before debugging folders.
+- [Nested bot dependencies](nested-bot-dependencies.md) — nested bot repositories need their own lockfile install because root workspace installation does not cover them.
