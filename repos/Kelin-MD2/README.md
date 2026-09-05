@@ -89,7 +89,8 @@ From the owner account, use `.botconfig image <https://...>` or reply to an
 image with `.botconfig image` to set that bot's menu image. Use
 `.botconfig image off` for a text-only menu.
 
-For a new bot that needs pairing, add its number to that bot's own config:
+For a new bot that needs pairing, create its folder and add only its number.
+The bot will create the `auth` folder and session files automatically:
 
 ```json
 {
@@ -98,8 +99,8 @@ For a new bot that needs pairing, add its number to that bot's own config:
 }
 ```
 
-Registered credentials reconnect automatically. Unregistered credentials use
-the number in that bot's config to request a pairing code.
+Registered credentials reconnect automatically. A bot with `botNumber` and no
+existing credentials requests a pairing code for that bot only.
 
 ---
 

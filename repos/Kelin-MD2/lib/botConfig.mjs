@@ -44,7 +44,7 @@ function readJson(filePath) {
   }
 }
 
-function findSessionFolder(botRoot) {
+function findSessionFolder(botRoot, config = {}) {
   // The bot folder owns its session. Do not follow sessionFolder/auth values
   // from config.json into another bot's directory; that is how one account
   // can accidentally start with another account's credentials.
@@ -66,16 +66,22 @@ function findSessionFolder(botRoot) {
   const nestedSessions = children.filter(hasCreds);
   if (nestedSessions.length > 0) return nestedSessions[0];
 
+  // A bot with a phone number is allowed to start without an existing
+  // credential file so Baileys can create the session and request pairing.
+  if (config.botNumber || config.number || config.phoneNumber) {
+    return auth;
+  }
+
   return null;
 }
 
 function normalizeDefinition({ id, botRoot, configFile, config }) {
-  const sessionFolder = findSessionFolder(botRoot);
+  const sessionFolder = findSessionFolder(botRoot, config);
   if (!sessionFolder) {
     log(
       "warn",
-      `[bots] Skipping ${id}: expected exactly one cred.json or creds.json under ${botRoot}. ` +
-      "Use <bot>/auth/cred.json or <bot>/auth/creds.json.",
+      `[bots] Skipping ${id}: no session credentials found under ${botRoot}. ` +
+      "Add <bot>/auth/cred.json, <bot>/auth/creds.json, or botNumber in config.json for pairing.",
     );
     return null;
   }
