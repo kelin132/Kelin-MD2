@@ -49,7 +49,7 @@ export default {
 
     await sock.sendMessage(msg.key.remoteJid, {
       text:
-        `🎉 *Welcome to AKIRA Economy, ${name}!*\n\n` +
+        `🎉 *Welcome to AIDORU, ${name}!*\n\n` +
         `✅ *Account created successfully.*\n\n` +
         `💰 *Wallet:* $${REGISTRATION_STARTING_MONEY.toLocaleString()}\n` +
         `🏦 *Bank:* $0\n` +
