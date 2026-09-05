@@ -1,3 +1,4 @@
+Here is the updated code without the web daily reward reminder in the messages:
 ```javascript
 /**
  * KELIN MD — .beg
@@ -59,11 +60,7 @@ export default {
       const m    = Math.floor(left / 60);
       const s    = left % 60;
       
-      const limitCaption = 
-`⏳ You've already begged recently! Next claim available in ${m}m ${s}s.
-
-│ Reminder: You have a web daily reward waiting to be claimed!
-Claim it here: https://aidoru.zone.id/arcade`;
+      const limitCaption = `⏳ You've already begged recently! Next claim available in ${m}m ${s}s.`;
 
       return reply(limitCaption);
     }
@@ -76,11 +73,7 @@ Claim it here: https://aidoru.zone.id/arcade`;
       await saveUser(sender, user);
       const flavour = FAIL_MSGS[Math.floor(Math.random() * FAIL_MSGS.length)];
       
-      const failCaption = 
-`🌧️ You tried begging, but ${flavour.toLowerCase()} Your balance remains ${fmt(user.money)} coins.
-
-│ Reminder: You have a web daily reward waiting to be claimed!
-Claim it here: https://aidoru.zone.id/arcade`;
+      const failCaption = `🌧️ You tried begging, but ${flavour.toLowerCase()} Your balance remains ${fmt(user.money)} coins.`;
 
       return reply(failCaption);
     }
@@ -97,11 +90,7 @@ Claim it here: https://aidoru.zone.id/arcade`;
     const pick = SUCCESS_MSGS[Math.floor(Math.random() * SUCCESS_MSGS.length)];
     const flavour = pick(sender.split("@")[0], fmt(amount));
 
-    const claimCaption = 
-`🤲 ${flavour} Your new balance is 💰 ${fmt(user.money)} coins.${diamondReward ? ` (Bonus: 💎 +${diamondReward} Gem${diamondReward === 1 ? "" : "s"})` : ""}
-
-│ Reminder: You have a web daily reward waiting to be claimed!
-Claim it here: https://aidoru.zone.id/arcade`;
+    const claimCaption = `🤲 ${flavour} Your new balance is 💰 ${fmt(user.money)} coins.${diamondReward ? ` (Bonus: 💎 +${diamondReward} Gem${diamondReward === 1 ? "" : "s"})` : ""}`;
 
     return reply(claimCaption);
   },
