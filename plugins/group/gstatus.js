@@ -27,6 +27,7 @@ export default {
   category: "group",
   usage: ".gstatus <text[,color]> or reply to media",
   cooldown: 5,
+  isAdmin: true, 
 
   async run({ sock, msg, text }) {
     const jid = msg.key.remoteJid;
