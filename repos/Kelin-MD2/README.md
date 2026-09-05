@@ -73,9 +73,11 @@ changing the startup code:
     └── auth/cred.json
 ```
 
-The loader also accepts a `config.json` file with `botName`, `ownerNumber`,
-`botNumber`, `prefix`, `menuImage` (or `botImage`), and `layout`. A missing or
-malformed config file will not hide a valid session folder.
+The loader accepts an optional `config.json` file with `botName`, `ownerNumber`,
+`botNumber`, `prefix`, `menuImage` (or `botImage`), and `layout`. The session
+always belongs to the bot's own folder; do not set `sessionFolder` to another
+bot's directory. A missing or malformed config file will not hide a valid
+session folder.
 
 Each session must contain exactly one credential file: `cred.json` or
 `creds.json`. `cred.json` is treated as the active filename; the bot creates a
@@ -86,6 +88,18 @@ Each bot runs in its own process and keeps its own settings and menu image.
 From the owner account, use `.botconfig image <https://...>` or reply to an
 image with `.botconfig image` to set that bot's menu image. Use
 `.botconfig image off` for a text-only menu.
+
+For a new bot that needs pairing, add its number to that bot's own config:
+
+```json
+{
+  "botName": "zhongli",
+  "botNumber": "2637xxxxxxxx"
+}
+```
+
+Registered credentials reconnect automatically. Unregistered credentials use
+the number in that bot's config to request a pairing code.
 
 ---
 

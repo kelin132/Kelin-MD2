@@ -58,6 +58,9 @@ function readJson(filePath) {
 }
 
 function findSessionFolder(botRoot, config = {}) {
+  // The bot folder owns its session. Do not follow sessionFolder/auth values
+  // from config.json into another bot's directory; that is how one account
+  // can accidentally start with another account's credentials.
   // The most common layout is .bots/<name>/auth/creds.json.
   const auth = path.join(botRoot, "auth");
   if (hasCreds(auth)) return auth;
@@ -66,32 +69,8 @@ function findSessionFolder(botRoot, config = {}) {
   // as a multi-file auth state directory.
   if (hasCreds(botRoot)) return botRoot;
 
-  // Configured paths are checked after the bot's own folder. This prevents a
-  // stale path from making Zhongli accidentally use Mikasa's session.
-  const configured = [];
-  for (const value of [
-    config.sessionFolder,
-    config.sessionDir,
-    config.authFolder,
-    config.auth,
-    config.session,
-  ]) {
-    const localPath = resolveFrom(botRoot, value);
-    const botsPath = resolveFrom(BOTS_DIR, value);
-    for (const candidate of [localPath, botsPath]) {
-      if (candidate && !configured.includes(candidate)) configured.push(candidate);
-    }
-  }
-
-  for (const candidate of configured) {
-    if (hasCreds(candidate)) return candidate;
-    if (isDirectory(candidate) && hasCreds(path.join(candidate, "auth"))) {
-      return path.join(candidate, "auth");
-    }
-  }
-
   // Some panel uploaders add one extra folder while extracting a session.
-  // Prefer an auth folder, then accept any immediate child with creds.json.
+  // Prefer an auth folder, then accept any immediate child with credentials.
   const children = readdirSync(botRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => path.join(botRoot, entry.name));
