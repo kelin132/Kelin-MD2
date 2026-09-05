@@ -109,6 +109,44 @@ function phoneLookupClauses(phoneNumber: string) {
   ]);
 }
 
+const PHONE_IDENTITY_FIELDS = [
+  "_id",
+  "phoneNumber",
+  "phone",
+  "whatsappNumber",
+  "whatsappId",
+  "whatsappJid",
+  "jid",
+  "userId",
+  "userJid",
+  "sender",
+] as const;
+
+function phoneDigitsFromStoredValue(value: unknown): string {
+  const raw = String(value ?? "").trim();
+  if (!raw || raw.toLowerCase().endsWith("@lid")) return "";
+  return ((raw.split("@")[0] ?? "").split(":")[0] ?? "").replace(/\D/g, "");
+}
+
+function looksLikeRegisteredLegacyUser(user: UserDoc): boolean {
+  const record = user as UserDoc & Record<string, unknown>;
+  const registered = (record as Record<string, unknown>)["registered"];
+  if (registered === true || registered === "true" || registered === 1) {
+    return true;
+  }
+  if (registered === false || registered === "false" || registered === 0) {
+    return false;
+  }
+  return Boolean(
+    record.registeredAt ||
+      record.websiteId ||
+      record.name ||
+      record.username ||
+      record.money !== undefined ||
+      record.xp !== undefined,
+  );
+}
+
 async function hashWebsitePassword(password: string): Promise<string> {
   const salt = randomBytes(16);
   const derivedKey = await deriveScrypt(password, salt, 64, {
@@ -406,11 +444,31 @@ async function ensureWebsiteId(user: UserDoc): Promise<string> {
 
 async function findUserByPhoneNumber(phoneNumber: string): Promise<UserDoc | null> {
   const col = await users();
-  return col.findOne({
+  const exact = await col.findOne({
     registered: true,
     websiteBanned: { $ne: true },
     $or: phoneLookupClauses(phoneNumber),
   } as never);
+  if (exact) return exact;
+
+  // Legacy Kelin records can predate the registered flag or store the phone
+  // as a number/device-qualified JID in a field that cannot be matched by the
+  // exact Mongo clauses above. This fallback is only reached after the
+  // indexed-style lookup misses, then compares normalized digits in memory.
+  const digits = phoneNumber.replace(/\D/g, "");
+  const candidates = await col
+    .find({ websiteBanned: { $ne: true }, registered: { $ne: false } } as never)
+    .toArray();
+
+  return (
+    candidates.find((candidate) => {
+      const user = candidate as UserDoc;
+      if (!looksLikeRegisteredLegacyUser(user)) return false;
+      return PHONE_IDENTITY_FIELDS.some(
+        (field) => phoneDigitsFromStoredValue((user as Record<string, unknown>)[field]) === digits,
+      );
+    }) as UserDoc | undefined
+  ) ?? null;
 }
 
 function createVerificationCode(): string {
