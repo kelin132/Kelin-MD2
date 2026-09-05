@@ -17,6 +17,7 @@ import { ConnectionNotice } from "@/components/aidoru/ConnectionNotice";
 import { sessionKey, useSession } from "@/components/aidoru/session";
 import {
   phoneLogin,
+  createAccount,
   requestPasswordReset,
   resetPassword,
   verifyPhone,
@@ -47,12 +48,13 @@ export const Route = createFileRoute("/")({
   component: Portal,
 });
 
-type AuthMode = "login" | "forgot" | "verify";
+type AuthMode = "login" | "create" | "forgot" | "verify";
 
 function Portal() {
   const [mode, setMode] = useState<AuthMode>("login");
   const [countryCode, setCountryCode] = useState("263");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [trainerName, setTrainerName] = useState("");
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -64,6 +66,7 @@ function Portal() {
   const queryClient = useQueryClient();
   const { data: session, error: sessionError } = useSession();
   const doLogin = useServerFn(phoneLogin);
+  const doCreateAccount = useServerFn(createAccount);
   const doRequestReset = useServerFn(requestPasswordReset);
   const doVerifyPhone = useServerFn(verifyPhone);
   const doResetPassword = useServerFn(resetPassword);
@@ -100,6 +103,20 @@ function Portal() {
       setMode("verify");
     },
     onError: (error: Error) => toast.error(error.message || "Unable to open your trainer world."),
+  });
+
+  const create = useMutation({
+    mutationFn: async () => {
+      if (!trainerName.trim()) throw new Error("Choose a trainer name.");
+      if (!phoneNumber.trim()) throw new Error("Enter your WhatsApp phone number.");
+      if (password.length < 8) throw new Error("Your password must be at least 8 characters.");
+      if (password !== confirmPassword) throw new Error("Your passwords do not match.");
+      return doCreateAccount({
+        data: { countryCode, phoneNumber, name: trainerName, password },
+      });
+    },
+    onSuccess: (user) => finishAuth(user),
+    onError: (error: Error) => toast.error(error.message || "Could not create your account."),
   });
 
   const requestReset = useMutation({
@@ -186,8 +203,13 @@ function Portal() {
     return <ConnectionNotice error={sessionError} onRetry={() => window.location.reload()} />;
 
   const isBusy =
-    submit.isPending || requestReset.isPending || verify.isPending || discordLogin.isPending;
+    submit.isPending ||
+    create.isPending ||
+    requestReset.isPending ||
+    verify.isPending ||
+    discordLogin.isPending;
   const isLogin = mode === "login";
+  const isCreate = mode === "create";
   const isForgot = mode === "forgot";
   const isVerify = mode === "verify";
 
@@ -253,16 +275,20 @@ function Portal() {
               <h2 className="mt-2 font-display text-3xl font-bold tracking-tight">
                 {isLogin
                   ? "Open your world"
-                  : isForgot
-                    ? "Recover your world"
-                    : "Check your signal"}
+                  : isCreate
+                    ? "Create your trainer"
+                    : isForgot
+                      ? "Recover your world"
+                      : "Check your signal"}
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-slate-300">
                 {isLogin
-                  ? "Use the phone number already registered with the WhatsApp bot. Your existing trainer progress stays attached."
-                  : isForgot
-                    ? "Choose a new website password, then confirm the code from your private bot chat."
-                    : "Your code is tied to the phone number you entered. It can only be used once."}
+                  ? "Use the phone number already linked to your trainer account."
+                  : isCreate
+                    ? "Create your account here with your WhatsApp number. You do not need to run .register first."
+                    : isForgot
+                      ? "Choose a new website password, then confirm the code from your private bot chat."
+                      : "Your code is tied to the phone number you entered. It can only be used once."}
               </p>
             </div>
 
@@ -343,16 +369,76 @@ function Portal() {
                   <button
                     type="button"
                     className="mt-2 text-sm font-semibold text-cyan-300 transition hover:text-white"
-                    onClick={() =>
-                      setNotice(
-                        "New AIDORU accounts start with your WhatsApp phone number. Open https://aidoru.zone.id, register with the WhatsApp bot using .register <your_name>, then return here and use your + country code and phone number.",
-                      )
-                    }
+                    onClick={() => {
+                      setNotice("");
+                      setMode("create");
+                    }}
                   >
                     CREATE AN ACCOUNT
                   </button>
                 </div>
               </>
+            )}
+
+            {isCreate && (
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  create.mutate();
+                }}
+                className="space-y-4"
+              >
+                <Field
+                  icon={Fingerprint}
+                  label="TRAINER NAME"
+                  value={trainerName}
+                  onChange={setTrainerName}
+                  placeholder="Your trainer name"
+                  autoComplete="nickname"
+                />
+                <div className="grid grid-cols-[7rem_1fr] gap-3">
+                  <Field
+                    icon={MessageCircle}
+                    label="COUNTRY CODE"
+                    value={countryCode}
+                    onChange={(value) => setCountryCode(value.replace(/\D/g, "").slice(0, 4))}
+                    placeholder="263"
+                    prefix="+"
+                    inputMode="numeric"
+                    autoComplete="tel-country-code"
+                  />
+                  <Field
+                    icon={Fingerprint}
+                    label="WHATSAPP NUMBER"
+                    value={phoneNumber}
+                    onChange={(value) => setPhoneNumber(value.replace(/\D/g, "").slice(0, 14))}
+                    placeholder="771234567"
+                    inputMode="numeric"
+                    autoComplete="tel-national"
+                  />
+                </div>
+                <Field
+                  icon={KeyRound}
+                  label="PASSWORD"
+                  value={password}
+                  onChange={setPassword}
+                  placeholder="At least 8 characters"
+                  type="password"
+                  autoComplete="new-password"
+                />
+                <Field
+                  icon={KeyRound}
+                  label="CONFIRM PASSWORD"
+                  value={confirmPassword}
+                  onChange={setConfirmPassword}
+                  placeholder="Repeat your password"
+                  type="password"
+                  autoComplete="new-password"
+                />
+                <button type="submit" disabled={isBusy} className="landing-button mt-3 w-full">
+                  {create.isPending ? "CREATING ACCOUNT…" : "CREATE ACCOUNT"}
+                </button>
+              </form>
             )}
 
             {isForgot && (
@@ -444,7 +530,7 @@ function Portal() {
                   Forgot password?
                 </button>
               )}
-              {!isLogin && (
+              {!isLogin && !isCreate && (
                 <button
                   type="button"
                   className="text-cyan-300 transition hover:text-white"
@@ -457,6 +543,21 @@ function Portal() {
                 </button>
               )}
             </div>
+            {isCreate && (
+              <div className="mt-5 text-center text-[11px] text-slate-400">
+                Already have an account?{" "}
+                <button
+                  type="button"
+                  className="text-cyan-300 transition hover:text-white"
+                  onClick={() => {
+                    setNotice("");
+                    setMode("login");
+                  }}
+                >
+                  Sign in
+                </button>
+              </div>
+            )}
             {isLogin && (
               <p className="mt-4 text-center text-[11px] leading-relaxed text-slate-400">
                 Use the same phone number you use with the WhatsApp bot. The{" "}

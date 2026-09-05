@@ -5,6 +5,7 @@ import {
   findUserById,
   toPublicUser,
   beginPhoneLogin,
+  createWebsiteAccount,
   completePhoneVerification,
   beginPasswordReset,
   completePasswordReset,
@@ -87,6 +88,19 @@ export const phoneLogin = createServerFn({ method: "POST" })
       .parse(data),
   )
   .handler(({ data }) => beginPhoneLogin(data));
+
+export const createAccount = createServerFn({ method: "POST" })
+  .inputValidator((data) =>
+    z
+      .object({
+        countryCode: z.string().min(1).max(4),
+        phoneNumber: z.string().min(5).max(18),
+        name: z.string().min(2).max(20),
+        password: z.string().min(8).max(128),
+      })
+      .parse(data),
+  )
+  .handler(({ data }) => createWebsiteAccount(data));
 
 export const verifyPhone = createServerFn({ method: "POST" })
   .inputValidator((data) =>

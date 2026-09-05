@@ -30,15 +30,7 @@ export default {
       const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
 
       return sock.sendMessage(jid, {
-        text:
-`╭─❀「 🗓️ *𝐖𝐄𝐄𝐊𝐋𝐘* 」❀─╮
-│ 🌙 *Result*  :: *ALREADY CLAIMED 🔴*
-│ 🍃 *Flavour* :: _また来週！気長に待って！_
-│
-│ ⏳ *Next*    :: *${days}d ${hours}h ${minutes}m*
-│
-│ 🔥 *Come back in a week!*
-╰───────────────❀`
+        text: `⏳ You've already claimed your weekly reward! Next claim available in ${days}d ${hours}h ${minutes}m.`,
       }, { quoted: msg });
     }
 
@@ -58,16 +50,8 @@ export default {
 
     await sock.sendMessage(jid, {
       text:
-`╭─❀「 🗓️ *𝐖𝐄𝐄𝐊𝐋𝐘* 」❀─╮
-│ 🌙 *Result*  :: *CLAIMED 🟢*
-│ 🍃 *Flavour* :: _今週もお疲れ様！_
-│
-│ 💰 *Reward*  :: *+${fmt(reward)}*${user.isPremium ? ` _(+50% premium)_` : ""}
-│ 🔮 *XP*      :: *+${xpReward}*
-│ 💰 *Wallet*  :: *${fmt(user.money)}*
-│
-│ ⭐ *Level ${user.level}*  📅 *Come back in 7 days!*${leveled ? `\n│\n│ 🎉 *LEVEL UP!* — Now Level ${user.level}` : ""}
-╰───────────────❀`
+`🎉 You've claimed your weekly reward of ${fmt(reward)} coins${user.isPremium ? " (+50% premium)" : ""}! Your new balance is ${fmt(user.money)} coins.
+🔮 XP: +${xpReward}${leveled ? `\n⭐ *LEVEL UP!* You are now Level ${user.level}!` : ""}`,
     }, { quoted: msg });
   }
 };

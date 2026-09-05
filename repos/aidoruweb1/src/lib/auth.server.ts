@@ -475,6 +475,86 @@ function createVerificationCode(): string {
   return String(randomBytes(4).readUInt32BE(0) % 1_000_000).padStart(6, "0");
 }
 
+export async function createWebsiteAccount(input: {
+  countryCode: string;
+  phoneNumber: string;
+  name: string;
+  password: string;
+}): Promise<PublicUser> {
+  const phoneNumber = normalisePhoneNumber(input.countryCode, input.phoneNumber);
+  const name = String(input.name ?? "").trim();
+  if (name.length < 2 || name.length > 20 || /[\r\n\t]/.test(name)) {
+    throw new Error("Your trainer name must be between 2 and 20 characters.");
+  }
+  validateWebsitePassword(input.password);
+
+  const existing = await findUserByPhoneNumber(phoneNumber);
+  if (existing) {
+    throw new Error("An account already exists for this WhatsApp number. Sign in instead.");
+  }
+
+  const col = await users();
+  const canonicalJid = `${phoneNumber}@s.whatsapp.net`;
+  const websitePasswordHash = await hashWebsitePassword(input.password);
+  const now = new Date();
+  const defaults = {
+    name: "User",
+    money: 0,
+    bank: 0,
+    vault: 0,
+    orbs: 0,
+    diamonds: 0,
+    level: 1,
+    xp: 0,
+    bio: "",
+    inventory: [],
+    history: [],
+    lastDaily: 0,
+    lastWeekly: 0,
+    lastMonthly: 0,
+    registered: true,
+    registeredAt: now,
+    createdAt: now,
+  };
+  const registration = {
+    ...defaults,
+    name,
+    money: 100_000,
+    phoneNumber,
+    whatsappNumber: canonicalJid,
+    whatsappJid: canonicalJid,
+    jid: canonicalJid,
+    websitePasswordHash,
+    websitePasswordUpdatedAt: now,
+    websiteVerifiedAt: now,
+  };
+
+  let user: UserDoc | null = null;
+  try {
+    user = (await col.findOneAndUpdate(
+      { _id: canonicalJid, registered: { $ne: true } } as never,
+      { $set: registration } as never,
+      { upsert: true, returnDocument: "after" },
+    )) as UserDoc | null;
+  } catch (error) {
+    if ((error as { code?: number })?.code !== 11000) throw error;
+    user = await col.findOne({ _id: canonicalJid, registered: true } as never) as UserDoc | null;
+  }
+
+  if (!user?.registered) {
+    throw new Error("Could not create your account. Please try again.");
+  }
+
+  const websiteId = await ensureWebsiteId(user);
+  const refreshed = (await col.findOne({ _id: user._id } as never)) as UserDoc | null;
+  if (!refreshed) throw new Error("Your account was created but could not be loaded.");
+  if (!refreshed.websiteId) {
+    (refreshed as UserDoc).websiteId = websiteId;
+  }
+  await issueSession(String(refreshed._id));
+  return toPublicUser(refreshed);
+}
+
 export async function beginPhoneLogin(input: {
   countryCode: string;
   phoneNumber: string;

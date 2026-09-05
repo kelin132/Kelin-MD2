@@ -29,15 +29,7 @@ export default {
       const hours = Math.floor((remaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
 
       return sock.sendMessage(jid, {
-        text:
-`╭─❀「 📅 *𝐌𝐎𝐍𝐓𝐇𝐋𝐘* 」❀─╮
-│ 🌙 *Result*  :: *ALREADY CLAIMED 🔴*
-│ 🍃 *Flavour* :: _来月また会いましょう！_
-│
-│ ⏳ *Next*    :: *${days}d ${hours}h*
-│
-│ 🔥 *Come back next month!*
-╰───────────────❀`
+        text: `⏳ You've already claimed your monthly reward! Next claim available in ${days}d ${hours}h.`,
       }, { quoted: msg });
     }
 
@@ -64,16 +56,8 @@ export default {
 
     await sock.sendMessage(jid, {
       text:
-`╭─❀「 📅 *𝐌𝐎𝐍𝐓𝐇𝐋𝐘* 」❀─╮
-│ 🌙 *Result*  :: *CLAIMED 🟢*
-│ 🍃 *Flavour* :: _今月もありがとう！_
-│
-│ 💰 *Reward*  :: *+${fmt(reward)}*${user.isPremium ? ` _(×2 premium)_` : ""}
-│ 🔮 *XP*      :: *+${xpReward}*
-│ 💰 *Wallet*  :: *${fmt(user.money)}*${user.isPremium ? `\n│ 🎁 *Bonus*   :: *+1 Mystery Box*` : ""}
-│
-│ ⭐ *Level ${user.level}*  📅 *See you next month!*${leveled ? `\n│\n│ 🎉 *LEVEL UP!* — Now Level ${user.level}` : ""}
-╰───────────────❀`
+`🎉 You've claimed your monthly reward of ${fmt(reward)} coins${user.isPremium ? " (×2 premium)" : ""}! Your new balance is ${fmt(user.money)} coins.
+🔮 XP: +${xpReward}${user.isPremium ? "\n🎁 Bonus: +1 Mystery Box" : ""}${leveled ? `\n⭐ *LEVEL UP!* You are now Level ${user.level}!` : ""}`,
     }, { quoted: msg });
   }
 };

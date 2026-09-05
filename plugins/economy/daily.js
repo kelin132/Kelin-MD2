@@ -32,11 +32,8 @@ export default {
       const hours     = Math.floor(remaining / (60 * 60 * 1000));
       const minutes   = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
 
-      const limitCaption = 
-`⏳ You've already claimed your daily reward today! Next claim available in ${hours}h ${minutes}m.
-
-│ Reminder: You have a web daily reward waiting to be claimed!
-Claim it here: https://aidoru.zone.id/arcade`;
+      const limitCaption =
+`⏳ You've already claimed your daily reward today! Next claim available in ${hours}h ${minutes}m.`;
 
       return sock.sendMessage(jid, { text: limitCaption }, { quoted: msg });
     }
@@ -52,11 +49,8 @@ Claim it here: https://aidoru.zone.id/arcade`;
 
     await saveUser(sender, user);
 
-    const claimCaption = 
-`🎉 You've claimed your daily reward of ${fmt(reward)} coins + ${streakBonus} streak bonus (streak: ${streak})! Your new balance is ${fmt(user.money)} coins.${leveled ? `\n\n⭐ *LEVEL UP!* You are now Level ${newLevel}!` : ""}
-
-│ Reminder: You have a web daily reward waiting to be claimed!
-Claim it here: https://aidoru.zone.id/arcade`;
+    const claimCaption =
+`🎉 You've claimed your daily reward of ${fmt(reward)} coins + ${streakBonus} streak bonus (streak: ${streak})! Your new balance is ${fmt(user.money)} coins.${leveled ? `\n\n⭐ *LEVEL UP!* You are now Level ${newLevel}!` : ""}`;
 
     await sock.sendMessage(jid, { text: claimCaption }, { quoted: msg });
   },

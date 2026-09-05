@@ -49,6 +49,7 @@ export type UserDoc = {
   bio?: string;
   registered?: boolean;
   registeredAt?: string | Date | null;
+  createdAt?: string | Date | null;
   money?: number;
   bank?: number;
   vault?: number;
