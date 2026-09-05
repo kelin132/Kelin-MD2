@@ -1,3 +1,4 @@
+```javascript
 /**
  * KELIN MD — .beg
  * Beg for a small amount of money. Small rewards, real cooldown.
@@ -7,14 +8,14 @@ import { getUser, saveUser, requireRegistration, addHistory, maybeAwardDiamonds 
 const COOLDOWN = 3 * 60 * 1000; // 3 minutes
 
 const SUCCESS_MSGS = [
-  (n, $) => `A kind stranger tosses you \`$${$}\` after you flash your empty pockets.`,
-  (n, $) => `You begged outside the mall and someone dropped \`$${$}\` in your cup.`,
-  (n, $) => `A gambler felt guilty and handed you \`$${$}\`. Every dollar counts!`,
-  (n, $) => `An old man took pity on you and gave you \`$${$}\`. Don't waste it.`,
-  (n, $) => `You held a cardboard sign and collected \`$${$}\` from passing cars.`,
-  (n, $) => `Someone bought you coffee and gave you \`$${$}\` change. Small wins!`,
-  (n, $) => `Even a dog felt bad for you — its owner gave you \`$${$}\`.`,
-  (n, $) => `You performed on the street corner and earned \`$${$}\` in tips.`,
+  (n, $) => `A kind stranger tosses you ${$} coins after you flash your empty pockets.`,
+  (n, $) => `You begged outside the mall and someone dropped ${$} coins in your cup.`,
+  (n, $) => `A gambler felt guilty and handed you ${$} coins. Every bit counts!`,
+  (n, $) => `An old man took pity on you and gave you ${$} coins. Don't waste it.`,
+  (n, $) => `You held a cardboard sign and collected ${$} coins from passing cars.`,
+  (n, $) => `Someone bought you coffee and gave you ${$} coins change. Small wins!`,
+  (n, $) => `Even a dog felt bad for you — its owner gave you ${$} coins.`,
+  (n, $) => `You performed on the street corner and earned ${$} coins in tips.`,
 ];
 
 const FAIL_MSGS = [
@@ -28,10 +29,10 @@ const FAIL_MSGS = [
 ];
 
 function fmt(n) {
-  if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`;
-  if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
-  if (n >= 1e3) return `$${(n/1e3).toFixed(1)}K`;
-  return `$${n.toLocaleString()}`;
+  if (n >= 1e9) return `${(n/1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `${(n/1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `${(n/1e3).toFixed(1)}K`;
+  return `${n.toLocaleString()}`;
 }
 
 export default {
@@ -57,16 +58,14 @@ export default {
       const left = Math.ceil((COOLDOWN - (now - lastBeg)) / 1000);
       const m    = Math.floor(left / 60);
       const s    = left % 60;
-      return reply(
-`╭─❀「 🤲 *𝐁𝐄𝐆* 」❀─╮
-│ ⏳ *Result*  :: \`COOLDOWN 🔴\`
-│ 🍃 *Flavour* :: _Still feeling embarrassed..._
-│
-│ 🕐 *Next*    :: \`${m}m ${s}s\`
-│
-│ 😤 *You're still embarrassed from last time!*
-╰───────────────❀`
-      );
+      
+      const limitCaption = 
+`⏳ You've already begged recently! Next claim available in ${m}m ${s}s.
+
+│ Reminder: You have a web daily reward waiting to be claimed!
+Claim it here: https://aidoru.zone.id/arcade`;
+
+      return reply(limitCaption);
     }
 
     // 35% chance of failure — people aren't always generous
@@ -76,17 +75,14 @@ export default {
       user.lastBeg = now;
       await saveUser(sender, user);
       const flavour = FAIL_MSGS[Math.floor(Math.random() * FAIL_MSGS.length)];
-      return reply(
-`╭─❀「 🤲 *𝐁𝐄𝐆* 」❀─╮
-│ 🌙 *Result*  :: \`FAILED 🔴\`
-│ 🍃 *Flavour* :: _${flavour}_
-│
-│ 💰 *Earned*  :: \`$0\`
-│ 💰 *Wallet*  :: \`${fmt(user.money)}\`
-│
-│ 😤 *Better luck next time!*
-╰───────────────❀`
-      );
+      
+      const failCaption = 
+`🌧️ You tried begging, but ${flavour.toLowerCase()} Your balance remains ${fmt(user.money)} coins.
+
+│ Reminder: You have a web daily reward waiting to be claimed!
+Claim it here: https://aidoru.zone.id/arcade`;
+
+      return reply(failCaption);
     }
 
     // Success — small amount, it's begging after all ($50–$400)
@@ -99,16 +95,16 @@ export default {
     await addHistory(sender, "beg", amount, "Begged for money");
 
     const pick = SUCCESS_MSGS[Math.floor(Math.random() * SUCCESS_MSGS.length)];
-    return reply(
-`╭─❀「 🤲 *𝐁𝐄𝐆* 」❀─╮
-│ 🌙 *Result*  :: \`SUCCESS 🟢\`
-│ 🍃 *Flavour* :: _${pick(sender.split("@")[0], amount.toLocaleString())}_
-│
-│ 💰 *Earned*  :: \`+${fmt(amount)}\`
-│ 💰 *Wallet*  :: \`${fmt(user.money)}\`${diamondReward ? `\n│ 💎 *Bonus*   :: \`+${diamondReward}\` Gem${diamondReward === 1 ? "" : "s"}` : ""}
-│
-│ 🙏 *Thank you!* Keep grinding!
-╰───────────────❀`
-    );
+    const flavour = pick(sender.split("@")[0], fmt(amount));
+
+    const claimCaption = 
+`🤲 ${flavour} Your new balance is 💰 ${fmt(user.money)} coins.${diamondReward ? ` (Bonus: 💎 +${diamondReward} Gem${diamondReward === 1 ? "" : "s"})` : ""}
+
+│ Reminder: You have a web daily reward waiting to be claimed!
+Claim it here: https://aidoru.zone.id/arcade`;
+
+    return reply(claimCaption);
   },
 };
+
+```
