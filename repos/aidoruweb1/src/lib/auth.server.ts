@@ -413,6 +413,51 @@ async function findUserByPhoneNumber(phoneNumber: string): Promise<UserDoc | nul
   } as never);
 }
 
+function phoneNumberFromUser(user: UserDoc): string {
+  const identityFields = user as UserDoc & Record<string, unknown>;
+  const candidates = [
+    identityFields.phoneNumber,
+    identityFields.whatsappNumber,
+    identityFields.whatsappId,
+    identityFields.whatsappJid,
+    identityFields.jid,
+    identityFields.userId,
+    identityFields.userJid,
+    identityFields.sender,
+    user._id,
+  ];
+
+  for (const candidate of candidates) {
+    const value = String(candidate ?? "");
+    if (value.toLowerCase().endsWith("@lid")) continue;
+    const digits = ((value.split("@")[0] ?? "").split(":")[0] ?? "").replace(/\D/g, "");
+    if (digits.length >= 7) return digits;
+  }
+  return "";
+}
+
+async function findUserByLoginIdentifier(
+  countryCode: string,
+  identifier: string,
+): Promise<{ user: UserDoc | null; phoneNumber: string }> {
+  const rawIdentifier = String(identifier ?? "").trim();
+  const websiteId = normaliseWebsiteId(rawIdentifier);
+
+  if (WEBSITE_ID_PATTERN.test(websiteId)) {
+    const user = await findUserByWebsiteId(websiteId);
+    return {
+      user,
+      phoneNumber: user ? phoneNumberFromUser(user) || rawIdentifier : rawIdentifier,
+    };
+  }
+
+  const phoneNumber = normalisePhoneNumber(countryCode, rawIdentifier);
+  return {
+    user: await findUserByPhoneNumber(phoneNumber),
+    phoneNumber,
+  };
+}
+
 function createVerificationCode(): string {
   return String(randomBytes(4).readUInt32BE(0) % 1_000_000).padStart(6, "0");
 }
@@ -422,12 +467,14 @@ export async function beginPhoneLogin(input: {
   phoneNumber: string;
   password: string;
 }): Promise<PhoneLoginResult> {
-  const phoneNumber = normalisePhoneNumber(input.countryCode, input.phoneNumber);
   validateWebsitePassword(input.password);
-  const user = await findUserByPhoneNumber(phoneNumber);
+  const { user, phoneNumber } = await findUserByLoginIdentifier(
+    input.countryCode,
+    input.phoneNumber,
+  );
   if (!user)
     throw new Error(
-      "No registered WhatsApp profile was found for this number. Run .register in the bot first.",
+      "No registered WhatsApp profile was found for that phone number or AIDORU ID. Run .register in the bot first, then use .id if needed.",
     );
 
   if (user.websitePasswordHash && user.websiteVerifiedAt) {
@@ -468,10 +515,12 @@ export async function beginPasswordReset(input: {
   phoneNumber: string;
   password: string;
 }): Promise<{ phoneNumber: string; maskedPhone: string; expiresAt: string }> {
-  const phoneNumber = normalisePhoneNumber(input.countryCode, input.phoneNumber);
   validateWebsitePassword(input.password);
-  const user = await findUserByPhoneNumber(phoneNumber);
-  if (!user) throw new Error("No registered WhatsApp profile was found for this number.");
+  const { user, phoneNumber } = await findUserByLoginIdentifier(
+    input.countryCode,
+    input.phoneNumber,
+  );
+  if (!user) throw new Error("No registered WhatsApp profile was found for that phone number or AIDORU ID.");
 
   const code = createVerificationCode();
   const expiresAt = new Date(Date.now() + VERIFICATION_TTL_MS);
@@ -497,11 +546,10 @@ export async function completePasswordReset(input: {
   phoneNumber: string;
   code: string;
 }): Promise<PublicUser> {
-  const phoneNumber = normalisePhoneNumber(input.countryCode, input.phoneNumber);
   const code = String(input.code ?? "").replace(/\D/g, "");
   if (!/^\d{6}$/.test(code))
     throw new Error("Enter the six-digit reset code from the WhatsApp bot.");
-  const user = await findUserByPhoneNumber(phoneNumber);
+  const { user } = await findUserByLoginIdentifier(input.countryCode, input.phoneNumber);
   if (!user || user.websiteResetCode !== code) throw new Error("That reset code is incorrect.");
   const expiry = new Date(String(user.websiteResetExpiresAt ?? "")).getTime();
   if (!Number.isFinite(expiry) || expiry < Date.now())
@@ -538,10 +586,9 @@ export async function completePhoneVerification(input: {
   phoneNumber: string;
   code: string;
 }): Promise<PublicUser> {
-  const phoneNumber = normalisePhoneNumber(input.countryCode, input.phoneNumber);
   const code = String(input.code ?? "").replace(/\D/g, "");
   if (!/^\d{6}$/.test(code)) throw new Error("Enter the six-digit code from the WhatsApp bot.");
-  const user = await findUserByPhoneNumber(phoneNumber);
+  const { user } = await findUserByLoginIdentifier(input.countryCode, input.phoneNumber);
   if (!user || user.websiteVerificationCode !== code)
     throw new Error("That verification code is incorrect.");
   const expiry = new Date(String(user.websiteVerificationExpiresAt ?? "")).getTime();
