@@ -58,21 +58,6 @@ function readJson(filePath) {
 }
 
 function findSessionFolder(botRoot, config = {}) {
-  const configured = [
-    config.sessionFolder,
-    config.sessionDir,
-    config.authFolder,
-    config.auth,
-    config.session,
-  ].map((value) => resolveFrom(botRoot, value)).filter(Boolean);
-
-  for (const candidate of configured) {
-    if (hasCreds(candidate)) return candidate;
-    if (isDirectory(candidate) && hasCreds(path.join(candidate, "auth"))) {
-      return path.join(candidate, "auth");
-    }
-  }
-
   // The most common layout is .bots/<name>/auth/creds.json.
   const auth = path.join(botRoot, "auth");
   if (hasCreds(auth)) return auth;
@@ -80,6 +65,30 @@ function findSessionFolder(botRoot, config = {}) {
   // Also accept .bots/<name>/creds.json. Baileys can use the folder itself
   // as a multi-file auth state directory.
   if (hasCreds(botRoot)) return botRoot;
+
+  // Configured paths are checked after the bot's own folder. This prevents a
+  // stale path from making Zhongli accidentally use Mikasa's session.
+  const configured = [];
+  for (const value of [
+    config.sessionFolder,
+    config.sessionDir,
+    config.authFolder,
+    config.auth,
+    config.session,
+  ]) {
+    const localPath = resolveFrom(botRoot, value);
+    const botsPath = resolveFrom(BOTS_DIR, value);
+    for (const candidate of [localPath, botsPath]) {
+      if (candidate && !configured.includes(candidate)) configured.push(candidate);
+    }
+  }
+
+  for (const candidate of configured) {
+    if (hasCreds(candidate)) return candidate;
+    if (isDirectory(candidate) && hasCreds(path.join(candidate, "auth"))) {
+      return path.join(candidate, "auth");
+    }
+  }
 
   // Some panel uploaders add one extra folder while extracting a session.
   // Prefer an auth folder, then accept any immediate child with creds.json.
@@ -178,10 +187,24 @@ export function loadBotConfigs() {
     .sort((a, b) => a.localeCompare(b));
 
   const definitions = [];
+  const usedSessionFolders = new Map();
   for (const entry of entries) {
     try {
       const definition = loadEntry(entry);
-      if (definition?.enabled) definitions.push(definition);
+      if (definition?.enabled) {
+        const sessionFolder = path.resolve(definition.sessionFolder);
+        const previousId = usedSessionFolders.get(sessionFolder);
+        if (previousId) {
+          log(
+            "warn",
+            `[bots] Skipping ${definition.id}: session folder ${sessionFolder} ` +
+            `is already assigned to ${previousId}.`,
+          );
+          continue;
+        }
+        usedSessionFolders.set(sessionFolder, definition.id);
+        definitions.push(definition);
+      }
       else if (definition && !definition.enabled) {
         log("info", `[bots] Disabled ${definition.id}`);
       }
