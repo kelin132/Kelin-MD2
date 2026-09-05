@@ -65,17 +65,22 @@ changing the startup code:
 ```text
 .bots/
 ├── eris/
-│   ├── auth/creds.json
+│   ├── auth/cred.json
 │   └── config.json
 ├── mikasa/
-│   └── creds.json
+│   └── cred.json
 └── zhongli/
-    └── auth/creds.json
+    └── auth/cred.json
 ```
 
 The loader also accepts a `config.json` file with `botName`, `ownerNumber`,
 `botNumber`, `prefix`, `menuImage` (or `botImage`), and `layout`. A missing or
 malformed config file will not hide a valid session folder.
+
+Each session must contain exactly one credential file: `cred.json` or
+`creds.json`. `cred.json` is treated as the active filename; the bot creates a
+local compatibility link named `creds.json` for Baileys without copying or
+duplicating the credentials. Do not keep both as separate files.
 
 Each bot runs in its own process and keeps its own settings and menu image.
 From the owner account, use `.botconfig image <https://...>` or reply to an

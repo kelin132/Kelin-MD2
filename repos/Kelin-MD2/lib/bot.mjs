@@ -35,6 +35,7 @@ import { migrateKnownLidUsers, resolveAndMigrateIdentity } from "./identity.mjs"
 import { createRequire } from "module";
 import pino from "pino";
 import { getRuntimeSettings } from "./runtimeSettings.mjs";
+import { ensureBaileysCredentialFile } from "./sessionAuth.mjs";
 
 // settings.js is CommonJS — import via createRequire for ESM compatibility
 const _require  = createRequire(import.meta.url);
@@ -61,12 +62,13 @@ const MAX_PENDING_MESSAGES_PER_KEY = 3;
 const MAX_CONCURRENT_COMMANDS_PER_KEY = 2;
 
 export function hasSession() {
-  const credsPath = path.join(SESSION_DIR, "creds.json");
-  if (!existsSync(credsPath)) return false;
   try {
-    const creds = JSON.parse(readFileSync(credsPath, "utf8"));
+    const credsPath = ensureBaileysCredentialFile(SESSION_DIR);
+    if (!credsPath) return false;
+    const creds = JSON.parse(readFileSync(path.join(SESSION_DIR, "creds.json"), "utf8"));
     return creds.registered === true;
-  } catch {
+  } catch (error) {
+    log("warn", `Session credentials are invalid: ${error.message}`);
     return false;
   }
 }
@@ -197,6 +199,7 @@ export async function connectBot(phoneNumber, prefix) {
   if (phoneNumber) _phoneNumber = phoneNumber.replace(/\D/g, "");
 
   if (!existsSync(SESSION_DIR)) mkdirSync(SESSION_DIR, { recursive: true });
+  ensureBaileysCredentialFile(SESSION_DIR);
 
   log("info", "Connecting to WhatsApp...");
 

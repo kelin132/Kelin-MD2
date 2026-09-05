@@ -18,6 +18,7 @@ import {
 } from "fs";
 import path from "path";
 import { log } from "./logger.mjs";
+import { hasUsableSessionCredentials } from "./sessionAuth.mjs";
 
 export const BOTS_DIR = path.resolve(process.env.BOTS_DIR || ".bots");
 
@@ -38,7 +39,7 @@ function isFile(target) {
 }
 
 function hasCreds(target) {
-  return isFile(path.join(target, "creds.json"));
+  return hasUsableSessionCredentials(target);
 }
 
 function resolveFrom(root, value) {
@@ -98,8 +99,8 @@ function normalizeDefinition({ id, botRoot, configFile, config }) {
   if (!sessionFolder) {
     log(
       "warn",
-      `[bots] Skipping ${id}: no creds.json found under ${botRoot}. ` +
-      "Use <bot>/auth/creds.json or <bot>/creds.json.",
+      `[bots] Skipping ${id}: expected exactly one cred.json or creds.json under ${botRoot}. ` +
+      "Use <bot>/auth/cred.json or <bot>/auth/creds.json.",
     );
     return null;
   }

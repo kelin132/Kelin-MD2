@@ -20,6 +20,7 @@ import { log } from "./lib/logger.mjs";
 import { getRuntimeSettings } from "./lib/runtimeSettings.mjs";
 import { hasBotConfigDirectory, hasBotEntries, loadBotConfigs } from "./lib/botConfig.mjs";
 import { startBotSupervisor } from "./lib/botSupervisor.mjs";
+import { ensureBaileysCredentialFile } from "./lib/sessionAuth.mjs";
 
 // settings.js is CommonJS — import via createRequire
 const _require  = createRequire(import.meta.url);
@@ -68,10 +69,14 @@ const [{ connectBot }, { loadPlugins }, { autoUpdate }, { connectDb }, { initGro
 // ── Session check ─────────────────────────────────────────────────────────────
 const CREDS = path.resolve("sessions", "auth", "creds.json");
 function isRegistered() {
-  if (!existsSync(CREDS)) return false;
   try {
+    ensureBaileysCredentialFile(path.dirname(CREDS));
+    if (!existsSync(CREDS)) return false;
     return JSON.parse(readFileSync(CREDS, "utf8")).registered === true;
-  } catch { return false; }
+  } catch (error) {
+    log("warn", `Session credentials are invalid: ${error.message}`);
+    return false;
+  }
 }
 
 if (!isRegistered()) {
