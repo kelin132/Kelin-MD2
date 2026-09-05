@@ -5,7 +5,7 @@
  *   .bots/eris/auth/creds.json
  *   .bots/eris/creds.json
  *   .bots/eris/config.json + auth/creds.json
- *   .bots/eris.json                 (with sessionFolder/sessionDir/authFolder)
+ *   .bots/eris.json                 (with bot details only)
  *
  * A bot is never rejected just because its credentials are not in the one
  * layout used by an earlier loader. The only required file is creds.json.
@@ -30,21 +30,8 @@ function isDirectory(target) {
   }
 }
 
-function isFile(target) {
-  try {
-    return statSync(target).isFile();
-  } catch {
-    return false;
-  }
-}
-
 function hasCreds(target) {
   return hasUsableSessionCredentials(target);
-}
-
-function resolveFrom(root, value) {
-  if (!value) return null;
-  return path.resolve(path.isAbsolute(String(value)) ? String(value) : path.join(root, String(value)));
 }
 
 function readJson(filePath) {
@@ -57,7 +44,7 @@ function readJson(filePath) {
   }
 }
 
-function findSessionFolder(botRoot, config = {}) {
+function findSessionFolder(botRoot) {
   // The bot folder owns its session. Do not follow sessionFolder/auth values
   // from config.json into another bot's directory; that is how one account
   // can accidentally start with another account's credentials.
@@ -83,7 +70,7 @@ function findSessionFolder(botRoot, config = {}) {
 }
 
 function normalizeDefinition({ id, botRoot, configFile, config }) {
-  const sessionFolder = findSessionFolder(botRoot, config);
+  const sessionFolder = findSessionFolder(botRoot);
   if (!sessionFolder) {
     log(
       "warn",
