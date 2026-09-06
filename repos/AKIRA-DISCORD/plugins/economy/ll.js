@@ -108,12 +108,39 @@ export default {
         return;
       }
 
-      // ── STATUS (poll-style) ───────────────────────────────────────────────
+      // ── STATUS ────────────────────────────────────────────────────────────
       const tickets = lot?.tickets || [];
       const totalEntries = lot?.totalTickets || 0;
+      const jackpot = lot?.jackpot ?? 0;
+      const myCount = findLotteryTicket(
+        tickets,
+        lotteryUserId(sender),
+        getDiscordParticipantId(discord, rawSender),
+      )?.count ?? 0;
+
+      if (discord) {
+        return sock.sendMessage(jid, {
+          discordEmbed: {
+            title: "🎟️ Lottery Pools in AIDORU",
+            description:
+              `**Current Participation Status**\n\n` +
+              `**${totalEntries} / ${REQUIRED} participants**\n\n` +
+              `Drawing at **${REQUIRED} participants**`,
+            color: "#24B8E6",
+            fields: [
+              { name: "Jackpot", value: `$${jackpot.toLocaleString()}`, inline: true },
+              { name: "Your ticket", value: `${myCount ? "1" : "0"} / 1`, inline: true },
+              {
+                name: "Prizes",
+                value: LOTTERY_PRIZES.map((amount) => `$${amount.toLocaleString()}`).join(" • "),
+              },
+            ],
+            footer: { text: "AIDORU • Use .lottery to enter" },
+          },
+        }, { quoted: msg });
+      }
 
       try {
-        if (discord) throw new Error("Discord uses the embed status fallback.");
         const pollMsg = generateWAMessageFromContent(
           jid,
           proto.Message.fromObject({
@@ -131,34 +158,6 @@ export default {
         await sock.relayMessage(jid, pollMsg.message, { messageId: pollMsg.key.id });
       } catch (_) {
         // Fallback to plain text if poll fails
-        const jackpot = lot?.jackpot ?? 0;
-        const myCount = findLotteryTicket(
-          tickets,
-          lotteryUserId(sender),
-          getDiscordParticipantId(discord, rawSender),
-        )?.count ?? 0;
-        if (discord) {
-          return discord.message.reply({
-            embeds: [
-              new EmbedBuilder()
-                .setColor("#FFD166")
-                .setTitle("🎟️ Lottery")
-                .setDescription("Buy your one ticket with `.lottery`.")
-                .addFields(
-                  { name: "Jackpot", value: `$${jackpot.toLocaleString()}`, inline: true },
-                  { name: "Entries", value: `${totalEntries} / ${REQUIRED}`, inline: true },
-                  { name: "Your tickets", value: String(myCount), inline: true },
-                  {
-                    name: "Prizes",
-                    value: LOTTERY_PRIZES.map((amount) => `$${amount.toLocaleString()}`).join(" • "),
-                  },
-                ),
-            ],
-          }).catch(() => reply(
-            `🎟️ Lottery: $${jackpot.toLocaleString()} jackpot, ${totalEntries}/${REQUIRED} entries, ` +
-            `${myCount} of your tickets. Use .lottery to buy one ticket.`,
-          ));
-        }
         await reply(
 `╭━━━〔 🎰 𝑳𝑶𝑻𝑻𝑬𝑹𝒀 𝑺𝑻𝑨𝑻𝑼𝑺 〕━━━╮
 ┃ 💰 Jackpot     › $${jackpot.toLocaleString()}

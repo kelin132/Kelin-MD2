@@ -76,7 +76,15 @@ async function valoreAudio(videoUrl) {
     signal: AbortSignal.timeout(45_000),
   });
 
-  const raw = await response.text();
+  let raw;
+  try {
+    raw = await response.text();
+  } catch (error) {
+    if (error?.name === "AbortError") {
+      throw new Error("Valore audio request timed out after 45s");
+    }
+    throw error;
+  }
   let payload;
   try {
     payload = raw ? JSON.parse(raw) : null;

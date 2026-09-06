@@ -37,18 +37,28 @@ export async function playDiscordVoice({ client, message, audioBuffer, title }) 
   existing?.ffmpeg?.kill("SIGKILL");
   existing?.connection?.destroy();
 
-  const connection = joinVoiceChannel({
-    channelId: voiceChannel.id,
-    guildId: voiceChannel.guild.id,
-    adapterCreator: voiceChannel.guild.voiceAdapterCreator,
-    selfDeaf: true,
-  });
-
-  try {
-    await entersState(connection, VoiceConnectionStatus.Ready, 20_000);
-  } catch (error) {
-    connection.destroy();
-    throw new Error(`Voice connection did not become ready: ${error.message}`);
+  let connection;
+  let lastConnectionError;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    connection = joinVoiceChannel({
+      channelId: voiceChannel.id,
+      guildId: voiceChannel.guild.id,
+      adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+      selfDeaf: true,
+    });
+    try {
+      await entersState(connection, VoiceConnectionStatus.Ready, 20_000);
+      break;
+    } catch (error) {
+      lastConnectionError = error;
+      connection.destroy();
+      if (attempt === 0) await new Promise((resolve) => setTimeout(resolve, 750));
+    }
+  }
+  if (!connection || connection.state.status !== VoiceConnectionStatus.Ready) {
+    throw new Error(
+      `Voice connection did not become ready: ${lastConnectionError?.message || "connection aborted"}`,
+    );
   }
 
   const ffmpeg = spawn(process.env.FFMPEG_PATH || "ffmpeg", [
@@ -92,6 +102,11 @@ export async function playDiscordVoice({ client, message, audioBuffer, title }) 
     }
   });
   ffmpeg.stdin.end(audioBuffer);
+  ffmpeg.stdin.on("error", (error) => {
+    if (error.code !== "EPIPE") {
+      console.error("[discord voice] ffmpeg input error:", error.message);
+    }
+  });
 
   const player = createAudioPlayer({
     behaviors: { noSubscriber: NoSubscriberBehavior.Play },

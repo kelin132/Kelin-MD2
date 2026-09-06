@@ -6,6 +6,14 @@ import { downloadMediaBuffer } from "../../lib/omegaDownload.js";
 import { playDiscordVoice } from "../../lib/discordVoice.mjs";
 import { fetchAudio, sendBanner, ytSearch } from "./play.js";
 
+function explainPlaybackError(error) {
+  const message = String(error?.message || error || "");
+  if (/abort|timed out|timeout/i.test(message)) {
+    return "The audio provider timed out before the track finished downloading. Try the command again or use a YouTube URL.";
+  }
+  return "The audio provider did not return a playable track. Try again or use a YouTube URL.";
+}
+
 export default {
   name: "play2",
   description: "Play YouTube audio in your Discord voice channel",
@@ -70,7 +78,7 @@ export default {
     } catch (error) {
       console.error("[play2]", error.message);
       return sock.sendMessage(jid, {
-        text: "❌ This audio could not be downloaded for voice playback. Try again later.",
+        text: `❌ I could not start that track: ${explainPlaybackError(error)}`,
       }, { quoted: msg });
     }
   },

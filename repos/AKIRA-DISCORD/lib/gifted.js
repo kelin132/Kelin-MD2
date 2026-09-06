@@ -26,6 +26,11 @@ async function fetchJson(url, timeout = 30000) {
         const res = await fetch(url, { signal: controller.signal });
         if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
         return await res.json();
+    } catch (error) {
+        if (error?.name === "AbortError") {
+            throw new Error(`Request timed out after ${timeout}ms`);
+        }
+        throw error;
     } finally {
         clearTimeout(timer);
     }
@@ -38,6 +43,11 @@ async function fetchBuf(url, timeout = 45000) {
         const res = await fetch(url, { signal: controller.signal });
         if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
         return Buffer.from(await res.arrayBuffer());
+    } catch (error) {
+        if (error?.name === "AbortError") {
+            throw new Error(`Media request timed out after ${timeout}ms`);
+        }
+        throw error;
     } finally {
         clearTimeout(timer);
     }
