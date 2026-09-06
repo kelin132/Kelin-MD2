@@ -3,6 +3,7 @@
  * Beg for a small amount of money. Small rewards, real cooldown.
  */
 import { getUser, saveUser, requireRegistration, addHistory, maybeAwardDiamonds } from "./database.js";
+import { sendEconomyReply } from "../../lib/discordEconomyReply.mjs";
 
 const COOLDOWN = 3 * 60 * 1000; // 3 minutes
 
@@ -41,13 +42,14 @@ export default {
   description: "Beg for a small amount of money (3-min cooldown)",
   usage: ".beg",
   cooldown: 5,
-  discordPlainText: true,
 
-  async run({ sock, msg, sender }) {
+  async run({ sock, msg, sender, discord }) {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const jid   = msg.key.remoteJid;
-    const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
+    const reply = (text) => sendEconomyReply({
+      sock, jid, msg, discord, text, title: "🤲 Beg",
+    });
 
     const user = await getUser(sender);
     const now  = Date.now();

@@ -1,5 +1,6 @@
 import { getUser, saveUser, requireRegistration, addHistory, maybeAwardDiamonds, checkLevelUp } from "./database.js";
 import { DIG_LOOT, SHOP_ITEMS, rollLoot } from "./_items.js";
+import { sendEconomyReply } from "../../lib/discordEconomyReply.mjs";
 
 const COOLDOWN = 10 * 1000; // 10 seconds
 
@@ -16,13 +17,14 @@ export default {
   cooldown: 6,
   description: "Dig for buried treasure — cash, items, or orbs (10 sec cooldown)",
   usage: ".dig",
-  discordPlainText: true,
 
-  async run({ sock, msg, sender }) {
+  async run({ sock, msg, sender, discord }) {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const jid   = msg.key.remoteJid;
-    const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
+    const reply = (text) => sendEconomyReply({
+      sock, jid, msg, discord, text, title: "⛏️ Digging",
+    });
     const now   = Date.now();
 
     const user = await getUser(sender);

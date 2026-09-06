@@ -8,7 +8,6 @@ export default {
   aliases: ["reg", "signup"],
   discordColor: "#57B894",
   discordTitle: "✅ Welcome to AKIRA Economy",
-  discordPlainText: true,
   cooldown: 5,
 
   async run({ sock, msg, sender, text, discord }) {

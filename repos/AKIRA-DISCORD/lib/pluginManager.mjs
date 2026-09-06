@@ -86,9 +86,10 @@ export async function loadPlugins(prefix = ".") {
   }
 
   const canonicalOwners = new Map();
+  let duplicateCommandCount = 0;
   plugins = plugins.filter((plugin) => {
     if (canonicalOwners.has(plugin.name)) {
-      log("warn", `Ignoring duplicate command ${plugin.name} on ${plugin.category}; already owned by ${canonicalOwners.get(plugin.name)}.`);
+      duplicateCommandCount += 1;
       return false;
     }
     canonicalOwners.set(plugin.name, plugin.category);
@@ -96,15 +97,16 @@ export async function loadPlugins(prefix = ".") {
   });
   const canonicalNames = new Set(plugins.map((plugin) => plugin.name));
   const aliasOwners = new Map();
+  let duplicateAliasCount = 0;
   plugins = plugins.map((plugin) => ({
     ...plugin,
     aliases: plugin.aliases.filter((alias) => {
       if (canonicalNames.has(alias)) {
-        log("warn", `Ignoring alias ${alias} on ${plugin.name}; ${alias} is a canonical command.`);
+        duplicateAliasCount += 1;
         return false;
       }
       if (aliasOwners.has(alias)) {
-        log("warn", `Ignoring duplicate alias ${alias} on ${plugin.name}; already owned by ${aliasOwners.get(alias)}.`);
+        duplicateAliasCount += 1;
         return false;
       }
       aliasOwners.set(alias, plugin.name);
@@ -113,6 +115,13 @@ export async function loadPlugins(prefix = ".") {
   }));
   commands = plugins.flatMap((plugin) => [plugin.name, ...plugin.aliases]);
 
+  if (duplicateCommandCount || duplicateAliasCount) {
+    log(
+      "info",
+      `Skipped ${duplicateCommandCount} duplicate command${duplicateCommandCount === 1 ? "" : "s"} and ` +
+      `${duplicateAliasCount} duplicate alias${duplicateAliasCount === 1 ? "" : "es"} during startup.`,
+    );
+  }
   log("info", `Loaded ${plugins.length} plugins from ${categories.length} categories`);
   return { totalPlugins: plugins.length, totalCommands: commands.length };
 }
