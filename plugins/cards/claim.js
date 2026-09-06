@@ -37,7 +37,7 @@ export default {
   name: "claim",
   aliases: ["collect"],
   category: "cards",
-  description: "Claim your pending summon, spawn pack, or spawned card",
+  description: "Claim your pending summon or spawned card",
   usage: ".claim [card_id]",
 
   async run({ sock, msg, args, sender }) {
@@ -50,7 +50,7 @@ export default {
       user.cards = Array.isArray(user.cards) ? user.cards : [];
       user.pendingCards = Array.isArray(user.pendingCards) ? user.pendingCards : [];
 
-      // Personal pending claims created by .summon or .spawnpack.
+      // Personal pending claims created by .summon.
       const hasMatchingPending = cardIdInput
         ? user.pendingCards.some((card) => String(card.cardId || "").toUpperCase() === cardIdInput)
         : user.pendingCards.length > 0;
