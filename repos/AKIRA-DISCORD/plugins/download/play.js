@@ -191,12 +191,21 @@ export default {
       const mimetype = file.mimetype.startsWith("audio/") ? file.mimetype : "audio/mpeg";
 
       if (discord?.message) {
-        const voiceResult = await playDiscordVoice({
-          client: discord.client,
-          message: discord.message,
-          audioBuffer: file.buffer,
-          title: trackTitle,
-        });
+        let voiceResult;
+        try {
+          voiceResult = await playDiscordVoice({
+            client: discord.client,
+            message: discord.message,
+            audioBuffer: file.buffer,
+            title: trackTitle,
+          });
+        } catch (voiceError) {
+          console.error("[play] voice playback failed:", voiceError.message);
+          return sock.sendMessage(jid, {
+            text: "❌ I downloaded the audio, but could not start voice playback. " +
+              "Make sure I have Connect and Speak permissions and that FFmpeg is installed.",
+          }, { quoted: msg });
+        }
 
         if (!voiceResult.ok) {
           const message = voiceResult.reason === "not-in-voice"

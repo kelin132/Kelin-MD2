@@ -12,6 +12,7 @@ export async function connectDiscord(token) {
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.DirectMessages,
+    GatewayIntentBits.GuildVoiceStates,
   ];
   if (process.env.DISCORD_ENABLE_GUILD_MEMBERS === "true") {
     intents.push(GatewayIntentBits.GuildMembers);

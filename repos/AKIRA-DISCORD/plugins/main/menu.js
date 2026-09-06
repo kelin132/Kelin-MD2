@@ -104,6 +104,66 @@ function chunkForDiscord(text, maxLength = 1900) {
   return chunks.length ? chunks : [""];
 }
 
+function menuBrowseButton(token) {
+  return new ButtonBuilder()
+    .setCustomId(`menu:${token}:browse`)
+    .setLabel("Browse categories")
+    .setStyle(ButtonStyle.Primary);
+}
+
+function menuOverviewComponents(token) {
+  return [
+    new ActionRowBuilder().addComponents(menuBrowseButton(token)),
+  ];
+}
+
+function menuCategoryComponents(token, categories) {
+  const rows = [];
+  for (let index = 0; index < categories.length; index += 5) {
+    const row = new ActionRowBuilder();
+    for (const category of categories.slice(index, index + 5)) {
+      row.addComponents(
+        new ButtonBuilder()
+          .setCustomId(`menu:${token}:category:${category}`)
+          .setLabel(categoryTitles[category] || category.toUpperCase())
+          .setEmoji(categoryEmojis[category] || "📌")
+          .setStyle(ButtonStyle.Secondary),
+      );
+    }
+    rows.push(row);
+  }
+
+  const backButton = new ButtonBuilder()
+    .setCustomId(`menu:${token}:back`)
+    .setLabel("↩ Back to menu")
+    .setStyle(ButtonStyle.Secondary);
+  if (rows.length < 5) {
+    rows.push(new ActionRowBuilder().addComponents(backButton));
+  } else if (rows.at(-1).components.length < 5) {
+    rows.at(-1).addComponents(backButton);
+  }
+  return rows;
+}
+
+function menuNavigationComponents(token, session) {
+  const { categoryIndex, categories } = session;
+  return [
+    new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`menu:${token}:previous`)
+        .setLabel("◀ Previous")
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(categoryIndex <= -1),
+      new ButtonBuilder()
+        .setCustomId(`menu:${token}:next`)
+        .setLabel("Next ▶")
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(categoryIndex === categories.length - 1),
+      menuBrowseButton(token),
+    ),
+  ];
+}
+
 function discordMenuPayload(token, session) {
   const {
     categories,
@@ -116,51 +176,50 @@ function discordMenuPayload(token, session) {
   } = session;
   const category = categoryIndex >= 0 ? categories[categoryIndex] : null;
   const title = category ? (categoryTitles[category] || category.toUpperCase()) : "OVERVIEW";
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId(`menu:${token}:previous`)
-      .setLabel("◀ Previous")
-      .setStyle(ButtonStyle.Secondary)
-      .setDisabled(categoryIndex <= -1),
-    new ButtonBuilder()
-      .setCustomId(`menu:${token}:next`)
-      .setLabel("Next ▶")
-      .setStyle(ButtonStyle.Primary)
-      .setDisabled(categoryIndex === categories.length - 1),
-  );
-
-  const overview = [
-    `**Prefix:** \`${runtime.prefix}\``,
-    `**Commands:** ${categorySummaries.reduce((total, item) => total + item.count, 0)}`,
-    "",
-    "Choose a category below, or use the buttons to browse the full command guide.",
-  ].join("\n");
   const footerLabel = categoryIndex < 0
     ? `Overview • ${categories.length} categories`
     : `Category ${categoryIndex + 1}/${categories.length} • ${title}`;
+  const pageDescription = categoryIndex < 0
+    ? "Use **Browse categories** below to choose a command group."
+    : categoryTexts.get(category)?.[0] || "No commands are available in this category.";
+  const totalCommands = categorySummaries.reduce((total, item) => total + item.count, 0);
   const embed = new EmbedBuilder()
-    .setColor("#9B87F5")
+    .setColor("#0099ff")
     .setTitle(`Hello ${mention}, I'm ${runtime.botName}`)
-    .setDescription(categoryIndex < 0 ? overview : categoryTexts.get(category)?.[0] || "No commands are available in this category.")
+    .setDescription(pageDescription)
+    .setImage(runtime.botImage)
+    .addFields(
+      { name: "Prefix", value: `\`${runtime.prefix}\``, inline: true },
+      { name: "Commands", value: String(totalCommands), inline: true },
+    )
     .setFooter({
       text: `${footerLabel} • Use the buttons to switch categories`,
     });
   if (categoryIndex < 0) {
     embed.addFields(categorySummaries.map((item) => ({
       name: `${item.emoji} ${item.title}`,
-      value: `${item.count} command${item.count === 1 ? "" : "s"}`,
+      value: item.preview || `${item.count} command${item.count === 1 ? "" : "s"}`,
       inline: true,
     })).slice(0, 25));
   }
   if (userAvatar) embed.setThumbnail(userAvatar);
-  if (runtime.botImage) embed.setImage(runtime.botImage);
   const embeds = [embed];
   if (categoryIndex >= 0) {
     for (const chunk of (categoryTexts.get(category) || []).slice(1, 10)) {
-      embeds.push(new EmbedBuilder().setColor("#9B87F5").setDescription(chunk));
+      embeds.push(new EmbedBuilder().setColor("#0099ff").setDescription(chunk));
     }
   }
-  return { embeds, components: [row] };
+  const components = session.view === "categories"
+    ? menuCategoryComponents(token, categories)
+    : categoryIndex >= 0
+      ? menuNavigationComponents(token, session)
+      : menuOverviewComponents(token);
+  return {
+    content: mention,
+    allowedMentions: { users: [session.userId] },
+    embeds,
+    components,
+  };
 }
 
 export default {
@@ -251,7 +310,17 @@ export default {
         const categoryPlugins = [...map.get(cat)].sort((a, b) => a.name.localeCompare(b.name));
         const categoryText = renderDiscordCategory(emoji, title, disabledTag, categoryPlugins, menuPrefix);
         categoryTexts.set(cat, chunkForDiscord(categoryText, 3800));
-        categorySummaries.push({ emoji, title, count: categoryPlugins.length });
+        const commandPreview = categoryPlugins
+          .map((plugin) => `\`${menuPrefix}${plugin.name}\``)
+          .join("  ");
+        categorySummaries.push({
+          emoji,
+          title,
+          count: categoryPlugins.length,
+          preview: commandPreview.length > 1024
+            ? `${commandPreview.slice(0, 1010)}…`
+            : commandPreview,
+        });
       }
 
       const categories = [...categoryTexts.keys()];
@@ -261,6 +330,7 @@ export default {
         categoryTexts,
         categorySummaries,
         categoryIndex: requestedCategory ? Math.max(0, categories.indexOf(requestedCategory)) : -1,
+        view: requestedCategory ? "category" : "overview",
         runtime,
         mention,
         userAvatar: discord.message.author.displayAvatarURL?.({
@@ -298,6 +368,7 @@ export default {
 
     if (parts[2] === "previous" || parts[2] === "next") {
       const direction = parts[2] === "next" ? 1 : -1;
+      session.view = "category";
       session.categoryIndex = Math.max(
         -1,
         Math.min(
@@ -305,6 +376,29 @@ export default {
           session.categoryIndex + direction,
         ),
       );
+      return interaction.update(discordMenuPayload(parts[1], session));
+    }
+
+    if (parts[2] === "browse") {
+      session.view = "categories";
+      session.categoryIndex = -1;
+      return interaction.update(discordMenuPayload(parts[1], session));
+    }
+
+    if (parts[2] === "back") {
+      session.view = "overview";
+      session.categoryIndex = -1;
+      return interaction.update(discordMenuPayload(parts[1], session));
+    }
+
+    if (parts[2] === "category") {
+      const category = normalizeCategory(parts.slice(3).join(":"));
+      const categoryIndex = session.categories.indexOf(category);
+      if (categoryIndex < 0) {
+        return interaction.reply({ content: "❌ That category is no longer available.", ephemeral: true });
+      }
+      session.view = "category";
+      session.categoryIndex = categoryIndex;
       return interaction.update(discordMenuPayload(parts[1], session));
     }
   },

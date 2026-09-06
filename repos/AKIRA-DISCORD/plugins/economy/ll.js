@@ -16,6 +16,7 @@ import {
   REQUIRED_LOTTERY_ENTRIES,
 } from "../../lib/lotteryDraw.mjs";
 import { generateWAMessageFromContent, proto } from "@whiskeysockets/baileys";
+import { EmbedBuilder } from "discord.js";
 
 const REQUIRED = REQUIRED_LOTTERY_ENTRIES;
 
@@ -36,7 +37,10 @@ export default {
 
   async run({ sock, msg, sender, rawSender, args, isOwner, discord }) {
     const jid   = msg.key.remoteJid;
-    const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
+    const reply = (text) => {
+      const safeText = String(text || "").trim() || "❌ No lottery information is available right now.";
+      return sock.sendMessage(jid, { text: safeText }, { quoted: msg });
+    };
     const sub   = (args[0] || "").toLowerCase();
     const guildId = discord?.message?.guildId || msg.guildId || null;
 
@@ -134,19 +138,23 @@ export default {
           getDiscordParticipantId(discord, rawSender),
         )?.count ?? 0;
         if (discord) {
-          return sock.sendMessage(jid, {
-            discordEmbed: {
-              title: "🎟️ Lottery",
-              description: "Buy tickets with `.lottery buy <n>` and win one of three prizes.",
-              color: "#FFD166",
-              fields: [
-                { name: "Jackpot", value: `$${jackpot.toLocaleString()}`, inline: true },
-                { name: "Entries", value: `${totalEntries} / ${REQUIRED}`, inline: true },
-                { name: "Your tickets", value: String(myCount), inline: true },
-                { name: "Prizes", value: "$200,000 • $120,000 • $70,000" },
-              ],
-            },
-          }, { quoted: msg });
+          return discord.message.reply({
+            embeds: [
+              new EmbedBuilder()
+                .setColor("#FFD166")
+                .setTitle("🎟️ Lottery")
+                .setDescription("Buy a ticket with `.lottery` or use `.lottery buy <n>`.")
+                .addFields(
+                  { name: "Jackpot", value: `$${jackpot.toLocaleString()}`, inline: true },
+                  { name: "Entries", value: `${totalEntries} / ${REQUIRED}`, inline: true },
+                  { name: "Your tickets", value: String(myCount), inline: true },
+                  { name: "Prizes", value: "$200,000 • $120,000 • $70,000" },
+                ),
+            ],
+          }).catch(() => reply(
+            `🎟️ Lottery: $${jackpot.toLocaleString()} jackpot, ${totalEntries}/${REQUIRED} entries, ` +
+            `${myCount} of your tickets. Use .lottery to buy one ticket.`,
+          ));
         }
         await reply(
 `╭━━━〔 🎰 𝑳𝑶𝑻𝑻𝑬𝑹𝒀 𝑺𝑻𝑨𝑻𝑼𝑺 〕━━━╮

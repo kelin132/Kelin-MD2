@@ -1,5 +1,6 @@
 /**
- * .lottery buy [tickets]  — buy lottery tickets ($500 each, max 10 per person)
+ * .lottery              — buy one lottery ticket ($500; max 10 per person)
+ * .lottery buy [tickets] — buy lottery tickets ($500 each, max 10 per person)
  * .lottery draw           — owner-only: draw the winning ticket
  * .lottery info           — show jackpot + your tickets
  */
@@ -45,7 +46,7 @@ export default {
   category: "economy",
   cooldown: 6,
   description: "Buy lottery tickets or draw the jackpot",
-  usage: ".lottery buy [amount]  |  .lottery draw  |  .lottery info",
+   usage: ".lottery  |  .lottery buy [amount]  |  .lottery draw  |  .lottery info",
   discordColor: "#F1C40F",
   discordTitle: "🎰 Lottery",
 
@@ -54,7 +55,7 @@ export default {
 
     const jid  = msg.key.remoteJid;
     const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
-    const sub  = (args[0] || "info").toLowerCase();
+    const sub  = (args[0] || "buy").toLowerCase();
 
     // ── INFO ───────────────────────────────────────────────────────────────────
     if (sub === "info") {
@@ -87,8 +88,13 @@ export default {
 
     // ── BUY ────────────────────────────────────────────────────────────────────
     if (sub === "buy") {
-      const count = Math.max(1, parseInt(args[1]) || 1);
-      if (isNaN(count) || count < 1) return reply("❌ Usage: .lottery buy <amount>");
+      const requestedCount = args[0]
+        ? Number.parseInt(args[1], 10)
+        : 1;
+      if (!Number.isInteger(requestedCount) || requestedCount < 1) {
+        return reply("❌ Usage: .lottery buy <amount>");
+      }
+      const count = requestedCount;
 
       const lot     = await getLottery();
       const userId  = sender.startsWith("discord:")
@@ -238,7 +244,7 @@ export default {
 
     return reply(
 `╭━━━〔 ℹ️ 𝑼𝑺𝑨𝑮𝑬 〕━━━╮
-┃ .lottery info        — jackpot info
+ ┃ .lottery             — buy one ticket
 ┃ .lottery buy <n>     — buy tickets
 ┃ .lottery draw        — draw winner
 ┃ .lotterylist         — all players

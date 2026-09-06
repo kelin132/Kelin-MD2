@@ -1,4 +1,4 @@
-import { Readable } from "node:stream";
+import { spawn } from "node:child_process";
 
 let voiceModulePromise;
 const activePlayers = new Map();
@@ -34,6 +34,7 @@ export async function playDiscordVoice({ client, message, audioBuffer, title }) 
   } = await getVoiceModule();
 
   const existing = activePlayers.get(message.guildId);
+  existing?.ffmpeg?.kill("SIGKILL");
   existing?.connection?.destroy();
 
   const connection = joinVoiceChannel({
@@ -50,22 +51,62 @@ export async function playDiscordVoice({ client, message, audioBuffer, title }) 
     throw new Error(`Voice connection did not become ready: ${error.message}`);
   }
 
+  const ffmpeg = spawn(process.env.FFMPEG_PATH || "ffmpeg", [
+    "-hide_banner",
+    "-loglevel",
+    "error",
+    "-i",
+    "pipe:0",
+    "-vn",
+    "-ac",
+    "2",
+    "-ar",
+    "48000",
+    "-c:a",
+    "libopus",
+    "-b:a",
+    "128k",
+    "-f",
+    "ogg",
+    "pipe:1",
+  ], { stdio: ["pipe", "pipe", "pipe"] });
+
+  const cleanup = () => {
+    if (!ffmpeg.killed) ffmpeg.kill("SIGKILL");
+    connection.destroy();
+    if (activePlayers.get(message.guildId)?.connection === connection) {
+      activePlayers.delete(message.guildId);
+    }
+  };
+  let ffmpegError = "";
+  ffmpeg.stderr.on("data", (chunk) => {
+    ffmpegError += String(chunk);
+  });
+  ffmpeg.once("error", (error) => {
+    console.error("[discord voice] ffmpeg error:", error.message);
+    cleanup();
+  });
+  ffmpeg.once("close", (code) => {
+    if (code && code !== 0 && !ffmpeg.killed) {
+      console.error("[discord voice] ffmpeg exited:", code, ffmpegError.trim());
+    }
+  });
+  ffmpeg.stdin.end(audioBuffer);
+
   const player = createAudioPlayer({
     behaviors: { noSubscriber: NoSubscriberBehavior.Play },
   });
-  const resource = createAudioResource(Readable.from(audioBuffer), {
-    inputType: StreamType.Arbitrary,
+  const resource = createAudioResource(ffmpeg.stdout, {
+    inputType: StreamType.OggOpus,
     metadata: { title },
   });
 
   player.on("error", (error) => {
     console.error("[discord voice] audio player error:", error.message);
-    connection.destroy();
-    activePlayers.delete(message.guildId);
+    cleanup();
   });
   player.once(AudioPlayerStatus.Idle, () => {
-    connection.destroy();
-    activePlayers.delete(message.guildId);
+    cleanup();
   });
 
   connection.subscribe(player);
