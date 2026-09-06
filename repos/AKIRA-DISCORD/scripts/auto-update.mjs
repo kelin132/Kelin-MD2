@@ -100,7 +100,7 @@ async function githubRequest(url) {
 }
 
 async function updateWithoutGit() {
-  const branch = UPDATE_BRANCH || "master";
+  const branch = UPDATE_BRANCH || "main";
   const apiUrl = `https://api.github.com/repos/${UPDATE_REPOSITORY}/commits/${encodeURIComponent(branch)}`;
   const commitResponse = await githubRequest(apiUrl);
   const commit = await commitResponse.json();

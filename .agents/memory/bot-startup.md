@@ -7,4 +7,4 @@ Treat any non-documentation entry inside `.bots/` as an intentional multi-bot co
 
 **Why:** A malformed `.bots/<id>/config.json` previously produced zero definitions, and a configured `BOT_NUMBER` caused the launcher to fall back to single-bot startup. The panel then appeared slow while loading the wrong account.
 
-**How to apply:** When diagnosing startup, check for a `[bots] Found ...` message before investigating MongoDB or plugin load time. Validate each bot config as strict JSON and ensure its sessionFolder points to the actual credential directory.
+**How to apply:** When diagnosing startup, check for a `[bots] Found ...` message before investigating MongoDB or plugin load time. Validate each bot config as strict JSON and ensure its sessionFolder points to the actual credential directory. For standalone deployments without `.git`, verify the archive updater's default branch separately from the Git updater; both must target the repository's current default branch.
