@@ -11,7 +11,6 @@ export default {
   name: "daily",
   description: "Claim your daily reward (24-hour cooldown)",
   category: "economy",
-  cooldown: 6,
   usage: ".daily",
   aliases: ["dailyclaim"],
 
@@ -24,7 +23,7 @@ export default {
     const jid      = msg.key.remoteJid;
 
     // Default values if streak isn't yet set on user
-    const streak = user.streak || 1; 
+    const streak = user.streak || 1;
     const streakBonus = 300;
 
     if (now - (user.lastDaily || 0) < cooldown) {
@@ -40,7 +39,7 @@ export default {
 
     const reward   = 50000 + Math.floor(Math.random() * 50000);
     const xpBonus  = 200;
-    
+
     user.money    += (reward + streakBonus);
     user.lastDaily = now;
     user.xp        = (user.xp || 0) + xpBonus;
