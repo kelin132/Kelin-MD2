@@ -72,7 +72,7 @@ AKIRA-DISCORD uses a namespaced identity system to coexist with Kelin-MD2 in the
 - **Discord Users**: Identified by a namespaced key (e.g., `discord:1234567890`).
 
 To connect an individual user's accounts:
-1. On WhatsApp, send `.discordlink`.
+1. On WhatsApp, send `.discord`.
 2. On Discord, send `.connect CODE` using the one-time code WhatsApp returns.
 3. Use `.connect status` to check the connection or `.connect remove` to disconnect it.
 

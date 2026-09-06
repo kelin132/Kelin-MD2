@@ -14,7 +14,7 @@ export default {
   category: "pokemon",
   usage: ".pc [page]",
 
-  async run({ sock, msg, sender, args }) {
+  async run({ sock, msg, sender, args, discord }) {
     const jid = msg.key.remoteJid;
 
     const trainer = await getTrainer(sender);
@@ -51,9 +51,23 @@ export default {
         return `\`${idx}.\` ${typeIcon} *${name}${shiny}* — Lv.\`${p.level}\``;
       }).join("\n");
 
-      await sock.sendMessage(jid, {
-        image: imageBuffer,
-        caption:
+       if (discord?.message) {
+         return sock.sendMessage(jid, {
+           image: imageBuffer,
+           fileName: "pc-storage.png",
+           discordEmbed: {
+             title: `📦 PC Storage · Page ${currentPage}/${totalPages}`,
+             description: `${pcPokemon.length} Pokémon stored\n\n${nameList.replace(/\*/g, "")}`,
+             color: "#31C8FF",
+             fields: [{ name: "Move Pokémon", value: "`.t2party <name or #>` to move a Pokémon to your party." }],
+             image: "attachment",
+           },
+         }, { quoted: msg });
+       }
+
+       await sock.sendMessage(jid, {
+         image: imageBuffer,
+         caption:
 `📦 *PC STORAGE*
 Page \`${currentPage}/${totalPages}\` • \`${pcPokemon.length}\` Pokémon
 

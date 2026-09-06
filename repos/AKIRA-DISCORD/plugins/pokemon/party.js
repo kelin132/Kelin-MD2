@@ -27,7 +27,7 @@ export default {
   category: "pokemon",
   usage: ".party  or  .party <slot>",
 
-  async run({ sock, msg, sender, args }) {
+  async run({ sock, msg, sender, args, discord }) {
     const jid = msg.key.remoteJid;
 
     const trainer = await getTrainer(sender);
@@ -127,11 +127,35 @@ ${moveLines || "  No moves learned yet"}
         pokedexId: p.pokedexId || p.id,
         imageUrl: p.imageUrl,
       });
-      return sock.sendMessage(
-        jid,
-        imageMessage ? { ...imageMessage, caption: text } : { text },
-        { quoted: msg },
-      );
+       if (discord?.message) {
+         const image = imageMessage?.image;
+         return sock.sendMessage(jid, image
+           ? {
+               image,
+               fileName: "party-pokemon.png",
+               discordEmbed: {
+                 title: `${typeEmoji} ${p.displayName || p.name} · Slot ${slotArg}`,
+                 description: `${statusText} • Level ${p.level}\n${allTypes}`,
+                 color: "#31C8FF",
+                 fields: [
+                   { name: "HP", value: `${Math.max(0, p.hp)}/${p.maxHp}`, inline: true },
+                   { name: "Attack", value: String(p.attack), inline: true },
+                   { name: "Defense", value: String(p.defense), inline: true },
+                   { name: "Speed", value: String(p.speed), inline: true },
+                   { name: "XP", value: xpText, inline: true },
+                   { name: "Moves", value: (p.moves || []).map((m) => m.name).join(", ") || "None" },
+                 ],
+                 image: "attachment",
+               },
+             }
+           : { discordEmbed: { title: `${typeEmoji} ${p.displayName || p.name}`, description: text, color: "#31C8FF" } },
+           { quoted: msg });
+       }
+       return sock.sendMessage(
+         jid,
+         imageMessage ? { ...imageMessage, caption: text } : { text },
+         { quoted: msg },
+       );
     }
 
     // ── Full party canvas view ─────────────────────────────────────────────
@@ -171,6 +195,25 @@ ${slots.join("\n")}
 ✦ \`.swap <slot1> <slot2>\` — 𝗥𝗲𝗼𝗿𝗱𝗲𝗿
 ✦ \`.t2pc <name>\` — 𝗠𝗼𝘃𝗲 𝘁𝗼 𝗣𝗖
 ✦ \`.t2party <name>\` — 𝗕𝗿𝗶𝗻𝗴 𝗳𝗿𝗼𝗺 𝗣𝗖`;
+
+    if (discord?.message) {
+      return sock.sendMessage(jid, buf
+        ? {
+            image: buf,
+            fileName: "party.png",
+            discordEmbed: {
+              title: `⚔️ Party · ${party.length}/6`,
+              description: slots.join("\n\n").replace(/\*/g, ""),
+              color: "#31C8FF",
+              fields: [
+                { name: "Commands", value: "`.party <slot>` for details\n`.swap <slot1> <slot2>` to reorder\n`.t2pc <name>` to move to PC" },
+              ],
+              image: "attachment",
+            },
+          }
+        : { discordEmbed: { title: `⚔️ Party · ${party.length}/6`, description: caption.replace(/\*/g, ""), color: "#31C8FF" } },
+        { quoted: msg });
+    }
 
     if (buf) {
       await sock.sendMessage(jid, { image: buf, caption }, { quoted: msg });

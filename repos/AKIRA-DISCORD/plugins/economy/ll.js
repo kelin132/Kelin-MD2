@@ -133,6 +133,21 @@ export default {
           lotteryUserId(sender),
           getDiscordParticipantId(discord, rawSender),
         )?.count ?? 0;
+        if (discord) {
+          return sock.sendMessage(jid, {
+            discordEmbed: {
+              title: "🎟️ Lottery",
+              description: "Buy tickets with `.lottery buy <n>` and win one of three prizes.",
+              color: "#FFD166",
+              fields: [
+                { name: "Jackpot", value: `$${jackpot.toLocaleString()}`, inline: true },
+                { name: "Entries", value: `${totalEntries} / ${REQUIRED}`, inline: true },
+                { name: "Your tickets", value: String(myCount), inline: true },
+                { name: "Prizes", value: "$200,000 • $120,000 • $70,000" },
+              ],
+            },
+          }, { quoted: msg });
+        }
         await reply(
 `╭━━━〔 🎰 𝑳𝑶𝑻𝑻𝑬𝑹𝒀 𝑺𝑻𝑨𝑻𝑼𝑺 〕━━━╮
 ┃ 💰 Jackpot     › $${jackpot.toLocaleString()}

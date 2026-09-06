@@ -217,7 +217,7 @@ export default {
         : null;
       const result = await drawLottery({
         db: getDb(),
-        minimumEntries: 1,
+        minimumEntries: REQUIRED_LOTTERY_ENTRIES,
         guildId,
         announcementChannelId,
         discord,

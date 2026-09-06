@@ -7,6 +7,7 @@ import yts from "yt-search";
 import { get, davidGet } from "../../lib/gifted.js";
 import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
 import { princeMedia, PRINCE_ENDPOINTS } from "../../lib/princeTech.mjs";
+import { playDiscordVoice } from "../../lib/discordVoice.mjs";
 
 // ── YouTube search ────────────────────────────────────────────────────────────
 
@@ -171,7 +172,7 @@ export default {
   aliases: ["song", "music", "mp3", "ytmp3"],
   cooldown: 15,
 
-  async run({ sock, msg, text }) {
+  async run({ sock, msg, text, discord }) {
     const jid = msg.key.remoteJid;
 
     if (!text) {
@@ -188,6 +189,28 @@ export default {
       const trackTitle = title || meta.title;
       const file = buffer ? { buffer, mimetype: returnedMimetype || "audio/mpeg" } : await downloadMediaBuffer(dl);
       const mimetype = file.mimetype.startsWith("audio/") ? file.mimetype : "audio/mpeg";
+
+      if (discord?.message) {
+        const voiceResult = await playDiscordVoice({
+          client: discord.client,
+          message: discord.message,
+          audioBuffer: file.buffer,
+          title: trackTitle,
+        });
+
+        if (!voiceResult.ok) {
+          const message = voiceResult.reason === "not-in-voice"
+            ? "🔊 Join a voice channel first, then run `.play` again."
+            : voiceResult.reason === "missing-permissions"
+              ? "❌ I need **Connect** and **Speak** permissions in your voice channel."
+              : "❌ I could not connect to that voice channel.";
+          return sock.sendMessage(jid, { text: message }, { quoted: msg });
+        }
+
+        return sock.sendMessage(jid, {
+          text: `🎵 Now playing **${trackTitle}** in <#${voiceResult.channel.id}>`,
+        }, { quoted: msg });
+      }
 
       await sock.sendMessage(jid, {
         audio: file.buffer,

@@ -1,6 +1,7 @@
 import { addHistory } from "../plugins/economy/database.js";
 
 export const REQUIRED_LOTTERY_ENTRIES = 7;
+export const LOTTERY_PRIZES = [200_000, 120_000, 70_000];
 
 function discordIdFrom(value) {
   const raw = String(value || "");
@@ -46,26 +47,27 @@ export async function resolveDiscordDisplayName(discord, ticket) {
   return String(user?.globalName || user?.username || "").trim();
 }
 
-function weightedWinners(tickets, count = 3) {
+function weightedWinners(tickets, count = LOTTERY_PRIZES.length) {
   const candidates = tickets
-    .filter((ticket) => Number(ticket.count) > 0)
-    .map((ticket) => ({ ticket, weight: Number(ticket.count) }));
+    .filter((ticket) => Number(ticket.count) > 0);
+  const weighted = candidates.map((ticket) => ({ ticket, weight: Number(ticket.count) }));
   const winners = [];
 
-  while (candidates.length && winners.length < count) {
-    const totalWeight = candidates.reduce((sum, item) => sum + item.weight, 0);
+  while (weighted.length && winners.length < count) {
+    const totalWeight = weighted.reduce((sum, item) => sum + item.weight, 0);
     let roll = Math.random() * totalWeight;
-    let selectedIndex = candidates.length - 1;
+    let selectedIndex = weighted.length - 1;
 
-    for (let index = 0; index < candidates.length; index += 1) {
-      roll -= candidates[index].weight;
+    for (let index = 0; index < weighted.length; index += 1) {
+      roll -= weighted[index].weight;
       if (roll < 0) {
         selectedIndex = index;
         break;
       }
     }
 
-    winners.push(candidates.splice(selectedIndex, 1)[0].ticket);
+    const selected = weighted.splice(selectedIndex, 1)[0].ticket;
+    winners.push(selected);
   }
 
   return winners;
@@ -76,12 +78,6 @@ export function lotteryWinnerIdentity(ticket) {
   if (!identity) return "";
   if (identity.startsWith("discord:") || identity.includes("@")) return identity;
   return `${identity}@s.whatsapp.net`;
-}
-
-function prizeShares(prize, winnerCount) {
-  const base = Math.floor(prize / winnerCount);
-  const remainder = prize - (base * winnerCount);
-  return winners => base + (winners < remainder ? 1 : 0);
 }
 
 export async function drawLottery({
@@ -111,13 +107,11 @@ export async function drawLottery({
     }
   }
 
-  const prize = Number(lot.jackpot || 0);
-  const shareFor = prizeShares(prize, winners.length);
   const awarded = [];
 
   for (let index = 0; index < winners.length; index += 1) {
     const winner = winners[index];
-    const amount = shareFor(index);
+    const amount = LOTTERY_PRIZES[index];
     const identity = lotteryWinnerIdentity(winner);
     if (!identity) continue;
 
@@ -133,7 +127,7 @@ export async function drawLottery({
       identity,
       "lottery_win",
       amount,
-      `Won lottery prize $${amount.toLocaleString()} (${index + 1}/${winners.length})`,
+       `Won lottery prize $${amount.toLocaleString()} (${index + 1}/${LOTTERY_PRIZES.length})`,
     );
     awarded.push({ ...winner, amount });
   }
@@ -154,7 +148,7 @@ export async function drawLottery({
 
   const winnerLines = awarded.map((winner, index) => {
     const medal = ["🥇", "🥈", "🥉"][index] || "🏆";
-    return `┃ ${medal} ${lotteryDisplayName(winner)}`;
+    return `┃ ${medal} ${lotteryDisplayName(winner)} — $${winner.amount.toLocaleString()}`;
   });
   const mentions = awarded
     .map(lotteryTicketDiscordId)
@@ -163,7 +157,7 @@ export async function drawLottery({
 
   return {
     ok: true,
-    prize,
+    prize: LOTTERY_PRIZES.reduce((sum, amount) => sum + amount, 0),
     winners: awarded,
     mentions,
     guildId,
@@ -176,13 +170,25 @@ export async function drawLottery({
 ${winnerLines.join("\n")}
 ┃
 ┣━━━━━━━━━━━━━━━━━━━━
-┃ 💰 Jackpot split › $${prize.toLocaleString()}
+┃ 💰 Prizes paid   › $${LOTTERY_PRIZES.reduce((sum, amount) => sum + amount, 0).toLocaleString()}
 ┃ 🎫 Entries       › ${totalTickets}
 ┣━━━━━━━━━━━━━━━━━━━━
 ┃ 🎉 𝗖𝗢𝗡𝗚𝗥𝗔𝗧𝗨𝗟𝗔𝗧𝗜𝗢𝗡𝗦!
 ┃ A new lottery has started!
 ╰━━━━━━━━━━━━━━━━━━━━╯`,
       mentions,
+      discordEmbed: {
+        title: "🎟️ Lottery Results",
+        description: awarded
+          .map((winner) => {
+            const discordId = lotteryTicketDiscordId(winner);
+            const name = discordId ? `<@${discordId}>` : lotteryDisplayName(winner);
+            return `${name} — $${winner.amount.toLocaleString()}`;
+          })
+          .join("\n"),
+        color: "#FFD166",
+        footer: { text: "✦ AIDORU • AKIRA" },
+      },
     },
   };
 }

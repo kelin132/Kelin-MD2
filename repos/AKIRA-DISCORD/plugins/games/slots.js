@@ -26,7 +26,7 @@ export default {
   aliases: ["slot", "spin"],
   cooldown: 5,
 
-  async run({ sock, msg, sender, args }) {
+  async run({ sock, msg, sender, args, discord }) {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const user = await getUser(sender);
@@ -65,6 +65,27 @@ export default {
     else if (rawMulti > 1)   result = `✅ *YOU WIN!* (×${rawMulti})`;
     else if (rawMulti === 1.5) result = "✅ *Two of a kind! Partial payout!*";
     else                     result = "❌ *No match. Better luck next time!*";
+
+    if (discord?.message) {
+      const won = rawMulti > 0;
+      return sock.sendMessage(msg.key.remoteJid, {
+        discordEmbed: {
+          title: "🎰 Slot Machine",
+          description: `[ ${reels.join("  |  ")} ]\n\n${won
+            ? `🎉 You won $${win.toLocaleString()}!`
+            : "😢 You lost. Better luck next time!"}`,
+          color: won ? "#45D483" : "#FF5D73",
+          fields: [
+            { name: "Bet", value: `$${bet.toLocaleString()}`, inline: true },
+            { name: "Result", value: won
+              ? `${result}\nPayout: $${win.toLocaleString()}`
+              : "😢 You lost. Better luck next time!", inline: false },
+            { name: "Balance", value: `$${user.money.toLocaleString()}`, inline: true },
+          ],
+          footer: { text: "✦ AIDORU • AKIRA" },
+        },
+      }, { quoted: msg });
+    }
 
     await sock.sendMessage(msg.key.remoteJid, {
       text:
