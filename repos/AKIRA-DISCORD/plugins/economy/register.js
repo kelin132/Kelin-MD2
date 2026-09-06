@@ -1,4 +1,5 @@
 import { isRegistered, registerUser } from "./database.js";
+import { createAidoruOnboardingPayload } from "../../lib/discordOnboarding.mjs";
 
 function discordRegistrationEmbed({ name, alreadyRegistered = false }) {
   const identityLine = alreadyRegistered
@@ -59,6 +60,12 @@ export default {
   cooldown: 5,
 
   async run({ sock, msg, sender, text, discord }) {
+    if (discord?.message) {
+      return discord.message.reply(
+        createAidoruOnboardingPayload(discord.message.member || discord.message.author),
+      );
+    }
+
     const send = (payload) => sock.sendMessage(
       msg.key.remoteJid,
       discord?.message ? { discordEmbed: payload } : { text: payload.text },
