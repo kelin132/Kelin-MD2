@@ -9,4 +9,4 @@
 - [x] Port Downloader & Media commands (play, yt, ig, suno, fancy).
 - [x] Implement cross-platform permission and identity mapping for all commands.
 - [x] Verify command coverage with `npm run coverage:commands`.
-- [ ] Push the complete repository after the destination branch is explicitly selected.
+- [x] Push the complete repository to the selected AIDORU Discord repository.
