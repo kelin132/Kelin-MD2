@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "check": "node --check index.js && node --check lib/discord.mjs && node --check lib/pluginManager.mjs && node --check lib/permissions.mjs && node --check lib/identity.mjs",
-    "test": "node --test"
+    "test": "node --test",
+    "coverage:commands": "node scripts/verify-command-coverage.mjs"
   },
   "keywords": [],
   "author": "",

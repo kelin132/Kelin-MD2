@@ -15,7 +15,7 @@ import {
 } from "./discordTheme.mjs";
 
 const PLUGINS_DIR = path.resolve("plugins");
-const SUPPORT_FILE_RE = /^(?:_.*|database|db|parseAmount|balanceFormat|bettingLimits|walletMessage|autoSpawn|pokeautospawn|dbzautospawn|.*Handler)\.js$/i;
+export const SUPPORT_FILE_RE = /^(?:_.*|database|db|parseAmount|balanceFormat|bettingLimits|walletMessage|autoSpawn|pokeautospawn|dbzautospawn|.*Handler)\.js$/i;
 let plugins = [];
 let commands = [];
 const afkUsers = new Map();

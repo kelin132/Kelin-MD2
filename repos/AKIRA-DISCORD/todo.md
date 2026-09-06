@@ -8,4 +8,5 @@
 - [x] Port Utility & Database commands (ping, mods, setpokes, gcards).
 - [x] Port Downloader & Media commands (play, yt, ig, suno, fancy).
 - [x] Implement cross-platform permission and identity mapping for all commands.
-- [ ] Verify command coverage and push the complete repository.
+- [x] Verify command coverage with `npm run coverage:commands`.
+- [ ] Push the complete repository after the destination branch is explicitly selected.
