@@ -21,7 +21,7 @@ export default {
 `╭━━━〔 🎰 𝑳𝑶𝑻𝑻𝑬𝑹𝒀 〕━━━╮
 ┃ ✦ No tickets bought yet!
 ┃
-┃ 💡 Be the first — .lottery buy <n>
+┃ 💡 Be the first — .lottery
 ╰━━━━━━━━━━━━━━━━━━━━╯`
         );
       }
@@ -43,7 +43,7 @@ export default {
 ┣━━━━━━━━━━━━━━━━━━━━
 ${rows}
 ┣━━━━━━━━━━━━━━━━━━━━
-┃ 💡 .lottery buy <n> to join
+┃ 💡 .lottery to join
 ╰━━━━━━━━━━━━━━━━━━━━╯`
       );
     } catch (err) {

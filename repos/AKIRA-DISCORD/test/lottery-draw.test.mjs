@@ -1,9 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  LOTTERY_PRIZES,
   lotteryTicketDiscordId,
   lotteryWinnerIdentity,
 } from "../lib/lotteryDraw.mjs";
+
+test("uses million-level lottery prizes", () => {
+  assert.deepEqual(LOTTERY_PRIZES, [30_000_000, 20_000_000, 10_000_000]);
+});
 
 test("credits bare WhatsApp lottery identities using their full JID", () => {
   assert.equal(

@@ -1,8 +1,6 @@
 /**
- * .lottery              — buy one lottery ticket ($500; max 10 per person)
- * .lottery buy [tickets] — buy lottery tickets ($500 each, max 10 per person)
- * .lottery draw           — owner-only: draw the winning ticket
- * .lottery info           — show jackpot + your tickets
+ * .lottery       — buy one lottery ticket ($500; one ticket per player)
+ * .lottery draw — owner-only: draw the winning tickets
  */
 import { getUser, saveUser, requireRegistration, addHistory, getAllUsers } from "./database.js";
 import { getDb } from "../../lib/mongo.mjs";
@@ -16,7 +14,7 @@ import {
 } from "../../lib/lotteryDraw.mjs";
 
 const TICKET_PRICE  = 500;
-const MAX_TICKETS   = 10;
+const MAX_TICKETS   = 1;
 const MIN_JACKPOT   = 10_000_000;
 const MAX_JACKPOT   = 50_000_000;
 
@@ -45,8 +43,8 @@ export default {
   aliases: ["lotto"],
   category: "economy",
   cooldown: 6,
-  description: "Buy lottery tickets or draw the jackpot",
-   usage: ".lottery  |  .lottery buy [amount]  |  .lottery draw  |  .lottery info",
+  description: "Buy one lottery ticket or draw the jackpot",
+  usage: ".lottery  |  .lottery draw",
   discordColor: "#F1C40F",
   discordTitle: "🎰 Lottery",
 
@@ -55,46 +53,13 @@ export default {
 
     const jid  = msg.key.remoteJid;
     const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
-    const sub  = (args[0] || "buy").toLowerCase();
+    const sub = (args[0] || "ticket").toLowerCase();
 
-    // ── INFO ───────────────────────────────────────────────────────────────────
-    if (sub === "info") {
-      const lot      = await getLottery();
-      const discordId = getDiscordParticipantId(discord, rawSender);
-      const lotteryUserId = sender.startsWith("discord:")
-        ? sender
-        : sender.split("@")[0];
-      const currentTicket = findLotteryTicket(lot.tickets, lotteryUserId, discordId);
-      const myCount  = currentTicket?.count || 0;
-      const chance   = lot.totalTickets > 0 ? ((myCount / lot.totalTickets) * 100).toFixed(1) : "0.0";
-      return reply(
-`╭━━━〔 🎰 𝑳𝑶𝑻𝑻𝑬𝑹𝒀 𝑰𝑵𝑭𝑶 🎟️ 〕━━━╮
-┃ ✦ Try your luck — win big!
-┃
-┃ 💰 Jackpot      › $${lot.jackpot.toLocaleString()}
-┃ 🎫 Total Tickets › ${lot.totalTickets}
-┃ 🎟️  Your Tickets  › ${myCount}
-┃ 🎯 Your Chance  › ${chance}%
-┃
-┣━━━━━━━━━━━━━━━━━━━━
-┃ 🏷️  Price › $${TICKET_PRICE.toLocaleString()} per ticket
-┃ 🔒 Max   › ${MAX_TICKETS} tickets per player
-┣━━━━━━━━━━━━━━━━━━━━
-┃ 💡 .lottery buy <n>  — buy tickets
-┃ 💡 .lotterylist      — see all players
-╰━━━━━━━━━━━━━━━━━━━━╯`
-      );
-    }
-
-    // ── BUY ────────────────────────────────────────────────────────────────────
-    if (sub === "buy") {
-      const requestedCount = args[0]
-        ? Number.parseInt(args[1], 10)
-        : 1;
-      if (!Number.isInteger(requestedCount) || requestedCount < 1) {
-        return reply("❌ Usage: .lottery buy <amount>");
+    if (sub === "ticket") {
+      if (args.length > 0) {
+        return reply("❌ Use `.lottery` to buy your one ticket. `.lottery draw` is owner-only.");
       }
-      const count = requestedCount;
+      const count = 1;
 
       const lot     = await getLottery();
       const userId  = sender.startsWith("discord:")
@@ -109,7 +74,7 @@ export default {
 `╭━━━〔 🔒 𝑴𝑨𝑿 𝑻𝑰𝑪𝑲𝑬𝑻𝑺 〕━━━╮
 ┃ ✦ You already hold the maximum tickets!
 ┃
-┃ 🎟️ Your Tickets › ${myCount} / ${MAX_TICKETS}
+┃ 🎟️ Your Ticket › already purchased
 ┃
 ┃ 💡 Use .lotterylist to see the draw.
 ╰━━━━━━━━━━━━━━━━━━━━╯`
@@ -169,8 +134,7 @@ export default {
 `╭━━━〔 🎟️ 𝑻𝑰𝑪𝑲𝑬𝑻𝑺 𝑩𝑶𝑼𝑮𝑯𝑻 ✨ 〕━━━╮
 ┃ ✦ You're in the draw!
 ┃
-┃ 🎫 Bought   › ${canBuy} ticket(s)
-┃ 🎟️  Total   › ${newTotal} / ${MAX_TICKETS}
+┃ 🎫 Ticket   › purchased
 ┃ 🎯 Chance  › ${chance}%
 ┃
 ┣━━━━━━━━━━━━━━━━━━━━
@@ -244,10 +208,9 @@ export default {
 
     return reply(
 `╭━━━〔 ℹ️ 𝑼𝑺𝑨𝑮𝑬 〕━━━╮
- ┃ .lottery             — buy one ticket
-┃ .lottery buy <n>     — buy tickets
-┃ .lottery draw        — draw winner
-┃ .lotterylist         — all players
+┃ .lottery       — buy one ticket
+┃ .lottery draw — draw winners (owner)
+┃ .lotterylist   — see all players
 ╰━━━━━━━━━━━━━━━━━━━━╯`
     );
   },

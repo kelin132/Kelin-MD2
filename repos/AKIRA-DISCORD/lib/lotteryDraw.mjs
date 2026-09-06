@@ -1,7 +1,7 @@
 import { addHistory } from "../plugins/economy/database.js";
 
 export const REQUIRED_LOTTERY_ENTRIES = 7;
-export const LOTTERY_PRIZES = [200_000, 120_000, 70_000];
+export const LOTTERY_PRIZES = [30_000_000, 20_000_000, 10_000_000];
 
 function discordIdFrom(value) {
   const raw = String(value || "");

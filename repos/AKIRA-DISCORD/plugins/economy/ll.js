@@ -13,6 +13,7 @@ import {
   drawLottery,
   findLotteryTicket,
   getDiscordParticipantId,
+  LOTTERY_PRIZES,
   REQUIRED_LOTTERY_ENTRIES,
 } from "../../lib/lotteryDraw.mjs";
 import { generateWAMessageFromContent, proto } from "@whiskeysockets/baileys";
@@ -143,12 +144,15 @@ export default {
               new EmbedBuilder()
                 .setColor("#FFD166")
                 .setTitle("🎟️ Lottery")
-                .setDescription("Buy a ticket with `.lottery` or use `.lottery buy <n>`.")
+                .setDescription("Buy your one ticket with `.lottery`.")
                 .addFields(
                   { name: "Jackpot", value: `$${jackpot.toLocaleString()}`, inline: true },
                   { name: "Entries", value: `${totalEntries} / ${REQUIRED}`, inline: true },
                   { name: "Your tickets", value: String(myCount), inline: true },
-                  { name: "Prizes", value: "$200,000 • $120,000 • $70,000" },
+                  {
+                    name: "Prizes",
+                    value: LOTTERY_PRIZES.map((amount) => `$${amount.toLocaleString()}`).join(" • "),
+                  },
                 ),
             ],
           }).catch(() => reply(
@@ -162,7 +166,7 @@ export default {
 ┃ 🎫 Entries     › ${totalEntries} / ${REQUIRED} required
 ┃ 🎟️  Your tickets › ${myCount}
 ┣━━━━━━━━━━━━━━━━━━━━
-┃ 💡 .lottery buy <n> to join
+┃ 💡 .lottery to buy one ticket
 ┃ 💡 .lottery draw — draw winner (owner)
 ╰━━━━━━━━━━━━━━━━━━━━╯`
         );
