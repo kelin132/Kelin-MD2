@@ -1,5 +1,4 @@
 import {
-  buildCardSpawnCaption,
   createSpawnId,
   pickRandomCard,
   resolveMediaUrl,
@@ -10,6 +9,7 @@ import { getMovesForType, randomWildLevel } from "./pokemon/gameLogic.mjs";
 import { getRepel } from "./pokemon/itemState.mjs";
 import { getWild, setWild } from "./pokemon/wildState.mjs";
 import { getDb } from "./mongo.mjs";
+import { findSpawnRole } from "./discordSpawnRoles.mjs";
 
 const CARD_MIN_MS = 20 * 60 * 1000;
 const CARD_MAX_MS = 25 * 60 * 1000;
@@ -52,16 +52,40 @@ function discordFile(media, name) {
   return null;
 }
 
-async function sendDiscordCard(channel, card, caption) {
-  if (!card.media) return channel.send({ content: caption });
-  const url = await resolveMediaUrl(card.media);
-  const extension = card.mediaType === "gif" || card.tierNum === "6" || card.tierNum === "S"
-    ? "gif"
-    : "jpg";
-  return channel.send({
-    content: caption,
-    files: [{ attachment: url, name: `card.${extension}` }],
-  });
+async function sendDiscordCard(channel, card, spawnId) {
+  const role = findSpawnRole(channel.guild, "card");
+  const roleMention = role ? `<@&${role.id}>` : "";
+  const embed = {
+    title: "🃏 𝐂𝐀𝐑𝐃 𝐒𝐏𝐀𝐖𝐍",
+    description: "A new collectible card has appeared in AIDORU!",
+    color: "#31C8FF",
+    fields: [
+      { name: "🃏 Name", value: String(card.name || "Unknown"), inline: false },
+      { name: "⭐ Tier", value: String(card.tier || "Common"), inline: true },
+      { name: "📺 Series", value: String(card.series || "Unknown"), inline: true },
+      { name: "🆔 Card ID", value: `\`${card.cardId}\``, inline: true },
+      { name: "🔹 Spawn ID", value: `\`${spawnId}\``, inline: true },
+    ],
+    footer: {
+      text: `Use ${PREFIX}claim ${card.cardId} • First come, first served`,
+    },
+  };
+  const payload = { embeds: [embed] };
+  if (roleMention) {
+    payload.content = roleMention;
+    payload.allowedMentions = { roles: [role.id] };
+  }
+
+  if (card.media) {
+    const url = await resolveMediaUrl(card.media);
+    const extension = card.mediaType === "gif" || card.tierNum === "6" || card.tierNum === "S"
+      ? "gif"
+      : "jpg";
+    embed.image = { url: `attachment://card.${extension}` };
+    payload.files = [{ attachment: url, name: `card.${extension}` }];
+  }
+
+  return channel.send(payload);
 }
 
 async function spawnCard(channel) {
@@ -72,10 +96,9 @@ async function spawnCard(channel) {
   if (!card) return;
   const spawnId = createSpawnId();
   spawns[channel.id] = { cardId: card.cardId, spawnId, card };
-  const caption = buildCardSpawnCaption(card, spawnId, PREFIX);
 
   try {
-    await sendDiscordCard(channel, card, caption);
+    await sendDiscordCard(channel, card, spawnId);
     setTimeout(() => {
       if (spawns[channel.id]?.spawnId !== spawnId) return;
       delete spawns[channel.id];
@@ -129,25 +152,41 @@ async function spawnPokemon(channel) {
   });
 
   const typeText = apiData.types.map((type) => `${TYPE_EMOJIS[type] || ""}${type}`).join(" / ");
-  const caption = [
-    "🌿 **A WILD POKÉMON APPEARED!**",
-    "",
-    `🐾 Name: **${wildPokemon.displayName}**`,
-    `🏷️ Type: ${typeText}`,
-    `📊 Level: ${level}`,
-    `❤️ HP: ${maxHp}/${maxHp}`,
-    "",
-    `Use **${PREFIX}catch** to battle this Pokémon!`,
-    "⏰ It will flee in 30 minutes.",
-  ].join("\n");
+  const role = findSpawnRole(channel.guild, "pokemon");
+  const roleMention = role ? `<@&${role.id}>` : "";
+  const embed = {
+    title: "🌿 𝐖𝐈𝐋𝐃 𝐏𝐎𝐊É𝐌𝐎𝐍 𝐀𝐏𝐏𝐄𝐀𝐑𝐄𝐃",
+    description: "A wild Pokémon appeared in AIDORU!",
+    color: "#FF4FA3",
+    fields: [
+      { name: "🐾 Name", value: String(wildPokemon.displayName), inline: false },
+      { name: "🏷️ Type", value: typeText || "Unknown", inline: true },
+      { name: "📊 Level", value: String(level), inline: true },
+      { name: "❤️ HP", value: `${maxHp}/${maxHp}`, inline: true },
+    ],
+    footer: {
+      text: `Use ${PREFIX}catch to battle • Flees in 30 minutes`,
+    },
+  };
+  const payload = { embeds: [embed] };
+  if (roleMention) {
+    payload.content = roleMention;
+    payload.allowedMentions = { roles: [role.id] };
+  }
 
   try {
     const media = await getImageMessage(apiData);
     const file = discordFile(media?.image, "pokemon.png");
-    await channel.send(file ? { content: caption, files: [file] } : { content: caption });
+    if (file) {
+      embed.image = { url: "attachment://pokemon.png" };
+      payload.files = [file];
+    }
+    await channel.send(payload);
   } catch (error) {
     console.error(`[discord pokespawn] Failed in ${channel.id}:`, error.message);
-    channel.send({ content: caption }).catch(() => {});
+    delete embed.image;
+    delete payload.files;
+    channel.send(payload).catch(() => {});
   }
 }
 
