@@ -16,10 +16,11 @@ export default {
   isPremium : true,
   hidden: true,
 
-  async run({ sock, msg, sender, args }) {
+  async run({ sock, msg, sender, args, discord }) {
     const jid = msg.key.remoteJid;
+    const stateKey = msg.discordChannelId || jid;
 
-    if (getRepel(jid)) {
+    if (getRepel(stateKey)) {
       return sock.sendMessage(jid, {
         text: "🌿 A Repel is active in this group, so a wild Pokémon cannot be spawned yet.",
       }, { quoted: msg });
@@ -58,7 +59,7 @@ export default {
       moves: getMovesForType(apiData.primaryType, apiData.types, level),
     };
 
-    setWild(jid, wildPoke, sender);
+    setWild(stateKey, wildPoke, sender);
 
     const typeEmojis = { fire:"🔥",water:"💧",grass:"🍃",electric:"⚡",psychic:"🔮",
       normal:"⭐",flying:"🌤️",bug:"🐛",poison:"☠️",rock:"🪨",ground:"🌍",
@@ -75,6 +76,35 @@ export default {
 
 Use *.catch* to battle this Pokémon!
 ⏰ It will flee in 30 minutes.`;
+
+    if (discord?.message) {
+      const imgMsg = await getImageMessage(apiData);
+      const image = imgMsg?.image;
+      const imageUrl = image && typeof image === "object" && typeof image.url === "string"
+        ? image.url
+        : apiData.imageUrl;
+      return sock.sendMessage(jid, {
+        ...(image && !imageUrl ? { image, fileName: "pokemon.png" } : {}),
+        mentions: [sender],
+        discordEmbed: {
+          title: "✨ Special Pokémon Summoned",
+          description: "**A special wild Pokémon was summoned.**\nUse `.catch` to battle it.",
+          color: "#31C8FF",
+          fields: [
+            { name: "Pokémon", value: String(wildPoke.displayName), inline: false },
+            { name: "Type", value: typeStr || "Unknown", inline: true },
+            { name: "Level", value: String(level), inline: true },
+            { name: "HP", value: `${maxHp}/${maxHp}`, inline: true },
+          ],
+          ...(imageUrl
+            ? { image: imageUrl }
+            : image
+              ? { image: "attachment" }
+              : {}),
+          footer: { text: "✦ AIDORU • Use .catch to battle • Flees in 30 minutes" },
+        },
+      }, { quoted: msg });
+    }
 
     // Use local sprite file when available (no CDN); falls back to URL, then text-only
     const imgMsg = await getImageMessage(apiData);

@@ -428,7 +428,7 @@ export default {
   usage: ".battle <fight|run|item|pokeball|switch> [args]",
 
   async run({ sock, msg, sender, args }) {
-    const jid = msg.key.remoteJid;
+    const jid = msg.discordChannelId || msg.key.remoteJid;
     const sub = (args[0] || "").toLowerCase();
 
     const battle = getBattle(jid);

@@ -214,19 +214,95 @@ function discordGroupSocket(client, message, fallbackChannel) {
 
 function compatibilityMessage(message) {
   const isDiscordGroup = Boolean(message.guild);
+  const mentionedJid = [...(message.mentions?.users?.keys?.() || [])]
+    .map((userId) => discordAccountKey(userId));
   return Object.assign(message, {
     isGroup: isDiscordGroup,
     guildId: message.guildId || message.guild?.id,
     channelId: message.channelId,
+    discordChannelId: message.channelId,
     pushName: message.member?.displayName || message.author?.globalName || message.author?.username,
+    message: {
+      extendedTextMessage: {
+        contextInfo: { mentionedJid },
+      },
+    },
     key: {
       ...(message.key || {}),
       remoteJid: isDiscordGroup
         ? discordGroupJid(message.guild.id, message.channelId)
         : message.channelId,
-      participant: message.author?.id,
+      participant: discordAccountKey(message.author?.id),
     },
   });
+}
+
+function discordMentionId(value, rawSender, sender) {
+  const raw = String(value || "");
+  if (
+    raw === String(sender || "") ||
+    raw === String(rawSender || "") ||
+    raw === `discord:${rawSender}`
+  ) {
+    return String(rawSender || "");
+  }
+  if (raw.startsWith("discord:")) return raw.slice("discord:".length);
+  if (/^\d{5,}$/.test(raw)) return raw;
+  return "";
+}
+
+function prepareDiscordPayload(content, rawSender, sender) {
+  if (!content || typeof content !== "object") return content;
+
+  const mentions = Array.isArray(content.mentions) ? content.mentions : [];
+  const replacements = new Map();
+  const normalizedMentions = mentions.map((mention) => {
+    const id = discordMentionId(mention, rawSender, sender);
+    if (!id) return mention;
+
+    replacements.set(`@${id}`, `<@${id}>`);
+    replacements.set(`@discord:${id}`, `<@${id}>`);
+    const mentionText = String(mention);
+    if (mentionText.includes("@")) {
+      replacements.set(`@${mentionText.split("@")[0]}`, `<@${id}>`);
+    }
+    return `discord:${id}`;
+  });
+
+  if (!replacements.size) return content;
+
+  const replaceMentions = (value) => {
+    let output = String(value ?? "");
+    for (const [from, to] of [...replacements.entries()].sort(
+      ([left], [right]) => right.length - left.length,
+    )) {
+      output = output.split(from).join(to);
+    }
+    return output;
+  };
+
+  const prepared = { ...content, mentions: normalizedMentions };
+  for (const key of ["text", "caption"]) {
+    if (typeof prepared[key] === "string") prepared[key] = replaceMentions(prepared[key]);
+  }
+  if (prepared.discordEmbed && typeof prepared.discordEmbed === "object") {
+    prepared.discordEmbed = {
+      ...prepared.discordEmbed,
+      ...(typeof prepared.discordEmbed.description === "string"
+        ? { description: replaceMentions(prepared.discordEmbed.description) }
+        : {}),
+      ...(Array.isArray(prepared.discordEmbed.fields)
+        ? {
+            fields: prepared.discordEmbed.fields.map((field) => ({
+              ...field,
+              ...(typeof field.name === "string" ? { name: replaceMentions(field.name) } : {}),
+              ...(typeof field.value === "string" ? { value: replaceMentions(field.value) } : {}),
+            })),
+          }
+        : {}),
+    };
+  }
+  return prepared;
 }
 
 export async function routeDiscordMessage(client, message, prefix = ".", ownerId = "") {
@@ -298,6 +374,7 @@ export async function routeDiscordMessage(client, message, prefix = ".", ownerId
     const mockSock = {
       sendMessage: async (id, content, options = {}) => {
         const channel = await resolveChannel(client, id, message.channel);
+        const discordContent = prepareDiscordPayload(content, rawSender, sender);
         if (content?.react?.text) {
           if (options.quoted?.react) {
             return options.quoted.react(content.react.text);
@@ -306,14 +383,14 @@ export async function routeDiscordMessage(client, message, prefix = ".", ownerId
         }
         if (
           plugin.discordPlainText
-          && content
-          && typeof content === "object"
-          && typeof content.text === "string"
-          && !isMediaContent(content)
+          && discordContent
+          && typeof discordContent === "object"
+          && typeof discordContent.text === "string"
+          && !isMediaContent(discordContent)
         ) {
-          return channel.send({ content: content.text });
+          return channel.send({ content: discordContent.text });
         }
-        const payload = toDiscordPayload(content, {
+        const payload = toDiscordPayload(discordContent, {
           accentColor: discordAccentColor(plugin),
           title: plugin.discordTitle,
           command: plugin.name,

@@ -45,7 +45,7 @@ export default {
   usage: ".ch @user  OR  reply to their message then .ch  |  .ch accept",
 
   async run({ sock, msg, sender, args, text }) {
-    const jid = msg.key.remoteJid;
+    const jid = msg.discordChannelId || msg.key.remoteJid;
 
     // ── Accept incoming challenge ──────────────────────────────────────────────
     if ((args[0] || "").toLowerCase() === "accept") {

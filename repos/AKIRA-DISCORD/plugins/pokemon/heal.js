@@ -14,7 +14,7 @@ export default {
   cooldown: 150,
 
   async run({ sock, msg, sender }) {
-    const jid = msg.key.remoteJid;
+    const jid = msg.discordChannelId || msg.key.remoteJid;
 
     const trainer = await getTrainer(sender);
     if (!trainer) {

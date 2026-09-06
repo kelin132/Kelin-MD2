@@ -18,8 +18,9 @@ export default {
 
   async run({ sock, msg, sender }) {
     const jid = msg.key.remoteJid;
+    const stateKey = msg.discordChannelId || jid;
 
-    const wild = getWild(jid);
+    const wild = getWild(stateKey);
     if (!wild) {
       return sock.sendMessage(jid, {
         text: "🌿 No wild Pokémon here right now.\nUse *.spawnpoke* to encounter one!",
@@ -33,7 +34,7 @@ export default {
       }, { quoted: msg });
     }
 
-    if (hasBattle(jid)) {
+    if (hasBattle(stateKey)) {
       return sock.sendMessage(jid, {
         text: "⚔️ A battle is already happening here!",
       }, { quoted: msg });
@@ -55,7 +56,7 @@ export default {
     }
 
     const battle = startWildBattle(
-      jid,
+      stateKey,
       { jid: sender, username: trainer.username || msg.pushName || "Trainer", pokemon: lead },
       wild.pokemon
     );

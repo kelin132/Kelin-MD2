@@ -12,6 +12,7 @@ import { findOrCreateUser } from "./db.js";
 import { getUser, saveUser, requireRegistration, addHistory } from "../economy/database.js";
 import {
   getCardsByTier,
+  resolveMediaUrl,
   sendCardMedia,
   TIER_EMOJI,
   TIER_NUM,
@@ -254,6 +255,37 @@ export default {
 ┃ The card is waiting for you.
 ┃ Use \`.claim\` to add it to your collection.
 ╰━━━━━━━━━━━━━━━━━━━━╯`;
+
+      if (discord?.message) {
+        const mediaUrl = card.media
+          ? await resolveMediaUrl(card.media).catch(() => null)
+          : null;
+        return sock.sendMessage(jid, {
+          ...(mediaUrl ? { image: mediaUrl } : {}),
+          mentions: [sender],
+          discordEmbed: {
+            title: `${emoji} Card Summoned Successfully`,
+            description: [
+              "**A new card has been summoned and is ready to claim.**",
+              "",
+              `Use \`.claim ${card.cardId}\` to add it to your collection.`,
+            ].join("\n"),
+            color: "#FF8A65",
+            fields: [
+              { name: "Card", value: String(card.name || "Unknown"), inline: false },
+              { name: "Tier", value: `${emoji} ${card.tier || tierName}`, inline: true },
+              { name: "Series", value: String(card.series || "Unknown"), inline: true },
+              { name: "Card ID", value: `\`${card.cardId}\``, inline: true },
+              { name: "Summon cost", value: `$${cost.toLocaleString()}`, inline: true },
+              { name: "Wallet remaining", value: `$${ecoUser.money.toLocaleString()}`, inline: true },
+            ],
+            ...(mediaUrl ? { image: mediaUrl } : {}),
+            footer: {
+              text: `✦ AIDORU • .claim ${card.cardId} • First claim wins`,
+            },
+          },
+        }, { quoted: msg });
+      }
 
       if (card.media) {
         try {

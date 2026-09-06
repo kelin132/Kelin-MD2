@@ -21,7 +21,7 @@ export default {
   usage: ".swap <slot1> <slot2>  e.g. .swap 1 5",
 
   async run({ sock, msg, sender, args }) {
-    const jid = msg.key.remoteJid;
+    const jid = msg.discordChannelId || msg.key.remoteJid;
 
     const trainer = await getTrainer(sender);
     if (!trainer) {

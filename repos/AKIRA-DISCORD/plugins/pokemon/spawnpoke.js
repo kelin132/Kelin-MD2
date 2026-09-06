@@ -17,8 +17,9 @@ export default {
   category: "pokemon",
   usage: ".spawnpoke",
 
-  async run({ sock, msg, sender }) {
+  async run({ sock, msg, sender, discord }) {
     const jid = msg.key.remoteJid;
+    const stateKey = msg.discordChannelId || jid;
 
     const trainer = await getTrainer(sender);
     if (!trainer) {
@@ -27,7 +28,7 @@ export default {
       }, { quoted: msg });
     }
 
-    const activeRepel = getRepel(jid);
+    const activeRepel = getRepel(stateKey);
     if (activeRepel) {
       return sock.sendMessage(jid, {
         text: `🌿 *${activeRepel.itemName}* is active. Wild Pokémon cannot appear right now.`,
@@ -35,14 +36,14 @@ export default {
     }
 
     // Check if a wild Pokémon is already present
-    if (getWild(jid)) {
+    if (getWild(stateKey)) {
       return sock.sendMessage(jid, {
         text: "⚠️ A wild Pokémon is already here!\nUse `.catch` to fight it.",
       }, { quoted: msg });
     }
 
     // Cooldown check (non-mods)
-    const lastSpawn = spawnCooldowns.get(jid) || 0;
+    const lastSpawn = spawnCooldowns.get(stateKey) || 0;
     if (Date.now() - lastSpawn < SPAWN_COOLDOWN_MS) {
       const remaining = Math.ceil((SPAWN_COOLDOWN_MS - (Date.now() - lastSpawn)) / 1000);
       return sock.sendMessage(jid, {
@@ -75,13 +76,13 @@ export default {
       moves: getMovesForType(apiData.primaryType, apiData.types, level),
     };
 
-    setWild(jid, wildPoke, sender, (pokeName) => {
+    setWild(stateKey, wildPoke, sender, (pokeName) => {
       // Send "fled away" message when the 30-min timer fires
       sock.sendMessage(jid, {
         text: `🌿 *${pokeName}* got tired of waiting and *fled away!* 🏃\nUse \`.spawnpoke\` to encounter a new wild Pokémon.`,
       }).catch(() => {});
     });
-    spawnCooldowns.set(jid, Date.now());
+    spawnCooldowns.set(stateKey, Date.now());
 
     const typeEmojis = { fire:"🔥",water:"💧",grass:"🍃",electric:"⚡",psychic:"🔮",
       normal:"⭐",flying:"🌤️",bug:"🐛",poison:"☠️",rock:"🪨",ground:"🌍",
@@ -98,6 +99,35 @@ export default {
 
 Use \`.catch\` to battle this Pokémon!
 ⏰ It will flee in 30 minutes.`;
+
+    if (discord?.message) {
+      const imgMsg = await getImageMessage(apiData);
+      const image = imgMsg?.image;
+      const imageUrl = image && typeof image === "object" && typeof image.url === "string"
+        ? image.url
+        : apiData.imageUrl;
+      return sock.sendMessage(jid, {
+        ...(image && !imageUrl ? { image, fileName: "pokemon.png" } : {}),
+        mentions: [sender],
+        discordEmbed: {
+          title: "🌿 Wild Pokémon Appeared",
+          description: "**A wild Pokémon appeared in this channel.**\nUse `.catch` to battle it.",
+          color: "#FF4FA3",
+          fields: [
+            { name: "Pokémon", value: String(wildPoke.displayName), inline: false },
+            { name: "Type", value: typeStr || "Unknown", inline: true },
+            { name: "Level", value: String(level), inline: true },
+            { name: "HP", value: `${maxHp}/${maxHp}`, inline: true },
+          ],
+          ...(imageUrl
+            ? { image: imageUrl }
+            : image
+              ? { image: "attachment" }
+              : {}),
+          footer: { text: "✦ AIDORU • Use .catch to battle • Flees in 30 minutes" },
+        },
+      }, { quoted: msg });
+    }
 
     // Use local sprite file when available (no CDN); falls back to URL, then text-only
     const imgMsg = await getImageMessage(apiData);

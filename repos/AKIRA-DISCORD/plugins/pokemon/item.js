@@ -44,7 +44,7 @@ export default {
   cooldown: 5,
 
   async run({ sock, msg, sender, args }) {
-    const jid = msg.key.remoteJid;
+    const jid = msg.discordChannelId || msg.key.remoteJid;
     const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
 
     if ((args[0] || "").toLowerCase() !== "use" || !args[1]) {

@@ -1,5 +1,53 @@
 import { isRegistered, registerUser } from "./database.js";
 
+function discordRegistrationEmbed({ name, alreadyRegistered = false }) {
+  const identityLine = alreadyRegistered
+    ? "**Your AKIRA Economy account is ready.**"
+    : `**Your AKIRA Economy account was created, ${name}!**`;
+
+  return {
+    title: alreadyRegistered
+      ? "✅ AKIRA Economy Account"
+      : `🎉 Welcome to AKIRA Economy, ${name}!`,
+    description: [
+      identityLine,
+      "",
+      "Your Discord account can share progress with your WhatsApp trainer.",
+    ].join("\n"),
+    color: "#57B894",
+    fields: [
+      ...(alreadyRegistered
+        ? []
+        : [
+            { name: "Wallet", value: "$100,000", inline: true },
+            { name: "Bank", value: "$0", inline: true },
+            { name: "Diamonds", value: "0", inline: true },
+            { name: "Level", value: "1", inline: true },
+          ]),
+      {
+        name: "🔗 Link an existing WhatsApp account",
+        value: [
+          "1. On WhatsApp, send `.discord`.",
+          "2. Copy the one-time code.",
+          "3. Here on Discord, send `.connect CODE`.",
+          "The code expires after 10 minutes and works once.",
+        ].join("\n"),
+      },
+      {
+        name: "📋 Start playing",
+        value: "Use `.daily`, `.work`, `.balance`, `.shop`, `.profile`, or `.menu`.",
+      },
+      {
+        name: "🌐 AIDORU Website",
+        value: "https://aidoru.zone.id",
+      },
+    ],
+    footer: {
+      text: "✦ AIDORU • Use .connect CODE to finish linking",
+    },
+  };
+}
+
 export default {
   name: "register",
   description: "Register your account to access economy commands",
@@ -28,10 +76,7 @@ export default {
     }
     if (already) {
       return send({
-        title: "✅ Welcome to AKIRA Economy",
-        description: "You are already registered.",
-        color: "#57B894",
-        fields: [{ name: "Next step", value: "Use `.profile` to view your account." }],
+        ...discordRegistrationEmbed({ alreadyRegistered: true }),
         text: "✅ You are already registered!\n\n💡 Use *.profile* to view your account.",
       });
     }
@@ -95,17 +140,7 @@ export default {
       "Good luck! 🍀\n\nMake sure to create an account on the website https://aidoru.zone.id";
 
     return send({
-      title: `🎉 Welcome to AKIRA Economy, ${name}!`,
-      description: "Your account was created successfully.",
-      color: "#57B894",
-      fields: [
-        { name: "Wallet", value: "$100,000", inline: true },
-        { name: "Bank", value: "$0", inline: true },
-        { name: "Diamonds", value: "0", inline: true },
-        { name: "Level", value: "1", inline: true },
-        { name: "Get started", value: "Use `.daily`, `.work`, `.balance`, or `.shop`." },
-        { name: "Website", value: "https://aidoru.zone.id" },
-      ],
+      ...discordRegistrationEmbed({ name }),
       text: welcomeText,
     });
   },
