@@ -38,7 +38,7 @@ export default {
   usage: ".slots <amount>",
   checkJail: true,
 
-  async run({ sock, msg, sender, args }) {
+  async run({ sock, msg, sender, args, discord }) {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const jid   = msg.key.remoteJid;
@@ -123,7 +123,28 @@ export default {
       balance: user.money,
     });
 
-    await reply(caption);
+    if (discord?.message) {
+      await sock.sendMessage(jid, {
+        discordEmbed: {
+          title: "🎰 Slot Machine",
+          description: `[ ${a}  |  ${b}  |  ${c} ]`,
+          color: won ? "#45D483" : "#FF5D73",
+          fields: [
+            { name: "Bet", value: fmt(amount), inline: true },
+            {
+              name: "Result",
+              value: won
+                ? `🎉 ${resultMsg}\nPayout: ${fmt(winnings)}`
+                : "😢 You lost. Better luck next time!",
+              inline: false,
+            },
+            { name: "Wallet", value: fmt(user.money), inline: true },
+          ],
+        },
+      }, { quoted: msg });
+    } else {
+      await reply(caption);
+    }
 
     if (leveled) {
       const newRole = getNewlyUnlockedRole(startLevel, newLevel);

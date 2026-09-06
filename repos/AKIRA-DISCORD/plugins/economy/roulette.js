@@ -136,13 +136,11 @@ export default {
       return sock.sendMessage(jid, {
         discordEmbed: {
           title: "🎡 Roulette",
-          description: won ? "✅ You won!" : "😅 The wheel did not land your way.",
+          description: `${ballLine}\n\n${won ? "✅ You won!" : "😅 The wheel did not land your way."}`,
           color: won ? "#45D483" : "#FF5D73",
           fields: [
-            { name: "Bet Type", value: betType.toUpperCase(), inline: true },
-            { name: "Bet Amount", value: fmt(amount), inline: true },
-            { name: "Result", value: ballLine, inline: true },
-            { name: "Payout", value: won ? `+${fmt(winnings)}` : "$0", inline: true },
+            { name: "Bet", value: `${betType.toUpperCase()} • ${fmt(amount)}`, inline: true },
+            { name: "Result", value: won ? `✅ Won\nPayout: +${fmt(winnings)}` : "😢 You lost.", inline: false },
             { name: "Wallet", value: fmt(user.money), inline: true },
             ...(bonus ? [{ name: "Bonus", value: bonus, inline: true }] : []),
           ],

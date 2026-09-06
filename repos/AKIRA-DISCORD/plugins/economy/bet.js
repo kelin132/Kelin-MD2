@@ -46,12 +46,48 @@ export default {
   cooldown: 2,
   checkJail: true,
 
-  async run({ sock, msg, sender, args }) {
+  async run({ sock, msg, sender, args, discord }) {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const jid  = msg.key.remoteJid;
     const user = await getUser(sender);
     const now  = Date.now();
+    const sendResult = ({ won, flavour, amount, net, balance, diamondReward }) => {
+      if (discord?.message) {
+        return sock.sendMessage(jid, {
+          discordEmbed: {
+            title: "🎲 Bet",
+            description: won ? "🎉 You won!" : "😢 You lost.",
+            color: won ? "#45D483" : "#FF5D73",
+            fields: [
+              { name: "Bet", value: fmt(amount), inline: true },
+              {
+                name: "Result",
+                value: `${won ? "🎉 Won" : "😢 Lost"}\n${flavour}`,
+                inline: false,
+              },
+              { name: "Wallet", value: fmt(balance), inline: true },
+              { name: "Net", value: `${net >= 0 ? "+" : "-"}${fmt(Math.abs(net))}`, inline: true },
+              ...(diamondReward
+                ? [{ name: "Bonus", value: `💎 +${diamondReward} Gems`, inline: true }]
+                : []),
+            ],
+          },
+        }, { quoted: msg });
+      }
+      return sock.sendMessage(jid, {
+        text: formatGamblingResult({
+          icon: "🎲",
+          title: "Bet",
+          won,
+          bet: amount,
+          got: flavour,
+          details: [diamondReward ? `💎 Bonus: +\`${diamondReward}\` Gem${diamondReward === 1 ? "" : "s"}` : ""],
+          net,
+          balance,
+        }),
+      }, { quoted: msg });
+    };
 
     if (now - (user.lastBet || 0) < COOLDOWN) {
       const secs = Math.ceil((COOLDOWN - (now - user.lastBet)) / 1000);
@@ -103,18 +139,14 @@ export default {
       await addHistory(sender, "bet", +amount, `Bet won — wagered $${amount.toLocaleString()}`);
 
       const tag = user.name || sender.split("@")[0].split(":")[0];
-      await sock.sendMessage(jid, {
-        text: formatGamblingResult({
-          icon: "🎲",
-          title: "Bet",
-          won: true,
-          bet: amount,
-          got: flavour,
-          details: [diamondReward ? `💎 Bonus: +\`${diamondReward}\` Gem${diamondReward === 1 ? "" : "s"}` : ""],
-          net: amount,
-          balance: user.money,
-        }),
-      }, { quoted: msg });
+      await sendResult({
+        won: true,
+        flavour,
+        amount,
+        net: amount,
+        balance: user.money,
+        diamondReward,
+      });
 
       if (leveled) {
         const newRole = getNewlyUnlockedRole(startLevel, newLevel);
@@ -125,17 +157,14 @@ export default {
       await saveUser(sender, user);
       await addHistory(sender, "bet", -amount, `Bet lost — wagered $${amount.toLocaleString()}`);
 
-      await sock.sendMessage(jid, {
-        text: formatGamblingResult({
-          icon: "🎲",
-          title: "Bet",
-          bet: amount,
-          got: flavour,
-          details: [diamondReward ? `💎 Bonus: +\`${diamondReward}\` Gem${diamondReward === 1 ? "" : "s"}` : ""],
-          net: -amount,
-          balance: user.money,
-        }),
-      }, { quoted: msg });
+      await sendResult({
+        won: false,
+        flavour,
+        amount,
+        net: -amount,
+        balance: user.money,
+        diamondReward,
+      });
     }
   },
 };

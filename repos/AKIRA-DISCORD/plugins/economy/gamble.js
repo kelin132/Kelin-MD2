@@ -24,11 +24,46 @@ export default {
   usage: ".gamble <amount|all|half>",
   checkJail: true,
 
-  async run({ sock, msg, sender, args }) {
+  async run({ sock, msg, sender, args, discord }) {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const jid   = msg.key.remoteJid;
     const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
+    const sendResult = ({ won, spin, amount, net, balance, diamondReward }) => {
+      if (discord?.message) {
+        return sock.sendMessage(jid, {
+          discordEmbed: {
+            title: "🎰 Gamble",
+            description: `[ ${spin} ]`,
+            color: won ? "#45D483" : "#FF5D73",
+            fields: [
+              { name: "Bet", value: fmt(amount), inline: true },
+              {
+                name: "Result",
+                value: won
+                  ? `🎉 You won!\nPayout: +${fmt(net)}`
+                  : "😢 You lost. Better luck next time!",
+                inline: false,
+              },
+              { name: "Wallet", value: fmt(balance), inline: true },
+              ...(diamondReward
+                ? [{ name: "Bonus", value: `💎 +${diamondReward} Gems`, inline: true }]
+                : []),
+            ],
+          },
+        }, { quoted: msg });
+      }
+      return reply(formatGamblingResult({
+        icon: "🎰",
+        title: "Gamble",
+        won,
+        bet: amount,
+        got: spin,
+        details: [diamondReward ? `💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}` : ""],
+        net,
+        balance,
+      }));
+    };
     const now   = Date.now();
     const user  = await getUser(sender);
 
@@ -80,16 +115,14 @@ export default {
       await saveUser(sender, user);
       await addHistory(sender, "slots", amount, `Gamble win +$${amount.toLocaleString()}`);
 
-      await reply(formatGamblingResult({
-        icon: "🎰",
-        title: "Gamble",
+      await sendResult({
         won: true,
-        bet: amount,
-        got: spin,
-        details: [diamondReward ? `💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}` : ""],
+        spin,
+        amount,
         net: amount,
         balance: user.money,
-      }));
+        diamondReward,
+      });
 
       if (leveled) {
         const newRole = getNewlyUnlockedRole(startLevel, newLevel);
@@ -100,15 +133,14 @@ export default {
       await saveUser(sender, user);
       await addHistory(sender, "slots", -amount, `Gamble loss -$${amount.toLocaleString()}`);
 
-      await reply(formatGamblingResult({
-        icon: "🎰",
-        title: "Gamble",
-        bet: amount,
-        got: spin,
-        details: [diamondReward ? `💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}` : ""],
+      await sendResult({
+        won: false,
+        spin,
+        amount,
         net: -amount,
         balance: user.money,
-      }));
+        diamondReward,
+      });
     }
   },
 };
