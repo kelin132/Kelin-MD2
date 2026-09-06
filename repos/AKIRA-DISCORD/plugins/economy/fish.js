@@ -16,6 +16,7 @@ export default {
   cooldown: 6,
   description: "Go fishing for cash, items, or orbs (10 sec cooldown)",
   usage: ".fish",
+  discordPlainText: true,
 
   async run({ sock, msg, sender }) {
     if (!await requireRegistration(sock, msg, sender)) return;

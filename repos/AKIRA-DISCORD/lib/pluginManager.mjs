@@ -260,6 +260,15 @@ export async function routeDiscordMessage(client, message, prefix = ".", ownerId
     const mockSock = {
       sendMessage: async (id, content, options = {}) => {
         const channel = await resolveChannel(client, id, message.channel);
+        if (
+          plugin.discordPlainText
+          && content
+          && typeof content === "object"
+          && typeof content.text === "string"
+          && !isMediaContent(content)
+        ) {
+          return channel.send({ content: content.text });
+        }
         const payload = toDiscordPayload(content, {
           accentColor: discordAccentColor(plugin),
           title: plugin.discordTitle,

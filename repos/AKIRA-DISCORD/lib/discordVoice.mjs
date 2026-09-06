@@ -110,8 +110,8 @@ export async function playDiscordVoice({ client, message, audioBuffer, title }) 
   });
 
   connection.subscribe(player);
+  activePlayers.set(message.guildId, { connection, player, ffmpeg });
   player.play(resource);
-  activePlayers.set(message.guildId, { connection, player });
 
   return {
     ok: true,

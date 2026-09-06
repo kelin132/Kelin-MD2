@@ -16,6 +16,7 @@ export default {
   cooldown: 6,
   description: "Dig for buried treasure — cash, items, or orbs (10 sec cooldown)",
   usage: ".dig",
+  discordPlainText: true,
 
   async run({ sock, msg, sender }) {
     if (!await requireRegistration(sock, msg, sender)) return;

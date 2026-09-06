@@ -17,7 +17,6 @@ import {
   REQUIRED_LOTTERY_ENTRIES,
 } from "../../lib/lotteryDraw.mjs";
 import { generateWAMessageFromContent, proto } from "@whiskeysockets/baileys";
-import { EmbedBuilder } from "discord.js";
 
 const REQUIRED = REQUIRED_LOTTERY_ENTRIES;
 

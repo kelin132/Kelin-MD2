@@ -41,6 +41,7 @@ export default {
   description: "Beg for a small amount of money (3-min cooldown)",
   usage: ".beg",
   cooldown: 5,
+  discordPlainText: true,
 
   async run({ sock, msg, sender }) {
     if (!await requireRegistration(sock, msg, sender)) return;

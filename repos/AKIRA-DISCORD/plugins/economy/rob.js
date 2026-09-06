@@ -8,6 +8,16 @@ function fmt(n) {
   return `$${n.toLocaleString()}`;
 }
 
+function robReply({ sock, jid, msg, discord, text, title, description, color, fields = [], mentions = [] }) {
+  if (discord) {
+    return sock.sendMessage(jid, {
+      discordEmbed: { title, description, color, fields, footer: { text: "AIDORU • Economy" } },
+      mentions,
+    }, { quoted: msg });
+  }
+  return sock.sendMessage(jid, { text, mentions }, { quoted: msg });
+}
+
 export default {
   name: "rob",
   description: "Rob another user — 55% success rate (45-min cooldown)",
@@ -16,16 +26,28 @@ export default {
   usage: ".rob @user",
   checkJail: true,
 
-  async run({ sock, msg, sender, args }) {
+  async run({ sock, msg, sender, args, discord }) {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const jid = msg.key.remoteJid;
 
-    const targetJid = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0]
+    const discordTargetId = discord?.message?.mentions?.users?.first?.()?.id;
+    const targetJid = discordTargetId
+      ? `discord:${discordTargetId}`
+      : msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0]
       || (args[0]?.match(/^[0-9]+$/) ? `${args[0]}@s.whatsapp.net` : null);
 
     if (!targetJid) {
-      return sock.sendMessage(jid, {
+      return robReply({
+        sock, jid, msg, discord,
+        title: "🦹 Robbery",
+        description: "Choose a registered player to rob.",
+        color: "#E74C3C",
+        fields: [
+          { name: "Usage", value: ".rob @user", inline: true },
+          { name: "Success rate", value: "55%", inline: true },
+          { name: "Requirement", value: "Active gun", inline: true },
+        ],
         text:
 `╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
 │ 📖 *Usage*   :: *.rob @user*
@@ -34,22 +56,38 @@ export default {
 │ 🔫 *Gun*      :: *Required from .shop weapons*
 │ ⏳ *Cooldown* :: *45 minutes*
 ╰───────────────❀`
-      }, { quoted: msg });
+      });
     }
 
     if (sender === targetJid) {
-      return sock.sendMessage(jid, { text: "❌ You can't rob yourself!" }, { quoted: msg });
+      return robReply({
+        sock, jid, msg, discord,
+        title: "🚫 Robbery Blocked",
+        description: "You cannot rob yourself.",
+        color: "#E67E22",
+        text: "❌ You can't rob yourself!",
+      });
     }
 
     if (!await isRegistered(targetJid)) {
-      return sock.sendMessage(jid, { text: "❌ That player is not registered." }, { quoted: msg });
+      return robReply({
+        sock, jid, msg, discord,
+        title: "🚫 Robbery Blocked",
+        description: "That player is not registered.",
+        color: "#E67E22",
+        text: "❌ That player is not registered.",
+      });
     }
 
     const robber = await getUser(sender);
     const now    = Date.now();
 
     if (!hasActiveGun(robber, now)) {
-      return sock.sendMessage(jid, {
+      return robReply({
+        sock, jid, msg, discord,
+        title: "🔫 Robbery Blocked",
+        description: "You need an active gun before you can rob another player.",
+        color: "#E67E22",
         text:
 `╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
 │ ❌ *Result*  :: *NO GUN 🔴*
@@ -57,7 +95,7 @@ export default {
 │ 🔫 Buy a gun from *.shop weapons* before robbing.
 │ ⏳ A gun remains active for *3 days*.
 ╰───────────────❀`
-      }, { quoted: msg });
+      });
     }
 
     const cd     = 45 * 60 * 1000;
@@ -65,7 +103,11 @@ export default {
     if (now - (robber.lastRob || 0) < cd) {
       const remaining = cd - (now - robber.lastRob);
       const minutes   = Math.floor(remaining / (60 * 1000));
-      return sock.sendMessage(jid, {
+      return robReply({
+        sock, jid, msg, discord,
+        title: "🕶️ Robbery Cooldown",
+        description: `Lay low for ${minutes} minutes before trying again.`,
+        color: "#E67E22",
         text:
 `╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
 │ ⏳ *Result*  :: *HIDING 🔴*
@@ -75,14 +117,18 @@ export default {
 │
 │ 😤 *Lay low for now...*
 ╰───────────────❀`
-      }, { quoted: msg });
+      });
     }
 
     const target = await getUser(targetJid);
 
     // Check staff immunity — cannot be robbed
     if (target.staffImmunity) {
-      return sock.sendMessage(jid, {
+      return robReply({
+        sock, jid, msg, discord,
+        title: "🛡️ Robbery Blocked",
+        description: "This player is protected by staff immunity.",
+        color: "#3498DB",
         text:
 `╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
 │ 🌙 *Result*  :: *BLOCKED 🔴*
@@ -92,13 +138,17 @@ export default {
 │
 │ ⚠️ *This target cannot be robbed!*
 ╰───────────────❀`
-      }, { quoted: msg });
+      });
     }
 
     // Check rob charm
     if (target.robShieldExpiry && target.robShieldExpiry > Date.now()) {
       const minsLeft = Math.ceil((target.robShieldExpiry - Date.now()) / 60000);
-      return sock.sendMessage(jid, {
+      return robReply({
+        sock, jid, msg, discord,
+        title: "🧿 Robbery Blocked",
+        description: `The target's Rob Charm is active for another ${minsLeft} minutes.`,
+        color: "#3498DB",
         text:
 `╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
 │ 🌙 *Result*  :: *BLOCKED 🔴*
@@ -109,11 +159,15 @@ export default {
 │
 │ ⚠️ *Try again later!*
 ╰───────────────❀`
-      }, { quoted: msg });
+      });
     }
 
     if (target.money < 100) {
-      return sock.sendMessage(jid, {
+      return robReply({
+        sock, jid, msg, discord,
+        title: "🚫 Robbery Aborted",
+        description: `The target is broke (${fmt(target.money)}).`,
+        color: "#95A5A6",
         text:
 `╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
 │ 🌙 *Result*  :: *ABORTED 🔴*
@@ -123,12 +177,14 @@ export default {
 │
 │ 😂 *Not worth it! Minimum $100 needed.*
 ╰───────────────❀`
-      }, { quoted: msg });
+      });
     }
 
     const amount  = Math.min(10000, Math.floor(Math.random() * (target.money * 0.3)) + 100);
     const success = Math.random() > 0.45;
-    const tag     = `@${targetJid.split("@")[0]}`;
+    const targetId = discordTargetId || targetJid.split("@")[0];
+    const tag = discordTargetId ? `<@${discordTargetId}>` : `@${targetId}`;
+    const mentions = discordTargetId ? [`discord:${discordTargetId}`] : [targetJid];
 
     robber.lastRob = now;
 
@@ -140,7 +196,17 @@ export default {
       await addHistory(sender,    "rob",        amount,  `Robbed ${target.name}`);
       await addHistory(targetJid, "rob_victim", -amount, `Robbed by ${robber.name}`);
 
-      await sock.sendMessage(jid, {
+      return robReply({
+        sock, jid, msg, discord,
+        title: "🦹 Robbery Successful!",
+        description: `${tag} was robbed successfully.`,
+        color: "#2ECC71",
+        fields: [
+          { name: "Target", value: tag, inline: true },
+          { name: "Stolen", value: `+${fmt(amount)}`, inline: true },
+          { name: "Wallet", value: fmt(robber.money), inline: true },
+        ],
+        mentions,
         text:
 `╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
 │ 🌙 *Result*  :: *SUCCESS 🟢*
@@ -152,15 +218,27 @@ export default {
 │
 │ 🦹 *Clean getaway! Mission complete!* ⚔️
 ╰───────────────❀`,
-        mentions: [targetJid],
-      }, { quoted: msg });
+      });
     } else {
       const fine   = Math.floor(amount * 0.7);
       robber.money = Math.max(0, robber.money - fine);
       await saveUser(sender, robber);
       await addHistory(sender, "rob", -fine, `Rob failed — fined $${fine.toLocaleString()}`);
 
-      await sock.sendMessage(jid, {
+      return robReply({
+        sock, jid, msg, discord,
+        title: "🚓 Robbery Failed!",
+        description: discordTargetId
+          ? `<@${discord.message.author.id}> got caught trying to rob ${tag}.`
+          : `${tag} got caught trying to rob the target.`,
+        color: "#E74C3C",
+        fields: [
+          { name: "Fine (penalty)", value: `🪙 ${fine.toLocaleString()}`, inline: true },
+          { name: "Wallet", value: fmt(robber.money), inline: true },
+        ],
+        mentions: discordTargetId
+          ? [`discord:${discord.message.author.id}`, `discord:${discordTargetId}`]
+          : mentions,
         text:
 `╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
 │ 🌙 *Result*  :: *CAUGHT 🔴*
@@ -171,7 +249,7 @@ export default {
 │
 │ 🚔 *You got busted! Lie low for 45 min.*
 ╰───────────────❀`
-      }, { quoted: msg });
+      });
     }
   }
 };
