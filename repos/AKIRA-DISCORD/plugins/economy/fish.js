@@ -1,13 +1,12 @@
 import { getUser, saveUser, requireRegistration, addHistory, checkLevelUp } from "./database.js";
 import { FISH_LOOT, SHOP_ITEMS, rollLoot } from "./_items.js";
-import { sendEconomyReply } from "../../lib/discordEconomyReply.mjs";
+import { flattenEconomyText, sendEconomyReply } from "../../lib/discordEconomyReply.mjs";
+import { compactMoney } from "../../lib/compactMoney.mjs";
 
 const COOLDOWN = 10 * 1000; // 10 seconds
 
 function fmt(n) {
-  if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
-  if (n >= 1e3) return `$${(n/1e3).toFixed(1)}K`;
-  return `$${n.toLocaleString()}`;
+  return compactMoney(n);
 }
 
 export default {
@@ -31,6 +30,8 @@ export default {
       title: options.title || "🎣 Fishing",
       color: options.color || "#3498DB",
       fields: options.fields || [],
+      simpleText: options.simpleText
+        ?? `🎣 fish: ${flattenEconomyText(text)}`,
       mentions: [sender],
     });
     const now   = Date.now();
@@ -106,6 +107,13 @@ export default {
 ╰───────────────❀`,
       {
         color: leveled ? "#F1C40F" : "#3498DB",
+        simpleText: [
+          `🎣 fish: ${resultLine}`,
+          `Wallet: ${fmt(user.money || 0)}.`,
+          `Orbs: ${user.orbs || 0}.`,
+          `XP: +8.`,
+          ...(leveled ? [`Level up: ${user.level}.`] : []),
+        ].join(" "),
         fields: [
           { name: "Result", value: resultType, inline: true },
           { name: "Catch", value: resultLine.replaceAll("*", ""), inline: false },

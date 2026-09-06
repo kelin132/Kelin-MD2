@@ -1,5 +1,6 @@
 import { getUser, requireRegistration } from "./database.js";
 import { formatAccountBalance } from "./balanceFormat.js";
+import { compactMoney } from "../../lib/compactMoney.mjs";
 
 export default {
   name: "balance",
@@ -23,18 +24,13 @@ export default {
 
     if (discord?.message) {
       return sock.sendMessage(jid, {
-        discordEmbed: {
-          title: "💳 AIDORU Account Balance",
-          description: "Your current AIDORU economy balances.",
-          color: "#57B894",
-          fields: [
-            { name: "Wallet", value: `$${Number(user.money || 0).toLocaleString()}`, inline: true },
-            { name: "Bank", value: `$${Number(user.bank || 0).toLocaleString()}`, inline: true },
-            { name: "Gems", value: Number(user.diamonds || 0).toLocaleString(), inline: true },
-            { name: "Net worth", value: `$${(Number(user.money || 0) + Number(user.bank || 0)).toLocaleString()}`, inline: false },
-          ],
-          footer: { text: "AIDORU • Economy • Use .ebal for account breakdown" },
-        },
+        text: [
+          "💳 bal:",
+          `Wallet: ${compactMoney(user.money || 0)}.`,
+          `Bank: ${compactMoney(user.bank || 0)}.`,
+          `Gems: ${Number(user.diamonds || 0).toLocaleString()}.`,
+          `Net worth: ${compactMoney((user.money || 0) + (user.bank || 0))}.`,
+        ].join(" "),
         mentions: [sender],
       }, { quoted: msg });
     }

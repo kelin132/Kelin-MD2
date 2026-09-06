@@ -10,6 +10,10 @@ function compactDescription(value) {
     .replace(/\s*::\s*/g, ": ");
 }
 
+export function flattenEconomyText(value) {
+  return compactDescription(value).replace(/\s+/g, " ").trim();
+}
+
 export function sendEconomyReply({
   sock,
   jid,
@@ -21,8 +25,13 @@ export function sendEconomyReply({
   mentions = [],
   footer = "AIDORU • Economy",
   fields = [],
+  simpleText = null,
 }) {
   if (discord?.message) {
+    if (simpleText !== null) {
+      return sock.sendMessage(jid, { text: simpleText, mentions }, { quoted: msg });
+    }
+
     return sock.sendMessage(jid, {
       discordEmbed: {
         title,

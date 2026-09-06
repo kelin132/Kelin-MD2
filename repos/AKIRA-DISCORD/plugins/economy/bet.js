@@ -9,7 +9,8 @@ import { parseAmount } from "./parseAmount.js";
 import { MAX_BET, maxBetMessage } from "./bettingLimits.js";
 import { getNewlyUnlockedRole, buildLevelUpMsg } from "../../lib/levelRoles.mjs";
 import { formatGamblingResult } from "../../lib/gamblingFormat.mjs";
-import { sendEconomyReply } from "../../lib/discordEconomyReply.mjs";
+import { flattenEconomyText, sendEconomyReply } from "../../lib/discordEconomyReply.mjs";
+import { compactMoney } from "../../lib/compactMoney.mjs";
 
 const COOLDOWN = 30 * 1000;
 
@@ -31,11 +32,7 @@ const LOSE_LINES = [
 
 /** Short money formatter */
 function fmt(n) {
-  if (n >= 1e12) return `$${(n/1e12).toFixed(1)}T`;
-  if (n >= 1e9)  return `$${(n/1e9).toFixed(1)}B`;
-  if (n >= 1e6)  return `$${(n/1e6).toFixed(1)}M`;
-  if (n >= 1e3)  return `$${(n/1e3).toFixed(1)}K`;
-  return `$${n.toLocaleString()}`;
+  return compactMoney(n);
 }
 
 export default {
@@ -62,29 +59,21 @@ export default {
       title: options.title || "🎲 Bet",
       color: options.color || "#FFD166",
       fields: options.fields || [],
+      simpleText: options.simpleText
+        ?? `🎲 bet: ${flattenEconomyText(text)}`,
       mentions: [sender],
     });
     const sendResult = ({ won, flavour, amount, net, balance, diamondReward }) => {
       if (discord?.message) {
         return sock.sendMessage(jid, {
-          discordEmbed: {
-            title: "🎲 Bet",
-            description: won ? "🎉 You won!" : "😢 You lost.",
-            color: won ? "#45D483" : "#FF5D73",
-            fields: [
-              { name: "Bet", value: fmt(amount), inline: true },
-              {
-                name: "Result",
-                value: `${won ? "🎉 Won" : "😢 Lost"}\n${flavour}`,
-                inline: false,
-              },
-              { name: "Wallet", value: fmt(balance), inline: true },
-              { name: "Net", value: `${net >= 0 ? "+" : "-"}${fmt(Math.abs(net))}`, inline: true },
-              ...(diamondReward
-                ? [{ name: "Bonus", value: `💎 +${diamondReward} Gems`, inline: true }]
-                : []),
-            ],
-          },
+          text: [
+            `🎲 bet: ${won ? "🎉 Won" : "😢 Lost"} ${fmt(amount)}.`,
+            `${flavour}.`,
+            `Net: ${net >= 0 ? "+" : "-"}${fmt(Math.abs(net))}.`,
+            `Wallet: ${fmt(balance)}.`,
+            ...(diamondReward ? [`Gem bonus: +${diamondReward}.`] : []),
+          ].join(" "),
+          mentions: [sender],
         }, { quoted: msg });
       }
       return sock.sendMessage(jid, {

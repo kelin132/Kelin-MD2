@@ -1,19 +1,18 @@
 import { getUser, saveUser, requireRegistration, isRegistered, addHistory } from "./database.js";
 import { hasActiveGun } from "../../lib/economySecurity.mjs";
+import { compactMoney } from "../../lib/compactMoney.mjs";
 
 function fmt(n) {
-  if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`;
-  if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
-  if (n >= 1e3) return `$${(n/1e3).toFixed(1)}K`;
-  return `$${n.toLocaleString()}`;
+  return compactMoney(n);
 }
 
 function robReply({ sock, jid, msg, discord, text, title, description, color, fields = [], mentions = [] }) {
   if (discord) {
-    return sock.sendMessage(jid, {
-      discordEmbed: { title, description, color, fields, footer: { text: "AIDORU • Economy" } },
-      mentions,
-    }, { quoted: msg });
+    const details = fields
+      .map(({ name, value }) => `${name}: ${value}`)
+      .join(". ");
+    const simpleText = `🦹 rob: ${description || title}${details ? ` ${details}.` : ""}`;
+    return sock.sendMessage(jid, { text: simpleText, mentions }, { quoted: msg });
   }
   return sock.sendMessage(jid, { text, mentions }, { quoted: msg });
 }
@@ -233,7 +232,7 @@ export default {
           : `${tag} got caught trying to rob the target.`,
         color: "#E74C3C",
         fields: [
-          { name: "Fine (penalty)", value: `🪙 ${fine.toLocaleString()}`, inline: true },
+          { name: "Fine (penalty)", value: `🪙 ${fmt(fine)}`, inline: true },
           { name: "Wallet", value: fmt(robber.money), inline: true },
         ],
         mentions: discordTargetId

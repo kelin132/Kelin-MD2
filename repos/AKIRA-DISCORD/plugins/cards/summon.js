@@ -20,7 +20,8 @@ import {
   createSpawnId,
 } from "../../lib/cardApi.mjs";
 import { getSeries } from "../../lib/seriesEnrich.mjs";
-import { sendEconomyReply } from "../../lib/discordEconomyReply.mjs";
+import { flattenEconomyText, sendEconomyReply } from "../../lib/discordEconomyReply.mjs";
+import { compactMoney } from "../../lib/compactMoney.mjs";
 
 // ── Summon costs by tier ──────────────────────────────────────────────────────
 // Higher tiers cost more coins from the user's card balance.
@@ -84,6 +85,8 @@ export default {
       title: options.title || "🔮 Summon",
       color: options.color || "#FF8A65",
       fields: options.fields || [],
+      simpleText: options.simpleText
+        ?? `🔮 summon: ${flattenEconomyText(text)}`,
       mentions: [sender],
     });
 
@@ -259,8 +262,8 @@ export default {
 ┃ 📺 Series ➜ 『 \`${card.series}\` 』
 ┃
 ┣━━━━━━━━━━━━━━━━━━━━
-┃ 💸 Cost   › \`$${cost.toLocaleString()}\`
-┃ 👛 Wallet › \`$${ecoUser.money.toLocaleString()}\`
+┃ 💸 Cost   › \`${compactMoney(cost)}\`
+┃ 👛 Wallet › \`${compactMoney(ecoUser.money)}\`
 ┣━━━━━━━━━━━━━━━━━━━━
 ┃ ✨ 𝗖𝗟𝗔𝗜𝗠 𝗥𝗘𝗔𝗗𝗬!
 ┃ The card is waiting for you.
@@ -273,28 +276,13 @@ export default {
           : null;
         return sock.sendMessage(jid, {
           ...(mediaUrl ? { image: mediaUrl } : {}),
+          text: [
+            `🔮 summon: ${emoji} ${card.name} (${card.tier || tierName}) summoned.`,
+            `Cost: ${compactMoney(cost)}.`,
+            `Wallet: ${compactMoney(ecoUser.money)}.`,
+            `Use .claim ${card.cardId}.`,
+          ].join(" "),
           mentions: [sender],
-          discordEmbed: {
-            title: `${emoji} Card Summoned Successfully`,
-            description: [
-              "**A new card has been summoned and is ready to claim.**",
-              "",
-              `Use \`.claim ${card.cardId}\` to add it to your collection.`,
-            ].join("\n"),
-            color: "#FF8A65",
-            fields: [
-              { name: "Card", value: String(card.name || "Unknown"), inline: false },
-              { name: "Tier", value: `${emoji} ${card.tier || tierName}`, inline: true },
-              { name: "Series", value: String(card.series || "Unknown"), inline: true },
-              { name: "Card ID", value: `\`${card.cardId}\``, inline: true },
-              { name: "Summon cost", value: `$${cost.toLocaleString()}`, inline: true },
-              { name: "Wallet remaining", value: `$${ecoUser.money.toLocaleString()}`, inline: true },
-            ],
-            ...(mediaUrl ? { image: mediaUrl } : {}),
-            footer: {
-              text: `✦ AIDORU • .claim ${card.cardId} • First claim wins`,
-            },
-          },
         }, { quoted: msg });
       }
 
