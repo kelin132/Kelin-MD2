@@ -172,6 +172,7 @@ function discordMenuPayload(token, session) {
     categoryIndex,
     runtime,
     mention,
+    userName,
     userAvatar,
   } = session;
   const category = categoryIndex >= 0 ? categories[categoryIndex] : null;
@@ -185,7 +186,7 @@ function discordMenuPayload(token, session) {
   const totalCommands = categorySummaries.reduce((total, item) => total + item.count, 0);
   const embed = new EmbedBuilder()
     .setColor("#0099ff")
-    .setTitle(`Hello ${mention}, I'm ${runtime.botName}`)
+    .setTitle(`Hello ${userName}, I'm ${runtime.botName}`)
     .setDescription(pageDescription)
     .setImage(runtime.botImage)
     .addFields(
@@ -241,6 +242,14 @@ export default {
     const menuPrefix = runtime.prefix || prefix;
     const requestedCategory = normalizeCategory(args?.[0] || "");
     const isDiscord = Boolean(discord?.message);
+    const userName = isDiscord
+      ? String(
+        discord.message.member?.displayName
+        || discord.message.author.globalName
+        || discord.message.author.username
+        || "there",
+      )
+      : `@${senderNum}`;
     const mention = isDiscord
       ? `<@${discord.message.author.id}>`
       : `@${senderNum}`;
@@ -333,6 +342,7 @@ export default {
         view: requestedCategory ? "category" : "overview",
         runtime,
         mention,
+        userName,
         userAvatar: discord.message.author.displayAvatarURL?.({
           extension: "png",
           size: 128,

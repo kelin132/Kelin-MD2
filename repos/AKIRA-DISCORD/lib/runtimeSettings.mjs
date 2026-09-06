@@ -15,7 +15,7 @@ const SETTINGS_FILE = path.join(DATA_DIR, "botSettings.json");
 const ENV_FILE = path.resolve(".env");
 
 const DEFAULT_BOT_IMAGE =
-  "https://cdn.phototourl.com/free/2026-07-26-ef31287b-f8c8-4bec-943a-cf435a79d5ad.jpg";
+  "https://raw.githubusercontent.com/kelin132/AKIRA-DISCORD/main/assets/aidoru-menu.png";
 
 const ENV_KEYS = {
   ownerNumber: "OWNER_NUMBER",

@@ -7,7 +7,7 @@ import { discordAccountKey } from "./identity.mjs";
 import { resolveDiscordAccount } from "./accountLink.mjs";
 import { isDiscordSupported } from "./discordSupport.mjs";
 import { akiraHandler } from "./akiraHandler.mjs";
-import { toDiscordPayload } from "./discordPayload.mjs";
+import { isMediaContent, toDiscordPayload } from "./discordPayload.mjs";
 import { buildEconomyLinkPreview, getEconomyPreviewConfig } from "./economyPreview.mjs";
 import {
   AIDORU_FOOTER,
@@ -85,6 +85,15 @@ export async function loadPlugins(prefix = ".") {
     }
   }
 
+  const canonicalOwners = new Map();
+  plugins = plugins.filter((plugin) => {
+    if (canonicalOwners.has(plugin.name)) {
+      log("warn", `Ignoring duplicate command ${plugin.name} on ${plugin.category}; already owned by ${canonicalOwners.get(plugin.name)}.`);
+      return false;
+    }
+    canonicalOwners.set(plugin.name, plugin.category);
+    return true;
+  });
   const canonicalNames = new Set(plugins.map((plugin) => plugin.name));
   const aliasOwners = new Map();
   plugins = plugins.map((plugin) => ({

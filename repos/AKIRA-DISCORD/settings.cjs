@@ -18,7 +18,7 @@ module.exports = {
   description: "AKIRA — a multi-purpose Discord companion bot.",
   version: "1.0.0",
   githubRepo: "https://github.com/kelin132/AKIRA-DISCORD.git",
-  githubBranch: "master",
-  updateZipUrl: "https://github.com/kelin132/AKIRA-DISCORD/archive/refs/heads/master.zip",
+  githubBranch: "main",
+  updateZipUrl: "https://github.com/kelin132/AKIRA-DISCORD/archive/refs/heads/main.zip",
   autoUpdateInterval: 39,
 };
