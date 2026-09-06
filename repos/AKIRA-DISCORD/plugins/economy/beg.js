@@ -48,7 +48,7 @@ export default {
 
     const jid   = msg.key.remoteJid;
     const reply = (text) => sendEconomyReply({
-      sock, jid, msg, discord, text, title: "🤲 Beg",
+      sock, jid, msg, discord, text, title: "🤲 Beg", mentions: [sender],
     });
 
     const user = await getUser(sender);

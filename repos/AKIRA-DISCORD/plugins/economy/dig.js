@@ -23,7 +23,7 @@ export default {
 
     const jid   = msg.key.remoteJid;
     const reply = (text) => sendEconomyReply({
-      sock, jid, msg, discord, text, title: "⛏️ Digging",
+      sock, jid, msg, discord, text, title: "⛏️ Digging", mentions: [sender],
     });
     const now   = Date.now();
 

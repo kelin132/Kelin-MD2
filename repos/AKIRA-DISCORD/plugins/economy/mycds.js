@@ -1,4 +1,5 @@
 import { getUser, requireRegistration } from "./database.js";
+import { sendEconomyReply } from "../../lib/discordEconomyReply.mjs";
 
 const COOLDOWNS = [
   { key: "lastDaily",   label: "🌅 Daily",    ms: 24 * 60 * 60 * 1000         },
@@ -36,7 +37,7 @@ export default {
   description: "View all your remaining cooldowns at a glance",
   usage: ".mycds",
 
-  async run({ sock, msg, sender }) {
+  async run({ sock, msg, sender, discord }) {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const user = await getUser(sender);
@@ -52,9 +53,16 @@ export default {
 
     text += "\n_All cooldowns reset automatically._";
 
-    await sock.sendMessage(msg.key.remoteJid, {
+    await sendEconomyReply({
+      sock,
+      jid: msg.key.remoteJid,
+      msg,
+      discord,
       text,
+      title: "⏰ Your Cooldowns",
+      color: "#7C83FD",
       mentions: [sender],
-    }, { quoted: msg });
+      footer: "AIDORU • Cooldowns reset automatically",
+    });
   },
 };
