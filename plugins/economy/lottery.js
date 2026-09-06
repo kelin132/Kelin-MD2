@@ -1,5 +1,5 @@
 /**
- * .lottery buy [tickets]  — buy lottery tickets ($500 each, max 10 per person)
+ * .lottery  — enter the global lottery ($10,000, one ticket per round)
  * .lottery draw           — owner-only: draw the jackpot
  * .lottery info           — show jackpot + your tickets
  * The round auto-draws three prizes when it reaches seven total tickets.
@@ -12,8 +12,8 @@ import {
   maybeAutoDraw,
 } from "../../lib/lotteryAutoDraw.mjs";
 
-const TICKET_PRICE  = 500;
-const MAX_TICKETS   = 10;
+const TICKET_PRICE  = 10_000;
+const MAX_TICKETS   = 1;
 const MIN_JACKPOT   = 10_000_000;
 const MAX_JACKPOT   = 50_000_000;
 
@@ -43,14 +43,14 @@ export default {
   category: "economy",
   cooldown: 6,
   description: "Buy lottery tickets or draw the jackpot",
-  usage: ".lottery buy [amount]  |  .lottery draw  |  .lottery info",
+  usage: ".lottery  |  .lottery info  |  .lottery draw",
 
   async run({ sock, msg, sender, args, isOwner, staffLevel }) {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const jid  = msg.key.remoteJid;
     const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
-    const sub  = (args[0] || "info").toLowerCase();
+    const sub  = (args[0] || "buy").toLowerCase();
 
     // ── INFO ───────────────────────────────────────────────────────────────────
     if (sub === "info") {
@@ -78,8 +78,9 @@ export default {
 
     // ── BUY ────────────────────────────────────────────────────────────────────
     if (sub === "buy") {
-      const count = Math.max(1, parseInt(args[1]) || 1);
-      if (isNaN(count) || count < 1) return reply("❌ Usage: .lottery buy <amount>");
+      const requestedCount = args[1] ? parseInt(args[1], 10) : 1;
+      if (!Number.isFinite(requestedCount) || requestedCount < 1) return reply("❌ Use `.lottery` to buy one ticket.");
+      if (requestedCount > 1) return reply("🎟️ You can only buy one ticket for the global lottery.");
 
       const lot     = await getLottery();
       if (lot.totalTickets >= LOTTERY_MAX_ENTRIES) {
@@ -94,19 +95,11 @@ export default {
       const myCount = myEntry?.count ?? 0;
 
       if (myCount >= MAX_TICKETS) {
-        return reply(
-`╭━━━〔 🔒 𝑴𝑨𝑿 𝑻𝑰𝑪𝑲𝑬𝑻𝑺 〕━━━╮
-┃ ✦ You already hold the maximum tickets!
-┃
-┃ 🎟️ Your Tickets › ${myCount} / ${MAX_TICKETS}
-┃
-┃ 💡 Use .lotterylist to see the draw.
-╰━━━━━━━━━━━━━━━━━━━━╯`
-        );
+        return reply("⚠️ You have already entered the global lottery.");
       }
 
       const availableEntries = Math.max(0, LOTTERY_MAX_ENTRIES - lot.totalTickets);
-      const canBuy = Math.min(count, MAX_TICKETS - myCount, availableEntries);
+      const canBuy = Math.min(requestedCount, MAX_TICKETS - myCount, availableEntries);
       if (canBuy < 1) {
         return reply("⏳ The lottery is drawing now. Please try again in a moment.");
       }
@@ -150,21 +143,7 @@ export default {
       }
 
       return reply(
-`╭━━━〔 🎟️ 𝑻𝑰𝑪𝑲𝑬𝑻𝑺 𝑩𝑶𝑼𝑮𝑯𝑻 ✨ 〕━━━╮
-┃ ✦ You're in the draw!
-┃
-┃ 🎫 Bought   › ${canBuy} ticket(s)
-┃ 🎟️  Your tickets › ${newTotal} / ${MAX_TICKETS}
-┃ 🎫  Round total  › ${lot.totalTickets} / ${LOTTERY_MAX_ENTRIES}
-┃ 🎯 Chance  › ${chance}%
-┃
-┣━━━━━━━━━━━━━━━━━━━━
-┃ 💸 Paid    › $${cost.toLocaleString()}
-┃ 👛 Wallet  › $${user.money.toLocaleString()}
-┃ 💰 Jackpot › $${lot.jackpot.toLocaleString()}
-┣━━━━━━━━━━━━━━━━━━━━
-┃ 🍀 Good luck!
-╰━━━━━━━━━━━━━━━━━━━━╯`
+        `✅ You have entered the global lottery.\n🎟️ One ticket purchased for $${cost.toLocaleString()}.\n💰 Wallet remaining: $${user.money.toLocaleString()}\n🍀 Good luck!`,
       );
     }
 
