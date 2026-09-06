@@ -7,4 +7,4 @@ When a nested bot repository is removed from the main workspace, shared helpers 
 
 **Why:** The Discord economy preview helper fell back to a remote URL after the duplicate nested Kelin-MD2 checkout was removed, even though the same preview artwork still existed in the root workspace.
 
-**How to apply:** Before deleting an embedded repository, audit imports and relative asset directories. Prefer a shared root asset lookup, while retaining a nested/standalone lookup for deployments where the bot repository runs independently.
+**How to apply:** Before deleting an embedded repository, audit imports and relative asset directories. Prefer a shared root asset lookup, while retaining a nested/standalone lookup for deployments where the bot repository runs independently. When publishing AKIRA-DISCORD alone, include the AIDORU preview artwork in its own assets directory so standalone tests and embeds do not fall back to remote URLs.

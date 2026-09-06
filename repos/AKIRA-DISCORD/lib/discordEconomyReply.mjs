@@ -20,6 +20,7 @@ export function sendEconomyReply({
   color = "#FFD166",
   mentions = [],
   footer = "AIDORU • Economy",
+  fields = [],
 }) {
   if (discord?.message) {
     return sock.sendMessage(jid, {
@@ -27,6 +28,7 @@ export function sendEconomyReply({
         title,
         description: compactDescription(text),
         color,
+        ...(fields.length ? { fields } : {}),
         footer: { text: footer },
       },
       mentions,

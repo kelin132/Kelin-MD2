@@ -9,7 +9,7 @@ export default {
   aliases: ["bal", "money", "wallet"],
   cooldown: 6,
 
-  async run({ sock, msg, sender }) {
+  async run({ sock, msg, sender, discord }) {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const user = await getUser(sender);
@@ -20,6 +20,24 @@ export default {
       gems: user.diamonds,
       footerLines: ["Use .ebal", "for account breakdown"],
     });
+
+    if (discord?.message) {
+      return sock.sendMessage(jid, {
+        discordEmbed: {
+          title: "💳 AIDORU Account Balance",
+          description: "Your current AIDORU economy balances.",
+          color: "#57B894",
+          fields: [
+            { name: "Wallet", value: `$${Number(user.money || 0).toLocaleString()}`, inline: true },
+            { name: "Bank", value: `$${Number(user.bank || 0).toLocaleString()}`, inline: true },
+            { name: "Gems", value: Number(user.diamonds || 0).toLocaleString(), inline: true },
+            { name: "Net worth", value: `$${(Number(user.money || 0) + Number(user.bank || 0)).toLocaleString()}`, inline: false },
+          ],
+          footer: { text: "AIDORU • Economy • Use .ebal for account breakdown" },
+        },
+        mentions: [sender],
+      }, { quoted: msg });
+    }
 
     await sock.sendMessage(jid, { text, mentions: [sender] }, { quoted: msg });
   },

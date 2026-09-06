@@ -22,8 +22,16 @@ export default {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const jid   = msg.key.remoteJid;
-    const reply = (text) => sendEconomyReply({
-      sock, jid, msg, discord, text, title: "🎣 Fishing", mentions: [sender],
+    const reply = (text, options = {}) => sendEconomyReply({
+      sock,
+      jid,
+      msg,
+      discord,
+      text,
+      title: options.title || "🎣 Fishing",
+      color: options.color || "#3498DB",
+      fields: options.fields || [],
+      mentions: [sender],
     });
     const now   = Date.now();
 
@@ -95,7 +103,18 @@ export default {
 │ 🔮 *Orbs*    :: *${user.orbs || 0}*
 │ 🎒 *Items*   :: *${(user.inventory || []).length}*
 │ ⭐ *XP*      :: *+8*${leveled ? `\n│\n│ 🎉 *LEVEL UP!* — Now Level ${user.level}` : ""}
-╰───────────────❀`
+╰───────────────❀`,
+      {
+        color: leveled ? "#F1C40F" : "#3498DB",
+        fields: [
+          { name: "Result", value: resultType, inline: true },
+          { name: "Catch", value: resultLine.replaceAll("*", ""), inline: false },
+          { name: "Wallet", value: fmt(user.money || 0), inline: true },
+          { name: "Orbs", value: String(user.orbs || 0), inline: true },
+          { name: "Items", value: String((user.inventory || []).length), inline: true },
+          { name: "XP", value: "+8", inline: true },
+        ],
+      },
     );
   },
 };

@@ -9,6 +9,7 @@ import { parseAmount } from "./parseAmount.js";
 import { MAX_BET, maxBetMessage } from "./bettingLimits.js";
 import { getNewlyUnlockedRole, buildLevelUpMsg } from "../../lib/levelRoles.mjs";
 import { formatGamblingResult } from "../../lib/gamblingFormat.mjs";
+import { sendEconomyReply } from "../../lib/discordEconomyReply.mjs";
 
 const COOLDOWN = 30 * 1000;
 
@@ -52,6 +53,17 @@ export default {
     const jid  = msg.key.remoteJid;
     const user = await getUser(sender);
     const now  = Date.now();
+    const sendText = (text, options = {}) => sendEconomyReply({
+      sock,
+      jid,
+      msg,
+      discord,
+      text,
+      title: options.title || "🎲 Bet",
+      color: options.color || "#FFD166",
+      fields: options.fields || [],
+      mentions: [sender],
+    });
     const sendResult = ({ won, flavour, amount, net, balance, diamondReward }) => {
       if (discord?.message) {
         return sock.sendMessage(jid, {
@@ -91,15 +103,16 @@ export default {
 
     if (now - (user.lastBet || 0) < COOLDOWN) {
       const secs = Math.ceil((COOLDOWN - (now - user.lastBet)) / 1000);
-      return sock.sendMessage(jid, {
-        text: `⏳ Cooldown! You can bet again in \`${secs}s\`.`,
-      }, { quoted: msg });
+      return sendText(`⏳ Cooldown! You can bet again in \`${secs}s\`.`, {
+        title: "⏳ Bet Cooldown",
+        color: "#E67E22",
+        fields: [{ name: "Next bet", value: `${secs}s`, inline: true }],
+      });
     }
 
     const raw = args[0]?.toLowerCase();
     if (!raw) {
-      return sock.sendMessage(jid, {
-        text:
+      return sendText(
 `╭─❀「 🎲 *𝐁𝐄𝐓* 」❀─╮
 │ Usage: \`.bet <amount>\`
 │ Examples: \`.bet 500\`  /  \`.bet 10k\`  /  \`.bet 1b\`
@@ -111,18 +124,38 @@ export default {
 │ 💰 *Max Bet* :: \`$300B\`
 │ 🎯 *Win Rate* :: \`53.1%\`
 ╰───────────────❀`,
-      }, { quoted: msg });
+        {
+          fields: [
+            { name: "Wallet", value: fmt(user.money), inline: true },
+            { name: "Maximum", value: "$300B", inline: true },
+            { name: "Win rate", value: "53.1%", inline: true },
+          ],
+        },
+      );
     }
 
     let amount = parseAmount(raw, user.money);
     if (!amount || isNaN(amount) || amount <= 0)
-      return sock.sendMessage(jid, { text: "❌ Enter a valid amount. Example: \`.bet 500\`" }, { quoted: msg });
+      return sendText("❌ Enter a valid amount. Example: `.bet 500`", {
+        title: "❌ Invalid Bet",
+        color: "#E74C3C",
+      });
     if (amount > MAX_BET)
-      return sock.sendMessage(jid, { text: maxBetMessage() }, { quoted: msg });
+      return sendText(maxBetMessage(), {
+        title: "❌ Bet Limit",
+        color: "#E74C3C",
+      });
     if (amount > user.money)
-      return sock.sendMessage(jid, { text: `❌ You only have \`${fmt(user.money)}\` in your wallet.` }, { quoted: msg });
+      return sendText(`❌ You only have \`${fmt(user.money)}\` in your wallet.`, {
+        title: "❌ Insufficient Wallet",
+        color: "#E74C3C",
+        fields: [{ name: "Wallet", value: fmt(user.money), inline: true }],
+      });
     if (amount < 10)
-      return sock.sendMessage(jid, { text: "❌ Minimum bet is \`$10\`." }, { quoted: msg });
+      return sendText("❌ Minimum bet is `$10`.", {
+        title: "❌ Bet Too Small",
+        color: "#E74C3C",
+      });
 
     const won          = randomChance(0.53,1);
     const diamondReward = maybeAwardDiamonds(user, won ? 0.003 : 0.001, 1, 2);

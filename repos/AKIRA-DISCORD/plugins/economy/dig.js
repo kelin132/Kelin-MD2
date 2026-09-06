@@ -22,8 +22,16 @@ export default {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const jid   = msg.key.remoteJid;
-    const reply = (text) => sendEconomyReply({
-      sock, jid, msg, discord, text, title: "⛏️ Digging", mentions: [sender],
+    const reply = (text, options = {}) => sendEconomyReply({
+      sock,
+      jid,
+      msg,
+      discord,
+      text,
+      title: options.title || "⛏️ Digging",
+      color: options.color || "#57B894",
+      fields: options.fields || [],
+      mentions: [sender],
     });
     const now   = Date.now();
 
@@ -102,7 +110,21 @@ export default {
 │ 🔮 *Orbs*    :: *${user.orbs || 0}*
 │ 🎒 *Items*   :: *${(user.inventory || []).length}*
 │ ⭐ *XP*      :: *+10*${diamondReward ? `\n│ 💎 *Bonus*   :: *+${diamondReward} Gem${diamondReward === 1 ? "" : "s"}*` : ""}${leveled ? `\n│\n│ 🎉 *LEVEL UP!* — Now Level ${user.level}` : ""}
-╰───────────────❀`
+╰───────────────❀`,
+      {
+        color: leveled ? "#F1C40F" : "#57B894",
+        fields: [
+          { name: "Result", value: resultType, inline: true },
+          { name: "Reward", value: resultLine.replaceAll("*", ""), inline: false },
+          { name: "Wallet", value: fmt(user.money || 0), inline: true },
+          { name: "Orbs", value: String(user.orbs || 0), inline: true },
+          { name: "Items", value: String((user.inventory || []).length), inline: true },
+          { name: "XP", value: "+10", inline: true },
+          ...(diamondReward
+            ? [{ name: "Gem bonus", value: `+${diamondReward}`, inline: true }]
+            : []),
+        ],
+      },
     );
   },
 };

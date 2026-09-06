@@ -20,6 +20,7 @@ import {
   createSpawnId,
 } from "../../lib/cardApi.mjs";
 import { getSeries } from "../../lib/seriesEnrich.mjs";
+import { sendEconomyReply } from "../../lib/discordEconomyReply.mjs";
 
 // ── Summon costs by tier ──────────────────────────────────────────────────────
 // Higher tiers cost more coins from the user's card balance.
@@ -72,9 +73,19 @@ export default {
   usage: ".summon [tier]  — e.g. .summon  |  .summon rare  |  .summon 5  |  .summon mythical",
   cooldown: 20,
 
-  async run({ sock, msg, args, sender }) {
+  async run({ sock, msg, args, sender, discord }) {
     const jid   = msg.key.remoteJid;
-    const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
+    const reply = (text, options = {}) => sendEconomyReply({
+      sock,
+      jid,
+      msg,
+      discord,
+      text,
+      title: options.title || "🔮 Summon",
+      color: options.color || "#FF8A65",
+      fields: options.fields || [],
+      mentions: [sender],
+    });
 
     try {
       // Help
