@@ -47,49 +47,25 @@ export default {
 
     const jid   = msg.key.remoteJid;
     const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
-
     const user = await getUser(sender);
     const now  = Date.now();
 
-    // Cooldown
     const lastBeg = user.lastBeg || 0;
     if (now - lastBeg < COOLDOWN) {
       const left = Math.ceil((COOLDOWN - (now - lastBeg)) / 1000);
       const m    = Math.floor(left / 60);
       const s    = left % 60;
-      return reply(
-`╭─❀「 🤲 *𝐁𝐄𝐆* 」❀─╮
-│ ⏳ *Result*  :: \`COOLDOWN 🔴\`
-│ 🍃 *Flavour* :: _Still feeling embarrassed..._
-│
-│ 🕐 *Next*    :: \`${m}m ${s}s\`
-│
-│ 😤 *You're still embarrassed from last time!*
-╰───────────────❀`
-      );
+      return reply(`🤲 beg - \`${m}m ${s}s left\``);
     }
 
-    // 35% chance of failure — people aren't always generous
     const failed = Math.random() < 0.35;
-
     if (failed) {
       user.lastBeg = now;
       await saveUser(sender, user);
       const flavour = FAIL_MSGS[Math.floor(Math.random() * FAIL_MSGS.length)];
-      return reply(
-`╭─❀「 🤲 *𝐁𝐄𝐆* 」❀─╮
-│ 🌙 *Result*  :: \`FAILED 🔴\`
-│ 🍃 *Flavour* :: _${flavour}_
-│
-│ 💰 *Earned*  :: \`$0\`
-│ 💰 *Wallet*  :: \`${fmt(user.money)}\`
-│
-│ 😤 *Better luck next time!*
-╰───────────────❀`
-      );
+      return reply(`🤲 beg failed: ${flavour} Wallet: ${fmt(user.money)}.`);
     }
 
-    // Success — small amount, it's begging after all ($50–$400)
     const amount        = 50 + Math.floor(Math.random() * 351);
     user.money          = (user.money || 0) + amount;
     user.lastBeg        = now;
@@ -100,15 +76,8 @@ export default {
 
     const pick = SUCCESS_MSGS[Math.floor(Math.random() * SUCCESS_MSGS.length)];
     return reply(
-`╭─❀「 🤲 *𝐁𝐄𝐆* 」❀─╮
-│ 🌙 *Result*  :: \`SUCCESS 🟢\`
-│ 🍃 *Flavour* :: _${pick(sender.split("@")[0], amount.toLocaleString())}_
-│
-│ 💰 *Earned*  :: \`+${fmt(amount)}\`
-│ 💰 *Wallet*  :: \`${fmt(user.money)}\`${diamondReward ? `\n│ 💎 *Bonus*   :: \`+${diamondReward}\` Gem${diamondReward === 1 ? "" : "s"}` : ""}
-│
-│ 🙏 *Thank you!* Keep grinding!
-╰───────────────❀`
+      `🤲 beg: +${fmt(amount)}. Wallet: ${fmt(user.money)}.` +
+      `${diamondReward ? ` Gems: +${diamondReward}.` : ""} ${pick(sender.split("@")[0], amount.toLocaleString())}`,
     );
   },
 };

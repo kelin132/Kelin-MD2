@@ -26,14 +26,7 @@ export default {
 
     if (!targetJid) {
       return sock.sendMessage(jid, {
-        text:
-`╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
-│ 📖 *Usage*   :: *.rob @user*
-│ 🎯 *Rate*    :: *55% success*
-│ 💸 *Risk*    :: *Fine if caught*
-│ 🔫 *Gun*      :: *Required from .shop weapons*
-│ ⏳ *Cooldown* :: *45 minutes*
-╰───────────────❀`
+        text: "🦹 rob: use `.rob @user` (55% success, gun required, 45m cooldown).",
       }, { quoted: msg });
     }
 
@@ -50,13 +43,7 @@ export default {
 
     if (!hasActiveGun(robber, now)) {
       return sock.sendMessage(jid, {
-        text:
-`╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
-│ ❌ *Result*  :: *NO GUN 🔴*
-│
-│ 🔫 Buy a gun from *.shop weapons* before robbing.
-│ ⏳ A gun remains active for *3 days*.
-╰───────────────❀`
+        text: "🦹 rob: buy a gun from `.shop weapons` first. It lasts 3 days.",
       }, { quoted: msg });
     }
 
@@ -66,15 +53,7 @@ export default {
       const remaining = cd - (now - robber.lastRob);
       const minutes   = Math.floor(remaining / (60 * 1000));
       return sock.sendMessage(jid, {
-        text:
-`╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
-│ ⏳ *Result*  :: *HIDING 🔴*
-│ 🍃 *Flavour* :: _身を隠せ！警察が来るぞ！_
-│
-│ 🕐 *Next*    :: *${minutes}m remaining*
-│
-│ 😤 *Lay low for now...*
-╰───────────────❀`
+        text: `🦹 rob - \`${minutes}m left\``,
       }, { quoted: msg });
     }
 
@@ -83,15 +62,7 @@ export default {
     // Check staff immunity — cannot be robbed
     if (target.staffImmunity) {
       return sock.sendMessage(jid, {
-        text:
-`╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
-│ 🌙 *Result*  :: *BLOCKED 🔴*
-│ 🍃 *Flavour* :: _この人は守られている！_
-│
-│ 🛡️ *Shield*  :: *Staff Immunity*
-│
-│ ⚠️ *This target cannot be robbed!*
-╰───────────────❀`
+        text: "🦹 rob: that player is protected by staff immunity.",
       }, { quoted: msg });
     }
 
@@ -99,30 +70,13 @@ export default {
     if (target.robShieldExpiry && target.robShieldExpiry > Date.now()) {
       const minsLeft = Math.ceil((target.robShieldExpiry - Date.now()) / 60000);
       return sock.sendMessage(jid, {
-        text:
-`╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
-│ 🌙 *Result*  :: *BLOCKED 🔴*
-│ 🍃 *Flavour* :: _護符が守っている！_
-│
-│ 🧿 *Shield*  :: *Rob Charm*
-│ ⏳ *Expires* :: *${minsLeft}m remaining*
-│
-│ ⚠️ *Try again later!*
-╰───────────────❀`
+        text: `🦹 rob: target has a rob shield for ${minsLeft}m.`,
       }, { quoted: msg });
     }
 
     if (target.money < 100) {
       return sock.sendMessage(jid, {
-        text:
-`╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
-│ 🌙 *Result*  :: *ABORTED 🔴*
-│ 🍃 *Flavour* :: _金がない！意味がない！_
-│
-│ 💸 *Target*  :: *Broke (${fmt(target.money)})*
-│
-│ 😂 *Not worth it! Minimum $100 needed.*
-╰───────────────❀`
+        text: `🦹 rob: target is too broke (${fmt(target.money)}).`,
       }, { quoted: msg });
     }
 
@@ -141,17 +95,7 @@ export default {
       await addHistory(targetJid, "rob_victim", -amount, `Robbed by ${robber.name}`);
 
       await sock.sendMessage(jid, {
-        text:
-`╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
-│ 🌙 *Result*  :: *SUCCESS 🟢*
-│ 🍃 *Flavour* :: _完璧な強盗！影のように！_
-│
-│ 👤 *Target*  :: *${tag}*
-│ 💰 *Stolen*  :: *+${fmt(amount)}*
-│ 💰 *Wallet*  :: *${fmt(robber.money)}*
-│
-│ 🦹 *Clean getaway! Mission complete!* ⚔️
-╰───────────────❀`,
+        text: `🦹 rob: +${fmt(amount)} stolen from ${tag}. Wallet: ${fmt(robber.money)}.`,
         mentions: [targetJid],
       }, { quoted: msg });
     } else {
@@ -161,16 +105,7 @@ export default {
       await addHistory(sender, "rob", -fine, `Rob failed — fined $${fine.toLocaleString()}`);
 
       await sock.sendMessage(jid, {
-        text:
-`╭─❀「 🦹 *𝐑𝐎𝐁* 」❀─╮
-│ 🌙 *Result*  :: *CAUGHT 🔴*
-│ 🍃 *Flavour* :: _捕まった！逃げ遅れた..._
-│
-│ 💸 *Fine*    :: *-${fmt(fine)}*
-│ 💰 *Wallet*  :: *${fmt(robber.money)}*
-│
-│ 🚔 *You got busted! Lie low for 45 min.*
-╰───────────────❀`
+        text: `🦹 rob failed: -${fmt(fine)} fine. Wallet: ${fmt(robber.money)}.`,
       }, { quoted: msg });
     }
   }

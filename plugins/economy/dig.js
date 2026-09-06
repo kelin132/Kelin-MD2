@@ -30,9 +30,7 @@ export default {
       const rem  = COOLDOWN - (now - user.lastDig);
       const secs = Math.ceil(rem / 1000);
       
-      const limitCaption = `⏳ You've already dug recently! Next dig available in ${secs}s.`;
-
-      return reply(limitCaption);
+      return reply(`⛏️ dig - \`${secs}s left\``);
     }
 
     const loot = rollLoot(DIG_LOOT);
@@ -67,10 +65,9 @@ export default {
     const { leveled, newLevel } = checkLevelUp(user);
     await saveUser(sender, user);
 
-    const digToolEmoji = hasDiamondShovel ? "🪏" : "⛏️";
-
-    const claimCaption = `🎉 You dug deep into the ground ${digToolEmoji} and found ${resultText}! Your new balance is 💰 ${fmt(user.money || 0)} coins.${diamondReward ? ` (Bonus: 💎 +${diamondReward} Gem${diamondReward === 1 ? "" : "s"})` : ""}${leveled ? `\n\n⭐ *LEVEL UP!* You are now Level ${newLevel}!` : ""}`;
-
-    return reply(claimCaption);
+    return reply(
+      `⛏️ dig: ${resultText}. Wallet: ${fmt(user.money || 0)}.` +
+      `${diamondReward ? ` Gems: +${diamondReward}.` : ""}${leveled ? ` Level up: ${newLevel}.` : ""}`,
+    );
   },
 };
