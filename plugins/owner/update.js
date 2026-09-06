@@ -13,6 +13,7 @@
  */
 import { fileURLToPath } from "url";
 import { dirname, resolve } from "path";
+import { exec } from "child_process";
 import fs from "fs";
 import path from "path";
 import { loadPlugins } from "../../lib/pluginManager.mjs";
@@ -36,7 +37,6 @@ function run(cmd) {
 // ── Git helpers ──────────────────────────────────────────────────────────
 
 async function hasGit() {
-    if (!fs.existsSync(path.join(REPO_ROOT, '.git'))) return false;
     try { await run('git --version'); return true; } catch { return false; }
 }
 
@@ -91,10 +91,53 @@ function restoreEnvAndSession(snap) {
     }
 }
 
+const CLEAN_EXCLUDES = [
+    "--exclude=.bots",
+    "--exclude=.bots/**",
+    "--exclude=backups",
+    "--exclude=backups/**",
+    "--exclude=package-lock.json",
+    "--exclude=node_modules",
+    "--exclude=data",
+    "--exclude=data/**",
+    "--exclude=sessions",
+    "--exclude=sessions/**",
+].join(" ");
+
+async function ensureGitRemote() {
+    const remoteUrl = "https://github.com/kelin132/Kelin-MD2.git";
+    try {
+        await run(`git -C "${REPO_ROOT}" remote get-url origin`);
+        await run(`git -C "${REPO_ROOT}" remote set-url origin ${remoteUrl}`);
+    } catch {
+        await run(`git -C "${REPO_ROOT}" remote add origin ${remoteUrl}`);
+    }
+}
+
+async function initialiseGitRepo() {
+    console.log("[update] No .git folder found — initialising the repository.");
+    const snap = snapshotEnvAndSession();
+
+    await run(`git -C "${REPO_ROOT}" init`);
+    await ensureGitRemote();
+    await run(`git -C "${REPO_ROOT}" fetch origin main --depth=1`);
+    await run(`git -C "${REPO_ROOT}" reset --hard origin/main`);
+    await run(`git -C "${REPO_ROOT}" clean -fd ${CLEAN_EXCLUDES}`);
+    restoreEnvAndSession(snap);
+
+    const newRev = await run(`git -C "${REPO_ROOT}" rev-parse HEAD`);
+    return { sameRev: false, newRev, oldRev: "none", initialized: true };
+}
+
 // ── Update via git (proper method) ────────────────────────────────────────────────
 
 async function updateViaGit() {
+    if (!fs.existsSync(path.join(REPO_ROOT, ".git"))) {
+        return initialiseGitRepo();
+    }
+
     try {
+        await ensureGitRemote();
         const oldRev = (await run(`git -C "${REPO_ROOT}" rev-parse HEAD`).catch(() => 'unknown'));
         await run(`git -C "${REPO_ROOT}" fetch --all --prune`);
         const branch = await detectBranch();
@@ -108,13 +151,7 @@ async function updateViaGit() {
             await run(`git -C "${REPO_ROOT}" reset --hard ${newRev}`);
             // Never remove runtime-owned files. In particular, .bots contains
             // live multi-bot credentials that are intentionally untracked by Git.
-            await run(
-                `git -C "${REPO_ROOT}" clean -fd ` +
-                `--exclude=.bots --exclude=.bots/** ` +
-                `--exclude=backups --exclude=backups/** ` +
-                `--exclude=package-lock.json --exclude=node_modules ` +
-                `--exclude=data --exclude=data/** --exclude=sessions --exclude=sessions/**`
-            );
+            await run(`git -C "${REPO_ROOT}" clean -fd ${CLEAN_EXCLUDES}`);
 
             // Restore immediately after — before npm install
             restoreEnvAndSession(snap);
@@ -169,14 +206,14 @@ export default {
             // Check if git is available
             if (!(await hasGit())) {
                 return sock.sendMessage(jid, {
-                    text: `❌ *Git not available!*\n\nMake sure .git folder exists and git is installed.`
+                    text: `❌ *Git is not available on this panel.*\n\nInstall Git or ask the host to enable it before using .update.`
                 }, { quoted: msg });
             }
 
             // ── Step 1: git fetch + reset ────────────────────────────────────────
             let updateOutput = "";
             try {
-                const { sameRev, newRev, oldRev } = await updateViaGit();
+                const { sameRev, newRev, oldRev, initialized } = await updateViaGit();
                 
                 if (sameRev) {
                     return sock.sendMessage(jid, {
@@ -184,7 +221,9 @@ export default {
                     }, { quoted: msg });
                 }
 
-                updateOutput = `📥 Pulled from: ${oldRev?.slice(0, 7)} → ${newRev?.slice(0, 7)}`;
+                updateOutput = initialized
+                    ? `📥 Repository initialised at: ${newRev?.slice(0, 7)}`
+                    : `📥 Pulled from: ${oldRev?.slice(0, 7)} → ${newRev?.slice(0, 7)}`;
             } catch (err) {
                 const detail = (err.message || "").slice(0, 600);
                 return sock.sendMessage(jid, {
