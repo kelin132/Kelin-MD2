@@ -3,7 +3,11 @@
  * All economy / staff plugins import from here.
  */
 import { getDb } from "../../lib/mongo.mjs";
-import { normalizeJid } from "../../lib/identity.mjs";
+import {
+  normalizeJid,
+  phoneIdentityFields,
+  whatsappIdentityVariants,
+} from "../../lib/identity.mjs";
 
 export const DEFAULTS = {
   name:          "User",
@@ -64,11 +68,71 @@ export const REGISTRATION_STARTING_MONEY = 100_000;
 
 // ─── Core CRUD ────────────────────────────────────────────────────────────────
 
+function identityQuery(id) {
+  const variants = whatsappIdentityVariants(id);
+  if (variants.length === 0) return { _id: "__missing_identity__" };
+
+  return {
+    $or: [
+      { _id: { $in: variants } },
+      { userId: { $in: variants } },
+      { whatsappNumber: { $in: variants } },
+      { phoneNumber: { $in: variants } },
+      { phone: { $in: variants } },
+      { whatsappId: { $in: variants } },
+      { whatsappJid: { $in: variants } },
+      { jid: { $in: variants } },
+      { userJid: { $in: variants } },
+      { sender: { $in: variants } },
+      { owner: { $in: variants } },
+    ],
+  };
+}
+
+async function findIdentityUser(db, id) {
+  const collection = db.collection("users");
+  const normalizedId = normalizeJid(id);
+  const canonical = await collection.findOne({ _id: normalizedId });
+  if (canonical) return canonical;
+  return collection.findOne(identityQuery(id));
+}
+
+async function migrateIdentityUser(db, user, normalizedId) {
+  const sourceId = user?._id;
+  if (!sourceId || sourceId === normalizedId) return user;
+
+  const collection = db.collection("users");
+  const destination = await collection.findOne({ _id: normalizedId });
+  if (destination) return destination;
+
+  const { _id: ignoredId, ...copy } = user;
+  try {
+    await collection.insertOne({
+      ...copy,
+      _id: normalizedId,
+      migratedFrom: sourceId,
+      migratedAt: new Date(),
+    });
+    await collection.deleteOne({ _id: sourceId });
+    return { ...copy, _id: normalizedId };
+  } catch {
+    return (await collection.findOne({ _id: normalizedId })) || user;
+  }
+}
+
+async function ensurePhoneIdentityFields(db, id) {
+  const fields = phoneIdentityFields(id);
+  if (Object.keys(fields).length === 0) return;
+  await db.collection("users").updateOne({ _id: normalizeJid(id) }, { $set: fields });
+}
+
 export async function getUser(id) {
   const db   = await getDb();
   const normalizedId = normalizeJid(id);
-  const user = await db.collection("users").findOne({ _id: normalizedId });
+  const found = await findIdentityUser(db, id);
+  const user = found ? await migrateIdentityUser(db, found, normalizedId) : null;
   if (!user) return { ...DEFAULTS };
+  if (user.registered) await ensurePhoneIdentityFields(db, normalizedId);
   const { _id, ...rest } = user;
   const merged = { ...DEFAULTS, ...rest };
 
@@ -367,15 +431,21 @@ export async function getAllUsers() {
 export async function isRegistered(id) {
   const db   = await getDb();
   const normalizedId = normalizeJid(id);
-  const user = await db.collection("users").findOne({ _id: normalizedId }, { projection: { registered: 1 } });
+  const found = await findIdentityUser(db, id);
+  const user = found ? await migrateIdentityUser(db, found, normalizedId) : null;
   return !!(user?.registered);
 }
 
 export async function registerUser(id, name) {
   const db = await getDb();
   const normalizedId = normalizeJid(id);
+  const existing = await findIdentityUser(db, id);
+  if (existing && existing._id !== normalizedId) {
+    await migrateIdentityUser(db, existing, normalizedId);
+  }
   const { name: _n, registered: _r, registeredAt: _ra, ...insertDefaults } = DEFAULTS;
   const registrationFields = {
+    ...phoneIdentityFields(normalizedId),
     name: name || "User",
     registered: true,
     registeredAt: new Date().toISOString(),

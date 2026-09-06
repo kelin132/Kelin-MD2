@@ -140,7 +140,7 @@ Battle, transformation, villain-arrival, victory, and roster-selection images no
 The Discord companion uses the same MongoDB database. To link one user's existing
 WhatsApp progress:
 
-1. Send `.discordlink` to Kelin-MD2 on WhatsApp.
+1. Send `.discord` to Kelin-MD2 on WhatsApp.
 2. Copy the one-time code.
 3. Send `.connect CODE` to AKIRA-DISCORD.
 

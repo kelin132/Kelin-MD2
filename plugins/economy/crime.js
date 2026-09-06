@@ -35,15 +35,7 @@ export default {
       const remaining = cooldown - (now - user.lastCrime);
       const minutes   = Math.floor(remaining / (60 * 1000));
       return sock.sendMessage(jid, {
-        text:
-`╭─❀「 🗡️ *𝐂𝐑𝐈𝐌𝐄* 」❀─╮
-│ ⏳ *Result*  :: *LAYING LOW 🔴*
-│ 🍃 *Flavour* :: _まだ警察に追われている..._
-│
-│ 🕐 *Next*    :: *${minutes}m remaining*
-│
-│ 🚨 *Stay hidden! Police are watching.*
-╰───────────────❀`
+        text: `🗡️ crime - \`${minutes}m left\``,
       }, { quoted: msg });
     }
 
@@ -60,18 +52,7 @@ export default {
       await saveUser(sender, user);
       await addHistory(sender, "crime", reward, `Crime: ${crime.name}`);
       await sock.sendMessage(jid, {
-        text:
-`╭─❀「 🗡️ *𝐂𝐑𝐈𝐌𝐄* 」❀─╮
-│ 🌙 *Result*  :: *SUCCESS 🟢*
-│ 🍃 *Flavour* :: _完璧な犯行だ！_
-│
-│ ${crime.emoji} *Crime*    :: *${crime.name}*
-│ 💰 *Gained*  :: *+${fmt(reward)}*
-│ 🔮 *XP*      :: *+30*
-│ 💰 *Wallet*  :: *${fmt(user.money)}*
-│
-│ 🗡️ *Another phantom strike done...* 🌙
-╰───────────────❀`
+        text: `🗡️ crime: +${fmt(reward)} from ${crime.name}. Wallet: ${fmt(user.money)}.`,
       }, { quoted: msg });
     } else {
       const fine  = Math.floor(reward * 0.5);
@@ -80,18 +61,7 @@ export default {
       await jailUser(sender, 10 * 60 * 1000);
       await addHistory(sender, "crime", -fine, `Crime caught: ${crime.name} — fined & jailed 10m`);
       await sock.sendMessage(jid, {
-        text:
-`╭─❀「 🗡️ *𝐂𝐑𝐈𝐌𝐄* 」❀─╮
-│ 🌙 *Result*  :: *BUSTED 🔴*
-│ 🍃 *Flavour* :: _計画が失敗した...捕まった！_
-│
-│ ${crime.emoji} *Crime*    :: *${crime.name}*
-│ 💸 *Fine*    :: *-${fmt(fine)}*
-│ 🔒 *Jailed*  :: *10 minutes*
-│ 💰 *Wallet*  :: *${fmt(user.money)}*
-│
-│ 😤 *Sit tight... 10 min cooldown.*
-╰───────────────❀`
+        text: `🗡️ crime failed: -${fmt(fine)} fine. Jailed for 10m. Wallet: ${fmt(user.money)}.`,
       }, { quoted: msg });
     }
   }

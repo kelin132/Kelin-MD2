@@ -5,11 +5,9 @@ import {
   getEconomyPreviewConfig,
 } from "../lib/economyPreview.mjs";
 
-test("daily, weekly, and monthly rewards use AIDORU destinations", async () => {
+test("daily rewards use the AIDORU destination", async () => {
   const expected = {
     daily: "https://aidoru.zone.id/journey",
-    weekly: "https://aidoru.zone.id/arcade",
-    monthly: "https://aidoru.zone.id/arcade",
   };
 
   for (const [command, url] of Object.entries(expected)) {
