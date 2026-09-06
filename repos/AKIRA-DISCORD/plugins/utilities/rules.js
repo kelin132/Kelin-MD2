@@ -1,6 +1,6 @@
 export default {
   name: "rules",
-  description: "View the official bot rules",
+  description: "View the official AIDORU server rules",
   category: "main",
   usage: ".rules",
   aliases: ["botrules", "terms"],
@@ -10,8 +10,67 @@ export default {
   isPremium: false,
   version: "1.0.0",
 
-  async run({ sock, msg }) {
+  async run({ sock, msg, discord }) {
     try {
+      const jid = msg.key.remoteJid;
+      const animatedEmoji = discord?.client?.emojis?.cache?.find?.(
+        (emoji) => emoji.animated && /sparkle|star|heart|cute|pink|aiko|aidoru/i.test(emoji.name || ""),
+      );
+      const motion = animatedEmoji
+        ? `<a:${animatedEmoji.name}:${animatedEmoji.id}>`
+        : "✨";
+
+      if (discord?.message) {
+        await sock.sendMessage(jid, {
+          discordEmbed: {
+            title: `${motion} 𝐀𝐈𝐃𝐎𝐑𝐔 𝐒𝐄𝐑𝐕𝐄𝐑 𝐑𝐔𝐋𝐄𝐒 ${motion}`,
+            description: [
+              `**Welcome to AIDORU!** ${motion}`,
+              "",
+              "Keep our little anime corner safe, friendly, and fun for everyone.",
+              "By staying here, you agree to follow these guidelines.",
+            ].join("\n"),
+            color: "#FF4FA3",
+            fields: [
+              {
+                name: `${motion} 01 · Be kind`,
+                value: "Respect members, staff, and creators. No harassment, bullying, hate speech, or impersonation.",
+                inline: false,
+              },
+              {
+                name: `${motion} 02 · Keep it safe`,
+                value: "No illegal activity, threats, doxxing, scams, malicious links, or attempts to exploit the bot.",
+                inline: false,
+              },
+              {
+                name: `${motion} 03 · Keep channels clean`,
+                value: "No spam, command flooding, raids, or disruptive content. Use commands in the right channels.",
+                inline: false,
+              },
+              {
+                name: `${motion} 04 · Content boundaries`,
+                value: "No NSFW, graphic, hateful, or offensive content. Keep usernames, profiles, and uploads appropriate.",
+                inline: false,
+              },
+              {
+                name: `${motion} 05 · Use AIDORU fairly`,
+                value: "Do not abuse bugs, automate gameplay, exploit rewards, or impersonate the bot. Report issues with `.support`.",
+                inline: false,
+              },
+              {
+                name: `${motion} 06 · Staff decisions`,
+                value: "Staff may remove content, restrict access, or blacklist accounts when needed to protect the community.",
+                inline: false,
+              },
+            ],
+            footer: {
+              text: `${motion} Read the rules • Have fun • AIDORU · AKIRA`,
+            },
+          },
+        }, { quoted: msg });
+        return;
+      }
+
       const rulesMessage = `
 ╭━━━〔 📜 AKIRA RULES 〕━━━╮
 
@@ -42,24 +101,27 @@ Before using the bot, please follow these rules:
 ╰━━━━━━━━━━━━━━━━━━━╯
 `;
 
-      await sock.sendMessage(
-        msg.key.remoteJid,
-        {
-          text: rulesMessage,
-        },
-        { quoted: msg }
-      );
+      await sock.sendMessage(jid, { text: rulesMessage }, { quoted: msg });
 
     } catch (err) {
       console.error(err);
 
-      await sock.sendMessage(
-        msg.key.remoteJid,
-        {
-          text: "❌ Failed to display the bot rules."
-        },
-        { quoted: msg }
-      );
+      if (discord?.message) {
+        await sock.sendMessage(jid, {
+          discordEmbed: {
+            title: "❌ AIDORU Rules",
+            description: "The rules could not be displayed right now. Please try `.rules` again.",
+            color: "#FF5D73",
+            footer: { text: "AIDORU • AKIRA" },
+          },
+        }, { quoted: msg });
+      } else {
+        await sock.sendMessage(
+          jid,
+          { text: "❌ Failed to display the bot rules." },
+          { quoted: msg },
+        );
+      }
     }
   }
 };
