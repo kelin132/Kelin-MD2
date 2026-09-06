@@ -1,5 +1,6 @@
 import { EmbedBuilder } from "discord.js";
 import { groupSettings } from "./groupSettings.js";
+import { createAidoruOnboardingPayload } from "./discordOnboarding.mjs";
 
 export function discordSettingsKey(guildId) {
   return `discord:${guildId}`;
@@ -108,6 +109,10 @@ export async function handleDiscordAntiLink(message) {
 }
 
 export async function handleDiscordMemberJoin(member) {
+  if (!member || member.user?.bot) return;
+
+  await member.send(createAidoruOnboardingPayload(member)).catch(() => {});
+
   const settings = groupSettings.get(discordSettingsKey(member.guild.id));
   if (!settings?.welcomeEnabled) return;
 
