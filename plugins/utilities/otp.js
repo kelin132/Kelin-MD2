@@ -2,7 +2,7 @@ import { getPendingWebsiteCode } from "../../lib/websiteAuth.mjs";
 
 export default {
   name: "otp",
-  description: "Show the one-time AIDORU website code in private chat or a group",
+  description: "Send the one-time AIDORU website code in private chat or a group",
   category: "utilities",
   usage: ".otp",
   cooldown: 30,
