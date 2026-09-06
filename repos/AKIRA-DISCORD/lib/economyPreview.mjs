@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 const WEBSITE_ORIGIN = "https://aidoru.zone.id";
 const ASSET_DIRS = [
   fileURLToPath(new URL("../assets/", import.meta.url)),
+  fileURLToPath(new URL("../../../assets/", import.meta.url)),
   fileURLToPath(new URL("../../Kelin-MD2/assets/", import.meta.url)),
 ];
 const REMOTE_ASSET_ORIGIN = "https://raw.githubusercontent.com/kelin132/Kelin-MD2/main/assets";
