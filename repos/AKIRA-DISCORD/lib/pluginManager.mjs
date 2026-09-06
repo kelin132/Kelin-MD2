@@ -79,12 +79,30 @@ export async function loadPlugins(prefix = ".") {
           prefix,
         };
         plugins.push(normalized);
-        commands.push(normalized.name, ...normalized.aliases);
       } catch (error) {
         log("warn", `Failed to load plugin ${category}/${file}: ${error.message}`);
       }
     }
   }
+
+  const canonicalNames = new Set(plugins.map((plugin) => plugin.name));
+  const aliasOwners = new Map();
+  plugins = plugins.map((plugin) => ({
+    ...plugin,
+    aliases: plugin.aliases.filter((alias) => {
+      if (canonicalNames.has(alias)) {
+        log("warn", `Ignoring alias ${alias} on ${plugin.name}; ${alias} is a canonical command.`);
+        return false;
+      }
+      if (aliasOwners.has(alias)) {
+        log("warn", `Ignoring duplicate alias ${alias} on ${plugin.name}; already owned by ${aliasOwners.get(alias)}.`);
+        return false;
+      }
+      aliasOwners.set(alias, plugin.name);
+      return true;
+    }),
+  }));
+  commands = plugins.flatMap((plugin) => [plugin.name, ...plugin.aliases]);
 
   log("info", `Loaded ${plugins.length} plugins from ${categories.length} categories`);
   return { totalPlugins: plugins.length, totalCommands: commands.length };
@@ -226,7 +244,9 @@ export async function routeDiscordMessage(client, message, prefix = ".", ownerId
     }
 
     const plugin = plugins.find(
-      (entry) => entry.name === command || entry.aliases.includes(command),
+      (entry) => entry.name === command,
+    ) || plugins.find(
+      (entry) => entry.aliases.includes(command),
     );
     if (!plugin) return;
 
@@ -260,6 +280,12 @@ export async function routeDiscordMessage(client, message, prefix = ".", ownerId
     const mockSock = {
       sendMessage: async (id, content, options = {}) => {
         const channel = await resolveChannel(client, id, message.channel);
+        if (content?.react?.text) {
+          if (options.quoted?.react) {
+            return options.quoted.react(content.react.text);
+          }
+          return null;
+        }
         if (
           plugin.discordPlainText
           && content
@@ -286,6 +312,15 @@ export async function routeDiscordMessage(client, message, prefix = ".", ownerId
         }
         return channel.send(payload);
       },
+      sendPresenceUpdate: async () => undefined,
+      profilePictureUrl: async (id) => {
+        const userId = String(id || "").replace(/^discord:/, "").split("@")[0];
+        const user = await client.users.fetch(userId);
+        return user.displayAvatarURL({ extension: "png", size: 256, forceStatic: true });
+      },
+      onWhatsApp: async (id) => [{ jid: String(id || ""), exists: true }],
+      contacts: Object.create(null),
+      user: client.user,
       ...discordGroupSocket(client, message, message.channel),
     };
 
@@ -344,7 +379,11 @@ export async function routeDiscordMessage(client, message, prefix = ".", ownerId
   } catch (error) {
     log("error", `Command ${command} failed: ${error.stack || error.message}`);
     try {
-      await message.reply("❌ Command failed. Please try again later.");
+      const detail = String(error?.message || "Unknown error")
+        .replace(/mongodb(?:\+srv)?:\/\/\S+/gi, "database connection")
+        .replace(/\s+/g, " ")
+        .slice(0, 180);
+      await message.reply(`❌ \`${command}\` failed: ${detail}`);
     } catch {
       // The channel may have disappeared; the original error is already logged.
     }

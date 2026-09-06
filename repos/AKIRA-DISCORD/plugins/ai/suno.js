@@ -172,7 +172,7 @@ export default {
   description: "Generate AI music from a text prompt",
   category: "ai",
   usage: ".suno <prompt> [--style <genre>]",
-  aliases: ["sonu", "music", "song"],
+  aliases: ["sonu"],
   cooldown: 15,
   limit: 3,
   hidden: false,

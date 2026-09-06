@@ -28,7 +28,7 @@ export default {
   description: "Play with your active pet",
   category: "pets",
   usage: ".play",
-  aliases: ["playpet", "play"],
+  aliases: ["playpet"],
   checkJail: true,
 
   async run({ sock, msg }) {

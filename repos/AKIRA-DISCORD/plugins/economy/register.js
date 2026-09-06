@@ -8,6 +8,7 @@ export default {
   aliases: ["reg", "signup"],
   discordColor: "#57B894",
   discordTitle: "✅ Welcome to AKIRA Economy",
+  discordPlainText: true,
   cooldown: 5,
 
   async run({ sock, msg, sender, text, discord }) {
@@ -17,7 +18,15 @@ export default {
       { quoted: msg },
     );
 
-    const already = await isRegistered(sender);
+    let already;
+    try {
+      already = await isRegistered(sender);
+    } catch (error) {
+      console.error("[register] could not check account:", error.stack || error.message);
+      return sock.sendMessage(msg.key.remoteJid, {
+        text: "❌ Registration could not reach the economy database. Please try again in a moment.",
+      }, { quoted: msg });
+    }
     if (already) {
       return send({
         title: "✅ Welcome to AKIRA Economy",
@@ -71,7 +80,14 @@ export default {
       });
     }
 
-    await registerUser(sender, name);
+    try {
+      await registerUser(sender, name);
+    } catch (error) {
+      console.error("[register] could not create account:", error.stack || error.message);
+      return sock.sendMessage(msg.key.remoteJid, {
+        text: "❌ Registration could not save your account. Please try again in a moment.",
+      }, { quoted: msg });
+    }
     const welcomeText =
       `🎉 *Welcome to AKIRA Economy, ${name}!*\n\n✅ Account created successfully!\n\n` +
       "💰 Starting Balance : $100,000\n🏦 Bank Balance     : $0\n💎 Diamonds        : 0\n⭐ Level            : 1\n\n" +
