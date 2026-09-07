@@ -86,7 +86,7 @@ export default {
 
     const pick = SUCCESS_MSGS[Math.floor(Math.random() * SUCCESS_MSGS.length)];
     const details = [
-      `🙏 ${pick("", amount.toLocaleString())}`,
+      `🙏 You begged and received ${fmt(amount)}. ${pick("", amount.toLocaleString())}`,
       "",
       `Wallet: ${fmt(user.money || 0)} • Orbs: ${user.orbs || 0} • Items: ${(user.inventory || []).length} • XP: +5.`,
     ];

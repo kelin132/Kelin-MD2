@@ -91,7 +91,7 @@ export default {
       await addHistory(targetJid, "rob_victim", -amount, `Robbed by ${robber.name}`);
 
       await reply([
-        `🦹 Stole ${fmt(amount)}! ✅ Clean getaway.`,
+        `🦹 You robbed another player and stole ${fmt(amount)}! ✅ Clean getaway.`,
         "",
         `Wallet: ${fmt(robber.money)} • Orbs: ${robber.orbs || 0} • Items: ${(robber.inventory || []).length} • XP: +0.`,
       ].join("\n"));
@@ -102,7 +102,7 @@ export default {
       await addHistory(sender, "rob", -fine, `Rob failed — fined $${fine.toLocaleString()}`);
 
       await reply([
-        `🚔 Rob failed — fined ${fmt(fine)}. ⏳ Lie low for 45m.`,
+        `🚔 You tried to rob another player but got caught and were fined ${fmt(fine)}. ⏳ Lie low for 45m.`,
         "",
         `Wallet: ${fmt(robber.money)} • Orbs: ${robber.orbs || 0} • Items: ${(robber.inventory || []).length} • XP: +0.`,
       ].join("\n"));
