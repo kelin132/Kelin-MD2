@@ -5,7 +5,7 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
 const AIDORU_DISCORD_INVITE =
-  process.env.AIDORU_DISCORD_INVITE || "https://discord.gg/aidoru";
+  process.env.AIDORU_DISCORD_INVITE || "https://discord.gg/6JxSaR3va";
 const PREVIEW_IMAGE_URL = new URL("../../assets/aidoru-web-preview.jpg", import.meta.url);
 
 export default {
@@ -44,15 +44,6 @@ ${AIDORU_DISCORD_INVITE}
         "",
         `Join here: ${AIDORU_DISCORD_INVITE}`,
         "",
-        "🔗 *Discord link code*",
-        "",
-        `Your one-time code is: *${code}*`,
-        "",
-        "Open Discord and send:",
-        `*.connect ${code}*`,
-        "",
-        "This code expires in 10 minutes and can only be used once.",
-        "Never share this code with anyone else.",
       ].join("\n"),
       linkPreview: {
         "canonical-url": AIDORU_DISCORD_INVITE,
