@@ -2,10 +2,11 @@ import { getUser, saveUser, requireRegistration, isRegistered, addHistory } from
 import { hasActiveGun } from "../../lib/economySecurity.mjs";
 
 function fmt(n) {
-  if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`;
-  if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
-  if (n >= 1e3) return `$${(n/1e3).toFixed(1)}K`;
-  return `$${n.toLocaleString()}`;
+  const amount = Math.max(0, Number(n) || 0);
+  if (amount >= 1e9) return `$${(amount / 1e9).toFixed(1).replace(/\.0$/, "")}B`;
+  if (amount >= 1e6) return `$${(amount / 1e6).toFixed(1).replace(/\.0$/, "")}M`;
+  if (amount >= 1e3) return `$${(amount / 1e3).toFixed(1).replace(/\.0$/, "")}K`;
+  return `$${Math.round(amount).toLocaleString()}`;
 }
 
 function formatRemaining(ms) {

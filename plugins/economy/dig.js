@@ -4,9 +4,11 @@ import { DIG_LOOT, SHOP_ITEMS, rollLoot } from "./_items.js";
 const COOLDOWN = 10 * 1000; // 10 seconds
 
 function fmt(n) {
-  if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
-  if (n >= 1e3) return `$${(n/1e3).toFixed(1)}K`;
-  return `$${n.toLocaleString()}`;
+  const amount = Math.max(0, Number(n) || 0);
+  if (amount >= 1e9) return `$${(amount / 1e9).toFixed(1).replace(/\.0$/, "")}B`;
+  if (amount >= 1e6) return `$${(amount / 1e6).toFixed(1).replace(/\.0$/, "")}M`;
+  if (amount >= 1e3) return `$${(amount / 1e3).toFixed(1).replace(/\.0$/, "")}K`;
+  return `$${Math.round(amount).toLocaleString()}`;
 }
 
 function articleFor(value) {
