@@ -29,12 +29,7 @@ export default {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const jid = msg.key.remoteJid;
-    const tag = `@${sender.split("@")[0]}`;
-    const reply = (text, mentions = []) => sock.sendMessage(
-      jid,
-      { text, ...(mentions.length ? { mentions } : {}) },
-      { quoted: msg },
-    );
+    const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
 
     const targetJid = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0]
       || (args[0]?.match(/^[0-9]+$/) ? `${args[0]}@s.whatsapp.net` : null);
@@ -62,25 +57,24 @@ export default {
 
     if (now - (robber.lastRob || 0) < cd) {
       const remaining = cd - (now - robber.lastRob);
-      return reply(`⏳ ${tag}, your rob cooldown is still active — ${formatRemaining(remaining)} left.`);
+      return reply(`⏳ Your rob cooldown is still active — ${formatRemaining(remaining)} left.`);
     }
 
     const target = await getUser(targetJid);
-    const targetTag = `@${targetJid.split("@")[0]}`;
 
     // Check staff immunity — cannot be robbed
     if (target.staffImmunity) {
-      return reply(`🛡️ ${targetTag} is protected by staff immunity and cannot be robbed.`, [targetJid]);
+      return reply("🛡️ This target is protected by staff immunity and cannot be robbed.");
     }
 
     // Check rob charm
     if (target.robShieldExpiry && target.robShieldExpiry > Date.now()) {
       const minsLeft = Math.ceil((target.robShieldExpiry - Date.now()) / 60000);
-      return reply(`🧿 ${targetTag} is protected by a Rob Charm for about ${minsLeft}m more.`, [targetJid]);
+      return reply(`🧿 This target is protected by a Rob Charm for about ${minsLeft}m more.`);
     }
 
     if (target.money < 100) {
-      return reply(`😂 ${targetTag} is too broke to rob — they only have ${fmt(target.money)}.`, [targetJid]);
+      return reply("😂 This target is too broke to rob.");
     }
 
     const amount  = Math.min(10000, Math.floor(Math.random() * (target.money * 0.3)) + 100);
@@ -96,20 +90,14 @@ export default {
       await addHistory(sender,    "rob",        amount,  `Robbed ${target.name}`);
       await addHistory(targetJid, "rob_victim", -amount, `Robbed by ${robber.name}`);
 
-      await reply(
-        `🦹 ${tag} robbed ${targetTag} and stole ${fmt(amount)}!\n💰 ${tag}'s wallet: ${fmt(robber.money)}\n✅ Clean getaway!`,
-        [sender, targetJid],
-      );
+      await reply(`🦹 Stole ${fmt(amount)}! ✅ Clean getaway.`);
     } else {
       const fine   = Math.floor(amount * 0.7);
       robber.money = Math.max(0, robber.money - fine);
       await saveUser(sender, robber);
       await addHistory(sender, "rob", -fine, `Rob failed — fined $${fine.toLocaleString()}`);
 
-      await reply(
-        `🚔 ${tag} tried to rob ${targetTag} but got caught!\n💸 Fine: -${fmt(fine)}  •  💰 Wallet: ${fmt(robber.money)}\n⏳ Lie low for 45m.`,
-        [sender, targetJid],
-      );
+      await reply(`🚔 Rob failed — fined ${fmt(fine)}. ⏳ Lie low for 45m.`);
     }
   }
 };

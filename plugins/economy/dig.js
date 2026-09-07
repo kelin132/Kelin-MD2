@@ -27,13 +27,8 @@ export default {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const jid = msg.key.remoteJid;
-    const tag = `@${sender.split("@")[0]}`;
     const action = String(cmd || "dig").toLowerCase() === "mine" ? "mine" : "dig";
-    const reply = (text) => sock.sendMessage(
-      jid,
-      { text, mentions: [sender] },
-      { quoted: msg },
-    );
+    const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
     const now = Date.now();
 
     const user = await getUser(sender);
@@ -41,7 +36,7 @@ export default {
     if (now - (user.lastDig || 0) < COOLDOWN) {
       const rem = COOLDOWN - (now - user.lastDig);
       const secs = Math.ceil(rem / 1000);
-      return reply(`⏳ ${tag}, your ${action} cooldown is still active — ${secs}s left.`);
+      return reply(`⏳ Your ${action} cooldown is still active — ${secs}s left.`);
     }
 
     const loot = rollLoot(DIG_LOOT);
@@ -55,31 +50,27 @@ export default {
       const amount = Math.floor(Math.random() * (loot.max - loot.min + 1)) + loot.min;
       user.money = (user.money || 0) + amount;
       await addHistory(sender, "dig", amount, `Dug up $${amount.toLocaleString()}`);
-      resultLine = `💰 ${tag} used ${action} and found ${fmt(amount)} underground!`;
+      resultLine = `💰 Found ${fmt(amount)} underground!`;
     } else if (loot.type === "item") {
       user.inventory = user.inventory || [];
       user.inventory.push(loot.name);
       const def = SHOP_ITEMS[loot.name];
-      resultLine = `${def?.emoji || "📦"} ${tag} used ${action} and uncovered ${articleFor(loot.name)} ${loot.name}!`;
+      resultLine = `${def?.emoji || "📦"} Uncovered ${articleFor(loot.name)} ${loot.name}!`;
       await addHistory(sender, "dig", 0, `Dug up ${loot.name}`);
     } else if (loot.type === "orbs") {
       const amount = Math.floor(Math.random() * (loot.max - loot.min + 1)) + loot.min;
       user.orbs = (user.orbs || 0) + amount;
-      resultLine = `🔮 ${tag} used ${action} and discovered ${amount} orb${amount === 1 ? "" : "s"}!`;
+      resultLine = `🔮 Discovered ${amount} orb${amount === 1 ? "" : "s"}!`;
       await addHistory(sender, "dig", 0, `Dug up ${amount} orbs`);
     } else {
-      resultLine = `🪨 ${tag} used ${action} but only found a rock. Better luck next time!`;
+      resultLine = "🪨 Found only a rock. Better luck next time!";
     }
 
     user.xp = (user.xp || 0) + 10;
     const { leveled, newLevel } = checkLevelUp(user);
     await saveUser(sender, user);
 
-    const details = [
-      resultLine,
-      `💰 Wallet: ${fmt(user.money || 0)}  •  🔮 Orbs: ${user.orbs || 0}  •  🎒 Items: ${(user.inventory || []).length}`,
-      `⭐ XP gained: +10`,
-    ];
+    const details = [resultLine];
     if (diamondReward) details.push(`💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}`);
     if (leveled) details.push(`🎉 Level up! You are now level ${newLevel}.`);
 

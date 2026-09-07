@@ -48,20 +48,18 @@ export default {
 
     if (activeCooldowns.length === 0) {
       await sock.sendMessage(msg.key.remoteJid, {
-        text: `✅ @${sender.split("@")[0]}, all your cooldowns are ready to go!`,
-        mentions: [sender],
+        text: "✅ All your cooldowns are ready to go!",
       }, { quoted: msg });
       return;
     }
 
     const text = [
-      `⏳ @${sender.split("@")[0]}, your active cooldowns:`,
+      "⏳ Active cooldowns:",
       ...activeCooldowns.map((cd) => `${cd.label} - \`${fmtRemaining(cd.rem)}\``),
     ].join("\n");
 
     await sock.sendMessage(msg.key.remoteJid, {
       text,
-      mentions: [sender],
     }, { quoted: msg });
   },
 };
