@@ -27,6 +27,14 @@ const FAIL_MSGS = [
   `You got lectured about "getting a real job" instead of money.`,
 ];
 
+function fmt(n) {
+  const amount = Math.max(0, Number(n) || 0);
+  if (amount >= 1e9) return `$${(amount / 1e9).toFixed(1).replace(/\.0$/, "")}B`;
+  if (amount >= 1e6) return `$${(amount / 1e6).toFixed(1).replace(/\.0$/, "")}M`;
+  if (amount >= 1e3) return `$${(amount / 1e3).toFixed(1).replace(/\.0$/, "")}K`;
+  return `$${Math.round(amount).toLocaleString()}`;
+}
+
 export default {
   name: "beg",
   aliases: ["spare", "panhandle"],
@@ -60,7 +68,11 @@ export default {
       user.lastBeg = now;
       await saveUser(sender, user);
       const flavour = FAIL_MSGS[Math.floor(Math.random() * FAIL_MSGS.length)];
-      return reply(`😔 ${flavour}`);
+      return reply([
+        `😔 ${flavour}`,
+        "",
+        `Wallet: ${fmt(user.money || 0)} • Orbs: ${user.orbs || 0} • Items: ${(user.inventory || []).length} • XP: +0.`,
+      ].join("\n"));
     }
 
     // Success — small amount, it's begging after all ($50–$400)
@@ -73,7 +85,11 @@ export default {
     await addHistory(sender, "beg", amount, "Begged for money");
 
     const pick = SUCCESS_MSGS[Math.floor(Math.random() * SUCCESS_MSGS.length)];
-    const details = [`🙏 ${pick("", amount.toLocaleString())}`];
+    const details = [
+      `🙏 ${pick("", amount.toLocaleString())}`,
+      "",
+      `Wallet: ${fmt(user.money || 0)} • Orbs: ${user.orbs || 0} • Items: ${(user.inventory || []).length} • XP: +5.`,
+    ];
     if (diamondReward) details.push(`💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}`);
     return reply(details.join("\n"));
   },

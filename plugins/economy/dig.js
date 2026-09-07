@@ -70,7 +70,11 @@ export default {
     const { leveled, newLevel } = checkLevelUp(user);
     await saveUser(sender, user);
 
-    const details = [resultLine];
+    const details = [
+      resultLine,
+      "",
+      `Wallet: ${fmt(user.money || 0)} • Orbs: ${user.orbs || 0} • Items: ${(user.inventory || []).length} • XP: +10.`,
+    ];
     if (diamondReward) details.push(`💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}`);
     if (leveled) details.push(`🎉 Level up! You are now level ${newLevel}.`);
 

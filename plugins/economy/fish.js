@@ -67,7 +67,11 @@ export default {
     const { leveled, newLevel } = checkLevelUp(user);
     await saveUser(sender, user);
 
-    const details = [resultLine];
+    const details = [
+      resultLine,
+      "",
+      `Wallet: ${fmt(user.money || 0)} • Orbs: ${user.orbs || 0} • Items: ${(user.inventory || []).length} • XP: +8.`,
+    ];
     if (leveled) details.push(`🎉 Level up! You are now level ${newLevel}.`);
 
     return reply(details.join("\n"));

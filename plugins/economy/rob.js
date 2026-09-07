@@ -90,14 +90,22 @@ export default {
       await addHistory(sender,    "rob",        amount,  `Robbed ${target.name}`);
       await addHistory(targetJid, "rob_victim", -amount, `Robbed by ${robber.name}`);
 
-      await reply(`🦹 Stole ${fmt(amount)}! ✅ Clean getaway.`);
+      await reply([
+        `🦹 Stole ${fmt(amount)}! ✅ Clean getaway.`,
+        "",
+        `Wallet: ${fmt(robber.money)} • Orbs: ${robber.orbs || 0} • Items: ${(robber.inventory || []).length} • XP: +0.`,
+      ].join("\n"));
     } else {
       const fine   = Math.floor(amount * 0.7);
       robber.money = Math.max(0, robber.money - fine);
       await saveUser(sender, robber);
       await addHistory(sender, "rob", -fine, `Rob failed — fined $${fine.toLocaleString()}`);
 
-      await reply(`🚔 Rob failed — fined ${fmt(fine)}. ⏳ Lie low for 45m.`);
+      await reply([
+        `🚔 Rob failed — fined ${fmt(fine)}. ⏳ Lie low for 45m.`,
+        "",
+        `Wallet: ${fmt(robber.money)} • Orbs: ${robber.orbs || 0} • Items: ${(robber.inventory || []).length} • XP: +0.`,
+      ].join("\n"));
     }
   }
 };
