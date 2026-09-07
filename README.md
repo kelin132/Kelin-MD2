@@ -111,7 +111,7 @@ export default {
 | `download` | `.ytdl` `.ytmp3` `.tiktok` `.comic` `.manga` `.manhwa` `.mangainfo` |
 | `fun` | `.joke` `.dare` `.truth` `.quote` |
 | `games` | `.ttt` |
-| `group` | `.welcome` `.goodbye` `.antilink` |
+| `group` | `.welcome` `.goodbye` `.antilink` `.gws` |
 | `admin` | `.kick` `.promote` `.demote` |
 | `owner` | `.broadcast` `.eval` |
 | `media` | `.sticker` `.qr` |
