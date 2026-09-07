@@ -47,20 +47,20 @@ export default {
       const amount = Math.floor(Math.random() * (loot.max - loot.min + 1)) + loot.min;
       user.money = (user.money || 0) + amount;
       await addHistory(sender, "fish", amount, `Caught $${amount.toLocaleString()} worth of fish`);
-      resultLine = `💰 Caught ${fmt(amount)} worth of treasure!`;
+      resultLine = `🎣 You cast your rod and caught ${fmt(amount)} worth of treasure!`;
     } else if (loot.type === "item") {
       user.inventory = user.inventory || [];
       user.inventory.push(loot.name);
       const def = SHOP_ITEMS[loot.name];
-      resultLine = `${def?.emoji || "📦"} Reeled in ${articleFor(loot.name)} ${loot.name}!`;
+      resultLine = `🎣 You cast your rod and caught ${def?.emoji || "📦"} ${articleFor(loot.name)} ${loot.name}!`;
       await addHistory(sender, "fish", 0, `Fished up ${loot.name}`);
     } else if (loot.type === "orbs") {
       const amount = Math.floor(Math.random() * (loot.max - loot.min + 1)) + loot.min;
       user.orbs = (user.orbs || 0) + amount;
-      resultLine = `🔮 Discovered ${amount} orb${amount === 1 ? "" : "s"} beneath the waves!`;
+      resultLine = `🎣 You cast your rod and caught ${amount} orb${amount === 1 ? "" : "s"} beneath the waves!`;
       await addHistory(sender, "fish", 0, `Fished up ${amount} orbs`);
     } else {
-      resultLine = "🪣 Caught an old boot. Classic!";
+      resultLine = "🎣 You cast your rod and caught an old boot. Classic!";
     }
 
     user.xp = (user.xp || 0) + 8;

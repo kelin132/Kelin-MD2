@@ -50,20 +50,20 @@ export default {
       const amount = Math.floor(Math.random() * (loot.max - loot.min + 1)) + loot.min;
       user.money = (user.money || 0) + amount;
       await addHistory(sender, "dig", amount, `Dug up $${amount.toLocaleString()}`);
-      resultLine = `💰 Found ${fmt(amount)} underground!`;
+      resultLine = `⛏️ You dug and found ${fmt(amount)} in the ground!`;
     } else if (loot.type === "item") {
       user.inventory = user.inventory || [];
       user.inventory.push(loot.name);
       const def = SHOP_ITEMS[loot.name];
-      resultLine = `${def?.emoji || "📦"} Uncovered ${articleFor(loot.name)} ${loot.name}!`;
+      resultLine = `⛏️ You dug and found ${def?.emoji || "📦"} ${articleFor(loot.name)} ${loot.name}!`;
       await addHistory(sender, "dig", 0, `Dug up ${loot.name}`);
     } else if (loot.type === "orbs") {
       const amount = Math.floor(Math.random() * (loot.max - loot.min + 1)) + loot.min;
       user.orbs = (user.orbs || 0) + amount;
-      resultLine = `🔮 Discovered ${amount} orb${amount === 1 ? "" : "s"}!`;
+      resultLine = `⛏️ You dug and found ${amount} orb${amount === 1 ? "" : "s"}!`;
       await addHistory(sender, "dig", 0, `Dug up ${amount} orbs`);
     } else {
-      resultLine = "🪨 Found only a rock. Better luck next time!";
+      resultLine = "⛏️ You dug and found only a rock. Better luck next time!";
     }
 
     user.xp = (user.xp || 0) + 10;
