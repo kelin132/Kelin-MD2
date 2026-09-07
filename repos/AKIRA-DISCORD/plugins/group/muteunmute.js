@@ -4,10 +4,10 @@
  */
 export default {
   name: "mute",
-  description: "Lock the group (admins only can send)",
+  description: "Lock only this channel; it does not create a thread",
   category: "group",
-  usage: ".mute | .unmute",
-  aliases: ["unmute", "lockgroup", "unlockgroup"],
+  usage: ".mute | .unmute | .mutechannel | .unmutechannel",
+  aliases: ["unmute", "lockgroup", "unlockgroup", "mutechannel", "unmutechannel"],
   cooldown: 5,
   isAdmin: true,
 
@@ -15,7 +15,7 @@ export default {
     const discordMessage = discord?.message;
     if (discordMessage?.guild) {
       const channel = discordMessage.channel;
-      const isMute = cmd === "mute" || cmd === "lockgroup";
+      const isMute = cmd === "mute" || cmd === "lockgroup" || cmd === "mutechannel";
       try {
         await channel.permissionOverwrites.edit(
           discordMessage.guild.roles.everyone,

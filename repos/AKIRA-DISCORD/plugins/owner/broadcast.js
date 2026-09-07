@@ -1,11 +1,12 @@
 // plugins/owner/broadcast.js
 // Broadcast a message or media to every group the bot is in.
+import { EmbedBuilder } from "discord.js";
 
 export default {
   name: "broadcast",
   description: "Broadcast a message to all groups",
   category: "owner",
-  usage: ".broadcast <message>",
+  usage: ".broadcast #channel <message>",
   aliases: ["bc"],
   cooldown: 5,
   isOwner: true,
@@ -13,8 +14,32 @@ export default {
   isPremium: false,
   version: "1.1.0",
 
-  async run({ sock, msg, sender, text }) {
+  async run({ sock, msg, sender, text, args, discord }) {
     const jid = msg.key.remoteJid;
+    const discordMessage = discord?.message;
+
+    if (discordMessage?.guild) {
+      const mentionedChannel = discordMessage.mentions.channels.first();
+      const rawChannel = String(args?.[0] || "").replace(/[<#>]/g, "");
+      const target = mentionedChannel ||
+        (rawChannel ? await discordMessage.guild.channels.fetch(rawChannel).catch(() => null) : null);
+      const messageText = (args || []).slice(1).join(" ").trim();
+
+      if (!target?.isTextBased?.() || !messageText) {
+        return discordMessage.reply(
+          "❌ Usage: `.broadcast #channel Your embedded announcement`",
+        );
+      }
+
+      const embed = new EmbedBuilder()
+        .setColor("#8B5CF6")
+        .setTitle("📢 AIDORU BROADCAST")
+        .setDescription(messageText)
+        .setFooter({ text: "AIDORU • Official announcement" })
+        .setTimestamp();
+      await target.send({ embeds: [embed] });
+      return discordMessage.reply(`✅ Broadcast sent to <#${target.id}>.`);
+    }
 
     try {
       if (!text) {

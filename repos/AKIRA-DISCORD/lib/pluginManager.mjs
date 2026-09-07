@@ -308,12 +308,15 @@ function prepareDiscordPayload(content, rawSender, sender) {
 export async function routeDiscordMessage(client, message, prefix = ".", ownerId = "") {
   if (!message || message.author?.bot) return;
 
-  if (!message.content?.startsWith(prefix)) {
+  const content = String(message.content || "");
+  const isPrefixedCommand = content.startsWith(prefix);
+  const isSlashStyleCommand = content.startsWith("/");
+  if (!isPrefixedCommand && !isSlashStyleCommand) {
     // Check if Akira should respond to this non-command message
     return await akiraHandler({ client, message, prefix });
   }
 
-  const body = message.content.slice(prefix.length).trim();
+  const body = content.slice(isSlashStyleCommand ? 1 : prefix.length).trim();
   if (!body) return;
 
   const [rawCommand, ...rawArgs] = body.split(/\s+/);

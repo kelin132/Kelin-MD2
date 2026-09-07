@@ -25,13 +25,25 @@ export default {
   description: "Go AFK — bot will notify others when they tag you.",
   usage: ".afk [reason]",
 
-  async run({ sock, msg, sender, text: rawText }) {
+  async run({ sock, msg, sender, text: rawText, discord }) {
     const jid   = msg.key.remoteJid;
-    const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
+    const discordMessage = discord?.message;
+    const reply = (t, options = {}) => sock.sendMessage(
+      jid,
+      { text: t, ...options },
+      { quoted: msg },
+    );
     const user  = await getUser(sender);
     const reason = (rawText || "").trim() || "No reason given";
     const tag    = sender.split("@")[0].split(":")[0];
-    const name   = user.name || tag;
+    const name =
+      discordMessage?.member?.displayName ||
+      discordMessage?.author?.globalName ||
+      discordMessage?.author?.username ||
+      user.name ||
+      tag;
+    const displayName = name;
+    const mentions = discordMessage ? [] : [sender];
 
     const existingAfk = user.afk?.active
       ? {
@@ -53,14 +65,10 @@ export default {
       });
 
       return reply(
-`╭───〔 💤 𝗔𝗙𝗞 𝗨𝗣𝗗𝗔𝗧𝗘𝗗 〕───╮
-│
-│ 🌸 *@${tag}* is still away~
-│
-│ 📝 𝗥𝗲𝗮𝘀𝗼𝗻: ${reason}
-│ ⏰ 𝗥𝗲𝘀𝗲𝘁: \`\`${formatTime(since)}\`\`
-╰━━━━━━━━━━━━━━━━━━━━━━╯`,
-        { mentions: [sender] }
+`💤 **${displayName} is still AFK**
+Reason: ${reason}
+Reset: ${formatTime(since)}`,
+        { mentions }
       );
     }
 
@@ -76,14 +84,10 @@ export default {
     });
 
     return reply(
-`╭───〔 🌙 𝗔𝗙𝗞 𝗠𝗢𝗗𝗘 〕───╮
-│
-│ 🌸 *@${tag}* has gone away~
-│
-│ 📝 𝗥𝗲𝗮𝘀𝗼𝗻: ${reason}
-│ 🕐 𝗦𝗶𝗻𝗰𝗲: \`\`${formatTime(since)}\`\`
-╰━━━━━━━━━━━━━━━━━━━━━━╯`,
-      { mentions: [sender] }
+`🌙 **${displayName} is now AFK**
+Reason: ${reason}
+Since: ${formatTime(since)}`,
+      { mentions }
     );
   },
 };

@@ -12,7 +12,6 @@ import { findOrCreateUser } from "./db.js";
 import { getUser, saveUser, requireRegistration, addHistory } from "../economy/database.js";
 import {
   getCardsByTier,
-  resolveMediaUrl,
   sendCardMedia,
   TIER_EMOJI,
   TIER_NUM,
@@ -271,11 +270,7 @@ export default {
 ╰━━━━━━━━━━━━━━━━━━━━╯`;
 
       if (discord?.message) {
-        const mediaUrl = card.media
-          ? await resolveMediaUrl(card.media).catch(() => null)
-          : null;
         return sock.sendMessage(jid, {
-          ...(mediaUrl ? { image: mediaUrl } : {}),
           text: [
             `🔮 summon: ${emoji} ${card.name} (${card.tier || tierName}) summoned.`,
             `Cost: ${compactMoney(cost)}.`,

@@ -199,7 +199,6 @@ export async function connectBot(phoneNumber, prefix) {
                 ? `${hrs}h ${mins}m`
                 : `${mins} minute${mins === 1 ? "" : "s"}`;
             const username = afkData.username || senderJid.split("@")[0].split(":")[0];
-            const tag      = senderJid.split("@")[0].split(":")[0];
 
             // Clear AFK from DB (fix: await getDb(), correct collection "users")
             try {
@@ -215,9 +214,9 @@ export async function connectBot(phoneNumber, prefix) {
                 `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮`,
                 `┃  ✨ *お か え り な さ い* ✨  ┃`,
                 `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
-                `🌸 *@${tag}* is back online~`,
+                `👋 *${username} is back online*`,
                 `╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌`,
-                `⏱ *Away for* ꔫ _${timeStr}_`,
+                `Away for: ${timeStr}`,
                 `╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌`,
                 `_良かった~ We missed you!_ 💫`,
                 `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
@@ -246,17 +245,16 @@ export async function connectBot(phoneNumber, prefix) {
                   ? `${hrs}h ${mins}m ago`
                   : `${mins} min${mins === 1 ? "" : "s"} ago`;
               const dispName = afkName || jid.split("@")[0].split(":")[0];
-              const dispTag  = jid.split("@")[0].split(":")[0];
 
               await sock.sendMessage(msg.key.remoteJid, {
                 text: [
                   `╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮`,
                   `┃  💤 *A F K  通 知* 💤  ┃`,
                   `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
-                  `😴 *@${dispTag}* is currently away~`,
+                  `💤 *${dispName} is currently AFK*`,
                   `╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌`,
-                  `💬 *Reason* ꔫ _${reason}_`,
-                  `⏱ *Away*   ꔫ _${awayStr}_`,
+                  `Reason: ${reason}`,
+                  `Away: ${awayStr}`,
                   `╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌`,
                   `_They'll see your msg when back~ 🌸_`,
                   `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
