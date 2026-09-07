@@ -1,14 +1,11 @@
 import { getUser, requireRegistration } from "./database.js";
 
 const COOLDOWNS = [
-  { key: "lastDaily",   label: "🌅 Daily",    ms: 24 * 60 * 60 * 1000         },
-  { key: "lastWeekly",  label: "🗓️  Weekly",   ms: 7  * 24 * 60 * 60 * 1000    },
-  { key: "lastMonthly", label: "📅 Monthly",  ms: 30 * 24 * 60 * 60 * 1000    },
   { key: "lastWork",    label: "💼 Work",     ms: 10 * 60 * 1000               },
   { key: "lastCrime",   label: "🔪 Crime",    ms: 20 * 60 * 1000               },
   { key: "lastRob",     label: "🦹 Rob",      ms: 45 * 60 * 1000               },
-  { key: "lastDig",     label: "⛏️  Dig",      ms: 30 * 60 * 1000               },
-  { key: "lastFish",    label: "🎣 Fish",     ms: 20 * 60 * 1000               },
+  { key: "lastDig",     label: "⛏️ Dig",      ms: 10 * 1000                    },
+  { key: "lastFish",    label: "🎣 Fish",     ms: 10 * 1000                    },
   { key: "lastGamble",  label: "🎰 Gamble",   ms:  5 * 60 * 1000               },
   { key: "lastBet",     label: "🎲 Bet",      ms: 30 * 1000                    },
   { key: "lastBeg",     label: "🤲 Beg",      ms:  3 * 60 * 1000               },
@@ -17,15 +14,15 @@ const COOLDOWNS = [
 ];
 
 function fmtRemaining(ms) {
-  if (ms <= 0) return "✅ Ready";
-  const d = Math.floor(ms / 86_400_000);
-  const h = Math.floor((ms % 86_400_000) / 3_600_000);
-  const m = Math.floor((ms % 3_600_000)  / 60_000);
-  const s = Math.floor((ms % 60_000)     / 1000);
-  if (d > 0) return `⏳ ${d}d ${h}h`;
-  if (h > 0) return `⏳ ${h}h ${m}m`;
-  if (m > 0) return `⏳ ${m}m ${s}s`;
-  return `⏳ ${s}s`;
+  const totalSeconds = Math.ceil(ms / 1000);
+  const d = Math.floor(totalSeconds / 86_400);
+  const h = Math.floor((totalSeconds % 86_400) / 3_600);
+  const m = Math.floor((totalSeconds % 3_600) / 60);
+  const s = totalSeconds % 60;
+  if (d > 0) return `${d}d ${h}h left`;
+  if (h > 0) return `${h}h ${m}m left`;
+  if (m > 0) return `${m}m left`;
+  return `${s}s left`;
 }
 
 export default {
@@ -42,15 +39,25 @@ export default {
     const user = await getUser(sender);
     const now  = Date.now();
 
-    let text = `⏰ *YOUR COOLDOWNS*\n👤 @${sender.split("@")[0]}\n\n`;
-
+    const activeCooldowns = [];
     for (const cd of COOLDOWNS) {
       const last = user[cd.key] || 0;
       const rem  = cd.ms - (now - last);
-      text += `${cd.label.padEnd(14)} ${fmtRemaining(rem)}\n`;
+      if (rem > 0) activeCooldowns.push({ ...cd, rem });
     }
 
-    text += "\n_All cooldowns reset automatically._";
+    if (activeCooldowns.length === 0) {
+      await sock.sendMessage(msg.key.remoteJid, {
+        text: `✅ @${sender.split("@")[0]}, all your cooldowns are ready to go!`,
+        mentions: [sender],
+      }, { quoted: msg });
+      return;
+    }
+
+    const text = [
+      `⏳ @${sender.split("@")[0]}, your active cooldowns:`,
+      ...activeCooldowns.map((cd) => `${cd.label} - \`${fmtRemaining(cd.rem)}\``),
+    ].join("\n");
 
     await sock.sendMessage(msg.key.remoteJid, {
       text,

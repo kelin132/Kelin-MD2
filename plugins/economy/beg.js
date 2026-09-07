@@ -45,8 +45,13 @@ export default {
   async run({ sock, msg, sender }) {
     if (!await requireRegistration(sock, msg, sender)) return;
 
-    const jid   = msg.key.remoteJid;
-    const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
+    const jid = msg.key.remoteJid;
+    const tag = `@${sender.split("@")[0]}`;
+    const reply = (text) => sock.sendMessage(
+      jid,
+      { text, mentions: [sender] },
+      { quoted: msg },
+    );
 
     const user = await getUser(sender);
     const now  = Date.now();
@@ -57,16 +62,7 @@ export default {
       const left = Math.ceil((COOLDOWN - (now - lastBeg)) / 1000);
       const m    = Math.floor(left / 60);
       const s    = left % 60;
-      return reply(
-`╭─❀「 🤲 *𝐁𝐄𝐆* 」❀─╮
-│ ⏳ *Result*  :: \`COOLDOWN 🔴\`
-│ 🍃 *Flavour* :: _Still feeling embarrassed..._
-│
-│ 🕐 *Next*    :: \`${m}m ${s}s\`
-│
-│ 😤 *You're still embarrassed from last time!*
-╰───────────────❀`
-      );
+      return reply(`⏳ ${tag}, your beg cooldown is still active — ${m}m ${s}s left.`);
     }
 
     // 35% chance of failure — people aren't always generous
@@ -76,17 +72,7 @@ export default {
       user.lastBeg = now;
       await saveUser(sender, user);
       const flavour = FAIL_MSGS[Math.floor(Math.random() * FAIL_MSGS.length)];
-      return reply(
-`╭─❀「 🤲 *𝐁𝐄𝐆* 」❀─╮
-│ 🌙 *Result*  :: \`FAILED 🔴\`
-│ 🍃 *Flavour* :: _${flavour}_
-│
-│ 💰 *Earned*  :: \`$0\`
-│ 💰 *Wallet*  :: \`${fmt(user.money)}\`
-│
-│ 😤 *Better luck next time!*
-╰───────────────❀`
-      );
+      return reply(`😔 ${tag} begged for help, but ${flavour.toLowerCase()}\n💰 Wallet: ${fmt(user.money)}`);
     }
 
     // Success — small amount, it's begging after all ($50–$400)
@@ -99,16 +85,11 @@ export default {
     await addHistory(sender, "beg", amount, "Begged for money");
 
     const pick = SUCCESS_MSGS[Math.floor(Math.random() * SUCCESS_MSGS.length)];
-    return reply(
-`╭─❀「 🤲 *𝐁𝐄𝐆* 」❀─╮
-│ 🌙 *Result*  :: \`SUCCESS 🟢\`
-│ 🍃 *Flavour* :: _${pick(sender.split("@")[0], amount.toLocaleString())}_
-│
-│ 💰 *Earned*  :: \`+${fmt(amount)}\`
-│ 💰 *Wallet*  :: \`${fmt(user.money)}\`${diamondReward ? `\n│ 💎 *Bonus*   :: \`+${diamondReward}\` Gem${diamondReward === 1 ? "" : "s"}` : ""}
-│
-│ 🙏 *Thank you!* Keep grinding!
-╰───────────────❀`
-    );
+    const details = [
+      `🙏 ${tag} begged for help — ${pick(tag, amount.toLocaleString())}`,
+      `💰 Earned: +${fmt(amount)}  •  Wallet: ${fmt(user.money)}`,
+    ];
+    if (diamondReward) details.push(`💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}`);
+    return reply(details.join("\n"));
   },
 };
