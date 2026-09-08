@@ -2,7 +2,6 @@
 // Top ninjas leaderboard — shows Naruto (the strongest) at the top
 
 import players from "../../lib/naruto/players.js";
-import { sendWithNarutoTheme } from "../../lib/gifHelper.mjs";
 import { getDb } from "../../lib/mongo.mjs";
 import { normalizeJid } from "../../lib/identity.mjs";
 import { getCachedLeaderboard } from "../../lib/leaderboardCache.mjs";
@@ -45,13 +44,15 @@ export default {
 ⭐ Lv ${p.level} | ${p.rank || "Academy Student"} | 🏆 ${p.wins || 0}W | 💰 ${(p.ryo || 0).toLocaleString()} Ryo`
       ).join("\n\n");
 
-       return sendWithNarutoTheme(sock, jid, msg,
+       // Keep this response text-only. Sending a remote image makes Baileys
+       // download that asset before it can deliver the actual leaderboard.
+       return sock.sendMessage(jid, { text:
 `🏆 *NINJA LEADERBOARD*
 
 ${list}
 
 Keep training to reach the top!`,
-        "leaderboard");
+       }, { quoted: msg });
 
     } catch (err) {
       console.error("NLEADERBOARD ERROR:", err);
