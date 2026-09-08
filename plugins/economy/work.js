@@ -174,7 +174,7 @@ export default {
   description: "Send a bot crew to a site for 4 shifts, then collect the pay and loot",
   category: "economy",
   cooldown: 3,
-  usage: ".work | .work <1|2|3> | .work status | .work collect",
+  usage: ".work start | .work <1|2|3> | .work status | .work collect",
   checkJail: true,
 
   async run({ sock, msg, sender, args }) {
@@ -191,8 +191,10 @@ export default {
       if (!state || state.status !== "ready") {
         return reply(
           state
-            ? `⏳ Your crew isn't back yet. Check *.work status*.`
-            : `❌ Nobody's out working. Use *.work* to send a crew.`
+            ? state.status === "choosing"
+              ? `${mentionLabel(sender)} work has started. Choose .work 1, .work 2, or .work 3 first.`
+              : `${mentionLabel(sender)} your crew isn't back yet. Check .work status.`
+            : `${mentionLabel(sender)} start with .work start, then choose .work 1, .work 2, or .work 3.`
         );
       }
       if (state.collecting) {
@@ -220,13 +222,16 @@ export default {
         `${mentionLabel(sender)} your crew is home from ${site.name}.`,
         `Money collected: +${formatMoney(state.moneyEarned)}`,
         `Items collected: ${summarizeItems(state.items).replace(/\n/g, ", ")}`,
-        `Use .work to send them out again.`,
+        `Use .work start to send them out again.`,
       ].join("\n"));
     }
 
     // ── .work status ───────────────────────────────────────────────────────
     if (sub === "status") {
-      if (!state) return reply(`${mentionLabel(sender)} nobody is working. ${siteMenuText()}`);
+      if (!state) return reply(`${mentionLabel(sender)} start with .work start, then choose .work 1, .work 2, or .work 3.`);
+      if (state.status === "choosing") {
+        return reply(`${mentionLabel(sender)} work has started. Choose .work 1, .work 2, or .work 3.`);
+      }
       const site = SITES[state.siteKey];
 
       if (state.status === "ready") {
@@ -237,27 +242,44 @@ export default {
       return reply(`${mentionLabel(sender)} ${site.name}: shift ${state.shift}/${SHIFTS_PER_SITE}.\nNext shift in ${formatRemaining(remaining)}.\nMoney held so far: ${formatMoney(state.moneyEarned)}.`);
     }
 
-    // ── .work / .work start (menu) ─────────────────────────────────────────
-    if (!sub || sub === "start") {
+    // ── .work start (open the job selection) ───────────────────────────────
+    if (sub === "start") {
       if (state) {
+        if (state.status === "choosing") {
+          return reply(`${mentionLabel(sender)}\n${siteMenuText()}`);
+        }
         if (state.status === "ready") {
           return reply(`${mentionLabel(sender)} your crew is already home with ${formatMoney(state.moneyEarned)} waiting.\nUse .work collect.`);
         }
         const remaining = Math.max(0, state.endsAt - Date.now());
         return reply(`${mentionLabel(sender)} your crew is already working at ${SITES[state.siteKey].name}, shift ${state.shift}/${SHIFTS_PER_SITE}.\nNext shift in ${formatRemaining(remaining)}.`);
       }
+      WORK_STATE.set(sender, {
+        status: "choosing",
+        startedAt: Date.now(),
+        collecting: false,
+      });
       return reply(`${mentionLabel(sender)}\n${siteMenuText()}`);
     }
 
-    // ── .work 1 / .work 2 / .work 3 (choose site) ──────────────────────────
+    // ── .work without start ────────────────────────────────────────────────
+    if (!sub) {
+      return reply(`${mentionLabel(sender)} start with .work start, then choose .work 1, .work 2, or .work 3.`);
+    }
+
+    // ── .work 1 / .work 2 / .work 3 (choose the next crew job) ────────────
     const site = SITES[sub];
-    if (!site) return reply(`❌ Not a valid site.\n\n${siteMenuText()}`);
+    if (!site) return reply(`${mentionLabel(sender)} start with .work start, then choose .work 1, .work 2, or .work 3.`);
 
     if (state) {
-      if (state.status === "ready") {
-        return reply(`${mentionLabel(sender)} your crew is already home with ${formatMoney(state.moneyEarned)} waiting.\nUse .work collect.`);
+      if (state.status !== "choosing") {
+        if (state.status === "ready") {
+          return reply(`${mentionLabel(sender)} your crew is already home with ${formatMoney(state.moneyEarned)} waiting.\nUse .work collect.`);
+        }
+        return reply(`${mentionLabel(sender)} your crew is already working at ${SITES[state.siteKey].name}. Check .work status.`);
       }
-      return reply(`${mentionLabel(sender)} your crew is already working at ${SITES[state.siteKey].name}. Check .work status.`);
+    } else {
+      return reply(`${mentionLabel(sender)} start with .work start, then choose .work 1, .work 2, or .work 3.`);
     }
 
     const crew = randomCrew(2 + Math.floor(Math.random() * 2)); // 2-3 NPCs
