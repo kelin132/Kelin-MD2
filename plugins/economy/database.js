@@ -152,7 +152,7 @@ export async function getUser(id) {
   return merged;
 }
 
-const WALLET_CAP = 500_000_000_000; // 500 Billion max in wallet
+export const WALLET_CAP = 500_000_000_000; // 500 Billion max in wallet
 
 // Fields that must be updated atomically with $inc to prevent race conditions.
 // Every other field is safe to $set because it isn't modified by concurrent commands.

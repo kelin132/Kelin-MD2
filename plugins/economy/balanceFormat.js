@@ -21,6 +21,22 @@ function inline(value) {
   return `\`${value}\``;
 }
 
+export function formatFullMoney(value) {
+  const amount = Number(value ?? 0);
+  return `$${amount.toLocaleString()}`;
+}
+
+export function formatCompactMoney(value) {
+  const amount = Number(value ?? 0);
+  const absolute = Math.abs(amount);
+  const sign = amount < 0 ? "-" : "";
+  if (absolute >= 1e12) return `${sign}$${compact(absolute / 1e12)}T`;
+  if (absolute >= 1e9) return `${sign}$${compact(absolute / 1e9)}B`;
+  if (absolute >= 1e6) return `${sign}$${compact(absolute / 1e6)}M`;
+  if (absolute >= 1e3) return `${sign}$${compact(absolute / 1e3)}K`;
+  return `${sign}$${absolute.toLocaleString()}`;
+}
+
 function row(icon, label, value) {
   return `${icon} ${label}: ${inline(value)}`;
 }

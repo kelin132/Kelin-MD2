@@ -1,5 +1,5 @@
-import { getUser, requireRegistration } from "./database.js";
-import { formatAccountBalance } from "./balanceFormat.js";
+import { getUser, requireRegistration, WALLET_CAP } from "./database.js";
+import { formatCompactMoney, formatFullMoney } from "./balanceFormat.js";
 
 export default {
   name: "balance",
@@ -14,12 +14,18 @@ export default {
 
     const user = await getUser(sender);
     const jid  = msg.key.remoteJid;
-    const text = formatAccountBalance({
-      wallet: user.money,
-      bank: user.bank,
-      gems: user.diamonds,
-      footerLines: ["Use .ebal", "for account breakdown"],
-    });
+    const wallet = Number(user.money ?? 0);
+    const bank = Number(user.bank ?? 0);
+    const text = [
+      "⚜️ 𝗥𝗢𝗬𝗔𝗟 𝗧𝗥𝗘𝗔𝗦𝗨𝗥𝗬",
+      "━━━━━━━━━━━━━━━━━",
+      `🪙 𝗣𝘂𝗿𝘀𝗲   ❖ ⟦ \`${formatFullMoney(wallet)}\` ⟧`,
+      `🏛️ 𝗖𝗮𝘀𝘁𝗹𝗲  ❖ ⟦ \`${formatFullMoney(bank)}\` ⟧`,
+      `👑 𝗖𝗮𝗽     ❖ ⟦ \`${formatCompactMoney(WALLET_CAP)}\` ⟧`,
+      "",
+      `💍 𝗧𝗼𝘁𝗮𝗹   ❖ ⟦ \`${formatFullMoney(wallet + bank)}\` ⟧`,
+      "━━━━━━━━━━━━━━━━━",
+    ].join("\n");
 
     await sock.sendMessage(jid, { text, mentions: [sender] }, { quoted: msg });
   },
