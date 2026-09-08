@@ -6,6 +6,7 @@
 import {
   CLASSES,
   DIFFICULTIES,
+  RPG_SHOP_ITEMS,
   ROOMS_PER_RUN,
   REBIRTH_LEVEL,
   getCharacter,
@@ -22,6 +23,7 @@ import {
   equipItem,
   resolveEvent,
   buyMerchantOffer,
+  buyRpgShopItem,
   rebirth,
   topCharacters,
 } from "../../lib/dungeonCrawler.mjs";
@@ -91,7 +93,7 @@ export default {
   category: "games",
   usage:
     ".rpg create <class> · .rpg enter [difficulty] · .rpg next · .rpg attack · .rpg skill · .rpg flee · .rpg heal · " +
-    ".rpg equip <item> · .rpg inventory · .rpg buy · .rpg choice <1|2> · .rpg rebirth · .rpg profile · .rpg leaderboard",
+    ".rpg shop · .rpg buy <number|name> · .rpg equip <item> · .rpg inventory · .rpg choice <1|2> · .rpg rebirth · .rpg profile · .rpg leaderboard",
   cooldown: 2,
 
   async run({ sock, msg, args, sender }) {
@@ -110,7 +112,8 @@ export default {
           `*During a run*\n` +
           `• *.rpg next* — advance to the next room\n` +
           `• *.rpg attack* / *.rpg skill* / *.rpg flee* / *.rpg heal* — in battle\n` +
-          `• *.rpg buy* — purchase a merchant's offer\n` +
+          `• *.rpg shop* — buy permanent weapons and healing potions\n` +
+          `• *.rpg buy <number|name>* — buy from the RPG shop, or buy the active merchant offer\n` +
           `• *.rpg choice <1|2>* — resolve an event room\n` +
           `• *.rpg status* / *.rpg abandon*\n\n` +
           `*Character*\n` +
@@ -161,6 +164,27 @@ export default {
       if (!res.ok) return sock.sendMessage(jid, { text: "❌ Item not found in your bag. Check *.rpg inventory*." }, { quoted: msg });
       return sock.sendMessage(jid, {
         text: `✅ Equipped *${res.equipped.name}* (+${res.equipped.bonus} ${res.equipped.slot === "weapon" ? "ATK" : "DEF"})${res.replaced ? `\n📦 *${res.replaced.name}* was moved back to your bag.` : ""}`,
+      }, { quoted: msg });
+    }
+
+    // ── permanent RPG shop ──────────────────────────────────────────────
+    if (sub === "shop" || sub === "store") {
+      const character = getCharacter(sender);
+      if (!character) return sock.sendMessage(jid, { text: "❌ No character yet — create one with *.rpg create <warrior|mage|rogue>*" }, { quoted: msg });
+
+      const items = RPG_SHOP_ITEMS.map((item, index) => {
+        const details = item.type === "weapon"
+          ? `${item.rarity}, ${item.description}`
+          : item.description;
+        return `${index + 1}. ${item.type === "weapon" ? "⚔️" : "🧪"} *${item.name}* — $${item.price} (${details})`;
+      });
+      return sock.sendMessage(jid, {
+        text:
+          `🏪 *RPG Adventurer's Shop*\n\n` +
+          `${items.join("\n")}\n\n` +
+          `💰 Your gold: *$${character.gold}*\n` +
+          `🧪 Potions: *${character.potions || 0}*\n\n` +
+          `Buy with *.rpg buy <number>* or *.rpg buy <item name>*`,
       }, { quoted: msg });
     }
 
@@ -252,9 +276,32 @@ export default {
 
     // ── buy (merchant) ──────────────────────────────────────────────────
     if (sub === "buy") {
+      const shopQuery = args.slice(1).join(" ").trim();
+      if (shopQuery) {
+        const res = buyRpgShopItem(sender, shopQuery);
+        if (!res.ok) {
+          const map = {
+            "no-character": "❌ No character yet — create one with *.rpg create <warrior|mage|rogue>*",
+            "not-found": "❌ Shop item not found. Use *.rpg shop* to see the catalog.",
+            "too-poor": `❌ You need $${res.item.price} gold for that item.`,
+          };
+          return sock.sendMessage(jid, { text: map[res.reason] || "❌ Can't buy that item right now." }, { quoted: msg });
+        }
+
+        const bought = res.item.type === "potion"
+          ? `🧪 *${res.item.name}* added to your bag`
+          : `⚔️ *${res.item.name}* added to your bag — use *.rpg equip ${res.item.name}*`;
+        return sock.sendMessage(jid, {
+          text: `✅ Bought ${bought} for $${res.item.price}.\n💰 Gold remaining: *$${res.gold}*`,
+        }, { quoted: msg });
+      }
+
       const res = buyMerchantOffer(sender);
       if (!res.ok) {
-        const map = { "no-offer": "❌ No merchant offer active right now.", "too-poor": "❌ You don't have enough gold for that." };
+        const map = {
+          "no-offer": "❌ No merchant offer active right now.\n\nUse *.rpg shop* to browse permanent weapons and healing potions.",
+          "too-poor": "❌ You don't have enough gold for that.",
+        };
         return sock.sendMessage(jid, { text: map[res.reason] || "❌ Can't buy right now." }, { quoted: msg });
       }
       return sock.sendMessage(jid, { text: `✅ Bought *${res.offer.label}* for $${res.offer.price}!\n\n• *.rpg next* to continue` }, { quoted: msg });
