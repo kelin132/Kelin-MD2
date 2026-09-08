@@ -1,13 +1,24 @@
 import { getUser, requireRegistration } from "./database.js";
 import * as balanceFormatter from "./balanceFormat.js";
 
-function formatFullMoney(value) {
-  if (typeof balanceFormatter.formatFullMoney === "function") {
-    return balanceFormatter.formatFullMoney(value);
+function formatCompactMoney(value) {
+  let formatted;
+  if (typeof balanceFormatter.formatCompactMoney === "function") {
+    formatted = balanceFormatter.formatCompactMoney(value);
+  } else {
+    const amount = Number(value ?? 0);
+    const absolute = Math.abs(amount);
+    const sign = amount < 0 ? "-" : "";
+    const compact = (number) => number.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+
+    if (absolute >= 1e12) formatted = `${sign}$${compact(absolute / 1e12)}T`;
+    else if (absolute >= 1e9) formatted = `${sign}$${compact(absolute / 1e9)}B`;
+    else if (absolute >= 1e6) formatted = `${sign}$${compact(absolute / 1e6)}M`;
+    else if (absolute >= 1e3) formatted = `${sign}$${compact(absolute / 1e3)}K`;
+    else formatted = `${sign}$${absolute.toLocaleString()}`;
   }
 
-  const amount = Number(value ?? 0);
-  return `$${amount.toLocaleString()}`;
+  return formatted.replace(/([KMBT])$/u, (_, suffix) => suffix.toLowerCase());
 }
 
 export default {
@@ -26,11 +37,11 @@ export default {
     const wallet = Number(user.money ?? 0);
     const bank = Number(user.bank ?? 0);
     const text = [
-      "⚜️ 𝗥𝗢𝗬𝗔𝗟 𝗧𝗥𝗘𝗔𝗦𝗨𝗥𝗬",
+      "💳 𝗔𝗖𝗖𝗢𝗨𝗡𝗧 𝗕𝗔𝗟𝗔𝗡𝗖𝗘",
       "━━━━━━━━━━━━━━━━━",
-      `💰 𝗪𝗮𝗹𝗹𝗲𝘁  ❖ ⟦ \`${formatFullMoney(wallet)}\` ⟧`,
-      `🏦 𝗕𝗮𝗻𝗸    ❖ ⟦ \`${formatFullMoney(bank)}\` ⟧`,
-      `💍 𝗧𝗼𝘁𝗮𝗹   ❖ ⟦ \`${formatFullMoney(wallet + bank)}\` ⟧`,
+      `💰 𝗪𝗮𝗹𝗹𝗲𝘁  ❖ ⟦ \`${formatCompactMoney(wallet)}\` ⟧`,
+      `🏦 𝗕𝗮𝗻𝗸    ❖ ⟦ \`${formatCompactMoney(bank)}\` ⟧`,
+      `💍 𝗧𝗼𝘁𝗮𝗹   ❖ ⟦ \`${formatCompactMoney(wallet + bank)}\` ⟧`,
       "━━━━━━━━━━━━━━━━━",
     ].join("\n");
 
