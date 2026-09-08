@@ -1,5 +1,14 @@
 import { getUser, requireRegistration } from "./database.js";
-import { formatFullMoney } from "./balanceFormat.js";
+import * as balanceFormatter from "./balanceFormat.js";
+
+function formatFullMoney(value) {
+  if (typeof balanceFormatter.formatFullMoney === "function") {
+    return balanceFormatter.formatFullMoney(value);
+  }
+
+  const amount = Number(value ?? 0);
+  return `$${amount.toLocaleString()}`;
+}
 
 export default {
   name: "balance",
