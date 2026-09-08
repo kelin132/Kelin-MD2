@@ -445,7 +445,6 @@ export async function routeDiscordMessage(client, message, prefix = ".", ownerId
                     id,
                     {
                       ...content,
-                      text: `${content.text}\n\n🔗 ${config.url}`,
                       linkPreview,
                     },
                     options,
