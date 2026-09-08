@@ -1,5 +1,5 @@
-import { getUser, requireRegistration, WALLET_CAP } from "./database.js";
-import { formatCompactMoney, formatFullMoney } from "./balanceFormat.js";
+import { getUser, requireRegistration } from "./database.js";
+import { formatFullMoney } from "./balanceFormat.js";
 
 export default {
   name: "balance",
@@ -19,10 +19,8 @@ export default {
     const text = [
       "⚜️ 𝗥𝗢𝗬𝗔𝗟 𝗧𝗥𝗘𝗔𝗦𝗨𝗥𝗬",
       "━━━━━━━━━━━━━━━━━",
-      `🪙 𝗣𝘂𝗿𝘀𝗲   ❖ ⟦ \`${formatFullMoney(wallet)}\` ⟧`,
-      `🏛️ 𝗖𝗮𝘀𝘁𝗹𝗲  ❖ ⟦ \`${formatFullMoney(bank)}\` ⟧`,
-      `👑 𝗖𝗮𝗽     ❖ ⟦ \`${formatCompactMoney(WALLET_CAP)}\` ⟧`,
-      "",
+      `💰 𝗪𝗮𝗹𝗹𝗲𝘁  ❖ ⟦ \`${formatFullMoney(wallet)}\` ⟧`,
+      `🏦 𝗕𝗮𝗻𝗸    ❖ ⟦ \`${formatFullMoney(bank)}\` ⟧`,
       `💍 𝗧𝗼𝘁𝗮𝗹   ❖ ⟦ \`${formatFullMoney(wallet + bank)}\` ⟧`,
       "━━━━━━━━━━━━━━━━━",
     ].join("\n");
