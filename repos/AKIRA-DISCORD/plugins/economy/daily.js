@@ -1,7 +1,5 @@
 import { getUser, saveUser, requireRegistration, checkLevelUp } from "./database.js";
 
-const WEBSITE_DAILY_URL = "https://aidoru.zone.id/daily";
-
 function fmt(n) {
   if (n >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
   if (n >= 1e6) return `$${(n / 1e6).toFixed(1)}M`;
@@ -38,8 +36,7 @@ export default {
 │
 │ 🕐 *Next*    :: *${hours}h ${minutes}m*
 │
-│  >  More daily rewards can be claimed on the website 
-│  🔗  ${WEBSITE_DAILY_URL}
+│  >  More daily rewards can be claimed on the website
 ╰───────────────❀`
       }, { quoted: msg });
     }
@@ -66,7 +63,6 @@ export default {
 │ ⭐ *Level ${user.level}*  🔥 *Streak active!*${leveled ? `\n│\n│ 🎉 *LEVEL UP!* — Now Level ${user.level}` : ""}
 │
 │  >  More daily rewards can be claimed on the website
-│  🔗  ${WEBSITE_DAILY_URL}
 ╰───────────────❀`;
 
     await sock.sendMessage(jid, { text: caption }, { quoted: msg });

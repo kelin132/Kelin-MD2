@@ -1,7 +1,5 @@
 import { getUser, saveUser, requireRegistration, checkLevelUp } from "./database.js";
 
-const WEBSITE_DAILY_URL = "https://aidoru.zone.id/daily";
-
 function fmt(n) {
   if (n >= 1e9) return `${(n / 1e9).toFixed(1)}B`;
   if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M`;
@@ -36,7 +34,7 @@ export default {
       const limitCaption =
 `⏳ You've already claimed your daily reward today! Next claim available in ${hours}h ${minutes}m.
 
-You can collect more daily reward here: ${WEBSITE_DAILY_URL}`;
+You can collect more daily reward here.`;
 
       return sock.sendMessage(jid, { text: limitCaption }, { quoted: msg });
     }
@@ -55,7 +53,7 @@ You can collect more daily reward here: ${WEBSITE_DAILY_URL}`;
     const claimCaption =
 `🎉 You've claimed your daily reward of ${fmt(reward)} coins + ${streakBonus} streak bonus (streak: ${streak})! Your new balance is ${fmt(user.money)} coins.${leveled ? `\n\n⭐ *LEVEL UP!* You are now Level ${newLevel}!` : ""}
 
-You can collect more daily reward here: ${WEBSITE_DAILY_URL}`;
+You can collect more daily reward here.`;
 
     await sock.sendMessage(jid, { text: claimCaption }, { quoted: msg });
   },
