@@ -1,7 +1,8 @@
 import fs from "fs";
 import path from "path";
-import { getUser } from "../economy/database.js";
+import { getDb } from "../../lib/mongo.mjs";
 import { formatAnimeLeaderboard } from "../../lib/animeLeaderboard.mjs";
+import { getCachedLeaderboard } from "../../lib/leaderboardCache.mjs";
 
 const STATS_PATH = path.resolve("./database/wordleStats.json");
 
@@ -19,10 +20,13 @@ export default {
   cooldown: 5,
 
   async run({ sock, msg }) {
-    const stats = loadStats();
-    const leaderboard = Object.entries(stats)
-      .sort((a, b) => b[1].wins - a[1].wins)
-      .slice(0, 10);
+    const leaderboard = await getCachedLeaderboard(
+      "wordle:leaderboard",
+      async () => Object.entries(loadStats())
+        .sort((a, b) => b[1].wins - a[1].wins)
+        .slice(0, 10),
+      { ttlMs: 15_000 },
+    );
 
     if (leaderboard.length === 0) {
       return sock.sendMessage(msg.key.remoteJid,
@@ -30,22 +34,24 @@ export default {
         { quoted: msg });
     }
 
-    // Look up registered names for all players in parallel
-    const names = await Promise.all(
-      leaderboard.map(async ([playerJid]) => {
-        try {
-          const user = await getUser(playerJid);
-          if (user?.registered && user?.name) return user.name;
-        } catch { /* fall through */ }
-        return playerJid.split("@")[0];
-      })
+    // One lookup replaces up to ten sequential identity reads.
+    const playerJids = leaderboard.map(([playerJid]) => playerJid);
+    const db = await getDb();
+    const users = await db.collection("users").find(
+      { _id: { $in: playerJids } },
+      { projection: { _id: 1, name: 1, registered: 1 } },
+    ).toArray();
+    const names = new Map(
+      users
+        .filter((user) => user.registered && user.name)
+        .map((user) => [String(user._id), user.name]),
     );
 
     const mentions = leaderboard.map(([j]) => j);
     const text = formatAnimeLeaderboard({
       subtitle: "WORDLE LEADERBOARD",
       rows: leaderboard.map(([playerJid, data], i) => ({
-        name: names[i],
+        name: names.get(playerJid) || playerJid.split("@")[0],
         value: data.wins,
         valueText: `🏆 ${data.wins} 𝐖𝐈𝐍𝐒 · 🎮 ${data.played} 𝐏𝐋𝐀𝐘𝐄𝐃 · 📈 ${data.played > 0 ? Math.round((data.wins / data.played) * 100) : 0}% · 🔥 ${data.bestStreak} 𝐁𝐄𝐒𝐓`,
       })),

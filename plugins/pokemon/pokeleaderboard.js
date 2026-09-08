@@ -2,6 +2,7 @@
 
 import { getDb } from "../../lib/mongo.mjs";
 import { formatAnimeLeaderboard } from "../../lib/animeLeaderboard.mjs";
+import { getCachedLeaderboard } from "../../lib/leaderboardCache.mjs";
 
 const TYPE_EMOJIS = {
   fire:"🔥", water:"💧", grass:"🍃", electric:"⚡", psychic:"🔮",
@@ -61,11 +62,11 @@ export default {
 
     // ── Most Pokémon caught ───────────────────────────────────────────────────
     if (sub === "count" || sub === "caught") {
-      const results = await db.collection("pokemon_owned").aggregate([
+      const results = await getCachedLeaderboard("pokemon:count", () => db.collection("pokemon_owned").aggregate([
         { $group: { _id: "$ownerJid", total: { $sum: 1 } } },
         { $sort: { total: -1 } },
         { $limit: 10 },
-      ]).toArray();
+      ]).toArray(), { ttlMs: 60_000 });
 
       if (!results.length) {
         return sock.sendMessage(jid, { text: "📭 No Pokémon caught yet!" }, { quoted: msg });
@@ -89,8 +90,12 @@ export default {
 
     // ── Highest-level Pokémon ─────────────────────────────────────────────────
     if (sub === "level" || sub === "levels") {
-      const results = await db.collection("pokemon_owned").find({})
-        .sort({ level: -1 }).limit(10).toArray();
+      const results = await getCachedLeaderboard(
+        "pokemon:level",
+        () => db.collection("pokemon_owned").find({})
+          .sort({ level: -1 }).limit(10).toArray(),
+        { ttlMs: 30_000 },
+      );
 
       if (!results.length) {
         return sock.sendMessage(jid, { text: "📭 No Pokémon registered yet!" }, { quoted: msg });
@@ -113,9 +118,9 @@ export default {
 
     // ── Most battles won ──────────────────────────────────────────────────────
     if (sub === "battles" || sub === "wins") {
-      const results = await db.collection("pokemon_trainers")
+      const results = await getCachedLeaderboard("pokemon:battles", () => db.collection("pokemon_trainers")
         .find({ wins: { $exists: true, $gt: 0 } })
-        .sort({ wins: -1 }).limit(10).toArray();
+        .sort({ wins: -1 }).limit(10).toArray(), { ttlMs: 30_000 });
 
       if (!results.length) {
         return sock.sendMessage(jid, {

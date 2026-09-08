@@ -1,6 +1,7 @@
 import { getDb } from "../../lib/mongo.mjs";
 import { normalizeJid } from "../../lib/identity.mjs";
 import { formatAnimeLeaderboard } from "../../lib/animeLeaderboard.mjs";
+import { getCachedLeaderboard } from "../../lib/leaderboardCache.mjs";
 
 export default {
   name: "richg",
@@ -19,42 +20,46 @@ export default {
     }
 
     try {
-      const meta    = await sock.groupMetadata(jid);
-      const members = [...new Set(
-        meta.participants
-          .map(p => normalizeJid(p.id))
-          .filter(Boolean)
-      )];
-      const db = await getDb();
+      const snapshot = await getCachedLeaderboard(`richg:${jid}`, async () => {
+        const meta = await sock.groupMetadata(jid);
+        const members = [...new Set(
+          meta.participants
+            .map(p => normalizeJid(p.id))
+            .filter(Boolean)
+        )];
+        const db = await getDb();
 
-      // One aggregation replaces one users.findOne call per group member.
-      // Large groups otherwise create a burst of MongoDB requests for a
-      // command that only needs the top ten rows.
-      const users = await db.collection("users").aggregate([
-        { $match: { _id: { $in: members }, registered: true } },
-        {
-          $project: {
-            _id: 1,
-            name: 1,
-            net: {
-              $add: [
-                { $convert: { input: { $ifNull: ["$money", 0] }, to: "double", onError: 0, onNull: 0 } },
-                { $convert: { input: { $ifNull: ["$bank", 0] }, to: "double", onError: 0, onNull: 0 } },
-              ],
+        // One aggregation replaces one users.findOne call per group member.
+        // Large groups otherwise create a burst of MongoDB requests for a
+        // command that only needs the top ten rows.
+        const users = await db.collection("users").aggregate([
+          { $match: { _id: { $in: members }, registered: true } },
+          {
+            $project: {
+              _id: 1,
+              name: 1,
+              net: {
+                $add: [
+                  { $convert: { input: { $ifNull: ["$money", 0] }, to: "double", onError: 0, onNull: 0 } },
+                  { $convert: { input: { $ifNull: ["$bank", 0] }, to: "double", onError: 0, onNull: 0 } },
+                ],
+              },
             },
           },
-        },
-        { $sort: { net: -1, _id: 1 } },
-        { $limit: 10 },
-      ]).toArray();
+          { $sort: { net: -1, _id: 1 } },
+          { $limit: 10 },
+        ]).toArray();
 
-      if (!users.length) {
+        return { subject: meta.subject, users };
+      }, { ttlMs: 30_000 });
+
+      if (!snapshot.users.length) {
         return reply("❌ No registered users in this group yet.\n\nUse *.register <name>* to join!");
       }
 
       const text = formatAnimeLeaderboard({
-        subtitle: `GROUP WEALTH · ${meta.subject}`,
-        rows: users.map((u) => ({
+        subtitle: `GROUP WEALTH · ${snapshot.subject}`,
+        rows: snapshot.users.map((u) => ({
           name: u.name || `User_${String(u._id || "").split("@")[0].slice(-4) || "???"}`,
           value: u.net,
         })),

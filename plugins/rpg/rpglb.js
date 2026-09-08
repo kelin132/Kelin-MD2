@@ -4,6 +4,7 @@
  */
 import { getDb } from "../../lib/mongo.mjs";
 import { normalizeJid } from "../../lib/identity.mjs";
+import { getCachedLeaderboard } from "../../lib/leaderboardCache.mjs";
 
 export default {
   name: "rpglb",
@@ -20,11 +21,17 @@ export default {
       const db = await getDb();
       const requested = Number.parseInt(args?.[0] || "10", 10);
       const limit = Math.min(20, Math.max(5, Number.isFinite(requested) ? requested : 10));
-      const topPlayers = await db.collection("rpg_users")
-        .find({})
-        .sort({ level: -1, xp: -1 })
-        .limit(limit)
-        .toArray();
+      const [topPlayers, me] = await Promise.all([
+        getCachedLeaderboard(`rpg:leaderboard:${limit}`, () => db.collection("rpg_users")
+          .find({})
+          .sort({ level: -1, xp: -1 })
+          .limit(limit)
+          .toArray(), { ttlMs: 30_000 }),
+        db.collection("rpg_users").findOne(
+          { _id: normalizeJid(sender) },
+          { projection: { level: 1, xp: 1 } },
+        ).catch(() => null),
+      ]);
         
       if (!topPlayers.length) {
         return sock.sendMessage(jid, { text: "🛡️ No RPG players yet. Be the first with *.rpg-start warrior*!" }, { quoted: msg });
@@ -39,10 +46,6 @@ export default {
         text += `${i + 1}. *${name}* — Lv.${p.level}${className} · ${p.xp} XP · ${Number(p.gold || 0).toLocaleString()} Gold\n`;
       }
       
-      const me = await db.collection("rpg_users").findOne(
-        { _id: normalizeJid(sender) },
-        { projection: { level: 1, xp: 1 } },
-      ).catch(() => null);
       const rank = me ? await db.collection("rpg_users").countDocuments({
         $or: [
           { level: { $gt: Number(me.level) || 1 } },
