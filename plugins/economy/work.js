@@ -1,10 +1,9 @@
 /**
  * KELIN MD — Fun shift-work mini-game (.work)
  *
- * Pick a site (1/2/3), send your crew out, and they work 4 back-to-back
- * shifts. Money builds up as they go; the loot (ore/tools/equipment)
- * only gets handed over once the crew clocks out for good and comes
- * back to you — then you run .work collect to grab everything at once.
+ * Pick the next job (1/2/3), send your crew out, and they work 4
+ * back-to-back shifts. Money and loot are held until the crew clocks out,
+ * then .work collect pays everything out at once.
  *
  * Coworkers are fictional bot NPCs generated per site — never real
  * group members — so nobody is pinged, credited, or blamed by mistake.
@@ -23,8 +22,8 @@ const SITES = {
     emoji: "⛏️",
     verb: "mining",
     shiftDuration: 45 * 1000,
-    payMin: 500,
-    payMax: 1_400,
+    payMin: 10_000,
+    payMax: 15_000,
     loot: ["raw_ore", "iron_ore", "gold_nugget", "gemstone"],
     flavor: [
       "swung a pickaxe deep in the shaft",
@@ -39,8 +38,8 @@ const SITES = {
     emoji: "🔧",
     verb: "gathering tools",
     shiftDuration: 60 * 1000,
-    payMin: 700,
-    payMax: 1_800,
+    payMin: 12_000,
+    payMax: 18_000,
     loot: ["iron_pickaxe", "steel_hammer", "tool_kit", "spare_parts"],
     flavor: [
       "forged a fresh set of tools",
@@ -55,8 +54,8 @@ const SITES = {
     emoji: "📦",
     verb: "gathering equipment",
     shiftDuration: 75 * 1000,
-    payMin: 900,
-    payMax: 2_200,
+    payMin: 15_000,
+    payMax: 22_000,
     loot: ["tactical_vest", "supply_crate", "gear_pack", "utility_belt"],
     flavor: [
       "packed a crate of gear for transport",
@@ -94,12 +93,14 @@ function randomLoot(site, count = 1) {
   return picks;
 }
 
-function randomFlavor(site) {
-  return site.flavor[Math.floor(Math.random() * site.flavor.length)];
-}
-
 function formatMoney(amount) {
   return `$${Math.round(amount).toLocaleString()}`;
+}
+
+function mentionLabel(sender) {
+  const value = String(sender);
+  if (value.startsWith("discord:")) return `<@${value.slice("discord:".length)}>`;
+  return `@${value.split("@")[0].split(":")[0]}`;
 }
 
 function formatRemaining(ms) {
@@ -107,10 +108,6 @@ function formatRemaining(ms) {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   return minutes > 0 ? `${minutes}m ${String(seconds).padStart(2, "0")}s` : `${seconds}s`;
-}
-
-function shiftDots(current, total = SHIFTS_PER_SITE) {
-  return "●".repeat(current - 1) + "◐" + "○".repeat(total - current);
 }
 
 function itemLabel(key) {
@@ -132,18 +129,11 @@ const WORK_STATE = new Map();
 
 function siteMenuText() {
   return [
-    `╭───〔 💼 *WORK* 〕───╮`,
-    `│ Choose a site to send your crew:`,
-    `│`,
-    `│ *1* ⛏️ Mining Site — ore & gems`,
-    `│ *2* 🔧 Tool Workshop — tools & parts`,
-    `│ *3* 📦 Equipment Depot — gear & crates`,
-    `│`,
-    `│ Crew works *${SHIFTS_PER_SITE} shifts* back-to-back,`,
-    `│ then brings everything home to you.`,
-    `│`,
-    `│ Type *.work 1*, *.work 2*, or *.work 3*`,
-    `╰────────────────────────────`,
+    `Work: tell your crew what to do next.`,
+    `1. Mine ore and gems (about $40k-$60k after 4 shifts)`,
+    `2. Make tools and parts (about $48k-$72k after 4 shifts)`,
+    `3. Gather equipment and crates (about $60k-$88k after 4 shifts)`,
+    `Use .work 1, .work 2, or .work 3.`,
   ].join("\n");
 }
 
@@ -168,45 +158,12 @@ async function runShiftEnd(sock, jid, sender) {
   state.moneyEarned += pay;
   state.items.push(...drop);
 
-  const worker = state.crew[Math.floor(Math.random() * state.crew.length)];
-
   if (state.shift < SHIFTS_PER_SITE) {
-    const finishedShift = state.shift;
     state.shift += 1;
-
-    await sock.sendMessage(jid, {
-      text: [
-        `${site.emoji} *Shift ${finishedShift}/${SHIFTS_PER_SITE} complete* — ${site.name}`,
-        `${shiftDots(state.shift)}`,
-        ``,
-        `${worker} ${randomFlavor(site)}.`,
-        `💰 +${formatMoney(pay)}  (total so far: ${formatMoney(state.moneyEarned)})`,
-        `🎒 +1 ${itemLabel(drop[0])}`,
-        ``,
-        `➡️ Crew is heading into shift ${state.shift}/${SHIFTS_PER_SITE}...`,
-      ].join("\n"),
-    });
-
     scheduleShift(sock, jid, sender);
   } else {
     state.status = "ready";
     state.timeout = null;
-
-    await sock.sendMessage(jid, {
-      text: [
-        `✅ *All shifts are complete — the workers have gone home.*`,
-        ``,
-        `${site.emoji} *${site.name}* — ${SHIFTS_PER_SITE}/${SHIFTS_PER_SITE} shifts complete`,
-        `${worker} ${randomFlavor(site)} on the final shift.`,
-        ``,
-        `🏠 The crew is back with everything they gathered:`,
-        summarizeItems(state.items),
-        ``,
-        `💰 Total pay ready to collect: *${formatMoney(state.moneyEarned)}*`,
-        ``,
-        `Use *.work collect* to grab it all.`,
-      ].join("\n"),
-    });
   }
 }
 
@@ -224,7 +181,8 @@ export default {
     if (!(await requireRegistration(sock, msg, sender))) return;
 
     const jid = msg.key.remoteJid;
-    const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
+    const reply = (text, mentions = [sender]) =>
+      sock.sendMessage(jid, { text, mentions }, { quoted: msg });
     const sub = (args[0] || "").toLowerCase();
     const state = WORK_STATE.get(sender);
 
@@ -238,7 +196,7 @@ export default {
         );
       }
       if (state.collecting) {
-        return reply(`📦 Your crew's haul is already being loaded. Please wait a moment.`);
+        return reply(`${mentionLabel(sender)} your crew's haul is already being loaded. Please wait.`);
       }
 
       state.collecting = true;
@@ -259,46 +217,36 @@ export default {
       WORK_STATE.delete(sender);
 
       return reply([
-        `╭───〔 🧾 *COLLECTED* 〕───╮`,
-        `│ ${site.emoji} ${site.name}`,
-        `│`,
-        `│ 💰 +${formatMoney(state.moneyEarned)} added to your wallet`,
-        `│ 🎒 Items added to inventory:`,
-        ...summarizeItems(state.items).split("\n").map((l) => `│   ${l}`),
-        `│`,
-        `│ Use *.work* to send your crew out again.`,
-        `╰────────────────────────────`,
+        `${mentionLabel(sender)} your crew is home from ${site.name}.`,
+        `Money collected: +${formatMoney(state.moneyEarned)}`,
+        `Items collected: ${summarizeItems(state.items).replace(/\n/g, ", ")}`,
+        `Use .work to send them out again.`,
       ].join("\n"));
     }
 
     // ── .work status ───────────────────────────────────────────────────────
     if (sub === "status") {
-      if (!state) return reply(`❌ Nobody's out working. Use *.work* to see site options.`);
+      if (!state) return reply(`${mentionLabel(sender)} nobody is working. ${siteMenuText()}`);
       const site = SITES[state.siteKey];
 
       if (state.status === "ready") {
-        return reply(`🏠 Crew is back from *${site.name}* with ${formatMoney(state.moneyEarned)} ready.\n\nUse *.work collect* to grab it.`);
+        return reply(`${mentionLabel(sender)} your crew is home from ${site.name}.\nMoney ready: ${formatMoney(state.moneyEarned)}\nUse .work collect.`);
       }
 
       const remaining = Math.max(0, state.endsAt - Date.now());
-      return reply([
-        `${site.emoji} *${site.name}*`,
-        `${shiftDots(state.shift)}  Shift ${state.shift}/${SHIFTS_PER_SITE}`,
-        `⏱️ Next shift ends in *${formatRemaining(remaining)}*`,
-        `💰 Earned so far: ${formatMoney(state.moneyEarned)}`,
-      ].join("\n"));
+      return reply(`${mentionLabel(sender)} ${site.name}: shift ${state.shift}/${SHIFTS_PER_SITE}.\nNext shift in ${formatRemaining(remaining)}.\nMoney held so far: ${formatMoney(state.moneyEarned)}.`);
     }
 
     // ── .work / .work start (menu) ─────────────────────────────────────────
     if (!sub || sub === "start") {
       if (state) {
         if (state.status === "ready") {
-          return reply(`🏠 Your crew is already back with ${formatMoney(state.moneyEarned)} waiting.\n\nUse *.work collect* first.`);
+          return reply(`${mentionLabel(sender)} your crew is already home with ${formatMoney(state.moneyEarned)} waiting.\nUse .work collect.`);
         }
         const remaining = Math.max(0, state.endsAt - Date.now());
-        return reply(`⏳ Your crew is already out at *${SITES[state.siteKey].name}* (shift ${state.shift}/${SHIFTS_PER_SITE}).\nNext shift ends in *${formatRemaining(remaining)}*.`);
+        return reply(`${mentionLabel(sender)} your crew is already working at ${SITES[state.siteKey].name}, shift ${state.shift}/${SHIFTS_PER_SITE}.\nNext shift in ${formatRemaining(remaining)}.`);
       }
-      return reply(siteMenuText());
+      return reply(`${mentionLabel(sender)}\n${siteMenuText()}`);
     }
 
     // ── .work 1 / .work 2 / .work 3 (choose site) ──────────────────────────
@@ -307,12 +255,11 @@ export default {
 
     if (state) {
       if (state.status === "ready") {
-        return reply(`🏠 Your crew is already back with ${formatMoney(state.moneyEarned)} waiting.\n\nUse *.work collect* first.`);
+        return reply(`${mentionLabel(sender)} your crew is already home with ${formatMoney(state.moneyEarned)} waiting.\nUse .work collect.`);
       }
-      return reply(`⏳ Your crew is already out at *${SITES[state.siteKey].name}*. Finish that up first.`);
+      return reply(`${mentionLabel(sender)} your crew is already working at ${SITES[state.siteKey].name}. Check .work status.`);
     }
 
-    const user = await getUser(sender);
     const crew = randomCrew(2 + Math.floor(Math.random() * 2)); // 2-3 NPCs
 
     WORK_STATE.set(sender, {
@@ -328,17 +275,10 @@ export default {
     });
 
     await reply([
-      `╭───〔 ${site.emoji} *SITE STARTED* 〕───╮`,
-      `│ ${site.name}`,
-      `│`,
-      `│ ${user?.name || "You"} sent out: ${crew.join(", ")}`,
-      `│ Job: ${site.verb}`,
-      `│`,
-      `│ ${shiftDots(1)}  Shift 1/${SHIFTS_PER_SITE}`,
-      `│ ⏱️ Shift length: ${formatRemaining(site.shiftDuration)}`,
-      `│`,
-      `│ _Check *.work status* anytime._`,
-      `╰────────────────────────────`,
+      `${mentionLabel(sender)} sent ${crew.join(", ")} to ${site.name}.`,
+      `Next job: ${site.verb}.`,
+      `They will work ${SHIFTS_PER_SITE} shifts and can earn ${formatMoney(site.payMin * SHIFTS_PER_SITE)}-${formatMoney(site.payMax * SHIFTS_PER_SITE)}.`,
+      `One message only while they work. Use .work status to check them, then .work collect when they are home.`,
     ].join("\n"));
 
     scheduleShift(sock, jid, sender);
