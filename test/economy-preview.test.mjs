@@ -7,7 +7,7 @@ import {
 
 test("daily rewards use the AIDORU destination", async () => {
   const expected = {
-    daily: "https://aidoru.zone.id/journey",
+    daily: "https://aidoru.zone.id/daily",
   };
 
   for (const [command, url] of Object.entries(expected)) {
