@@ -30,28 +30,29 @@ export default {
       const imageUrl = "https://cdn.phototourl.com/free/2026-09-09-624701fe-635a-4c28-af32-c73503b0186c.jpg";
       const targetUrl = "https://aidoru.zone.id/daily";
 
-      // Fetch image safely
+      // Fetch image buffer
       let imageBuffer = null;
       try {
         const response = await axios.get(imageUrl, { 
           responseType: "arraybuffer",
-          timeout: 5000 
+          timeout: 8000 
         });
         imageBuffer = Buffer.from(response.data);
       } catch (err) {
-        console.error("Link preview image fetch failed:", err.message);
+        console.error("Failed to download thumbnail image:", err.message);
       }
 
-      // Build contextInfo for WhatsApp ad reply card
+      // External Ad Reply Card configuration
       const contextInfo = {
         externalAdReply: {
           title: "aidoru daily reward",
           body: "Maintain your streak and claim exclusive daily rewards!",
           mediaType: 1,
+          previewType: 0,
           renderLargerThumbnail: true,
-          thumbnailUrl: imageUrl,
-          ...(imageBuffer && { thumbnail: imageBuffer }),
-          sourceUrl: targetUrl
+          thumbnail: imageBuffer,
+          sourceUrl: targetUrl,
+          mediaUrl: targetUrl
         }
       };
 
