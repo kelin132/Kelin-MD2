@@ -13,13 +13,6 @@ import {
   storedRealNumber,
 } from '../../lib/staffNumbers.mjs';
 
-const LEVEL_LABEL = {
-  1:  'MOD',
-  2:  'STAFF',
-  3:  'ADMIN',
-  99: 'OWNER',
-};
-
 const CACHE_TTL_MS = 30_000;
 let staffCache = null;
 let staffCacheAt = 0;
@@ -154,35 +147,41 @@ export default {
         mergeNumberMaps(cleanNumMap, await getAllGroupNumberMap(sock));
       }
 
-      // Sort: highest level first, then alphabetically
+      // Sort within each role so the grouped display stays stable.
       const sorted = [...staffMap.values()].sort(
         (a, b) => b.level - a.level || a.name.localeCompare(b.name)
       );
 
-      const rows = sorted.map((s, index) => {
+      const admins = sorted.filter((s) => s.level >= 3);
+      const staff = sorted.filter((s) => s.level === 2);
+      const mods = sorted.filter((s) => s.level <= 1);
+
+      const formatRows = (members) => members.length
+        ? members.map((s) => {
         const numPart = bareNumber(s.jid);
-        const isLid = s.jid.endsWith('@lid');
-        
         // Prefer a stored phone number, then resolve a LID through group metadata.
         const number = s.realNum || cleanNumMap.get(numPart) || numPart;
-        const label = LEVEL_LABEL[s.level] || 'MOD';
-        
-        return [
-          `│ \`${index + 1}.\` *+${number}*${isLid && !s.realNum && !cleanNumMap.has(numPart) ? ' _(LID unresolved)_' : ''}`,
-          `│    👤 Name: *${s.name}*`,
-          `│    🛡️ Role: \`${label}\``,
-        ].join('\n');
-      }).join('\n│\n');
+        const displayNumber = number ? `+${number}` : '?';
+        return `✦ ${s.name || 'Unknown'} ❖ \`${displayNumber}\``;
+      })
+        : ['✦ None listed'];
 
-      const caption =
-        `╭─❀「 🛡️ *𝐌𝐎𝐃𝐒 & 𝐒𝐓𝐀𝐅𝐅* 」❀─╮\n` +
-        `│ 👥 Members: \`${sorted.length}\`\n` +
-        `│\n` +
-        `${rows}\n` +
-        `│\n` +
-        `│ 💬 Contact a listed team member for assistance.\n` +
-        `│ 📖 Use \`.rules\` to review guidelines.\n` +
-        `╰───────────────❀`;
+      const caption = [
+        `🛡️ 𝗠𝗢𝗗𝗦 & 𝗦𝗧𝗔𝗙𝗙 ❖ ⟦ \`${sorted.length}\` ⟧`,
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '',
+        '👑 𝗔𝗗𝗠𝗜𝗡𝗦',
+        ...formatRows(admins),
+        '',
+        '⭐ 𝗦𝗧𝗔𝗙𝗙',
+        ...formatRows(staff),
+        '',
+        '🗡️ 𝗠𝗢𝗗𝗦',
+        ...formatRows(mods),
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        "> 📖 Do not abuse this command, it's only used for important reasons",
+      ].join('\n');
 
       return sock.sendMessage(jid, {
         text: caption,
