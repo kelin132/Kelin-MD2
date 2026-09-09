@@ -27,7 +27,7 @@ export default {
     const streak = user.streak || 1;
     const streakBonus = 300;
 
-    // Fetch the image as a Buffer so WhatsApp can render it
+    // Fetch the image as a Buffer
     let imageBuffer = null;
     try {
       const response = await axios.get(
@@ -39,26 +39,28 @@ export default {
       console.error("Failed to fetch link preview image:", err);
     }
 
-    // Link preview configuration with Buffer payload
+    const targetUrl = "https://aidoru.zone.id/daily";
+
+    // Link preview configuration
     const linkPreviewConfig = {
-      "canonical-url": "https://aidoru.zone.id/daily",
-      "matched-text": "https://aidoru.zone.id/daily",
+      "canonical-url": targetUrl,
+      "matched-text": targetUrl,
       title: "aidoru daily reward",
       body: "Maintain your streak and claim exclusive daily rewards, coins, and bonuses!",
       description: "aidoru daily reward",
       jpegThumbnail: imageBuffer,
-      renderLargerThumbnail: true // Forces WhatsApp to render the large image card
+      renderLargerThumbnail: true
     };
+
+    // Hidden link trick: attaching zero-width characters around the URL
+    const hiddenLink = `\u200B${targetUrl}\u200B`;
 
     if (now - (user.lastDaily || 0) < cooldown) {
       const remaining = cooldown - (now - user.lastDaily);
       const hours     = Math.floor(remaining / (60 * 60 * 1000));
       const minutes   = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
 
-      const limitCaption =
-`⏳ You've already claimed your daily reward today! Next claim available in ${hours}h ${minutes}m.
-
-You can collect more daily reward here: https://aidoru.zone.id/daily`;
+      const limitCaption = `⏳ You've already claimed your daily reward today! Next claim available in ${hours}h ${minutes}m.${hiddenLink}`;
 
       return sock.sendMessage(
         jid, 
@@ -81,10 +83,7 @@ You can collect more daily reward here: https://aidoru.zone.id/daily`;
 
     await saveUser(sender, user);
 
-    const claimCaption =
-`🎉 You've claimed your daily reward of ${fmt(reward)} coins + ${streakBonus} streak bonus (streak: ${streak})! Your new balance is ${fmt(user.money)} coins.${leveled ? `\n\n⭐ *LEVEL UP!* You are now Level ${newLevel}!` : ""}
-
-You can collect more daily reward here: https://aidoru.zone.id/daily`;
+    const claimCaption = `🎉 You've claimed your daily reward of ${fmt(reward)} coins + ${streakBonus} streak bonus (streak: ${streak})! Your new balance is ${fmt(user.money)} coins.${leveled ? `\n\n⭐ *LEVEL UP!* You are now Level ${newLevel}!` : ""}${hiddenLink}`;
 
     await sock.sendMessage(
       jid, 
