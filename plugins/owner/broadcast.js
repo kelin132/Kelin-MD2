@@ -3,7 +3,7 @@
 
 export default {
   name: "broadcast",
-  description: "Broadcast a message to all groups",
+  description: "Broadcast a message to all groups (supports paragraphs & line breaks)",
   category: "owner",
   usage: ".broadcast <message>",
   aliases: ["bc"],
@@ -11,19 +11,23 @@ export default {
   isOwner: true,
   isAdmin: false,
   isPremium: false,
-  version: "1.1.0",
+  version: "1.2.0",
 
   async run({ sock, msg, sender, text }) {
     const jid = msg.key.remoteJid;
 
     try {
-      if (!text) {
+      if (!text && !msg.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
         return await sock.sendMessage(jid, {
           text:
             "❌ *Usage:*\n.broadcast <message>\n\n" +
-            "Example:\n.broadcast Hello everyone!"
+            "Example:\n.broadcast Line 1\n\nLine 2 (Paragraph 2)\n\n" +
+            "💡 *Tip:* You can also type \\n for line breaks or reply to an image/video to broadcast media!"
         }, { quoted: msg });
       }
+
+      // Format text to parse literal '\n' typed as text into actual line breaks/paragraphs
+      let broadcastText = text ? text.replace(/\\n/g, "\n") : "";
 
       // Send a quick ack reaction
       try {
@@ -45,22 +49,24 @@ export default {
       let success = 0;
       let failed  = 0;
 
+      const formattedMessage = 
+        `╭━━━〔 📢 BROADCAST 〕━━━╮\n\n` +
+        `${broadcastText}\n\n` +
+        `━━━━━━━━━━━━━━━━━━━━\n` +
+        `> THIS MESSAGE WAS BROADCASTED BY THE OWNER\n` +
+        `━━━━━━━━━━━━━━━━━━━━`;
+
       for (const group of groups) {
         try {
           await sock.sendMessage(group.id, {
-            text:
-              `╭━━━〔 📢 BROADCAST 〕━━━╮\n\n` +
-              `${text}\n\n` +
-              `━━━━━━━━━━━━━━━━━━━━\n` +
-              `> THIS MESSAGE WAS BROADCASTED BY THE OWNER\n` +
-              `━━━━━━━━━━━━━━━━━━━━\n`
+            text: formattedMessage
           });
           success++;
 
           // Small delay to avoid rate-limit kicks
-          await new Promise(r => setTimeout(r, 500));
+          await new Promise(r => setTimeout(r, 1000));
         } catch (err) {
-          console.error(`Broadcast failed for ${group.subject}:`, err.message);
+          console.error(`Broadcast failed for ${group.id}:`, err.message);
           failed++;
         }
       }
