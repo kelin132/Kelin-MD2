@@ -26,6 +26,17 @@ export default {
     const streak = user.streak || 1;
     const streakBonus = 300;
 
+    // Define the custom link preview configuration
+    const linkPreviewConfig = {
+      "canonical-url": "https://aidoru.zone.id/daily",
+      "matched-text": "https://aidoru.zone.id/daily",
+      title: "Tensura Daily Rewards",
+      body: "Maintain your 14-day streak and claim exclusive items, coins, and high-tier cards!",
+      description: "Maintain your 14-day streak and claim exclusive items, coins, and high-tier cards!",
+      // Update this URL with your custom banner/thumbnail image link
+      jpegThumbnail: "https://aidoru.zone.id/assets/daily-thumbnail.jpg" 
+    };
+
     if (now - (user.lastDaily || 0) < cooldown) {
       const remaining = cooldown - (now - user.lastDaily);
       const hours     = Math.floor(remaining / (60 * 60 * 1000));
@@ -34,9 +45,16 @@ export default {
       const limitCaption =
 `⏳ You've already claimed your daily reward today! Next claim available in ${hours}h ${minutes}m.
 
-You can collect more daily reward here.`;
+You can collect more daily reward here: https://aidoru.zone.id/daily`;
 
-      return sock.sendMessage(jid, { text: limitCaption }, { quoted: msg });
+      return sock.sendMessage(
+        jid, 
+        { 
+          text: limitCaption,
+          linkPreview: linkPreviewConfig
+        }, 
+        { quoted: msg }
+      );
     }
 
     const reward   = 50000 + Math.floor(Math.random() * 50000);
@@ -53,8 +71,15 @@ You can collect more daily reward here.`;
     const claimCaption =
 `🎉 You've claimed your daily reward of ${fmt(reward)} coins + ${streakBonus} streak bonus (streak: ${streak})! Your new balance is ${fmt(user.money)} coins.${leveled ? `\n\n⭐ *LEVEL UP!* You are now Level ${newLevel}!` : ""}
 
-You can collect more daily reward here.`;
+You can collect more daily reward here: https://aidoru.zone.id/daily`;
 
-    await sock.sendMessage(jid, { text: claimCaption }, { quoted: msg });
+    await sock.sendMessage(
+      jid, 
+      { 
+        text: claimCaption,
+        linkPreview: linkPreviewConfig
+      }, 
+      { quoted: msg }
+    );
   },
 };
