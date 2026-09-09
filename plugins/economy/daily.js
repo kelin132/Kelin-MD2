@@ -26,14 +26,13 @@ export default {
     const streak = user.streak || 1;
     const streakBonus = 300;
 
-    // Define the custom link preview configuration
+    // Custom link preview configuration set to "aidoru daily reward"
     const linkPreviewConfig = {
       "canonical-url": "https://aidoru.zone.id/daily",
       "matched-text": "https://aidoru.zone.id/daily",
-      title: "Tensura Daily Rewards",
-      body: "Maintain your 14-day streak and claim exclusive items, coins, and high-tier cards!",
-      description: "Maintain your 14-day streak and claim exclusive items, coins, and high-tier cards!",
-      // Update this URL with your custom banner/thumbnail image link
+      title: "aidoru daily reward",
+      body: "Maintain your streak and claim exclusive daily rewards, coins, and bonuses!",
+      description: "aidoru daily reward",
       jpegThumbnail: "https://aidoru.zone.id/assets/daily-thumbnail.jpg" 
     };
 
