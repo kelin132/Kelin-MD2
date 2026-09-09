@@ -2,7 +2,7 @@
  * .setstaff @user [level]
  * Set a user's staff level. Level: 1=mod, 2=staff, 3=admin
  * Owner can set any level. Staff can only set level 1 (mod).
- * Aliases: addmod, setmod, addstaff
+ * Aliases: setmod, addstaff
  */
 import { setStaffLevel, getUser, isRegistered } from "../economy/database.js";
 
@@ -13,7 +13,7 @@ export default {
   description: "Grant a user mod/staff/admin rank",
   category: "staff",
   usage: ".setstaff @user [1|2|3]",
-  aliases: ["addmod", "setmod", "addstaff", "grantstaff"],
+  aliases: ["setmod", "addstaff", "grantstaff"],
   isMod: true,
 
   async run({ sock, msg, args, sender, isOwner, isStaff, staffLevel }) {

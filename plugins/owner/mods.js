@@ -1,8 +1,8 @@
 // plugins/owner/mods.js
 // .mods  — list all guardians/mods with clean phone numbers
-// .addmod / .removemod — manage the mods list
+// .removemod — remove a user from the mods list
 
-import { getModsData, saveModsData, getMods } from '../../lib/permissions.mjs';
+import { getModsData, saveModsData } from '../../lib/permissions.mjs';
 import { getStaffMembers } from '../economy/database.js';
 import {
   bareNumber,
@@ -40,35 +40,12 @@ async function getCachedStaffMembers() {
   return staffCacheInFlight;
 }
 
-/** Try every available source to get a display name for a JID. */
-async function resolveName(sock, targetJid, chatJid) {
-  const num = bareNumber(targetJid);
-
-  const contacts = sock.store?.contacts || sock.contacts || {};
-  const c = contacts[targetJid] ?? contacts[`${num}@s.whatsapp.net`] ?? {};
-  const fromContacts = c.notify || c.verifiedName || c.name;
-  if (fromContacts) return fromContacts;
-
-  if (chatJid?.endsWith('@g.us')) {
-    try {
-      const meta        = await sock.groupMetadata(chatJid);
-      const participant = meta.participants.find(
-        p => p.id.split('@')[0].split(':')[0] === num
-      );
-      if (participant?.name || participant?.notify)
-        return participant.name || participant.notify;
-    } catch { /* ignore */ }
-  }
-
-  return null;
-}
-
 export default {
   name:        'mods',
-  description: 'List, add, or remove bot moderators',
+  description: 'List or remove bot moderators',
   category:    'owner',
-  usage:       '.mods | .addmod @user | .removemod @user',
-  aliases:     ['addmod', 'removemod', 'modlist'],
+  usage:       '.mods | .removemod @user',
+  aliases:     ['removemod', 'modlist'],
   cooldown:    5,
   isOwner:     false,
 
@@ -124,7 +101,6 @@ export default {
             `╭─❀「 🛡️ *𝐌𝐎𝐃𝐒 & 𝐒𝐓𝐀𝐅𝐅* 」❀─╮\n` +
             `│ No mods set yet.\n` +
             `│\n` +
-            `│ 💡 \`.addmod @user\` — grant mod access\n` +
             `│ 💡 \`.removemod @user\` — revoke mod access\n` +
             `╰───────────────❀`,
         }, { quoted: msg });
@@ -206,47 +182,16 @@ export default {
       return sock.sendMessage(jid, {
         text:
           `╭─❀「 🛡️ *𝐌𝐎𝐃𝐒 & 𝐒𝐓𝐀𝐅𝐅* 」❀─╮\n` +
-          `│ ❌ Please specify a user.\n` +
+          `│ ❌ Please specify a user to remove.\n` +
           `│\n` +
-          `│ 💡 Mention: \`.addmod @user\`\n` +
-          `│ 💡 Reply: \`.addmod\` (reply to target)\n` +
-          `│ 💡 Phone: \`.addmod 27628114340\`\n` +
+          `│ 💡 Mention: \`.removemod @user\`\n` +
+          `│ 💡 Reply: \`.removemod\` (reply to target)\n` +
+          `│ 💡 Phone: \`.removemod 27628114340\`\n` +
           `╰───────────────❀`,
       }, { quoted: msg });
     }
 
     const num  = targetJid.split('@')[0].split(':')[0].replace(/\D/g, '');
-    const list = getMods();
-
-    // ── .addmod ───────────────────────────────────────────────────────────
-    if (cmd === 'addmod') {
-      if (list.includes(num)) {
-        return sock.sendMessage(jid, {
-          text:
-            `╭─❀「 🛡️ *𝐌𝐎𝐃𝐒 & 𝐒𝐓𝐀𝐅𝐅* 」❀─╮\n` +
-            `│ ❌ @${num} is already a mod.\n` +
-            `╰───────────────❀`,
-          mentions: [targetJid],
-        }, { quoted: msg });
-      }
-
-      const resolvedName = await resolveName(sock, targetJid, jid);
-      const name = resolvedName || `+${num}`;
-
-      data.push({ num, name });
-      saveModsData(data);
-
-      return sock.sendMessage(jid, {
-        text:
-          `╭─❀「 🛡️ *𝐌𝐎𝐃𝐒 & 𝐒𝐓𝐀𝐅𝐅* 」❀─╮\n` +
-          `│ ✅ @${num} added as bot mod!\n` +
-          `│\n` +
-          `│ 👤 Name: *${name}*\n` +
-          `│ 📞 Phone: \`+${num}\`\n` +
-          `╰───────────────❀`,
-        mentions: [targetJid],
-      }, { quoted: msg });
-    }
 
     // ── .removemod ────────────────────────────────────────────────────────
     if (cmd === 'removemod') {
