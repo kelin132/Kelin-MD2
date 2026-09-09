@@ -16,80 +16,85 @@ export default {
   aliases: ["dailyclaim"],
 
   async run({ sock, msg, sender }) {
-    if (!await requireRegistration(sock, msg, sender)) return;
-
-    const user     = await getUser(sender);
-    const now      = Date.now();
-    const cooldown = 24 * 60 * 60 * 1000;
-    const jid      = msg.key.remoteJid;
-
-    const streak = user.streak || 1;
-    const streakBonus = 300;
-
-    // Fetch image buffer
-    let imageBuffer = null;
     try {
-      const response = await axios.get(
-        "https://cdn.phototourl.com/free/2026-09-09-624701fe-635a-4c28-af32-c73503b0186c.jpg",
-        { responseType: "arraybuffer" }
-      );
-      imageBuffer = Buffer.from(response.data, "binary");
-    } catch (err) {
-      console.error("Failed to fetch image buffer:", err);
-    }
+      if (!await requireRegistration(sock, msg, sender)) return;
 
-    // Context Info Payload for WhatsApp Large Banner Cards
-    const contextInfo = {
-      externalAdReply: {
-        title: "aidoru daily reward",
-        body: "Maintain your streak and claim exclusive daily rewards!",
-        mediaType: 1,
-        renderLargerThumbnail: true,
-        thumbnail: imageBuffer,
-        sourceUrl: "https://aidoru.zone.id/daily"
+      const user     = await getUser(sender);
+      const now      = Date.now();
+      const cooldown = 24 * 60 * 60 * 1000;
+      const jid      = msg.key.remoteJid;
+
+      const streak = user.streak || 1;
+      const streakBonus = 300;
+
+      const imageUrl = "https://cdn.phototourl.com/free/2026-09-09-624701fe-635a-4c28-af32-c73503b0186c.jpg";
+      const targetUrl = "https://aidoru.zone.id/daily";
+
+      // Fetch image safely
+      let imageBuffer = null;
+      try {
+        const response = await axios.get(imageUrl, { 
+          responseType: "arraybuffer",
+          timeout: 5000 
+        });
+        imageBuffer = Buffer.from(response.data);
+      } catch (err) {
+        console.error("Link preview image fetch failed:", err.message);
       }
-    };
 
-    // Invisible zero-width space trick so WhatsApp loads the preview without printing a link
-    const hiddenLink = " \u200Bhttps://aidoru.zone.id/daily\u200B";
+      // Build contextInfo for WhatsApp ad reply card
+      const contextInfo = {
+        externalAdReply: {
+          title: "aidoru daily reward",
+          body: "Maintain your streak and claim exclusive daily rewards!",
+          mediaType: 1,
+          renderLargerThumbnail: true,
+          thumbnailUrl: imageUrl,
+          ...(imageBuffer && { thumbnail: imageBuffer }),
+          sourceUrl: targetUrl
+        }
+      };
 
-    if (now - (user.lastDaily || 0) < cooldown) {
-      const remaining = cooldown - (now - user.lastDaily);
-      const hours     = Math.floor(remaining / (60 * 60 * 1000));
-      const minutes   = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+      if (now - (user.lastDaily || 0) < cooldown) {
+        const remaining = cooldown - (now - user.lastDaily);
+        const hours     = Math.floor(remaining / (60 * 60 * 1000));
+        const minutes   = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
 
-      const limitCaption = `⏳ You've already claimed your daily reward today! Next claim available in ${hours}h ${minutes}m.${hiddenLink}`;
+        const limitCaption = `⏳ You've already claimed your daily reward today! Next claim available in ${hours}h ${minutes}m.`;
 
-      return sock.sendMessage(
+        return await sock.sendMessage(
+          jid, 
+          { 
+            text: limitCaption,
+            contextInfo: contextInfo
+          }, 
+          { quoted: msg }
+        );
+      }
+
+      const reward   = 50000 + Math.floor(Math.random() * 50000);
+      const xpBonus  = 200;
+
+      user.money    += (reward + streakBonus);
+      user.lastDaily = now;
+      user.xp        = (user.xp || 0) + xpBonus;
+
+      const { leveled, newLevel } = checkLevelUp(user);
+
+      await saveUser(sender, user);
+
+      const claimCaption = `🎉 You've claimed your daily reward of ${fmt(reward)} coins + ${streakBonus} streak bonus (streak: ${streak})! Your new balance is ${fmt(user.money)} coins.${leveled ? `\n\n⭐ *LEVEL UP!* You are now Level ${newLevel}!` : ""}`;
+
+      return await sock.sendMessage(
         jid, 
         { 
-          text: limitCaption,
+          text: claimCaption,
           contextInfo: contextInfo
         }, 
         { quoted: msg }
       );
+    } catch (error) {
+      console.error("Error executing daily command:", error);
     }
-
-    const reward   = 50000 + Math.floor(Math.random() * 50000);
-    const xpBonus  = 200;
-
-    user.money    += (reward + streakBonus);
-    user.lastDaily = now;
-    user.xp        = (user.xp || 0) + xpBonus;
-
-    const { leveled, newLevel } = checkLevelUp(user);
-
-    await saveUser(sender, user);
-
-    const claimCaption = `🎉 You've claimed your daily reward of ${fmt(reward)} coins + ${streakBonus} streak bonus (streak: ${streak})! Your new balance is ${fmt(user.money)} coins.${leveled ? `\n\n⭐ *LEVEL UP!* You are now Level ${newLevel}!` : ""}${hiddenLink}`;
-
-    await sock.sendMessage(
-      jid, 
-      { 
-        text: claimCaption,
-        contextInfo: contextInfo
-      }, 
-      { quoted: msg }
-    );
   },
 };
