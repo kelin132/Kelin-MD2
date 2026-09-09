@@ -50,11 +50,11 @@ export default {
 
       // Template keeping exact user text structure intact
       const formattedMessage = 
-`╭━━━〔 📢 BROADCAST 〕━━━╮
+`〔 📢 *BROADCAST* 
 
 ${userText}
 
-━━━━━━━━━━━━━━━━━━━━
+
 > THIS MESSAGE WAS BROADCASTED BY THE OWNER
 ━━━━━━━━━━━━━━━━━━━━`;
 
