@@ -3,7 +3,7 @@
 
 export default {
   name: "broadcast",
-  description: "Broadcast a message to all groups (supports paragraphs & line breaks)",
+  description: "Broadcast a message to all groups preserving exact paragraph breaks",
   category: "owner",
   usage: ".broadcast <message>",
   aliases: ["bc"],
@@ -11,23 +11,22 @@ export default {
   isOwner: true,
   isAdmin: false,
   isPremium: false,
-  version: "1.2.0",
+  version: "1.3.0",
 
   async run({ sock, msg, sender, text }) {
     const jid = msg.key.remoteJid;
 
     try {
-      if (!text && !msg.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
+      if (!text) {
         return await sock.sendMessage(jid, {
           text:
             "❌ *Usage:*\n.broadcast <message>\n\n" +
-            "Example:\n.broadcast Line 1\n\nLine 2 (Paragraph 2)\n\n" +
-            "💡 *Tip:* You can also type \\n for line breaks or reply to an image/video to broadcast media!"
+            "Example:\n.broadcast First line\n\nSecond paragraph here!"
         }, { quoted: msg });
       }
 
-      // Format text to parse literal '\n' typed as text into actual line breaks/paragraphs
-      let broadcastText = text ? text.replace(/\\n/g, "\n") : "";
+      // Preserve exact user text, lines, and paragraph breaks
+      const userText = text.trim();
 
       // Send a quick ack reaction
       try {
@@ -49,12 +48,15 @@ export default {
       let success = 0;
       let failed  = 0;
 
+      // Template keeping exact user text structure intact
       const formattedMessage = 
-        `╭━━━〔 📢 BROADCAST 〕━━━╮\n\n` +
-        `${broadcastText}\n\n` +
-        `━━━━━━━━━━━━━━━━━━━━\n` +
-        `> THIS MESSAGE WAS BROADCASTED BY THE OWNER\n` +
-        `━━━━━━━━━━━━━━━━━━━━`;
+`╭━━━〔 📢 BROADCAST 〕━━━╮
+
+${userText}
+
+━━━━━━━━━━━━━━━━━━━━
+> THIS MESSAGE WAS BROADCASTED BY THE OWNER
+━━━━━━━━━━━━━━━━━━━━`;
 
       for (const group of groups) {
         try {
