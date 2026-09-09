@@ -8,8 +8,7 @@ import { randomChoice, randomChance } from "../../lib/gambling.mjs";
 import { parseAmount } from "./parseAmount.js";
 import { MAX_BET, maxBetMessage } from "./bettingLimits.js";
 import { getNewlyUnlockedRole, buildLevelUpMsg } from "../../lib/levelRoles.mjs";
-import { flattenEconomyText, sendEconomyReply } from "../../lib/discordEconomyReply.mjs";
-import { compactMoney } from "../../lib/compactMoney.mjs";
+import { formatGamblingResult } from "../../lib/gamblingFormat.mjs";
 
 const COOLDOWN = 30 * 1000;
 
@@ -31,7 +30,11 @@ const LOSE_LINES = [
 
 /** Short money formatter */
 function fmt(n) {
-  return compactMoney(n);
+  if (n >= 1e12) return `$${(n/1e12).toFixed(1)}T`;
+  if (n >= 1e9)  return `$${(n/1e9).toFixed(1)}B`;
+  if (n >= 1e6)  return `$${(n/1e6).toFixed(1)}M`;
+  if (n >= 1e3)  return `$${(n/1e3).toFixed(1)}K`;
+  return `$${n.toLocaleString()}`;
 }
 
 export default {
@@ -43,55 +46,24 @@ export default {
   cooldown: 2,
   checkJail: true,
 
-  async run({ sock, msg, sender, args, discord }) {
+  async run({ sock, msg, sender, args }) {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const jid  = msg.key.remoteJid;
     const user = await getUser(sender);
     const now  = Date.now();
-    const sendText = (text, options = {}) => sendEconomyReply({
-      sock,
-      jid,
-      msg,
-      discord,
-      text,
-      title: options.title || "🎲 Bet",
-      color: options.color || "#FFD166",
-      fields: options.fields || [],
-      simpleText: options.simpleText
-        ?? `🎲 bet: ${flattenEconomyText(text)}`,
-      mentions: [sender],
-    });
-    const sendResult = ({ won, flavour, amount, net, balance, diamondReward }) => {
-      const status = won ? "WIN ✅" : "LOSE ❌";
-      const profit = `${net >= 0 ? "+" : "-"}${fmt(Math.abs(net))}`;
-      const resultText = [
-        `🎲 BET — [ ${status} ]`,
-        `🎯 Stake : ${fmt(amount)}`,
-        `💬 Result : ${flavour}`,
-        `💰 Profit : ${profit}`,
-        `💳 Balance : ${fmt(balance)}`,
-        ...(diamondReward ? [`💎 Gem bonus : +${diamondReward}`] : []),
-      ].join(" | ");
-
-      return sock.sendMessage(jid, {
-        text: resultText,
-        mentions: [sender],
-      }, { quoted: msg });
-    };
 
     if (now - (user.lastBet || 0) < COOLDOWN) {
       const secs = Math.ceil((COOLDOWN - (now - user.lastBet)) / 1000);
-      return sendText(`⏳ Cooldown! You can bet again in \`${secs}s\`.`, {
-        title: "⏳ Bet Cooldown",
-        color: "#E67E22",
-        fields: [{ name: "Next bet", value: `${secs}s`, inline: true }],
-      });
+      return sock.sendMessage(jid, {
+        text: `⏳ Cooldown! You can bet again in \`${secs}s\`.`,
+      }, { quoted: msg });
     }
 
     const raw = args[0]?.toLowerCase();
     if (!raw) {
-      return sendText(
+      return sock.sendMessage(jid, {
+        text:
 `╭─❀「 🎲 *𝐁𝐄𝐓* 」❀─╮
 │ Usage: \`.bet <amount>\`
 │ Examples: \`.bet 500\`  /  \`.bet 10k\`  /  \`.bet 1b\`
@@ -103,38 +75,18 @@ export default {
 │ 💰 *Max Bet* :: \`$300B\`
 │ 🎯 *Win Rate* :: \`53.1%\`
 ╰───────────────❀`,
-        {
-          fields: [
-            { name: "Wallet", value: fmt(user.money), inline: true },
-            { name: "Maximum", value: "$300B", inline: true },
-            { name: "Win rate", value: "53.1%", inline: true },
-          ],
-        },
-      );
+      }, { quoted: msg });
     }
 
     let amount = parseAmount(raw, user.money);
     if (!amount || isNaN(amount) || amount <= 0)
-      return sendText("❌ Enter a valid amount. Example: `.bet 500`", {
-        title: "❌ Invalid Bet",
-        color: "#E74C3C",
-      });
+      return sock.sendMessage(jid, { text: "❌ Enter a valid amount. Example: \`.bet 500\`" }, { quoted: msg });
     if (amount > MAX_BET)
-      return sendText(maxBetMessage(), {
-        title: "❌ Bet Limit",
-        color: "#E74C3C",
-      });
+      return sock.sendMessage(jid, { text: maxBetMessage() }, { quoted: msg });
     if (amount > user.money)
-      return sendText(`❌ You only have \`${fmt(user.money)}\` in your wallet.`, {
-        title: "❌ Insufficient Wallet",
-        color: "#E74C3C",
-        fields: [{ name: "Wallet", value: fmt(user.money), inline: true }],
-      });
+      return sock.sendMessage(jid, { text: `❌ You only have \`${fmt(user.money)}\` in your wallet.` }, { quoted: msg });
     if (amount < 10)
-      return sendText("❌ Minimum bet is `$10`.", {
-        title: "❌ Bet Too Small",
-        color: "#E74C3C",
-      });
+      return sock.sendMessage(jid, { text: "❌ Minimum bet is \`$10\`." }, { quoted: msg });
 
     const won          = randomChance(0.53,1);
     const diamondReward = maybeAwardDiamonds(user, won ? 0.003 : 0.001, 1, 2);
@@ -151,14 +103,18 @@ export default {
       await addHistory(sender, "bet", +amount, `Bet won — wagered $${amount.toLocaleString()}`);
 
       const tag = user.name || sender.split("@")[0].split(":")[0];
-      await sendResult({
-        won: true,
-        flavour,
-        amount,
-        net: amount,
-        balance: user.money,
-        diamondReward,
-      });
+      await sock.sendMessage(jid, {
+        text: formatGamblingResult({
+          icon: "🎲",
+          title: "Bet",
+          won: true,
+          bet: amount,
+          got: flavour,
+          details: [diamondReward ? `💎 Bonus: +\`${diamondReward}\` Gem${diamondReward === 1 ? "" : "s"}` : ""],
+          net: amount,
+          balance: user.money,
+        }),
+      }, { quoted: msg });
 
       if (leveled) {
         const newRole = getNewlyUnlockedRole(startLevel, newLevel);
@@ -169,14 +125,17 @@ export default {
       await saveUser(sender, user);
       await addHistory(sender, "bet", -amount, `Bet lost — wagered $${amount.toLocaleString()}`);
 
-      await sendResult({
-        won: false,
-        flavour,
-        amount,
-        net: -amount,
-        balance: user.money,
-        diamondReward,
-      });
+      await sock.sendMessage(jid, {
+        text: formatGamblingResult({
+          icon: "🎲",
+          title: "Bet",
+          bet: amount,
+          got: flavour,
+          details: [diamondReward ? `💎 Bonus: +\`${diamondReward}\` Gem${diamondReward === 1 ? "" : "s"}` : ""],
+          net: -amount,
+          balance: user.money,
+        }),
+      }, { quoted: msg });
     }
   },
 };
