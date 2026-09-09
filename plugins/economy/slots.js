@@ -7,7 +7,6 @@ import { getUser, saveUser, requireRegistration, addHistory, maybeAwardDiamonds,
 import { randomChoice } from "../../lib/gambling.mjs";
 import { parseAmount } from "./parseAmount.js";
 import { MAX_BET, maxBetMessage } from "./bettingLimits.js";
-import { formatGamblingResult } from "../../lib/gamblingFormat.mjs";
 import { getNewlyUnlockedRole, buildLevelUpMsg } from "../../lib/levelRoles.mjs";
 
 const COOLDOWN = 15 * 1000;
@@ -38,7 +37,7 @@ export default {
   usage: ".slots <amount>",
   checkJail: true,
 
-  async run({ sock, msg, sender, args }) {
+  async run({ sock, msg, sender, args, discord }) {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const jid   = msg.key.remoteJid;
@@ -112,18 +111,38 @@ export default {
     const tag = user.name || sender.split("@")[0].split(":")[0];
 
     const won    = winnings > 0;
-    const caption = formatGamblingResult({
-      icon: "🎰",
-      title: "Slots",
-      won,
-      bet: amount,
-      got: `${a} ${b} ${c}`,
-      details: [resultMsg, diamondReward ? `💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}` : ""],
-      net,
-      balance: user.money,
-    });
+    const caption = [
+      `${a} | ${b} | ${c}`,
+      `🎰 BET — [ ${won ? "WIN ✅" : "LOSE ❌"} ]`,
+      `🎯 Stake : ${fmt(amount)}`,
+      `💬 Result : ${resultMsg}`,
+      `💰 Profit : ${net >= 0 ? "+" : "-"}${fmt(Math.abs(net))}`,
+      `💳 Balance : ${fmt(user.money)}`,
+      ...(diamondReward ? [`💎 Gem bonus : +${diamondReward}`] : []),
+    ].join(" | ");
 
-    await reply(caption);
+    if (discord?.message) {
+      await sock.sendMessage(jid, {
+        discordEmbed: {
+          title: "🎰 Slot Machine",
+          description: `[ ${a}  |  ${b}  |  ${c} ]`,
+          color: won ? "#45D483" : "#FF5D73",
+          fields: [
+            { name: "Bet", value: fmt(amount), inline: true },
+            {
+              name: "Result",
+              value: won
+                ? `🎉 ${resultMsg}\nPayout: ${fmt(winnings)}`
+                : "😢 You lost. Better luck next time!",
+              inline: false,
+            },
+            { name: "Wallet", value: fmt(user.money), inline: true },
+          ],
+        },
+      }, { quoted: msg });
+    } else {
+      await reply(caption);
+    }
 
     if (leveled) {
       const newRole = getNewlyUnlockedRole(startLevel, newLevel);

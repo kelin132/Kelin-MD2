@@ -2,6 +2,7 @@ import { getUser, saveUser, requireRegistration } from "../economy/database.js";
 import { randomChoice } from "../../lib/gambling.mjs";
 import { parseAmount } from "../economy/parseAmount.js";
 import { MAX_BET, maxBetMessage } from "../economy/bettingLimits.js";
+import { compactMoney } from "../../lib/compactMoney.mjs";
 
 const SYMBOLS = ["🍒", "🍋", "🍇", "🔔", "⭐", "💎", "7️⃣"];
 const PAYOUTS = {
@@ -26,7 +27,7 @@ export default {
   aliases: ["slot", "spin"],
   cooldown: 5,
 
-  async run({ sock, msg, sender, args }) {
+  async run({ sock, msg, sender, args, discord }) {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const user = await getUser(sender);
@@ -66,19 +67,36 @@ export default {
     else if (rawMulti === 1.5) result = "✅ *Two of a kind! Partial payout!*";
     else                     result = "❌ *No match. Better luck next time!*";
 
+    if (discord?.message) {
+      const won = rawMulti > 0;
+      return sock.sendMessage(msg.key.remoteJid, {
+        discordEmbed: {
+          title: "🎰 Slot Machine",
+          description: `[ ${reels.join("  |  ")} ]\n\n${won
+            ? `🎉 You won $${win.toLocaleString()}!`
+            : "😢 You lost. Better luck next time!"}`,
+          color: won ? "#45D483" : "#FF5D73",
+          fields: [
+            { name: "Bet", value: `$${bet.toLocaleString()}`, inline: true },
+            { name: "Result", value: won
+              ? `${result}\nPayout: $${win.toLocaleString()}`
+              : "😢 You lost. Better luck next time!", inline: false },
+            { name: "Balance", value: `$${user.money.toLocaleString()}`, inline: true },
+          ],
+          footer: { text: "✦ AIDORU • AKIRA" },
+        },
+      }, { quoted: msg });
+    }
+
+    const resultLabel = rawMulti > 0 ? result.replace(/\*/g, "") : "Better luck next time!";
     await sock.sendMessage(msg.key.remoteJid, {
-      text:
-`🎰 *SLOT MACHINE*
-
-╔═══════════════╗
-║  ${display}  ║
-╚═══════════════╝
-
-${result}
-
-💰 Bet    : $${bet.toLocaleString()}
-${net >= 0 ? "🤑" : "💸"} ${net >= 0 ? "Won" : "Lost"}   : $${Math.abs(net).toLocaleString()}
-💰 Balance: $${user.money.toLocaleString()}`
+      text: [
+        `${reels.join(" | ")} | 🎰 BET — [ ${rawMulti > 0 ? "WIN ✅" : "LOSE ❌"} ]`,
+        `🎯 Stake : ${compactMoney(bet)}`,
+        `💬 Result : ${resultLabel}`,
+        `💰 Profit : ${net >= 0 ? "+" : "-"}${compactMoney(Math.abs(net))}`,
+        `💳 Balance : ${compactMoney(user.money)}`,
+      ].join(" | "),
     }, { quoted: msg });
   }
 };
