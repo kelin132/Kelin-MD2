@@ -23,11 +23,10 @@ export default {
     const cooldown = 24 * 60 * 60 * 1000;
     const jid      = msg.key.remoteJid;
 
-    // Default values if streak isn't yet set on user
     const streak = user.streak || 1;
     const streakBonus = 300;
 
-    // Fetch the image as a Buffer
+    // Fetch image buffer
     let imageBuffer = null;
     try {
       const response = await axios.get(
@@ -36,24 +35,23 @@ export default {
       );
       imageBuffer = Buffer.from(response.data, "binary");
     } catch (err) {
-      console.error("Failed to fetch link preview image:", err);
+      console.error("Failed to fetch image buffer:", err);
     }
 
-    const targetUrl = "https://aidoru.zone.id/daily";
-
-    // Link preview configuration
-    const linkPreviewConfig = {
-      "canonical-url": targetUrl,
-      "matched-text": targetUrl,
-      title: "aidoru daily reward",
-      body: "Maintain your streak and claim exclusive daily rewards, coins, and bonuses!",
-      description: "aidoru daily reward",
-      jpegThumbnail: imageBuffer,
-      renderLargerThumbnail: true
+    // Context Info Payload for WhatsApp Large Banner Cards
+    const contextInfo = {
+      externalAdReply: {
+        title: "aidoru daily reward",
+        body: "Maintain your streak and claim exclusive daily rewards!",
+        mediaType: 1,
+        renderLargerThumbnail: true,
+        thumbnail: imageBuffer,
+        sourceUrl: "https://aidoru.zone.id/daily"
+      }
     };
 
-    // Hidden link trick: attaching zero-width characters around the URL
-    const hiddenLink = `\u200B${targetUrl}\u200B`;
+    // Invisible zero-width space trick so WhatsApp loads the preview without printing a link
+    const hiddenLink = " \u200Bhttps://aidoru.zone.id/daily\u200B";
 
     if (now - (user.lastDaily || 0) < cooldown) {
       const remaining = cooldown - (now - user.lastDaily);
@@ -66,7 +64,7 @@ export default {
         jid, 
         { 
           text: limitCaption,
-          linkPreview: linkPreviewConfig
+          contextInfo: contextInfo
         }, 
         { quoted: msg }
       );
@@ -89,7 +87,7 @@ export default {
       jid, 
       { 
         text: claimCaption,
-        linkPreview: linkPreviewConfig
+        contextInfo: contextInfo
       }, 
       { quoted: msg }
     );
