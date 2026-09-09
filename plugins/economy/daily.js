@@ -1,4 +1,5 @@
 import { getUser, saveUser, requireRegistration, checkLevelUp } from "./database.js";
+import axios from "axios";
 
 function fmt(n) {
   if (n >= 1e9) return `${(n / 1e9).toFixed(1)}B`;
@@ -26,14 +27,27 @@ export default {
     const streak = user.streak || 1;
     const streakBonus = 300;
 
-    // Custom link preview configuration
+    // Fetch the image as a Buffer so WhatsApp can render it
+    let imageBuffer = null;
+    try {
+      const response = await axios.get(
+        "https://cdn.phototourl.com/free/2026-09-09-624701fe-635a-4c28-af32-c73503b0186c.jpg",
+        { responseType: "arraybuffer" }
+      );
+      imageBuffer = Buffer.from(response.data, "binary");
+    } catch (err) {
+      console.error("Failed to fetch link preview image:", err);
+    }
+
+    // Link preview configuration with Buffer payload
     const linkPreviewConfig = {
       "canonical-url": "https://aidoru.zone.id/daily",
       "matched-text": "https://aidoru.zone.id/daily",
       title: "aidoru daily reward",
       body: "Maintain your streak and claim exclusive daily rewards, coins, and bonuses!",
       description: "aidoru daily reward",
-      jpegThumbnail: "https://cdn.phototourl.com/free/2026-09-09-624701fe-635a-4c28-af32-c73503b0186c.jpg" 
+      jpegThumbnail: imageBuffer,
+      renderLargerThumbnail: true // Forces WhatsApp to render the large image card
     };
 
     if (now - (user.lastDaily || 0) < cooldown) {
@@ -82,4 +96,3 @@ You can collect more daily reward here: https://aidoru.zone.id/daily`;
     );
   },
 };
- 
