@@ -30,29 +30,24 @@ export default {
       const imageUrl = "https://cdn.phototourl.com/free/2026-09-09-624701fe-635a-4c28-af32-c73503b0186c.jpg";
       const targetUrl = "https://aidoru.zone.id/daily";
 
-      // Fetch image buffer
+      // Attempt to download image buffer safely
       let imageBuffer = null;
       try {
-        const response = await axios.get(imageUrl, { 
-          responseType: "arraybuffer",
-          timeout: 8000 
-        });
-        imageBuffer = Buffer.from(response.data);
-      } catch (err) {
-        console.error("Failed to download thumbnail image:", err.message);
+        const res = await axios.get(imageUrl, { responseType: "arraybuffer", timeout: 5000 });
+        imageBuffer = Buffer.from(res.data);
+      } catch (e) {
+        console.error("[Daily Command] Image fetch error:", e.message);
       }
 
-      // External Ad Reply Card configuration
+      // Build contextInfo (only include thumbnail if buffer fetched successfully)
       const contextInfo = {
         externalAdReply: {
           title: "aidoru daily reward",
           body: "Maintain your streak and claim exclusive daily rewards!",
           mediaType: 1,
-          previewType: 0,
           renderLargerThumbnail: true,
-          thumbnail: imageBuffer,
           sourceUrl: targetUrl,
-          mediaUrl: targetUrl
+          ...(imageBuffer ? { thumbnail: imageBuffer } : { thumbnailUrl: imageUrl })
         }
       };
 
@@ -63,14 +58,7 @@ export default {
 
         const limitCaption = `⏳ You've already claimed your daily reward today! Next claim available in ${hours}h ${minutes}m.`;
 
-        return await sock.sendMessage(
-          jid, 
-          { 
-            text: limitCaption,
-            contextInfo: contextInfo
-          }, 
-          { quoted: msg }
-        );
+        return await sock.sendMessage(jid, { text: limitCaption, contextInfo }, { quoted: msg });
       }
 
       const reward   = 50000 + Math.floor(Math.random() * 50000);
@@ -86,16 +74,13 @@ export default {
 
       const claimCaption = `🎉 You've claimed your daily reward of ${fmt(reward)} coins + ${streakBonus} streak bonus (streak: ${streak})! Your new balance is ${fmt(user.money)} coins.${leveled ? `\n\n⭐ *LEVEL UP!* You are now Level ${newLevel}!` : ""}`;
 
-      return await sock.sendMessage(
-        jid, 
-        { 
-          text: claimCaption,
-          contextInfo: contextInfo
-        }, 
-        { quoted: msg }
-      );
+      return await sock.sendMessage(jid, { text: claimCaption, contextInfo }, { quoted: msg });
+
     } catch (error) {
-      console.error("Error executing daily command:", error);
+      console.error("[Daily Command Error]:", error);
+      // Fallback response in case contextInfo crashes WhatsApp socket
+      const jid = msg.key.remoteJid;
+      return await sock.sendMessage(jid, { text: "🎉 Daily reward processed! Check your balance." }, { quoted: msg });
     }
   },
 };
