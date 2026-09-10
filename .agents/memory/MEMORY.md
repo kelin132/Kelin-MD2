@@ -1,3 +1,4 @@
+- [Bot dependency installation](package-install.md) — this repository is a pnpm workspace; install its declared dependencies from the root with the frozen lockfile.
 - [Bot startup behavior](bot-startup.md) — malformed .bots config can trigger the wrong single-bot startup path.
 - [WhatsApp identity bridge](whatsapp-identity-bridge.md) — resolve Baileys LIDs before DB access and copy legacy records because MongoDB IDs are immutable.
 - [Native canvas dependency](native-canvas.md) — the bot’s canvas renderer needs a successful native `canvas` build; syntax and plugin loading can still pass while renderer plugins warn.
