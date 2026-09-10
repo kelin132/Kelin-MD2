@@ -177,9 +177,10 @@ export default {
 
     // ── TOP CARDS ──────────────────────────────────────────────────────────────
     if (flag === "cards" || flag === "card") {
+      const text = await getCachedLeaderboard("economy:cards:formatted", async () => {
       // totalCards is maintained by card commands and can use the background
       // index. Keep an aggregate fallback for older records without the field.
-      let results = await getCachedLeaderboard("economy:cards", () => db.collection("mn_users")
+      let results = await getCachedLeaderboard("economy:cards:raw", () => db.collection("mn_users")
         .find({ totalCards: { $gt: 0 } }, {
           projection: { userId: 1, whatsappNumber: 1, username: 1, totalCards: 1 },
         })
@@ -187,19 +188,15 @@ export default {
         .limit(10)
         .toArray(), { ttlMs: 30_000 });
       if (!results.length) {
-        results = await db.collection("mn_users").aggregate([
+        results = await getCachedLeaderboard("economy:cards:legacy", () => db.collection("mn_users").aggregate([
           { $match: { cards: { $exists: true, $type: "array", $ne: [] } } },
           { $project: { userId: 1, whatsappNumber: 1, username: 1, cardCount: { $size: "$cards" } } },
           { $sort: { cardCount: -1 } },
           { $limit: 10 },
-        ]).toArray();
+        ]).toArray(), { ttlMs: 30_000 });
       }
 
-      if (!results.length) {
-        return sock.sendMessage(jid, {
-          text: "🃏 No cards collected yet!\nUse the card game commands to start collecting.",
-        }, { quoted: msg });
-      }
+      if (!results.length) return "";
 
       // Pull full mn_users docs to get whatsappNumber (full JID) and username
       const userIds = results.map(r => r.userId).filter(Boolean);
@@ -237,29 +234,32 @@ export default {
         mnNameMap[doc.userId] = econName || doc.username || null;
       }
 
-      const text = formatLeaderboard({
+      return formatLeaderboard({
         subtitle: "Top 10 Card Collectors",
          rows: results.map((r) => ({ name: mnNameMap[r.userId] || `User_${String(r.userId).slice(-4)}`, value: r.cardCount ?? r.totalCards })),
         valueIcon: "🃏",
         valueLabel: "CARDS",
         footer: "Collect • compete • become a legend",
       });
+      }, { ttlMs: 30_000 });
+      if (!text) {
+        return sock.sendMessage(jid, {
+          text: "🃏 No cards collected yet!\nUse the card game commands to start collecting.",
+        }, { quoted: msg });
+      }
       return sock.sendMessage(jid, { text }, { quoted: msg });
     }
 
     // ── TOP POKÉMON ────────────────────────────────────────────────────────────
     if (flag === "pokemon" || flag === "poke" || flag === "pokémon") {
-      const results = await getCachedLeaderboard("economy:pokemon", () => db.collection("pokemon_owned").aggregate([
+      const text = await getCachedLeaderboard("economy:pokemon:formatted", async () => {
+      const results = await getCachedLeaderboard("economy:pokemon:raw", () => db.collection("pokemon_owned").aggregate([
         { $group: { _id: "$ownerJid", total: { $sum: 1 } } },
         { $sort: { total: -1 } },
         { $limit: 10 },
       ]).toArray(), { ttlMs: 30_000 });
 
-      if (!results.length) {
-        return sock.sendMessage(jid, {
-          text: "🎮 No Pokémon caught yet!\nUse *.spawnpoke* then *.catch* to start your collection.",
-        }, { quoted: msg });
-      }
+      if (!results.length) return "";
 
       // Resolve trainer names from pokemon_trainers, fall back to users collection
       const ownerJids = results.map(r => r._id).filter(Boolean);
@@ -279,7 +279,7 @@ export default {
       for (const u of userDocs)    nameMap[u._id]    = u.name     || null;
       for (const t of trainerDocs) nameMap[t.jid]    = t.username || nameMap[t.jid] || null;
 
-      const text = formatLeaderboard({
+      return formatLeaderboard({
         subtitle: "Top 10 Pokémon Trainers",
         rows: results.map((r) => {
           const ownerId = String(r._id || "");
@@ -290,6 +290,12 @@ export default {
         valueLabel: "POKÉMON",
         footer: "Catch • train • rise to the top",
       });
+      }, { ttlMs: 30_000 });
+      if (!text) {
+        return sock.sendMessage(jid, {
+          text: "🎮 No Pokémon caught yet!\nUse *.spawnpoke* then *.catch* to start your collection.",
+        }, { quoted: msg });
+      }
       return sock.sendMessage(jid, { text }, { quoted: msg });
     }
 

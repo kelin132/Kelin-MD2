@@ -112,14 +112,14 @@ export default {
 
     const won    = winnings > 0;
     const caption = [
-      `${a} | ${b} | ${c}`,
-      `🎰 BET — [ ${won ? "WIN ✅" : "LOSE ❌"} ]`,
-      `🎯 Stake : ${fmt(amount)}`,
-      `💬 Result : ${resultMsg}`,
-      `💰 Profit : ${net >= 0 ? "+" : "-"}${fmt(Math.abs(net))}`,
-      `💳 Balance : ${fmt(user.money)}`,
-      ...(diamondReward ? [`💎 Gem bonus : +${diamondReward}`] : []),
-    ].join(" | ");
+      `┌ 🎰 SLOTS ─ ${won ? "WIN ✅" : "LOSE ❌"}`,
+      `│ 🎲 Reels: ${a} ┃ ${b} ┃ ${c}`,
+      `│ 🎯 Stake: ${fmt(amount)}`,
+      `│ 💬 Result: ${resultMsg}`,
+      `│ ${net >= 0 ? "💰 +" : "💸 -"}${fmt(Math.abs(net))} │ 💰 ${fmt(user.money)}`,
+      ...(diamondReward ? [`│ 💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}`] : []),
+      "└─────────────────",
+    ].join("\n");
 
     if (discord?.message) {
       await sock.sendMessage(jid, {

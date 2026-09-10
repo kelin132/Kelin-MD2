@@ -20,11 +20,11 @@ function spin() {
 }
 
 export default {
-  name: "slots",
-  description: "Play the slot machine! Match 3 to win big",
+  name: "slotsclassic",
+  description: "Legacy slot machine implementation",
   category: "games",
-  usage: ".slots <bet>",
-  aliases: ["slot", "spin"],
+  usage: ".slotsclassic <bet>",
+  aliases: ["slotclassic"],
   cooldown: 5,
 
   async run({ sock, msg, sender, args, discord }) {

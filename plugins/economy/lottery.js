@@ -7,6 +7,8 @@
 import { getUser, saveUser, requireRegistration, addHistory, getAllUsers } from "./database.js";
 import { getDb } from "../../lib/mongo.mjs";
 import {
+  asJid,
+  mentionFor,
   formatLotteryResults,
   LOTTERY_MAX_ENTRIES,
   maybeAutoDraw,
@@ -171,7 +173,7 @@ export default {
       const prize  = lot.jackpot;
 
       // Award prize
-      const winnerJid = `${winner.userId}@s.whatsapp.net`;
+      const winnerJid = asJid(winner.userId);
       const winUser   = await getUser(winnerJid);
       winUser.money   += prize;
       await saveUser(winnerJid, winUser);
@@ -189,7 +191,7 @@ export default {
 `╭━━━〔 🎰 𝑳𝑶𝑻𝑻𝑬𝑹𝒀 𝑫𝑹𝑨𝑾 🏆 〕━━━╮
 ┃ ✦ The winning ticket has been drawn...
 ┃
-┃ 🏆 Winner  ➜ 『 ${winner.name} 』
+┃ 🏆 Winner  ➜ ${mentionFor(winner.userId)} (${winner.name})
 ┃ 🎫 Tickets ➜ 『 ${winner.count} 』
 ┃
 ┣━━━━━━━━━━━━━━━━━━━━
@@ -198,7 +200,7 @@ export default {
 ┃ 🎉 𝗖𝗢𝗡𝗚𝗥𝗔𝗧𝗨𝗟𝗔𝗧𝗜𝗢𝗡𝗦!
 ┃ A new lottery has started!
 ╰━━━━━━━━━━━━━━━━━━━━╯`,
-        mentions: [winnerJid],
+        mentions: winnerJid ? [winnerJid] : [],
       }, { quoted: msg });
     }
 

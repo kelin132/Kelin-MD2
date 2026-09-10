@@ -1,4 +1,5 @@
 import { getDb } from "../../lib/mongo.mjs";
+import { mentionFor, asJid } from "../../lib/lotteryAutoDraw.mjs";
 
 export default {
   name: "lotterylist",
@@ -27,13 +28,15 @@ export default {
       }
 
       const sorted = [...lot.tickets].sort((a, b) => b.count - a.count);
+      const mentions = sorted.map((ticket) => asJid(ticket.userId)).filter(Boolean);
       const rows   = sorted.map((t, i) => {
         const chance = ((t.count / lot.totalTickets) * 100).toFixed(1);
         const medal  = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`;
-        return `┃ ${medal} ${t.name} › ${t.count} ticket(s) · ${chance}%`;
+        return `┃ ${medal} ${mentionFor(t.userId)} (${t.name}) › ${t.count} ticket(s) · ${chance}%`;
       }).join("\n");
 
-      return reply(
+      const response = {
+        text:
 `╭━━━〔 🎰 𝑳𝑶𝑻𝑻𝑬𝑹𝒀 𝑳𝑰𝑺𝑻 🎟️ 〕━━━╮
 ┃ ✦ Current round participants
 ┃
@@ -45,7 +48,10 @@ ${rows}
 ┣━━━━━━━━━━━━━━━━━━━━
 ┃ 💡 .lottery buy <n> to join
 ╰━━━━━━━━━━━━━━━━━━━━╯`
-      );
+        ,
+        mentions,
+      };
+      return sock.sendMessage(jid, response, { quoted: msg });
     } catch (err) {
       console.error("LOTTERYLIST ERROR:", err);
       return reply("❌ Failed to load lottery.");

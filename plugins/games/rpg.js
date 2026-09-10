@@ -34,6 +34,7 @@ import {
   generateResultCard,
   generateLeaderboardCard,
 } from "../../lib/dungeonCanvas.mjs";
+import { getDatabaseId } from "../../lib/identity.mjs";
 
 function displayName(msg, jid) {
   return msg.pushName || jid.split("@")[0];
@@ -96,8 +97,9 @@ export default {
     ".rpg shop · .rpg buy <number|name> · .rpg equip <item> · .rpg inventory · .rpg choice <1|2> · .rpg rebirth · .rpg profile · .rpg leaderboard",
   cooldown: 2,
 
-  async run({ sock, msg, args, sender }) {
+  async run({ sock, msg, args, sender: rawSender }) {
     const jid = msg.key.remoteJid;
+    const sender = await getDatabaseId(rawSender || jid, sock, jid);
     const sub = (args[0] || "").toLowerCase();
     const name = displayName(msg, sender);
 

@@ -30,16 +30,21 @@ async function ytSearch(input) {
 // ── Extract a download link from any API response shape ──────────────────────
 
 function pickAudio(result) {
+  if (typeof result === "string" && /^https?:\/\//i.test(result)) return result;
   if (!result) return null;
-  return (
-    result.download_url ||
-    result.audio_url    ||
-    result.audio        ||
-    result.mp3          ||
-    result.url          ||
-    result.link         ||
-    null
-  );
+  const keys = [
+    "download_url", "downloadUrl", "audio_url", "audioUrl",
+    "audio", "mp3", "media_url", "mediaUrl", "url", "link",
+  ];
+  for (const key of keys) {
+    const value = result[key];
+    if (typeof value === "string" && /^https?:\/\//i.test(value)) return value;
+  }
+  for (const child of [result.result, result.data, result.media, result.download]) {
+    const nested = pickAudio(child);
+    if (nested) return nested;
+  }
+  return null;
 }
 
 // ── Send the track thumbnail / banner ─────────────────────────────────────────
@@ -139,7 +144,7 @@ export async function fetchAudio(videoUrl, searchTitle = "") {
         return { ...data, mimetype: mimetype || "audio/mpeg" };
       }
       const result = data?.result || data?.data || data;
-      const dl = data?.dl || pickAudio(result);
+      const dl = data?.dl || pickAudio(data) || pickAudio(result);
       if (!dl) {
         lastError = new Error("Provider returned no audio URL");
         continue;
@@ -189,10 +194,15 @@ export default {
       const file = buffer ? { buffer, mimetype: returnedMimetype || "audio/mpeg" } : await downloadMediaBuffer(dl);
       const mimetype = file.mimetype.startsWith("audio/") ? file.mimetype : "audio/mpeg";
 
+      const safeTitle = String(trackTitle || "audio")
+        .replace(/[\\/:*?"<>|]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 80) || "audio";
       await sock.sendMessage(jid, {
         audio: file.buffer,
         mimetype,
-        fileName: `${trackTitle}.mp3`,
+        fileName: `${safeTitle}.mp3`,
         ptt: false,
       }, { quoted: msg });
 
