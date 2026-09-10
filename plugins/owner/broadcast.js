@@ -17,7 +17,13 @@ export default {
     const jid = msg.key.remoteJid;
 
     try {
-      if (!text) {
+      const userText = String(text || "")
+        .replace(/\\r\\n/g, "\n")
+        .replace(/\\n/g, "\n")
+        .replace(/\\r/g, "\n")
+        .trim();
+
+      if (!userText) {
         return await sock.sendMessage(jid, {
           text:
             "❌ *Usage:*\n.broadcast <message>\n\n" +
@@ -26,8 +32,6 @@ export default {
       }
 
       // Preserve exact user text, lines, and paragraph breaks
-      const userText = text.trim();
-
       // Send a quick ack reaction
       try {
         await sock.sendMessage(jid, {
