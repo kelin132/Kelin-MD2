@@ -1,6 +1,7 @@
 import { fetchAllCards, getCard, sendCardMedia, TIER_NAME, TIER_EMOJI } from "../../lib/cardApi.mjs";
 import { Col, uid } from "./db.js";
 import { getSeries } from "../../lib/seriesEnrich.mjs";
+import { getCachedLeaderboard } from "../../lib/leaderboardCache.mjs";
 
 function normaliseQuery(value) {
   return String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -94,26 +95,47 @@ function ownerJid(user) {
 }
 
 async function getOwners(cardId) {
-  const users = await (await Col.users()).find(
-    { "cards.cardId": cardId },
-    { projection: { userId: 1, whatsappNumber: 1, username: 1, cards: 1 } }
-  ).toArray();
+  return getCachedLeaderboard(
+    `cards:owners:${String(cardId).trim().toLowerCase()}`,
+    async () => {
+      const users = await (await Col.users()).aggregate([
+        { $match: { "cards.cardId": cardId } },
+        {
+          $project: {
+            userId: 1,
+            whatsappNumber: 1,
+            username: 1,
+            cards: {
+              $filter: {
+                input: { $ifNull: ["$cards", []] },
+                as: "card",
+                cond: { $eq: ["$$card.cardId", cardId] },
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            userId: 1,
+            whatsappNumber: 1,
+            username: 1,
+            matchingCards: "$cards",
+            count: { $size: "$cards" },
+          },
+        },
+        { $match: { count: { $gt: 0 } } },
+      ]).toArray();
 
-  const ownerMap = new Map();
-  for (const user of users) {
-    const jid = ownerJid(user);
-    const label = user.username || `@${uid(jid)}`;
-    
-    let count = 0;
-    (user.cards || []).forEach((owned) => {
-      if (owned.cardId === cardId) count++;
-    });
-
-    if (count > 0) {
-      ownerMap.set(jid, { jid, label, count });
-    }
-  }
-  return Array.from(ownerMap.values());
+      const ownerMap = new Map();
+      for (const user of users) {
+        const jid = ownerJid(user);
+        const label = user.username || `@${uid(jid)}`;
+        ownerMap.set(jid, { jid, label, count: user.count });
+      }
+      return Array.from(ownerMap.values());
+    },
+    { ttlMs: 30_000 },
+  );
 }
 
 function tierLabel(tierNum) {

@@ -65,10 +65,21 @@ async function resolveCard(query, ownedCards) {
 async function getCardIssue(cardId, sender, collectionIndex) {
   if (collectionIndex < 0) return null;
 
-  const users = await (await Col.users()).find(
-    { "cards.cardId": cardId },
-    { projection: { userId: 1, cards: 1 } }
-  ).toArray();
+  const users = await (await Col.users()).aggregate([
+    { $match: { "cards.cardId": cardId } },
+    {
+      $project: {
+        userId: 1,
+        cards: {
+          $filter: {
+            input: { $ifNull: ["$cards", []] },
+            as: "card",
+            cond: { $eq: ["$$card.cardId", cardId] },
+          },
+        },
+      },
+    },
+  ]).toArray();
 
   let issue = 0;
   for (const user of users) {
