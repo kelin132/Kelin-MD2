@@ -9,3 +9,4 @@
 - [Embedded repository assets](embedded-repository-assets.md) — removing a nested checkout can break relative asset fallbacks; shared helpers need an explicit canonical-root lookup.
 - [Discord website authentication](discord-website-auth.md) — website Discord sign-in resolves an active shared WhatsApp link and needs separate login OAuth redirect configuration.
 - [Discord channel state](discord-channel-state.md) — keep Discord gameplay state keyed by the native channel ID even when messages expose a WhatsApp-shaped compatibility JID.
+- [GitHub HTTPS push](github-https-push.md) — direct x-access-token HTTPS pushes work when a bearer extra-header attempt is rejected.
