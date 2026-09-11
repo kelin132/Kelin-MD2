@@ -20,14 +20,16 @@ export function fmt(n) {
 }
 
 // ── Collections ───────────────────────────────────────────────────────────────
-// Each method is async — always await the call before chaining .find()/.insertOne() etc.
-// Usage: const col = await Col.users();  await col.findOne(...)
+// getDb() is already a synchronous singleton getter, so collection access does
+// not need an extra promise hop. Existing `await Col.users()` callers remain
+// compatible because awaiting a non-Promise returns it unchanged.
+// Usage: const col = Col.users();  await col.findOne(...)
 
 export const Col = {
-  users:  async () => (await getDb()).collection("mn_users"),
-  cards:  async () => (await getDb()).collection("mn_cards"),
-  market: async () => (await getDb()).collection("mn_card_market"),
-  spawns: async () => (await getDb()).collection("mn_spawn_settings"),
+  users:  () => getDb().collection("mn_users"),
+  cards:  () => getDb().collection("mn_cards"),
+  market: () => getDb().collection("mn_card_market"),
+  spawns: () => getDb().collection("mn_spawn_settings"),
 };
 
 // ── User helpers ──────────────────────────────────────────────────────────────
@@ -41,31 +43,28 @@ export async function findOrCreateUser(sender) {
   const normalized = normalizeJid(sender);
   const userId = normalized.split("@")[0];
 
-  // Try finding by normalized userId first
-  let user = await col.findOne({ userId });
-  
-  // Fallback: if sender is an LID, we might have a JID record we should be using
-  // but since we don't have 'sock' here, we rely on the normalized userId 
-  // which is at least consistent for that identity.
-  
-  if (!user) {
-    user = {
-      userId,
-      whatsappNumber: normalized,
-      balance:    0,
-      cards:      [],
-      cardLimit:  Infinity,
-      totalCards: 0,
-      username:   null,
-      createdAt:  new Date(),
-    };
-    const { insertedId } = await col.insertOne(user);
-    user._id = insertedId;
-  }
+  // One upsert handles both the common read and first-use creation path. This
+  // avoids the usual find-then-insert round trip and is safe when two commands
+  // arrive for a new user at the same time.
+  const userDefaults = {
+    userId,
+    whatsappNumber: normalized,
+    balance:    0,
+    cards:      [],
+    cardLimit:  Infinity,
+    totalCards: 0,
+    username:   null,
+    createdAt:   new Date(),
+  };
+  const user = await col.findOneAndUpdate(
+    { userId },
+    { $setOnInsert: userDefaults },
+    { upsert: true, returnDocument: "after", includeResultMetadata: false },
+  );
 
   user.markModified = () => {}; // no-op — raw driver doesn't need it
   user.save = async () => {
-    const c = await Col.users();
+    const c = Col.users();
     const { _id, save, markModified, ...data } = user;
     await c.updateOne({ userId }, { $set: data });
   };
@@ -85,7 +84,7 @@ export async function getUser(sender) {
 
   user.markModified = () => {};
   user.save = async () => {
-    const c = await Col.users();
+    const c = Col.users();
     const { _id, save, markModified, ...data } = user;
     await c.updateOne({ userId }, { $set: data });
   };

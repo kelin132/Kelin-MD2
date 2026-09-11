@@ -14,7 +14,10 @@ export default {
     try {
       const userId = sender.split("@")[0];
       const market = await Col.market();
-      const cards  = await market.find({ sellerId: userId }).toArray();
+      const cards  = await market.find(
+        { sellerId: userId },
+        { projection: { cardName: 1, cardRarity: 1, price: 1, listedAt: 1 } },
+      ).sort({ listedAt: 1, _id: 1 }).toArray();
 
       if (!cards.length) return reply("📭 You haven't listed any cards for sale.\n\nUse .sellc <index> <price> to list one.");
 

@@ -14,11 +14,21 @@ export default {
     try {
       const index  = parseInt(args[0]) - 1;
       const market = await Col.market();
-      const cards  = await market.find().toArray();
+      const [cards, total] = await Promise.all([
+        Number.isInteger(index) && index >= 0
+          ? market.find(
+              {},
+              { projection: { cardName: 1, cardRarity: 1, price: 1, sellerId: 1, listedAt: 1 } },
+            ).sort({ listedAt: 1, _id: 1 }).skip(index).limit(1).toArray()
+          : Promise.resolve([]),
+        market.countDocuments(),
+      ]);
 
-      if (isNaN(index) || !cards[index]) return reply(`❌ Invalid index. There are ${cards.length} active listing(s).`);
+      if (!Number.isInteger(index) || index < 0 || !cards[0]) {
+        return reply(`❌ Invalid index. There are ${total} active listing(s).`);
+      }
 
-      const c    = cards[index];
+      const c    = cards[0];
       const text =
 `ℹ️ *CARD LISTING INFO*
 

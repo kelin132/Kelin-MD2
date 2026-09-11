@@ -120,10 +120,13 @@ async function migrateIdentityUser(db, user, normalizedId) {
   }
 }
 
-async function ensurePhoneIdentityFields(db, id) {
+async function ensurePhoneIdentityFields(db, user, id) {
   const fields = phoneIdentityFields(id);
   if (Object.keys(fields).length === 0) return;
-  await db.collection("users").updateOne({ _id: normalizeJid(id) }, { $set: fields });
+  const needsRepair = Object.entries(fields).some(([key, value]) => user?.[key] !== value);
+  if (needsRepair) {
+    await db.collection("users").updateOne({ _id: normalizeJid(id) }, { $set: fields });
+  }
 }
 
 export async function getUser(id) {
@@ -132,7 +135,7 @@ export async function getUser(id) {
   const found = await findIdentityUser(db, id);
   const user = found ? await migrateIdentityUser(db, found, normalizedId) : null;
   if (!user) return { ...DEFAULTS };
-  if (user.registered) await ensurePhoneIdentityFields(db, normalizedId);
+  if (user.registered) await ensurePhoneIdentityFields(db, user, normalizedId);
   const { _id, ...rest } = user;
   const merged = { ...DEFAULTS, ...rest };
 

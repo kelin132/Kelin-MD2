@@ -15,13 +15,21 @@ export default {
       const index   = parseInt(args[0]) - 1;
       const userId  = sender.split("@")[0];
       const market  = await Col.market();
-      const cards   = await market.find({ sellerId: userId }).toArray();
+      const [cards, total] = await Promise.all([
+        Number.isInteger(index) && index >= 0
+          ? market.find(
+              { sellerId: userId },
+              { projection: { cardId: 1, cardName: 1, cardRarity: 1, cardImage: 1, listedAt: 1 } },
+            ).sort({ listedAt: 1, _id: 1 }).skip(index).limit(1).toArray()
+          : Promise.resolve([]),
+        market.countDocuments({ sellerId: userId }),
+      ]);
 
-      if (isNaN(index) || !cards[index]) {
-        return reply(`❌ Invalid index. You have ${cards.length} listing(s). Use .vs to check.`);
+      if (!Number.isInteger(index) || index < 0 || !cards[0]) {
+        return reply(`❌ Invalid index. You have ${total} listing(s). Use .vs to check.`);
       }
 
-      const card = cards[index];
+      const card = cards[0];
       const user = await findOrCreateUser(sender);
 
       user.cards.push({
