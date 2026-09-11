@@ -13,6 +13,7 @@ export const DEFAULTS = {
   name:          "User",
   money:         0,
   bank:          0,
+  totalWealth:   0,
   vault:         0,
   orbs:          0,           // premium currency earned from dig/fish/events
   diamonds:      0,           // rare currency earned from lucky activities
@@ -197,6 +198,9 @@ export async function saveUser(id, data) {
     safeData.money = WALLET_CAP;
     safeData.bank  = (safeData.bank ?? 0) + excess;
   }
+  // totalWealth is derived from money and bank and is maintained atomically
+  // with their deltas below. Never trust a stale value from a caller snapshot.
+  delete safeData.totalWealth;
 
   // ── Build update operation ─────────────────────────────────────────────────
   if (_snap) {
@@ -224,6 +228,8 @@ export async function saveUser(id, data) {
         setOp[key] = value;
       }
     }
+    const wealthDelta = (incOp.money ?? 0) + (incOp.bank ?? 0);
+    if (wealthDelta !== 0) incOp.totalWealth = wealthDelta;
 
     const update = {};
     if (Object.keys(incOp).length > 0) update.$inc = incOp;
@@ -244,10 +250,17 @@ export async function saveUser(id, data) {
         money: { $max: ["$money", 0] },
         bank:  { $max: ["$bank",  0] },
         vault: { $max: ["$vault", 0] },
+        totalWealth: {
+          $add: [
+            { $max: [{ $ifNull: ["$money", 0] }, 0] },
+            { $max: [{ $ifNull: ["$bank", 0] }, 0] },
+          ],
+        },
       }}]
     );
   } else {
     // New user (no snapshot) — safe to $set everything since nobody else has this doc yet
+    safeData.totalWealth = (safeData.money ?? 0) + (safeData.bank ?? 0);
     await db.collection("users").updateOne(
       { _id: normalizedId },
       { $set: safeData },
@@ -302,6 +315,12 @@ export async function claimWorkShift(id, {
       {
         $set: {
           money: { $add: [{ $ifNull: ["$money", 0] }, netPay] },
+          totalWealth: {
+            $add: [
+              { $add: [{ $ifNull: ["$money", 0] }, netPay] },
+              { $ifNull: ["$bank", 0] },
+            ],
+          },
           xp: { $add: [{ $ifNull: ["$xp", 0] }, xp] },
           workXp: { $add: [{ $ifNull: ["$workXp", 0] }, workXp] },
           completedShifts: { $add: [{ $ifNull: ["$completedShifts", 0] }, 1] },
@@ -394,7 +413,7 @@ export async function startInvestment(id, investment, amount) {
       ],
     },
     {
-      $inc: { money: -amount },
+      $inc: { money: -amount, totalWealth: -amount },
       $set: { activeInvestment: investment },
     },
     { returnDocument: "after" }
@@ -417,7 +436,7 @@ export async function collectInvestment(id, investment, payout) {
       "activeInvestment.startedAt": investment.startedAt,
     },
     {
-      $inc: { money: payout, xp: 20 },
+      $inc: { money: payout, totalWealth: payout, xp: 20 },
       $unset: { activeInvestment: "" },
     },
     { returnDocument: "after" }
@@ -453,6 +472,7 @@ export async function registerUser(id, name) {
     registered: true,
     registeredAt: new Date().toISOString(),
     money: REGISTRATION_STARTING_MONEY,
+    totalWealth: REGISTRATION_STARTING_MONEY,
   };
 
   // Update an existing placeholder, but never touch an account that is
@@ -525,7 +545,7 @@ export async function addMoney(id, amount) {
   const normalizedId = normalizeJid(id);
   await db.collection("users").updateOne(
     { _id: normalizedId },
-    { $inc: { money: amount } }
+    { $inc: { money: amount, totalWealth: amount } }
   );
 }
 
@@ -744,7 +764,7 @@ export async function resetPlayer(id) {
         ...DEFAULTS,
         name, registered, registeredAt, staffLevel, isPremium, staffImmunity,
         websiteSessionRevokedAt: Date.now(),
-        money: 0, bank: 0, vault: 0, xp: 0, level: 1, inventory: [], history: [],
+        money: 0, bank: 0, totalWealth: 0, vault: 0, xp: 0, level: 1, inventory: [], history: [],
         websiteBanned: true,
         websiteBanReason: "Account reset by staff",
         websiteBannedAt: new Date(),
@@ -761,9 +781,22 @@ export async function resetPlayer(id) {
  */
 export async function setPlayerFields(id, fields) {
   const db = await getDb();
+  const { totalWealth: _ignoredTotalWealth, ...safeFields } = fields;
   await db.collection("users").updateOne(
     { _id: id },
-    { $set: fields },
+    [
+      { $set: safeFields },
+      {
+        $set: {
+          totalWealth: {
+            $add: [
+              { $ifNull: ["$money", 0] },
+              { $ifNull: ["$bank", 0] },
+            ],
+          },
+        },
+      },
+    ],
     { upsert: true }
   );
 }

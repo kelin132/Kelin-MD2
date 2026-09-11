@@ -21,23 +21,13 @@ const WEALTH_TIERS = [
 ];
 const WEALTH_SEPARATOR = "  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈";
 const formatMoney = (value) => `$${Number(value || 0).toLocaleString()}`;
-const numericField = (field) => ({
-  $convert: { input: { $ifNull: [field, 0] }, to: "double", onError: 0, onNull: 0 },
-});
-
 async function loadWealthText(db) {
-  const users = await db.collection("users").aggregate([
-        { $match: { registered: true } },
-        {
-          $project: {
-            _id: 1,
-            name: 1,
-            totalWealth: { $add: [numericField("$money"), numericField("$bank")] },
-          },
-        },
-        { $sort: { totalWealth: -1, _id: 1 } },
-        { $limit: 10 },
-  ]).toArray();
+  // totalWealth is maintained on each economy write, so this uses the
+  // registered/wealth index instead of calculating and sorting every account.
+  const users = await db.collection("users").find(
+    { registered: true },
+    { projection: { _id: 1, name: 1, totalWealth: 1 } },
+  ).sort({ totalWealth: -1 }).limit(10).toArray();
 
   if (!users.length) return "💰 No registered players yet!";
 
