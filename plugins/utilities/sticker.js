@@ -28,11 +28,9 @@ export default {
       // The optional argument is metadata for the WhatsApp sticker pack.
       // It is intentionally not rendered into the sticker artwork.
       const packName = formatPackName(args.join(" "));
-      const publisher = settings.botName || "AIDORU";
-
+      
       const stickerBuffer = await createSticker(buffer, {
-        pack: packName,
-        author: publisher,
+        pack: packname, 
       });
 
       await sock.sendMessage(jid, { sticker: stickerBuffer }, { quoted: msg });
