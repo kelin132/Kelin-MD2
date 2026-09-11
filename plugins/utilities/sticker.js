@@ -1,6 +1,5 @@
 // plugins/utilities/sticker.js
 // .sticker — Convert a replied image or video to a WhatsApp sticker
-// Uses the repository's sticker formatter so pack metadata stays attached to the sticker.
 
 import settings from "../../settings.cjs";
 import {
@@ -17,17 +16,16 @@ export default {
   cooldown: 5,
 
   async run({ sock, msg, args }) {
-    const jid  = msg.key.remoteJid;
+    const jid = msg.key.remoteJid;
 
     await sock.sendMessage(jid, { react: { text: "⏳", key: msg.key } });
 
     try {
       const { buffer } = await downloadQuotedMedia(msg, ["image", "video"]);
-
       const publisher = settings.botName || "AIDORU";
 
       const stickerBuffer = await createSticker(buffer, {
-        pack: "", // Clears the sticker pack name
+        pack: " ", // Use a single space instead of an empty string
         author: publisher,
       });
 
