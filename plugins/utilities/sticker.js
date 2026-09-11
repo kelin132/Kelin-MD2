@@ -6,14 +6,13 @@ import settings from "../../settings.cjs";
 import {
   createSticker,
   downloadQuotedMedia,
-  formatPackName,
 } from "../../lib/stickerTools.mjs";
 
 export default {
   name: "sticker",
   description: "Convert a replied image/video to a WhatsApp sticker",
   category: "utilities",
-  usage: ".s [word] (reply to an image or video)",
+  usage: ".s (reply to an image or video)",
   aliases: ["s", "stiker", "toSticker"],
   cooldown: 5,
 
@@ -25,12 +24,11 @@ export default {
     try {
       const { buffer } = await downloadQuotedMedia(msg, ["image", "video"]);
 
-      // The optional argument is metadata for the WhatsApp sticker pack.
-      // It is intentionally not rendered into the sticker artwork.
-      const packName = formatPackName(args.join(" "));
-      
+      const publisher = settings.botName || "AIDORU";
+
       const stickerBuffer = await createSticker(buffer, {
-        pack: packname, 
+        pack: "", // Clears the sticker pack name
+        author: publisher,
       });
 
       await sock.sendMessage(jid, { sticker: stickerBuffer }, { quoted: msg });
@@ -38,7 +36,7 @@ export default {
     } catch (err) {
       console.error("[sticker]", err);
       const message = err.code === "NOQUOTE"
-        ? "🖼️ *STICKER MAKER*\n\nReply to an *image* or *video* with *.s [word]*\nExample: *.s hello*"
+        ? "🖼️ *STICKER MAKER*\n\nReply to an *image* or *video* with *.s*"
         : err.code === "NOT_SUPPORTED_MEDIA"
           ? "❌ Only images and videos can be converted to stickers."
           : "❌ Failed to create sticker. Make sure the image isn't too large.";
