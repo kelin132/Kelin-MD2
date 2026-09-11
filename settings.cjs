@@ -1,8 +1,8 @@
 const settings = {
-  packname: 'AKIRA',
-  botName: "AKIRA",
-  botOwner: 'KELIN-MD', // Your name
-  ownerNumber: process.env.OWNER_NUMBER || '', // Your number without + symbol
+  packname: '𝐀𝐈𝐃𝐎𝐑𝐔',
+  botName: "𝐀𝐈𝐃𝐎𝐑𝐔",
+  botOwner: '𝐀𝐈𝐃𝐎𝐑𝐔', // Your name
+  ownerNumber: process.env.OWNER_NUMBER || '263780894295', // Your number without + symbol
   ownerContact: process.env.OWNER_CONTACT || process.env.OWNER_NUMBER || '',
   giphyApiKey: process.env.GIPHY_API_KEY || '',
   commandMode: "private",
