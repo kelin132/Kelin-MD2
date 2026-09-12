@@ -31,11 +31,11 @@ const LOSE_LINES = [
 
 /** Short money formatter */
 function fmt(n) {
-  if (n >= 1e12) return `${(n/1e12).toFixed(1)}T ryu (💠)`;
-  if (n >= 1e9)  return `${(n/1e9).toFixed(1)}B ryu (💠)`;
-  if (n >= 1e6)  return `${(n/1e6).toFixed(1)}M ryu (💠)`;
-  if (n >= 1e3)  return `${(n/1e3).toFixed(1)}K ryu (💠)`;
-  return `${n.toLocaleString()} ryu (💠)`;
+  if (n >= 1e12) return `${(n/1e12).toFixed(1)}T ryu`;
+  if (n >= 1e9)  return `${(n/1e9).toFixed(1)}B ryu`;
+  if (n >= 1e6)  return `${(n/1e6).toFixed(1)}M ryu`;
+  if (n >= 1e3)  return `${(n/1e3).toFixed(1)}K ryu`;
+  return `${n.toLocaleString()} ryu`;
 }
 
 export default {
@@ -68,7 +68,7 @@ export default {
 `╭─❀「 🎲 *𝐁𝐄𝐓* 」❀─╮
 │ Usage: \`.bet <amount>\`
 │ Examples: \`.bet 500\`  /  \`.bet 10k\`  /  \`.bet 1b\`
-│ Maximum: \`300B ryu (💠)\`
+│ Maximum: \`300B ryu\`
 │ \`.bet all\` — bet everything in wallet
 │ \`.bet half\` — bet half your wallet
 │
@@ -86,7 +86,7 @@ export default {
     if (amount > user.money)
       return sock.sendMessage(jid, { text: `❌ You only have \`${fmt(user.money)}\` in your wallet.` }, { quoted: msg });
     if (amount < 10)
-      return sock.sendMessage(jid, { text: "❌ Minimum bet is \`10 ryu (💠)\`." }, { quoted: msg });
+      return sock.sendMessage(jid, { text: "❌ Minimum bet is \`10 ryu\`." }, { quoted: msg });
 
     const tier         = getBettingTier(amount);
     const won          = Math.random() < tier.winRate;

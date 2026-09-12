@@ -132,7 +132,7 @@ You're debt free! 🎉`
     const amount = parseAmount(sub, 0);
     if (isNaN(amount) || amount <= 0) return reply(`❌ Usage: .loan <amount>\n\nYour ${tier.name} tier maximum is ${formatRyu(tier.max)}.\nUse *.loan tiers* to view unlocks.`);
     if (amount > tier.max)            return reply(`❌ Your ${tier.name} tier maximum is ${formatRyu(tier.max)}.\nReach Level ${LOAN_TIERS.find((entry) => entry.max > tier.max)?.level || "higher"} to unlock more.`);
-    if (amount < 100)                 return reply("❌ Minimum loan is 100 ryu (💠).");
+    if (amount < 100)                 return reply("❌ Minimum loan is 100 ryu.");
 
     user.money += amount;
     user.loan   = {

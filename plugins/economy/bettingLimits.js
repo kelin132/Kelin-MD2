@@ -1,5 +1,5 @@
 export const MAX_BET = 300_000_000_000;
-export const MAX_BET_LABEL = "300B ryu (💠)";
+export const MAX_BET_LABEL = "300B ryu";
 
 export function maxBetMessage() {
   return `❌ Maximum bet is *${MAX_BET_LABEL}*.`;

@@ -9,11 +9,11 @@ import { getBettingTier } from "./currency.js";
 const COOLDOWN = 5 * 60 * 1000;
 
 function fmt(n) {
-  if (n >= 1e12) return `${(n/1e12).toFixed(1)}T ryu (💠)`;
-  if (n >= 1e9)  return `${(n/1e9).toFixed(1)}B ryu (💠)`;
-  if (n >= 1e6)  return `${(n/1e6).toFixed(1)}M ryu (💠)`;
-  if (n >= 1e3)  return `${(n/1e3).toFixed(1)}K ryu (💠)`;
-  return `${n.toLocaleString()} ryu (💠)`;
+  if (n >= 1e12) return `${(n/1e12).toFixed(1)}T ryu`;
+  if (n >= 1e9)  return `${(n/1e9).toFixed(1)}B ryu`;
+  if (n >= 1e6)  return `${(n/1e6).toFixed(1)}M ryu`;
+  if (n >= 1e3)  return `${(n/1e3).toFixed(1)}K ryu`;
+  return `${n.toLocaleString()} ryu`;
 }
 
 export default {
@@ -61,7 +61,7 @@ export default {
     if (isNaN(amount) || amount <= 0) return reply("❌ Enter a valid amount.");
     if (amount > MAX_BET)             return reply(maxBetMessage());
     if (amount > user.money)          return reply(`❌ You only have *${fmt(user.money)}* in your wallet.`);
-    if (amount < 10)                  return reply("❌ Minimum bet is 10 ryu (💠).");
+    if (amount < 10)                  return reply("❌ Minimum bet is 10 ryu.");
 
     user.lastGamble = now;
 

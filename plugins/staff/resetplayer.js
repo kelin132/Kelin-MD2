@@ -55,8 +55,8 @@ export default {
         `🔄 *Player Reset*\n\n` +
         `👤 Player  : ${target.name}\n` +
         `🔍 Found by : ${lookedUpBy}\n` +
-        `💰 Money   : 30,000 ryu (💠)\n` +
-        `🏦 Bank    : 0 ryu (💠)\n` +
+        `💰 Money   : 30,000 ryu\n` +
+        `🏦 Bank    : 0 ryu\n` +
         `⭐ Level   : 1\n` +
         `🌐 Website : Access revoked and logged out\n\n` +
         `_Identity and staff rank preserved. Economy reset._\n` +
