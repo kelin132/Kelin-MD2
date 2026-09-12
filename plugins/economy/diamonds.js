@@ -1,13 +1,13 @@
 import { getUser, saveUser, requireRegistration, addHistory } from "./database.js";
 
-const DIAMOND_SELL_PRICE = 500_000; // $500,000 per diamond
+const DIAMOND_SELL_PRICE = 200_000; // $200,000 per diamond
 
 export default {
   name: "diamonds",
   aliases: ["diamond", "gems", "gem"],
   category: "economy",
   cooldown: 5,
-  description: "Check your Diamond balance or sell them for $500,000 each",
+  description: "Check your Diamond balance or sell them for $200,000 each",
   usage: ".diamonds  |  .diamonds sell <amount|all>",
 
   async run({ sock, msg, sender, args }) {
@@ -60,7 +60,7 @@ You have *${owned.toLocaleString()}* Diamond${owned === 1 ? "" : "s"}.
 Diamonds are rare and cannot be bought.
 Find them by digging, begging, and getting lucky in gambling commands.
 
-💰 Sell price: *$500,000 each*
+💰 Sell price: *$200,000 each*
 Use *.diamonds sell <amount|all>* to cash out.`
     );
   },
