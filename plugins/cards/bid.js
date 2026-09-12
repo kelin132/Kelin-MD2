@@ -24,13 +24,13 @@ export default {
 
     // ── Groups only ────────────────────────────────────────────────────────
     if (!groupJid.endsWith("@g.us")) {
-      return reply("❌ Auctions only run in groups.");
+      return reply("Auctions only run in groups.");
     }
 
     // ── Active auction? ────────────────────────────────────────────────────
     const auction = getAuction(groupJid);
     if (!auction) {
-      return reply("❌ No active auction in this group right now.\n\nStart one with *.auction <index>*");
+      return reply("No active auction in this group right now.\n\nStart one with *.auction <index>*");
     }
 
     // ── Usage ──────────────────────────────────────────────────────────────
@@ -48,13 +48,13 @@ export default {
 
     // ── Economy registration ───────────────────────────────────────────────
     if (!await isRegistered(sender)) {
-      return reply("❌ You need an economy account to bid.\n\nUse *.register <your name>* first.");
+      return reply(" You need an economy account to bid.\n\nUse *.register <your name>* first.");
     }
 
     // ── Parse amount ───────────────────────────────────────────────────────
     const amount = parseInt(args[0].replace(/[^0-9]/g, ""));
     if (isNaN(amount) || amount <= 0) {
-      return reply("❌ Enter a valid bid amount. Example: *.bid 1500*");
+      return reply(" Enter a valid bid amount. Example: *.bid 1500*");
     }
 
     // ── Check wallet ───────────────────────────────────────────────────────
@@ -72,7 +72,7 @@ export default {
 
     if (!result.ok) {
       if (result.reason === "own_auction") {
-        return reply("❌ You can't bid on your own auction!");
+        return reply("You can't bid on your own auction, baka!");
       }
       if (result.reason === "too_low") {
         return reply(
@@ -82,9 +82,9 @@ export default {
         );
       }
       if (result.reason === "below_start") {
-        return reply(`❌ Minimum starting bid is $${result.start.toLocaleString()}.`);
+        return reply(` Minimum starting bid is $${result.start.toLocaleString()}.`);
       }
-      return reply("❌ Could not place bid. The auction may have just ended.");
+      return reply("Could not place bid. The auction may have just ended.");
     }
 
     // ── Success ────────────────────────────────────────────────────────────
