@@ -43,21 +43,28 @@ export default {
     const jid   = msg.key.remoteJid;
     const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
     const now   = Date.now();
-    const user  = await getUser(sender);
 
-    if (now - (user.lastSlots || 0) < COOLDOWN) {
-      const secs = Math.ceil((COOLDOWN - (now - user.lastSlots)) / 1000);
-      return reply(
+    try {
+      const user  = await getUser(sender);
+      if (!user) {
+        return reply("❌ Error loading user data. Please try again.");
+      }
+
+      // Safely check cooldown with proper null handling
+      const lastSlots = user.lastSlots || 0;
+      if (now - lastSlots < COOLDOWN) {
+        const secs = Math.ceil((COOLDOWN - (now - lastSlots)) / 1000);
+        return reply(
 `╭─❀「 🎰 *𝐒𝐋𝐎𝐓𝐒* 」❀─╮
 │ ⏳ *Result* :: *COOLDOWN 🔴*
 │ 🕐 *Wait*   :: *${secs}s remaining*
 ╰───────────────❀`
-      );
-    }
+        );
+      }
 
-    const raw = (args[0] || "").toLowerCase();
-    if (!raw) {
-      return reply(
+      const raw = (args[0] || "").toLowerCase();
+      if (!raw) {
+        return reply(
 `╭─❀「 🎰 *𝐒𝐋𝐎𝐓𝐒* 」❀─╮
 │ 📖 *Usage*    :: *.slots <amount>*
 │ 💰 *Min Bet*  :: *$50*
@@ -70,83 +77,98 @@ export default {
 │
 │ 💰 *Wallet*  :: *${fmt(user.money)}*
 ╰───────────────❀`
+        );
+      }
+
+      let amount = parseAmount(raw, user.money);
+      if (!amount || isNaN(amount) || amount < 50) return reply("❌ Minimum bet is *$50*.");
+      if (amount > MAX_BET)  return reply(maxBetMessage());
+      if (amount > user.money) return reply(`❌ You only have *${fmt(user.money)}*.`);
+
+      // Update cooldown BEFORE spinning
+      user.lastSlots = now;
+      
+      const reels    = spin();
+      const [a, b, c] = reels;
+
+      let winnings = 0, resultMsg = "", resultLine = "";
+
+      if (a === b && b === c) {
+        const mult = PAYOUTS[a] || 2;
+        winnings   = Math.floor(amount * mult);
+        resultMsg  = `JACKPOT! ×${mult}`;
+        resultLine = `│ ✨ *JACKPOT!* Three ${a}s! おめでとう！🎉`;
+      } else if (a === b || b === c || a === c) {
+        winnings   = Math.floor(amount * 0.5);
+        resultMsg  = "Partial Win ×0.5";
+        resultLine = `│ 🌸 *Partial Win!* Two matching 🎊`;
+      } else {
+        winnings   = 0;
+        resultMsg  = "No Match";
+        resultLine = `│ 💀 *Better luck next time!* 頑張れ！`;
+      }
+
+      const net = winnings - amount;
+      user.money = Math.max(0, user.money + net);
+      user.xp    = (user.xp || 0) + 5;
+      
+      // Improve diamond reward logic: award more for big wins
+      const diamondReward = maybeAwardDiamonds(
+        user, 
+        winnings >= amount * 3 ? 0.01 : winnings >= amount * 2 ? 0.005 : 0.001, 
+        1, 
+        2
       );
-    }
 
-    let amount = parseAmount(raw, user.money);
-    if (!amount || isNaN(amount) || amount < 50) return reply("❌ Minimum bet is *$50*.");
-    if (amount > MAX_BET)  return reply(maxBetMessage());
-    if (amount > user.money) return reply(`❌ You only have *${fmt(user.money)}*.`);
+      const { leveled, startLevel, newLevel } = checkLevelUp(user);
+      
+      // Save user with updated cooldown and stats
+      await saveUser(sender, user);
+      await addHistory(sender, "slots", net, `Slots: bet $${amount.toLocaleString()}`);
 
-    user.lastSlots = now;
-    const reels    = spin();
-    const [a, b, c] = reels;
+      const tag = user.name || sender.split("@")[0].split(":")[0];
 
-    let winnings = 0, resultMsg = "", resultLine = "";
+      const won    = winnings > 0;
+      const caption = [
+        `┌ 🎰 SLOTS ─ ${won ? "WIN ✅" : "LOSE ❌"}`,
+        `│ 🎲 Reels: ${a} ┃ ${b} ┃ ${c}`,
+        `│ 🎯 Stake: ${fmt(amount)}`,
+        `│ 💬 Result: ${resultMsg}`,
+        `│ ${net >= 0 ? "💰 +" : "💸 -"}${fmt(Math.abs(net))} │ 💰 ${fmt(user.money)}`,
+        ...(diamondReward ? [`│ 💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}`] : []),
+        "└─────────────────",
+      ].join("\n");
 
-    if (a === b && b === c) {
-      const mult = PAYOUTS[a] || 2;
-      winnings   = Math.floor(amount * mult);
-      resultMsg  = `JACKPOT! ×${mult}`;
-      resultLine = `│ ✨ *JACKPOT!* Three ${a}s! おめでとう！🎉`;
-    } else if (a === b || b === c || a === c) {
-      winnings   = Math.floor(amount * 0.5);
-      resultMsg  = "Partial Win ×0.5";
-      resultLine = `│ 🌸 *Partial Win!* Two matching 🎊`;
-    } else {
-      winnings   = 0;
-      resultMsg  = "No Match";
-      resultLine = `│ 💀 *Better luck next time!* 頑張れ！`;
-    }
+      if (discord?.message) {
+        await sock.sendMessage(jid, {
+          discordEmbed: {
+            title: "🎰 Slot Machine",
+            description: `[ ${a}  |  ${b}  |  ${c} ]`,
+            color: won ? "#45D483" : "#FF5D73",
+            fields: [
+              { name: "Bet", value: fmt(amount), inline: true },
+              {
+                name: "Result",
+                value: won
+                  ? `🎉 ${resultMsg}\nPayout: ${fmt(winnings)}`
+                  : "😢 You lost. Better luck next time!",
+                inline: false,
+              },
+              { name: "Wallet", value: fmt(user.money), inline: true },
+            ],
+          },
+        }, { quoted: msg });
+      } else {
+        await reply(caption);
+      }
 
-    const net = winnings - amount;
-    user.money = Math.max(0, user.money + net);
-    user.xp    = (user.xp || 0) + 5;
-    const diamondReward = maybeAwardDiamonds(user, winnings >= amount * 2 ? 0.005 : 0.001, 1, 2);
-
-    const { leveled, startLevel, newLevel } = checkLevelUp(user);
-    await saveUser(sender, user);
-    await addHistory(sender, "slots", net, `Slots: bet $${amount.toLocaleString()}`);
-
-    const tag = user.name || sender.split("@")[0].split(":")[0];
-
-    const won    = winnings > 0;
-    const caption = [
-      `┌ 🎰 SLOTS ─ ${won ? "WIN ✅" : "LOSE ❌"}`,
-      `│ 🎲 Reels: ${a} ┃ ${b} ┃ ${c}`,
-      `│ 🎯 Stake: ${fmt(amount)}`,
-      `│ 💬 Result: ${resultMsg}`,
-      `│ ${net >= 0 ? "💰 +" : "💸 -"}${fmt(Math.abs(net))} │ 💰 ${fmt(user.money)}`,
-      ...(diamondReward ? [`│ 💎 Bonus: +${diamondReward} Gem${diamondReward === 1 ? "" : "s"}`] : []),
-      "└─────────────────",
-    ].join("\n");
-
-    if (discord?.message) {
-      await sock.sendMessage(jid, {
-        discordEmbed: {
-          title: "🎰 Slot Machine",
-          description: `[ ${a}  |  ${b}  |  ${c} ]`,
-          color: won ? "#45D483" : "#FF5D73",
-          fields: [
-            { name: "Bet", value: fmt(amount), inline: true },
-            {
-              name: "Result",
-              value: won
-                ? `🎉 ${resultMsg}\nPayout: ${fmt(winnings)}`
-                : "😢 You lost. Better luck next time!",
-              inline: false,
-            },
-            { name: "Wallet", value: fmt(user.money), inline: true },
-          ],
-        },
-      }, { quoted: msg });
-    } else {
-      await reply(caption);
-    }
-
-    if (leveled) {
-      const newRole = getNewlyUnlockedRole(startLevel, newLevel);
-      await sock.sendMessage(jid, { text: buildLevelUpMsg(tag, startLevel, newLevel, newRole) }, { quoted: msg });
+      if (leveled) {
+        const newRole = getNewlyUnlockedRole(startLevel, newLevel);
+        await sock.sendMessage(jid, { text: buildLevelUpMsg(tag, startLevel, newLevel, newRole) }, { quoted: msg });
+      }
+    } catch (error) {
+      console.error("❌ Slots command error:", error);
+      return reply("❌ An error occurred while spinning. Please try again.");
     }
   },
 };
