@@ -17,35 +17,21 @@ export default {
 
       if (!Array.isArray(user.cards) || user.cards.length === 0) {
         return reply(
-`╭─❀「 🎴 *𝐂𝐀𝐑𝐃 𝐕𝐈𝐄𝐖* 」❀─╮
-│ ❌ You have no cards yet!
-│
-│ 💡 Wait for a spawn and type
-│    \`*.claim <ID>*\` to grab one.
-╰───────────────❀`
+`you have no cards yet,collect some from spawns`
         );
       }
 
       if (!args[0]) {
         return reply(
-`╭─❀「 🎴 *𝐂𝐀𝐑𝐃 𝐕𝐈𝐄𝐖* 」❀─╮
-│ 💡 *Usage* :: \`.card <index>\`
-│
-│ 🃏 You own \`${user.cards.length}\` card(s).
-│    Use \`.col\` to browse them.
-╰───────────────❀`
+`you have `${user.cards.length}\` cards, use *.col* to view them`
+
         );
       }
 
       const index = parseInt(args[0]);
       if (isNaN(index) || index < 1 || index > user.cards.length) {
         return reply(
-`╭─❀「 🎴 *𝐂𝐀𝐑𝐃 𝐕𝐈𝐄𝐖* 」❀─╮
-│ ❌ Invalid card number!
-│
-│ 🃏 You have \`${user.cards.length}\` card(s).
-│    Use \`.col\` to see the list.
-╰───────────────❀`
+`Invalid card, you have `${user.cards.length}\` cards, type *.col* to check`
         );
       }
 
@@ -74,7 +60,7 @@ export default {
 
     } catch (err) {
       console.error("CARD ERROR:", err);
-      return reply("❌ Failed to show card.");
+      return reply("Failed to show card.");
     }
   },
 };
