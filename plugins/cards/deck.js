@@ -152,7 +152,7 @@ export default {
       const deckSlice = user.cards.slice(start, start + limit);
       const ReadMore = "\u200e".repeat(4001);
 
-      let text = `꧁━━〔 🎴 *M Y  D E C K* 〕━━꧂\n`;
+      let text = `〔 🎴 *M Y  D E C K* 〕\n`;
       text += `  🌸 *Page ${page}/${totalPages}*  〔 *Total: ${totalCards}* 〕\n`;
       text += ReadMore + "\n";
       text += "  ━━━━━━━━━━━━━━━━━━━━━━━\n\n";
@@ -171,7 +171,7 @@ export default {
       return reply(text);
     } catch (err) {
       console.error("DECK ERROR:", err);
-      return reply("❌ Failed to load your deck.");
+      return reply(" Failed to load your deck.");
     }
   },
 };
