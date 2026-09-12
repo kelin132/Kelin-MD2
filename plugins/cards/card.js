@@ -17,21 +17,20 @@ export default {
 
       if (!Array.isArray(user.cards) || user.cards.length === 0) {
         return reply(
-`you have no cards yet,collect some from spawns`
+          `you have no cards yet, collect some from spawns`
         );
       }
 
       if (!args[0]) {
         return reply(
-`you have `${user.cards.length}\` cards, use *.col* to view them`
-
+          `you have \`${user.cards.length}\` cards, use *.col* to view them`
         );
       }
 
       const index = parseInt(args[0]);
       if (isNaN(index) || index < 1 || index > user.cards.length) {
         return reply(
-`Invalid card, you have `${user.cards.length}\` cards, type *.col* to check`
+          `Invalid card, you have \`${user.cards.length}\` cards, type *.col* to check`
         );
       }
 
