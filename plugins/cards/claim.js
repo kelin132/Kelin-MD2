@@ -28,8 +28,7 @@ function claimText(card, sender, prefix = "𝐂𝐀𝐑𝐃 𝐂𝐋𝐀𝐈𝐌
 │ 📺 *Series*    :: \`${card.series}\`
 │ 🆔 *ID*        :: \`${card.cardId}\`
 │
-│ ✅ Added to your collection!
-│ 💬 Use \`.col\` to view it.
+│ Use \`.col\` to view it.
 ╰───────────────❀`;
 }
 
