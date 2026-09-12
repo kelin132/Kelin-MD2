@@ -31,10 +31,7 @@ export default {
       await setSpawnEnabled(chatId, true);
       await sock.sendMessage(chatId, {
         text:
-`✅ *Auto Card Spawn: ON*
-
-A random card will appear in this group every *15 minutes*.
-Members can use *.collect* to grab it — first come, first served!`,
+`card spawn is now on, collect cards that spawn using *. collect*`,
       }, { quoted: msg });
       return;
     }
