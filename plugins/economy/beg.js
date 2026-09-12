@@ -58,7 +58,7 @@ export default {
       const left = Math.ceil((COOLDOWN - (now - lastBeg)) / 1000);
       const m    = Math.floor(left / 60);
       const s    = left % 60;
-      return reply(`⏳ Your beg cooldown is still active — ${m}m ${s}s left.`);
+      return reply(` Your beg cooldown is still active — ${m}m ${s}s left.`);
     }
 
     // 35% chance of failure — people aren't always generous
