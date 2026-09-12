@@ -105,7 +105,7 @@ export default {
 
     try {
       const input = args.join(" ").trim();
-      if (!input) return reply("❌ Usage: `.ci <card name, ID, or collection index>`");
+      if (!input) return reply(" Usage: `.ci <card name, ID, or collection index>`");
 
       const user = await findOrCreateUser(sender);
       const ownedCards = Array.isArray(user.cards) ? user.cards : [];
@@ -128,10 +128,7 @@ export default {
             return reply(suggest);
           }
           return reply(
-`╭─❀「 🎴 *𝐂𝐀𝐑𝐃 𝐈𝐍𝐅𝐎* 」❀─╮
-│ ❌ No card found matching
-│    _\`${input}\`_
-╰───────────────❀`
+`No card found matching `${input}``
           );
         }
 
