@@ -19,10 +19,10 @@ export default {
     const text = [
       "💳 𝗔𝗖𝗖𝗢𝗨𝗡𝗧 𝗕𝗔𝗟𝗔𝗡𝗖𝗘",
       "━━━━━━━━━━━━━━━━━",
-      `💰 𝗪𝗮𝗹𝗹𝗲𝘁  ❖ ⟦ \`${formatRyu(wallet)}\` ⟧`,
-      `🏦 𝗕𝗮𝗻𝗸    ❖ ⟦ \`${formatRyu(bank)} / ${formatRyu(bankLimitForUser(user))}\` ⟧`,
-      `💍 𝗧𝗼𝘁𝗮𝗹   ❖ ⟦ \`${formatRyu(wallet + bank)}\` ⟧`,
-      `💳 𝗖𝗮𝗿𝗱    ❖ ⟦ \`${user.bankCard ? "Active" : "Buy in .shop"}\` ⟧`,
+      `💰 𝗪𝗮𝗹𝗹𝗲𝘁  : ⟦ \`${formatRyu(wallet)}\` ⟧`,
+      `🏦 𝗕𝗮𝗻𝗸    : ⟦ \`${formatRyu(bank)} / ${formatRyu(bankLimitForUser(user))}\` ⟧`,
+      `💍 𝗧𝗼𝘁𝗮𝗹   : ⟦ \`${formatRyu(wallet + bank)}\` ⟧`,
+      `💳 𝗖𝗮𝗿𝗱    : ⟦ \`${user.bankCard ? "Active" : "Buy in .shop"}\` ⟧`,
       "━━━━━━━━━━━━━━━━━",
     ].join("\n");
 
