@@ -7,14 +7,21 @@
  *
  * Coworkers are fictional bot NPCs generated per site — never real
  * group members — so nobody is pinged, credited, or blamed by mistake.
+ *
+ * FEATURES:
+ * - Cross-bot work lock: user can only work on ONE bot at a time
+ * - 3-hour cooldown: after .work collect, user must wait 3 hours before working again
+ * - MongoDB-backed persistence for reliability
  */
 
 import { getUser, saveUser, addMoney, addHistory, requireRegistration } from "./database.js";
 import { formatRyu } from "./currency.js";
+import db from "../../lib/mongoConnector.mjs";
 
-// ─── Config ────────────────────────────────────────────────────────────────
+// ─── Config ──────────────────────────────────────────────────────────────────
 
 const SHIFTS_PER_SITE = 4;
+const WORK_COOLDOWN_MS = 3 * 60 * 60 * 1000; // 3 hours
 
 const SITES = {
   1: {
@@ -124,7 +131,7 @@ function summarizeItems(items) {
 }
 
 // ─── Active work state (in-memory, per sender) ──────────────────────────────
-// { siteKey, shift, moneyEarned, items[], crew[], status: "working"|"ready", endsAt, timeout }
+// { siteKey, shift, moneyEarned, items[], crew[], status: "working"|"ready", endsAt, timeout, botName }
 
 const WORK_STATE = new Map();
 
@@ -136,6 +143,95 @@ function siteMenuText() {
     `3. Gather equipment and crates (about $60k-$88k after 4 shifts)`,
     `Use .work 1, .work 2, or .work 3.`,
   ].join("\n");
+}
+
+// ─── Work Cooldown & Lock Tracking (MongoDB-backed) ───────────────────────────
+
+/**
+ * Get or create a work session tracker for a user
+ */
+async function getWorkSession(sender) {
+  if (!db.collection) return null; // No MongoDB
+  try {
+    const sessions = db.collection("workSessions");
+    return await sessions.findOne({ _id: sender });
+  } catch (err) {
+    console.error("[work] Failed to get session:", err);
+    return null;
+  }
+}
+
+/**
+ * Save or update work session (lock/unlock across bots)
+ */
+async function saveWorkSession(sender, data) {
+  if (!db.collection) return; // No MongoDB
+  try {
+    const sessions = db.collection("workSessions");
+    await sessions.updateOne(
+      { _id: sender },
+      { $set: data },
+      { upsert: true }
+    );
+  } catch (err) {
+    console.error("[work] Failed to save session:", err);
+  }
+}
+
+/**
+ * Get remaining cooldown time in ms (0 if no cooldown)
+ */
+async function getWorkCooldown(sender) {
+  const session = await getWorkSession(sender);
+  if (!session || !session.lastCollectTime) return 0;
+
+  const elapsed = Date.now() - session.lastCollectTime;
+  const remaining = WORK_COOLDOWN_MS - elapsed;
+  return remaining > 0 ? remaining : 0;
+}
+
+/**
+ * Check if user is actively working on any bot
+ * Returns: { isWorking, botName, currentSite } or null
+ */
+async function getActiveWork(sender) {
+  const session = await getWorkSession(sender);
+  if (!session || !session.activeBot) return null;
+
+  // Check if the lock is stale (older than 24 hours = assume abandoned)
+  const lockAge = Date.now() - session.activeSince;
+  if (lockAge > 24 * 60 * 60 * 1000) {
+    await saveWorkSession(sender, { activeBot: null, activeSince: null });
+    return null;
+  }
+
+  return {
+    isWorking: true,
+    botName: session.activeBot,
+    currentSite: session.activeSite,
+  };
+}
+
+/**
+ * Lock work to this bot (prevents user from working on other bots)
+ */
+async function lockWorkToBotStart(sender, botName, siteKey) {
+  await saveWorkSession(sender, {
+    activeBot: botName,
+    activeSite: SITES[siteKey].name,
+    activeSince: Date.now(),
+  });
+}
+
+/**
+ * Unlock work from this bot (user can now work elsewhere or wait out cooldown)
+ */
+async function unlockWorkFromBot(sender) {
+  await saveWorkSession(sender, {
+    activeBot: null,
+    activeSince: null,
+    lastCollectTime: Date.now(),
+  });
 }
 
 // ─── Shift runner ────────────────────────────────────────────────────────────
@@ -182,6 +278,7 @@ export default {
     if (!(await requireRegistration(sock, msg, sender))) return;
 
     const jid = msg.key.remoteJid;
+    const botName = msg.pushName || "Unknown Bot"; // Current bot identifier
     const reply = (text, mentions = [sender]) =>
       sock.sendMessage(jid, { text, mentions }, { quoted: msg });
     const sub = (args[0] || "").toLowerCase();
@@ -219,11 +316,14 @@ export default {
       const site = SITES[state.siteKey];
       WORK_STATE.delete(sender);
 
+      // Unlock from this bot and start 3-hour cooldown
+      await unlockWorkFromBot(sender);
+
       return reply([
         `${mentionLabel(sender)} your crew is home from ${site.name}.`,
         `Money collected: +${formatMoney(state.moneyEarned)}`,
         `Items collected: ${summarizeItems(state.items).replace(/\n/g, ", ")}`,
-        `Use .work start to send them out again.`,
+        `⏱️ Next work available in 3 hours.`,
       ].join("\n"));
     }
 
@@ -245,6 +345,22 @@ export default {
 
     // ── .work start (open the job selection) ───────────────────────────────
     if (sub === "start") {
+      // Check 3-hour cooldown
+      const cooldownRemaining = await getWorkCooldown(sender);
+      if (cooldownRemaining > 0) {
+        return reply(`${mentionLabel(sender)} you can work again in ${formatRemaining(cooldownRemaining)}.`);
+      }
+
+      // Check if user is already working on another bot
+      const activeWork = await getActiveWork(sender);
+      if (activeWork && activeWork.isWorking) {
+        return reply(
+          `${mentionLabel(sender)} you're currently working at ${activeWork.currentSite} on another bot!\n\n` +
+          `❌ You can only work on one bot at a time.\n\n` +
+          `💡 Complete or abandon that work first.`
+        );
+      }
+
       if (state) {
         if (state.status === "choosing") {
           return reply(`${mentionLabel(sender)}\n${siteMenuText()}`);
@@ -295,7 +411,11 @@ export default {
       endsAt: 0,
       timeout: null,
       collecting: false,
+      botName,
     });
+
+    // Lock work to this bot
+    await lockWorkToBotStart(sender, botName, sub);
 
     await reply([
       `${mentionLabel(sender)} sent ${crew.join(", ")} to ${site.name}.`,
