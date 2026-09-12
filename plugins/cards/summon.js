@@ -139,15 +139,7 @@ export default {
         tierName = resolveTierName(args[0]);
         if (!tierName) {
           return reply(
-`╭━━━〔 ❌ 𝑰𝑵𝑽𝑨𝑳𝑰𝑫 𝑻𝑰𝑬𝑹 〕━━━╮
-┃ ✦ Unknown tier: 『 \`${args[0]}\` 』
-┃
-┃ Valid tiers:
-┃ 1-6 or Common / Uncommon / Rare
-┃ Epic / Legendary / Mythical
-┃
-┃ 💡 Type \`.summon help\` for details
-╰━━━━━━━━━━━━━━━━━━━━╯`
+`unknown tier, check the tier list again`
           );
         }
       }
@@ -166,17 +158,7 @@ export default {
 
       if ((ecoUser.money || 0) < cost) {
         return reply(
-`╭━━━〔 💸 𝑰𝑵𝑺𝑼𝑭𝑭𝑰𝑪𝑰𝑬𝑵𝑻 𝑭𝑼𝑵𝑫𝑺 〕━━━╮
-┃ ✦ Not enough coins to summon!
-┃
-┃ ${emoji} Tier   ➜ 『 \`${tierName}\` 』
-┃
-┣━━━━━━━━━━━━━━━━━━━━
-┃ 💰 Required › \`$${cost.toLocaleString()}\`
-┃ 👛 Wallet   › \`$${(ecoUser.money || 0).toLocaleString()}\`
-┣━━━━━━━━━━━━━━━━━━━━
-┃ 💡 Earn via \`.daily\` \`.work\` \`.crime\`
-╰━━━━━━━━━━━━━━━━━━━━╯`
+`you don't have enough ryu to summon a card! `
         );
       }
 
@@ -195,16 +177,7 @@ export default {
         await saveUser(sender, ecoUser);
         await addHistory(sender, "summon_refund", cost, `Refund — no ${tierName} cards available`);
         return reply(
-`╭━━━〔 ❌ 𝑵𝑶 𝑪𝑨𝑹𝑫𝑺 𝑨𝑽𝑨𝑰𝑳𝑨𝑩𝑳𝑬 〕━━━╮
-┃ ✦ No cards found for this tier!
-┃
-┃ ${emoji} Tier ➜ 『 \`${tierName}\` 』
-┃
-┣━━━━━━━━━━━━━━━━━━━━
-┃ 💰 Refunded › \`$${cost.toLocaleString()}\`
-┣━━━━━━━━━━━━━━━━━━━━
-┃ 💡 Try again later!
-╰━━━━━━━━━━━━━━━━━━━━╯`
+`No cards found for this tier`
         );
       }
 
@@ -278,23 +251,12 @@ export default {
       // Card API is completely down — give users a clear message instead of a generic error
       if (err.code === "CARD_API_DOWN") {
         return reply(
-`╭━━━〔 🌐 𝑪𝑨𝑹𝑫 𝑨𝑷𝑰 𝑫𝑶𝑾𝑵 〕━━━╮
-┃ ✦ The card server is temporarily offline!
-┃
-┃ 🔧 This is not your fault.
-┃ ⏳ Please wait a few minutes and try again.
-┃
-┃ 💡 Your coins were NOT deducted.
-╰━━━━━━━━━━━━━━━━━━━━━━━━╯`
+`card Api is down, please be patient while our team gets working on the problem`
         );
       }
 
       return reply(
-`╭━━━〔 ❌ 𝑬𝑹𝑹𝑶𝑹 〕━━━╮
-┃ ✦ Summon failed!
-┃
-┃ Please try again later.
-╰━━━━━━━━━━━━━━━━━━━━╯`
+`card failed to be summoned`
       );
     }
   },
