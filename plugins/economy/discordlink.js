@@ -26,7 +26,7 @@ export default {
 Join the community here:
 ${AIDORU_DISCORD_INVITE}
 
-❌ Register first with *.register <your_name>* if you also want to link your economy account.`,
+Have fun`,
         linkPreview: {
           "canonical-url": AIDORU_DISCORD_INVITE,
           "matched-text": AIDORU_DISCORD_INVITE,
