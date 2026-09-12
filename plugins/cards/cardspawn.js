@@ -31,7 +31,7 @@ export default {
       await setSpawnEnabled(chatId, true);
       await sock.sendMessage(chatId, {
         text:
-`card spawn is now on, collect cards that spawn using *. claim*`,
+`card spawn is now on, collect cards that spawn every 15 mins using *. claim*`,
       }, { quoted: msg });
       return;
     }
