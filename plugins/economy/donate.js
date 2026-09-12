@@ -47,10 +47,7 @@ export default {
 
     if (!targetJid) {
       return reply(
-        "❌ *Usage:* `.donate @user <amount>`\n\n" +
-        "You can:\n" +
-        "• Mention the person: *.donate @user 500*\n" +
-        "• Reply to their message: *.donate 500*"
+        " `.donate @user <amount>`
       );
     }
 
