@@ -128,7 +128,7 @@ export default {
             return reply(suggest);
           }
           return reply(
-`No card found matching `${input}``
+            `No card found matching \`${input}\``
           );
         }
 
