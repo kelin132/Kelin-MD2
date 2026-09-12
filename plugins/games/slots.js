@@ -2,7 +2,6 @@ import { getUser, saveUser, requireRegistration } from "../economy/database.js";
 import { randomChoice } from "../../lib/gambling.mjs";
 import { parseAmount } from "../economy/parseAmount.js";
 import { MAX_BET, maxBetMessage } from "../economy/bettingLimits.js";
-import { compactMoney } from "../../lib/compactMoney.mjs";
 
 const SYMBOLS = ["🍒", "🍋", "🍇", "🔔", "⭐", "💎", "7️⃣"];
 const PAYOUTS = {
@@ -14,6 +13,14 @@ const PAYOUTS = {
   "🍋🍋🍋": 5,
   "🍒🍒🍒": 4,
 };
+
+function fmt(n) {
+  if (n >= 1e12) return `$${(n/1e12).toFixed(1)}T`;
+  if (n >= 1e9)  return `$${(n/1e9).toFixed(1)}B`;
+  if (n >= 1e6)  return `$${(n/1e6).toFixed(1)}M`;
+  if (n >= 1e3)  return `$${(n/1e3).toFixed(1)}K`;
+  return `$${n.toLocaleString()}`;
+}
 
 function spin() {
   return [0, 1, 2].map(() => randomChoice(SYMBOLS));
@@ -92,10 +99,10 @@ export default {
     await sock.sendMessage(msg.key.remoteJid, {
       text: [
         `${reels.join(" | ")} | 🎰 BET — [ ${rawMulti > 0 ? "WIN ✅" : "LOSE ❌"} ]`,
-        `🎯 Stake : ${compactMoney(bet)}`,
+        `🎯 Stake : ${fmt(bet)}`,
         `💬 Result : ${resultLabel}`,
-        `💰 Profit : ${net >= 0 ? "+" : "-"}${compactMoney(Math.abs(net))}`,
-        `💳 Balance : ${compactMoney(user.money)}`,
+        `💰 Profit : ${net >= 0 ? "+" : "-"}${fmt(Math.abs(net))}`,
+        `💳 Balance : ${fmt(user.money)}`,
       ].join(" | "),
     }, { quoted: msg });
   }
