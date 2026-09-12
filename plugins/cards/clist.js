@@ -37,7 +37,7 @@ Example: .clist 3  or  .clist rare 2`
 
       const input  = args[0].toLowerCase();
       const tierNum = RARITY_MAP[input];
-      if (!tierNum) return reply("❌ Invalid tier. Use 1–5 or the tier name.");
+      if (!tierNum) return reply("Invalid tier. Use 1–5 or the tier name.");
 
       let page = parseInt(args[1]) || 1;
       if (page < 1) page = 1;
@@ -54,7 +54,7 @@ Example: .clist 3  or  .clist rare 2`
       const emoji = TIER_EMOJI[slice[0]?.tier] || "⭐";
 
       let text =
-`꧁━━〔 ${emoji} *${slice[0]?.tier?.toUpperCase() || "CARDS"} LIST* 〕━━꧂
+`〔 ${emoji} *${slice[0]?.tier?.toUpperCase() || "CARDS"} LIST* 〕
 
   📦 *Total: ${cards.length}*  〔 *Page ${page}/${totalPages}* 〕
   ━━━━━━━━━━━━━━━━━━━━━━━
@@ -65,13 +65,13 @@ Example: .clist 3  or  .clist rare 2`
       });
 
       text += `\n  _Use .clist <tier> <page> for more_`;
-      text += `\n\n꧂━━━━━━━━━━━━━━━━━━━━━━━━━━━━꧁`;
+      text += `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
 
       return reply(text);
 
     } catch (err) {
       console.error("CLIST ERROR:", err);
-      return reply("❌ Failed to load card list.");
+      return reply(" Failed to load card list.");
     }
   },
 };
