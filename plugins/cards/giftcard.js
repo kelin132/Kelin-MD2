@@ -23,13 +23,13 @@ export default {
       const target = resolveTarget(msg);
 
       if (!target) {
-        return reply("❌ Mention or reply to the user you want to gift the card to.\nUsage: .giftcard <card number> @user");
+        return reply(" Mention or reply to the user you want to give your card");
       }
 
-      if (target === sender) return reply("❌ You can't gift a card to yourself.");
+      if (target === sender) return reply(" You can't gift a card to yourself, baka!.");
 
       const index = parseInt(args[0], 10) - 1;
-      if (isNaN(index) || index < 0) return reply("❌ Usage: .giftcard <card number> @user");
+      if (isNaN(index) || index < 0) return reply(" Usage: .giftcard <card number> @user");
 
       const senderUser = await findOrCreateUser(sender);
       const targetUser = await findOrCreateUser(target);
@@ -37,13 +37,13 @@ export default {
       senderUser.cards = Array.isArray(senderUser.cards) ? senderUser.cards : [];
       targetUser.cards = Array.isArray(targetUser.cards) ? targetUser.cards : [];
 
-      if (senderUser.cards.length === 0) return reply("❌ You have no cards to gift.");
-      if (index >= senderUser.cards.length) return reply("❌ Invalid card number.");
+      if (senderUser.cards.length === 0) return reply(" You have no cards to gift.");
+      if (index >= senderUser.cards.length) return reply(" Invalid card number.");
 
 
       const card = senderUser.cards[index];
-      if (!card) return reply("❌ Card not found.");
-      if (card.locked || card.inAuction) return reply("❌ This card is locked or in auction and cannot be gifted.");
+      if (!card) return reply(" Card not found.");
+      if (card.locked || card.inAuction) return reply(" This card is locked or in auction and cannot be gifted.");
 
       senderUser.cards.splice(index, 1);
       targetUser.cards.push(card);
@@ -67,7 +67,7 @@ export default {
 
     } catch (err) {
       console.error("GIFTCARD ERROR:", err);
-      return reply("❌ Gift failed. Please try again.");
+      return reply(" Gift failed. Please try again.");
     }
   },
 };
