@@ -6,6 +6,7 @@
  */
 import { getUser, saveUser, requireRegistration, addHistory } from "./database.js";
 import { parseAmount } from "./parseAmount.js";
+import { formatRyu } from "./currency.js";
 
 export const LOAN_TIERS = [
   { key: "starter", level: 1,  name: "Starter",  max: 5_000,       interest: 0.08, dueDays: 7  },
@@ -22,7 +23,7 @@ function getLoanTier(level = 1) {
 
 function loanTierLines(level) {
   return LOAN_TIERS.map((tier) =>
-    `${level >= tier.level ? "✅" : "🔒"} *${tier.name}* — Level ${tier.level}+ | max $${tier.max.toLocaleString()} | ${tier.interest * 100}%/day`
+    `${level >= tier.level ? "✅" : "🔒"} *${tier.name}* — Level ${tier.level}+ | max ${formatRyu(tier.max)} | ${tier.interest * 100}%/day`
   ).join("\n");
 }
 
@@ -61,7 +62,7 @@ Use *.loan <amount>* to borrow within your unlocked tier.`
 
     // ── INFO ─────────────────────────────────────────────────────────────────
     if (sub === "info") {
-      if (!user.loan?.active) return reply(`💳 You have no active loan.\n\nUse *.loan <amount>* to borrow up to $${tier.max.toLocaleString()}.\nUse *.loan tiers* to see the bank tiers.`);
+       if (!user.loan?.active) return reply(`💳 You have no active loan.\n\nUse *.loan <amount>* to borrow up to ${formatRyu(tier.max)}.\nUse *.loan tiers* to see the bank tiers.`);
 
       const days    = Math.max(0, Math.ceil((user.loan.due - now) / 86_400_000));
       const overdue = now > user.loan.due;
@@ -74,12 +75,12 @@ Use *.loan <amount>* to borrow within your unlocked tier.`
 `💳 *YOUR LOAN*
 
 🏷️ Tier      : ${activeTier.name}
-💸 Principal : $${user.loan.amount.toLocaleString()}
+💸 Principal : ${formatRyu(user.loan.amount)}
 💹 Interest  : ${activeTier.interest * 100}%/day
 📅 Due       : ${new Date(user.loan.due).toDateString()}
 ${overdue ? "⚠️ *OVERDUE! Pay now to avoid jail.*" : `⏳ Due in   : ${days} day(s)`}
 
-Repay total : ~$${repayTotal.toLocaleString()}
+Repay total : ~${formatRyu(repayTotal)}
 Use *.loan pay* to repay.`
       );
     }
@@ -99,9 +100,9 @@ Use *.loan pay* to repay.`
         return reply(
 `❌ *Not enough cash!*
 
-💸 Loan + interest : $${total.toLocaleString()}
-💰 Your wallet     : $${user.money.toLocaleString()}
-📉 Short           : $${(total - user.money).toLocaleString()}
+💸 Loan + interest : ${formatRyu(total)}
+💰 Your wallet     : ${formatRyu(user.money)}
+📉 Short           : ${formatRyu(total - user.money)}
 
 Earn more with *.daily*, *.work*, *.dig* or *.fish*.`
         );
@@ -110,14 +111,14 @@ Earn more with *.daily*, *.work*, *.dig* or *.fish*.`
       user.money   -= total;
       user.loan     = null;
       await saveUser(sender, user);
-      await addHistory(sender, "withdraw", -total, `Repaid loan ($${principal} + $${interest} interest)`);
+      await addHistory(sender, "withdraw", -total, `Repaid loan (${formatRyu(principal)} + ${formatRyu(interest)} interest)`);
 
       return reply(
 `✅ *Loan Repaid!*
 
-💸 Repaid  : $${total.toLocaleString()}
-  (principal + $${interest.toLocaleString()} interest)
-💰 Balance : $${user.money.toLocaleString()}
+💸 Repaid  : ${formatRyu(total)}
+  (principal + ${formatRyu(interest)} interest)
+💰 Balance : ${formatRyu(user.money)}
 
 You're debt free! 🎉`
       );
@@ -129,9 +130,9 @@ You're debt free! 🎉`
     }
 
     const amount = parseAmount(sub, 0);
-    if (isNaN(amount) || amount <= 0) return reply(`❌ Usage: .loan <amount>\n\nYour ${tier.name} tier maximum is $${tier.max.toLocaleString()}.\nUse *.loan tiers* to view unlocks.`);
-    if (amount > tier.max)            return reply(`❌ Your ${tier.name} tier maximum is $${tier.max.toLocaleString()}.\nReach Level ${LOAN_TIERS.find((entry) => entry.max > tier.max)?.level || "higher"} to unlock more.`);
-    if (amount < 100)                 return reply("❌ Minimum loan is $100.");
+    if (isNaN(amount) || amount <= 0) return reply(`❌ Usage: .loan <amount>\n\nYour ${tier.name} tier maximum is ${formatRyu(tier.max)}.\nUse *.loan tiers* to view unlocks.`);
+    if (amount > tier.max)            return reply(`❌ Your ${tier.name} tier maximum is ${formatRyu(tier.max)}.\nReach Level ${LOAN_TIERS.find((entry) => entry.max > tier.max)?.level || "higher"} to unlock more.`);
+    if (amount < 100)                 return reply("❌ Minimum loan is 100 ryu (💠).");
 
     user.money += amount;
     user.loan   = {
@@ -144,19 +145,19 @@ You're debt free! 🎉`
     };
 
     await saveUser(sender, user);
-    await addHistory(sender, "transfer_in", amount, `Took loan of $${amount.toLocaleString()}`);
+    await addHistory(sender, "transfer_in", amount, `Took loan of ${formatRyu(amount)}`);
 
     return reply(
 `💳 *LOAN APPROVED!*
 
-💰 Received : $${amount.toLocaleString()}
+💰 Received : ${formatRyu(amount)}
 🏷️ Tier      : ${tier.name}
 📅 Due Date : ${new Date(user.loan.due).toDateString()}
 💹 Interest : ${tier.interest * 100}% per day
 
 ⚠️ Repay on time with *.loan pay*
 Overdue loans result in *jail*!
-💰 New Balance: $${user.money.toLocaleString()}`
+💰 New Balance: ${formatRyu(user.money)}`
     );
   },
 };

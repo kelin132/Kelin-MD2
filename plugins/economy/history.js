@@ -1,4 +1,5 @@
 import { getUser, requireRegistration } from "./database.js";
+import { formatRyu } from "./currency.js";
 
 const typeEmoji = {
   daily:          "🌅",
@@ -10,8 +11,6 @@ const typeEmoji = {
   rob_victim:     "😭",
   deposit:        "🏦",
   withdraw:       "💸",
-  vault_deposit:  "🔒",
-  vault_withdraw: "🔓",
   donate_out:     "🎁",
   donate_in:      "🎀",
   transfer_out:   "📤",
@@ -46,7 +45,7 @@ export default {
     const rows = [...hist].reverse().map((h, i) => {
       const emoji  = typeEmoji[h.type] || "📌";
       const sign   = h.amount >= 0 ? "+" : "";
-      const amount = `${sign}$${Math.abs(h.amount).toLocaleString()}`;
+      const amount = `${sign}${formatRyu(Math.abs(h.amount))}`;
       const date   = new Date(h.ts).toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
       return `${i + 1}. ${emoji} ${h.desc}\n    └ ${amount}  •  ${date}`;
     });
@@ -56,7 +55,7 @@ export default {
       `${"─".repeat(32)}\n` +
       rows.join("\n\n") +
       `\n${"─".repeat(32)}\n` +
-      `💰 Cash: $${user.money.toLocaleString()}  |  🏦 Bank: $${user.bank.toLocaleString()}  |  🔒 Vault: $${(user.vault || 0).toLocaleString()}`;
+      `💰 Cash: ${formatRyu(user.money)}  |  🏦 Bank: ${formatRyu(user.bank)}`;
 
     await sock.sendMessage(msg.key.remoteJid, { text }, { quoted: msg });
   }

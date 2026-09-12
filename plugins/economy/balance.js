@@ -1,25 +1,5 @@
 import { getUser, requireRegistration } from "./database.js";
-import * as balanceFormatter from "./balanceFormat.js";
-
-function formatCompactMoney(value) {
-  let formatted;
-  if (typeof balanceFormatter.formatCompactMoney === "function") {
-    formatted = balanceFormatter.formatCompactMoney(value);
-  } else {
-    const amount = Number(value ?? 0);
-    const absolute = Math.abs(amount);
-    const sign = amount < 0 ? "-" : "";
-    const compact = (number) => number.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
-
-    if (absolute >= 1e12) formatted = `${sign}$${compact(absolute / 1e12)}T`;
-    else if (absolute >= 1e9) formatted = `${sign}$${compact(absolute / 1e9)}B`;
-    else if (absolute >= 1e6) formatted = `${sign}$${compact(absolute / 1e6)}M`;
-    else if (absolute >= 1e3) formatted = `${sign}$${compact(absolute / 1e3)}K`;
-    else formatted = `${sign}$${absolute.toLocaleString()}`;
-  }
-
-  return formatted.replace(/([KMBT])$/u, (_, suffix) => suffix.toLowerCase());
-}
+import { bankLimitForUser, formatRyu } from "./currency.js";
 
 export default {
   name: "balance",
@@ -39,9 +19,10 @@ export default {
     const text = [
       "💳 𝗔𝗖𝗖𝗢𝗨𝗡𝗧 𝗕𝗔𝗟𝗔𝗡𝗖𝗘",
       "━━━━━━━━━━━━━━━━━",
-      `💰 𝗪𝗮𝗹𝗹𝗲𝘁  ❖ ⟦ \`${formatCompactMoney(wallet)}\` ⟧`,
-      `🏦 𝗕𝗮𝗻𝗸    ❖ ⟦ \`${formatCompactMoney(bank)}\` ⟧`,
-      `💍 𝗧𝗼𝘁𝗮𝗹   ❖ ⟦ \`${formatCompactMoney(wallet + bank)}\` ⟧`,
+      `💰 𝗪𝗮𝗹𝗹𝗲𝘁  ❖ ⟦ \`${formatRyu(wallet)}\` ⟧`,
+      `🏦 𝗕𝗮𝗻𝗸    ❖ ⟦ \`${formatRyu(bank)} / ${formatRyu(bankLimitForUser(user))}\` ⟧`,
+      `💍 𝗧𝗼𝘁𝗮𝗹   ❖ ⟦ \`${formatRyu(wallet + bank)}\` ⟧`,
+      `💳 𝗖𝗮𝗿𝗱    ❖ ⟦ \`${user.bankCard ? "Active" : "Buy in .shop"}\` ⟧`,
       "━━━━━━━━━━━━━━━━━",
     ].join("\n");
 

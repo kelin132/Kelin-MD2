@@ -1,13 +1,13 @@
 /**
  * .resetplayer @user | <number> | <name>
- * Reset a player's economy stats (money, bank, vault, xp, level, inventory, history)
+ * Reset a player's economy stats (money, bank, xp, level, inventory, history)
  * while preserving their identity and staff rank.
  */
 import { resetPlayer, getUser, isRegistered, addHistory, findUserByName } from "../economy/database.js";
 
 export default {
   name: "resetplayer",
-  description: "Reset a player's economy stats to zero",
+  description: "Reset a player's economy stats to 30,000 ryu",
   category: "staff",
   usage: ".resetplayer @user | <number> | <name>",
   aliases: ["reseteconomy", "wipeeconomy"],
@@ -55,12 +55,11 @@ export default {
         `🔄 *Player Reset*\n\n` +
         `👤 Player  : ${target.name}\n` +
         `🔍 Found by : ${lookedUpBy}\n` +
-        `💰 Money   : $0\n` +
-        `🏦 Bank    : $0\n` +
-        `🔒 Vault   : $0\n` +
+        `💰 Money   : 30,000 ryu (💠)\n` +
+        `🏦 Bank    : 0 ryu (💠)\n` +
         `⭐ Level   : 1\n` +
         `🌐 Website : Access revoked and logged out\n\n` +
-        `_Identity and staff rank preserved. Economy wiped._\n` +
+        `_Identity and staff rank preserved. Economy reset._\n` +
         `_Use .unban @user to restore website access._`,
       mentions: [targetJid],
     }, { quoted: msg });

@@ -4,11 +4,12 @@
  * Usage: .bet <amount|all|half>
  */
 import { getUser, saveUser, requireRegistration, addHistory, maybeAwardDiamonds, checkLevelUp } from "./database.js";
-import { randomChoice, randomChance } from "../../lib/gambling.mjs";
+import { randomChoice } from "../../lib/gambling.mjs";
 import { parseAmount } from "./parseAmount.js";
 import { MAX_BET, maxBetMessage } from "./bettingLimits.js";
 import { getNewlyUnlockedRole, buildLevelUpMsg } from "../../lib/levelRoles.mjs";
 import { formatGamblingResult } from "../../lib/gamblingFormat.mjs";
+import { getBettingTier } from "./currency.js";
 
 const COOLDOWN = 30 * 1000;
 
@@ -30,16 +31,16 @@ const LOSE_LINES = [
 
 /** Short money formatter */
 function fmt(n) {
-  if (n >= 1e12) return `$${(n/1e12).toFixed(1)}T`;
-  if (n >= 1e9)  return `$${(n/1e9).toFixed(1)}B`;
-  if (n >= 1e6)  return `$${(n/1e6).toFixed(1)}M`;
-  if (n >= 1e3)  return `$${(n/1e3).toFixed(1)}K`;
-  return `$${n.toLocaleString()}`;
+  if (n >= 1e12) return `${(n/1e12).toFixed(1)}T ryu (💠)`;
+  if (n >= 1e9)  return `${(n/1e9).toFixed(1)}B ryu (💠)`;
+  if (n >= 1e6)  return `${(n/1e6).toFixed(1)}M ryu (💠)`;
+  if (n >= 1e3)  return `${(n/1e3).toFixed(1)}K ryu (💠)`;
+  return `${n.toLocaleString()} ryu (💠)`;
 }
 
 export default {
   name: "bet",
-  description: "Gamble your cash — 55% fair chance",
+  description: "Gamble your cash using amount-based ryu betting tiers",
   category: "economy",
   usage: ".bet <amount | all | half>  ✦ shorthand OK: 10k / 5m / 1b",
   aliases: ["gamble2", "wager"],
@@ -67,13 +68,12 @@ export default {
 `╭─❀「 🎲 *𝐁𝐄𝐓* 」❀─╮
 │ Usage: \`.bet <amount>\`
 │ Examples: \`.bet 500\`  /  \`.bet 10k\`  /  \`.bet 1b\`
-│ Maximum: \`$300B\`
+│ Maximum: \`300B ryu (💠)\`
 │ \`.bet all\` — bet everything in wallet
 │ \`.bet half\` — bet half your wallet
 │
 │ 💰 *Wallet* :: \`${fmt(user.money)}\`
-│ 💰 *Max Bet* :: \`$300B\`
-│ 🎯 *Win Rate* :: \`53.1%\`
+│ 🎯 *Tiers* :: \`50% ×1.7 → 9% ×10\`
 ╰───────────────❀`,
       }, { quoted: msg });
     }
@@ -86,21 +86,24 @@ export default {
     if (amount > user.money)
       return sock.sendMessage(jid, { text: `❌ You only have \`${fmt(user.money)}\` in your wallet.` }, { quoted: msg });
     if (amount < 10)
-      return sock.sendMessage(jid, { text: "❌ Minimum bet is \`$10\`." }, { quoted: msg });
+      return sock.sendMessage(jid, { text: "❌ Minimum bet is \`10 ryu (💠)\`." }, { quoted: msg });
 
-    const won          = randomChance(0.53,1);
+    const tier         = getBettingTier(amount);
+    const won          = Math.random() < tier.winRate;
+    const payout       = Math.floor(amount * tier.multiplier);
+    const netWin       = payout - amount;
     const diamondReward = maybeAwardDiamonds(user, won ? 0.003 : 0.001, 1, 2);
     const flavour      = randomChoice(won ? WIN_LINES : LOSE_LINES);
 
     user.lastBet = now;
 
     if (won) {
-      user.money += amount;
+      user.money += netWin;
       user.xp     = (user.xp || 0) + 15;
 
       const { leveled, startLevel, newLevel } = checkLevelUp(user);
       await saveUser(sender, user);
-      await addHistory(sender, "bet", +amount, `Bet won — wagered $${amount.toLocaleString()}`);
+      await addHistory(sender, "bet", netWin, `Bet won — wagered ${amount.toLocaleString()} ryu at ×${tier.multiplier}`);
 
       const tag = user.name || sender.split("@")[0].split(":")[0];
       await sock.sendMessage(jid, {
@@ -111,7 +114,7 @@ export default {
           bet: amount,
           got: flavour,
           details: [diamondReward ? `💎 Bonus: +\`${diamondReward}\` Gem${diamondReward === 1 ? "" : "s"}` : ""],
-          net: amount,
+          net: netWin,
           balance: user.money,
         }),
       }, { quoted: msg });
@@ -123,7 +126,7 @@ export default {
     } else {
       user.money = Math.max(0, user.money - amount);
       await saveUser(sender, user);
-      await addHistory(sender, "bet", -amount, `Bet lost — wagered $${amount.toLocaleString()}`);
+      await addHistory(sender, "bet", -amount, `Bet lost — wagered ${amount.toLocaleString()} ryu`);
 
       await sock.sendMessage(jid, {
         text: formatGamblingResult({

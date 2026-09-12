@@ -10,6 +10,7 @@
  */
 
 import { getUser, saveUser, addMoney, addHistory, requireRegistration } from "./database.js";
+import { formatRyu } from "./currency.js";
 
 // ─── Config ────────────────────────────────────────────────────────────────
 
@@ -94,7 +95,7 @@ function randomLoot(site, count = 1) {
 }
 
 function formatMoney(amount) {
-  return `$${Math.round(amount).toLocaleString()}`;
+  return formatRyu(amount);
 }
 
 function mentionLabel(sender) {

@@ -108,12 +108,19 @@ export const SHOP_ITEMS = {
     description: "Increases daily reward claim by +50%.",
     useEffect: "daily_boost:50",
   },
-  vault_upgrade: {
-    price: 75_000,   orbCost: 75,   gemCost: 7,
-    emoji: "🏦",   rarity: "rare",      xpBonus: 150, sellPct: 0.4,
+  bank_card: {
+    price: 5_000,    orbCost: 0,    gemCost: 0,
+    emoji: "💳",   rarity: "common",    xpBonus: 25, sellPct: 0,
     category: "bases",
-    description: "Expands max coin storage capacity by +100,000.",
-    useEffect: "vault+100000",
+    description: "Unlocks deposits and withdrawals with a 50,000 ryu bank limit.",
+    useEffect: "bank_card",
+  },
+  bank_limit_upgrade: {
+    price: 25_000,   orbCost: 0,    gemCost: 0,
+    emoji: "🏦",   rarity: "rare",      xpBonus: 100, sellPct: 0,
+    category: "bases",
+    description: "Increases your bank limit by 5%.",
+    useEffect: "bank_limit+5",
   },
   luxury_mansion: {
     price: 1_000_000, orbCost: 1000, gemCost: 100,
@@ -343,7 +350,6 @@ export const SHOP_ITEMS = {
   // Charms (kept)
   rob_charm:    { price: 75_000,  orbCost: 0, gemCost: 0, emoji: "🧿", rarity: "rare",    xpBonus: 0, sellPct: 0.3, category: "consumables", useEffect: "rob_shield:86400000",  description: "Shields you from being robbed for 1 day." },
   stealth_hood: { price: 40_000,  orbCost: 0, gemCost: 0, emoji: "🪄", rarity: "common",  xpBonus: 0, sellPct: 0.3, category: "consumables", useEffect: "stealth:3600000",      description: "Halves your fine if caught robbing for 1 hour." },
-  vault_guard:  { price: 100_000, orbCost: 0, gemCost: 0, emoji: "🔒", rarity: "rare",    xpBonus: 0, sellPct: 0.3, category: "consumables", useEffect: "vault_shield:7200000", description: "Locks your vault against forced withdrawals for 2 hours." },
   xp_bomb:      { price: 30_000,  orbCost: 0, gemCost: 0, emoji: "💥", rarity: "common",  xpBonus: 0, sellPct: 0.4, category: "consumables", useEffect: "xp+500",               description: "Instantly grants 500 XP." },
 
   // Work recovery and career requirements

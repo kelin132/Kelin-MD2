@@ -1,4 +1,5 @@
 import { isRegistered, registerUser, REGISTRATION_STARTING_MONEY } from "./database.js";
+import { formatRyu } from "./currency.js";
 
 export default {
   name: "register",
@@ -51,8 +52,8 @@ export default {
       text:
         `🎉 *Welcome to AIDORU, ${name}!*\n\n` +
         `✅ *Account created successfully.*\n\n` +
-        `💰 *Wallet:* $${REGISTRATION_STARTING_MONEY.toLocaleString()}\n` +
-        `🏦 *Bank:* $0\n` +
+        `💰 *Wallet:* ${formatRyu(REGISTRATION_STARTING_MONEY)}\n` +
+        `🏦 *Bank:* ${formatRyu(0)}\n` +
         `💎 *Diamonds:* 0\n` +
         `⭐ *Level:* 1\n\n` +
         `📋 *Get Started*\n` +

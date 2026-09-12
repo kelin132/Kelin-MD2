@@ -7,6 +7,7 @@
 import { getUser, saveUser, requireRegistration } from "./database.js";
 import { SHOP_ITEMS as shopItems, SHOP_CATEGORIES } from "./_items.js";
 import { grantGun, formatDuration } from "../../lib/economySecurity.mjs";
+import { formatRyu } from "./currency.js";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -18,7 +19,7 @@ function fmtCoins(n) {
 
 function costLine(item) {
   const parts = [];
-  if (item.price   > 0) parts.push(`$${fmtCoins(item.price)}`);
+  if (item.price   > 0) parts.push(formatRyu(item.price));
   if (item.orbCost > 0) parts.push(`🔮 ${item.orbCost}`);
   if (item.gemCost > 0) parts.push(`💎 ${item.gemCost}`);
   return parts.join("  ·  ") || "🆓 Free";
@@ -45,7 +46,7 @@ function buildMainMenu(coins, orbs, gems) {
     `╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
     `┃`,
     `┃  💼 *お財布 — Your Wallet*`,
-    `┃  $${fmtCoins(coins)}  ·  🔮 ${orbs}  ·  💎 ${gems}`,
+    `┃  ${formatRyu(coins)}  ·  🔮 ${orbs}  ·  💎 ${gems}`,
     `┃`,
     `${DIV}`,
     `┃  📂 *カテゴリー — Categories*`,
@@ -141,10 +142,17 @@ async function handleBuy(sock, msg, jid, sender, args) {
 
   const displayName = itemName.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 
+  if (itemName === "bank_card" && user.bankCard) {
+    return reply("💳 You already own an active bank card.");
+  }
+  if (itemName === "bank_limit_upgrade" && !user.bankCard) {
+    return reply("💳 Buy the bank card before purchasing bank limit upgrades.");
+  }
+
   // ── Insufficient funds ───────────────────────────────────────────────────
   if (shortCoins > 0 || shortOrbs > 0 || shortGems > 0) {
     const shortLines = [];
-    if (shortCoins > 0) shortLines.push(`┃  💰 _Need ${fmtCoins(shortCoins)} more Coins_`);
+    if (shortCoins > 0) shortLines.push(`┃  💰 _Need ${formatRyu(shortCoins)} more ryu_`);
     if (shortOrbs  > 0) shortLines.push(`┃  🔮 _Need ${shortOrbs} more Orbs_`);
     if (shortGems  > 0) shortLines.push(`┃  💎 _Need ${shortGems} more Diamonds_`);
 
@@ -158,7 +166,7 @@ async function handleBuy(sock, msg, jid, sender, args) {
         `┃`,
         `${DIV}`,
         `┃  💰 Cost  ꔫ ${costLine(item)}`,
-        `┃  💳 Yours ꔫ $${fmtCoins(userCoins)}  ·  🔮 ${userOrbs}  ·  💎 ${userGems}`,
+        `┃  💳 Yours ꔫ ${formatRyu(userCoins)}  ·  🔮 ${userOrbs}  ·  💎 ${userGems}`,
         `${DIV}`,
         ...shortLines,
         `${DIV}`,
@@ -176,6 +184,10 @@ async function handleBuy(sock, msg, jid, sender, args) {
   user.xp       = (user.xp || 0) + (item.xpBonus || 0);
   user.inventory = user.inventory || [];
   user.inventory.push(itemName);
+  if (itemName === "bank_card") user.bankCard = true;
+  if (itemName === "bank_limit_upgrade") {
+    user.bankUpgradeLevel = (Number(user.bankUpgradeLevel) || 0) + 1;
+  }
   const gunExpiry = itemName === "gun" ? grantGun(user) : null;
   await saveUser(sender, user);
 
@@ -193,7 +205,7 @@ async function handleBuy(sock, msg, jid, sender, args) {
       `┃  ⭐ XP    ꔫ +${item.xpBonus ?? 0}`,
       gunExpiry ? `┃  ⏳ Gun    ꔫ Active for ${formatDuration(gunExpiry - Date.now())}` : null,
       `${DIV}`,
-      `┃  💼 Wallet ꔫ $${fmtCoins(user.money)}  ·  🔮 ${user.orbs}  ·  💎 ${user.diamonds}`,
+      `┃  💼 Wallet ꔫ ${formatRyu(user.money)}  ·  🔮 ${user.orbs}  ·  💎 ${user.diamonds}`,
       `${DIV}`,
       `┃  📦 *.inventory* to see your items！`,
       `┃  _やった！ Item acquired~_ 🌸`,

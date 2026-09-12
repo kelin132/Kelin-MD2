@@ -1,16 +1,7 @@
-function money(value) {
-  const amount = Number(value ?? 0);
-  const absolute = Math.abs(amount);
-  const sign = amount < 0 ? "-" : "";
-  if (absolute >= 1e12) return `${sign}$${compact(absolute / 1e12)}T`;
-  if (absolute >= 1e9) return `${sign}$${compact(absolute / 1e9)}B`;
-  if (absolute >= 1e6) return `${sign}$${compact(absolute / 1e6)}M`;
-  if (absolute >= 1e3) return `${sign}$${compact(absolute / 1e3)}K`;
-  return `${sign}$${absolute.toLocaleString()}`;
-}
+import { bankLimitForUser, formatRyu } from "./currency.js";
 
-function compact(value) {
-  return value.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+function money(value) {
+  return formatRyu(value);
 }
 
 function number(value) {
@@ -22,19 +13,11 @@ function inline(value) {
 }
 
 export function formatFullMoney(value) {
-  const amount = Number(value ?? 0);
-  return `$${amount.toLocaleString()}`;
+  return formatRyu(value);
 }
 
 export function formatCompactMoney(value) {
-  const amount = Number(value ?? 0);
-  const absolute = Math.abs(amount);
-  const sign = amount < 0 ? "-" : "";
-  if (absolute >= 1e12) return `${sign}$${compact(absolute / 1e12)}T`;
-  if (absolute >= 1e9) return `${sign}$${compact(absolute / 1e9)}B`;
-  if (absolute >= 1e6) return `${sign}$${compact(absolute / 1e6)}M`;
-  if (absolute >= 1e3) return `${sign}$${compact(absolute / 1e3)}K`;
-  return `${sign}$${absolute.toLocaleString()}`;
+  return formatRyu(value);
 }
 
 function row(icon, label, value) {
@@ -45,20 +28,21 @@ export function formatAccountBalance({
   wallet = 0,
   bank = 0,
   gems = 0,
-  vault,
   orbs,
+  bankLimit,
+  bankCard = false,
   netWorth = Number(wallet ?? 0) + Number(bank ?? 0),
   extraRows = [],
   footerLines = [],
 }) {
   const rows = [
     row("💰", "Wallet", money(wallet)),
-    row("🏦", "Bank", money(bank)),
+    row("🏦", "Bank", `${money(bank)} / ${money(bankLimit ?? bankLimitForUser({}))}`),
     row("💎", "Gems", number(gems)),
   ];
 
-  if (vault !== undefined) rows.push(row("🔒", "Vault", money(vault)));
   if (orbs !== undefined) rows.push(row("🔮", "Orbs", number(orbs)));
+  rows.push(row("💳", "Card", bankCard ? "Active" : "Buy in .shop"));
   rows.push(row("🌌", "Net worth", money(netWorth)));
 
   if (extraRows.length) {
