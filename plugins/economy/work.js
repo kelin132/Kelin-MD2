@@ -16,9 +16,16 @@
 
 import { getUser, saveUser, addMoney, addHistory, requireRegistration } from "./database.js";
 import { formatRyu } from "./currency.js";
-import db from "../../lib/mongoConnector.mjs";
 
-// ─── Config ──────────────────────────────────────────────────────────────────
+// MongoDB fallback if connector not available
+let db = null;
+try {
+  db = await import("../../lib/mongoConnector.mjs").catch(() => null);
+} catch (err) {
+  console.warn("[work] MongoDB connector not available, using in-memory state only");
+}
+
+// ─── Config ──────────────────────────────────────────────────────────
 
 const SHIFTS_PER_SITE = 4;
 const WORK_COOLDOWN_MS = 3 * 60 * 60 * 1000; // 3 hours
@@ -151,7 +158,7 @@ function siteMenuText() {
  * Get or create a work session tracker for a user
  */
 async function getWorkSession(sender) {
-  if (!db.collection) return null; // No MongoDB
+  if (!db || !db.collection) return null; // No MongoDB
   try {
     const sessions = db.collection("workSessions");
     return await sessions.findOne({ _id: sender });
@@ -165,7 +172,7 @@ async function getWorkSession(sender) {
  * Save or update work session (lock/unlock across bots)
  */
 async function saveWorkSession(sender, data) {
-  if (!db.collection) return; // No MongoDB
+  if (!db || !db.collection) return; // No MongoDB
   try {
     const sessions = db.collection("workSessions");
     await sessions.updateOne(
@@ -234,7 +241,7 @@ async function unlockWorkFromBot(sender) {
   });
 }
 
-// ─── Shift runner ────────────────────────────────────────────────────────────
+// ─── Shift runner ────────────────────────────────────────────────────────
 
 function scheduleShift(sock, jid, sender) {
   const state = WORK_STATE.get(sender);
@@ -264,7 +271,7 @@ async function runShiftEnd(sock, jid, sender) {
   }
 }
 
-// ─── Plugin ──────────────────────────────────────────────────────────────────
+// ─── Plugin ──────────────────────────────────────────────────────────
 
 export default {
   name: "work",
