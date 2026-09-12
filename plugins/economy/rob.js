@@ -77,7 +77,8 @@ export default {
       return reply("😂 This target is too broke to rob.");
     }
 
-    const amount  = Math.min(10000, Math.floor(Math.random() * (target.money * 0.3)) + 100);
+    // Removed the Math.min(10000, ...) limit:
+    const amount  = Math.floor(Math.random() * (target.money * 0.3)) + 100;
     const success = Math.random() > 0.45;
 
     robber.lastRob = now;
