@@ -55,8 +55,10 @@ export default {
       user.inventory = user.inventory || [];
       user.inventory.push(loot.name);
       const def = SHOP_ITEMS[loot.name];
-      resultLine = `⛏️ You dug and found ${def?.emoji || "📦"} ${articleFor(loot.name)} ${loot.name}!`;
-      await addHistory(sender, "dig", 0, `Dug up ${loot.name}`);
+      const itemValue = Math.floor(Math.random() * 750) + 150; // Random value $150-$900 per item
+      user.money = (user.money || 0) + itemValue;
+      resultLine = `⛏️ You dug and found ${def?.emoji || "📦"} ${articleFor(loot.name)} ${loot.name}! (+${fmt(itemValue)})`;
+      await addHistory(sender, "dig", itemValue, `Dug up ${loot.name}`);
     } else if (loot.type === "orbs") {
       const amount = Math.floor(Math.random() * (loot.max - loot.min + 1)) + loot.min;
       user.orbs = (user.orbs || 0) + amount;
