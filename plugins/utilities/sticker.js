@@ -34,10 +34,10 @@ export default {
     } catch (err) {
       console.error("[sticker]", err);
       const message = err.code === "NOQUOTE"
-        ? "🖼️ *STICKER MAKER*\n\nReply to an *image* or *video* with *.s*"
+        ? " *Reply to an *image* or *video* with *.s*"
         : err.code === "NOT_SUPPORTED_MEDIA"
-          ? "❌ Only images and videos can be converted to stickers."
-          : "❌ Failed to create sticker. Make sure the image isn't too large.";
+          ? " Only images and videos can be converted to stickers."
+          : "Failed to create sticker. Make sure the image isn't too large.";
       await sock.sendMessage(jid, {
         text: message,
       }, { quoted: msg });
