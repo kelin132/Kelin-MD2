@@ -39,16 +39,17 @@ export default {
     // ── Resolve target (mention or reply) ──────────────────────────────────
     let targetJid = resolveTarget(msg);
 
-    // Fallback: first arg that looks like a phone number
+    // Fallback: search for a phone number argument
     if (!targetJid) {
-      const numArg = args.find(a => /^[0-9]{5,}$/.test(a));
-      if (numArg) targetJid = `${numArg}@s.whatsapp.net`;
+      const numArg = args.find(a => /^\+?[0-9]{5,}$/.test(a));
+      if (numArg) {
+        const cleanNum = numArg.replace(/[^0-9]/g, "");
+        targetJid = `${cleanNum}@s.whatsapp.net`;
+      }
     }
 
     if (!targetJid) {
-      return reply(
-        " `.donate @user <amount>`
-      );
+      return reply("❌ Please mention a user, reply to their message, or specify a phone number.\nUsage: `.donate @user <amount>`");
     }
 
     if (targetJid === sender) {
@@ -56,8 +57,17 @@ export default {
     }
 
     // ── Parse amount ───────────────────────────────────────────────────────
-    // Amount is the last argument. Supports 25k, 2.5m, 1b, and 1t.
-    const amount = parseAmount(args[args.length - 1], 0);
+    // Check args from right to left for the first valid numeric amount
+    let rawAmount;
+    for (let i = args.length - 1; i >= 0; i--) {
+      const parsed = parseAmount(args[i], 0);
+      if (parsed > 0) {
+        rawAmount = parsed;
+        break;
+      }
+    }
+
+    const amount = rawAmount;
 
     if (!amount || amount <= 0 || isNaN(amount)) {
       return reply("❌ Please provide a valid amount.\nExamples: *.give @user 500* or *.give @user 25k*");
