@@ -21,13 +21,7 @@ export default {
 
       if (!Array.isArray(user.cards) || user.cards.length === 0) {
         return reply(
-`╭─❀「 🃏 *𝐂𝐎𝐋𝐋𝐄𝐂𝐓𝐈𝐎𝐍* 」❀─╮
-│ 🌙 *Result*  :: *EMPTY 🔴*
-│ 🍃 *Flavour* :: _カードがまだない！_
-│
-│ ⚠️ You don't have any cards yet.
-│ 💡 Wait for a spawn and \`.claim <ID>\`
-╰───────────────❀`
+`you don't have any cards yet`
         );
       }
 
@@ -64,11 +58,7 @@ ${cardLines}`;
 
     } catch (err) {
       return reply(
-`╭─❀「 🃏 *𝐂𝐎𝐋𝐋𝐄𝐂𝐓𝐈𝐎𝐍* 」❀─╮
-│ ❌ *Result*  :: *ERROR 🔴*
-│
-│ ⚠️ Failed to load your collection.
-╰───────────────❀`
+`Failed to load your collection`
       );
     }
   },
