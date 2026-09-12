@@ -21,7 +21,7 @@ export default {
 
       if (!list.length) {
         return sock.sendMessage(jid, {
-          text: "❌ No currently airing anime found. Try again later.",
+          text: "No currently airing anime found. Try again later.",
         }, { quoted: msg });
       }
 
@@ -36,7 +36,7 @@ export default {
 
       if (query && !filtered.length) {
         return sock.sendMessage(jid, {
-          text: `❌ No airing anime matched *"${text}"*.\n\nUse *.airing* (no args) to see the full list.`,
+          text: `No airing anime matched *"${text}"*.\n\nUse *.airing* (no args) to see the full list.`,
         }, { quoted: msg });
       }
 
@@ -65,7 +65,7 @@ export default {
 
     } catch (err) {
       await sock.sendMessage(jid, {
-        text: "❌ Failed to fetch airing anime. Try again later.",
+        text: " Failed to fetch airing anime. Try again later.",
       }, { quoted: msg });
     }
   },
