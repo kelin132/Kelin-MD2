@@ -1,11 +1,21 @@
 # Dependencies
 node_modules/
 
+# Build outputs (never commit)
+.output/
+dist/
+build/
+.nuxt/
+
+# Lock files (regenerate with pnpm install)
+pnpm-lock.yaml
+package-lock.json
+
 # WhatsApp session — NEVER commit auth keys
 sessions/auth/
 sessions/*.log
 
-# Multi-bot WhatsApp auth files — definitions in .bots/*.json remain tracked
+# Multi-bot WhatsApp auth files
 .bots/*/creds.json
 .bots/*/cred.json
 .bots/*/creds.js
@@ -28,32 +38,30 @@ Thumbs.db
 .vscode/
 .idea/
 
-# ── Replit workspace files (not needed for bot deployment) ──
+# Replit workspace files (not needed for bot deployment)
 .replit
 .replitignore
 .npmrc
 replit.md
 pnpm-workspace.yaml
-pnpm-lock.yaml
 tsconfig.json
 tsconfig.base.json
 .agents/
 .local/
 
-# Dashboard & API server (Replit-only, not needed on hosting panels)
+# Build/generated files
 artifacts/
-
-# Shared TypeScript libs (Replit-only)
+scripts/
 lib/api-client-react/
 lib/api-spec/
 lib/api-zod/
 lib/db/
 
-# Build scripts (Replit-only)
-scripts/
-
 # yt-dlp binary (auto-downloaded on first use)
 bin/
 
-# Instagram cookies — add yours manually, never commit real cookies
+# Instagram cookies
 config/instagram-cookies.txt
+
+# Cloned repos
+repos/
