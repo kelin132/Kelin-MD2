@@ -92,7 +92,12 @@ export default {
 
       if (!staffMap.size) {
         return sock.sendMessage(jid, {
-          text: `No staff or mods found.`,
+          text:
+            `╭───〔 ⚔️ 𝐒𝐓𝐀𝐅𝐅 & 𝐌𝐎𝐃𝐒 〕───╮\n` +
+            `│\n` +
+            `│ No staff or mods found.\n` +
+            `│\n` +
+            `╰────────────────────╯`,
         }, { quoted: msg });
       }
 
@@ -120,21 +125,23 @@ export default {
         ? members.map((s) => {
             const numPart = bareNumber(s.jid);
             const number = s.realNum || cleanNumMap.get(numPart) || numPart;
-            return `${s.name || 'Unknown'} (+${number})`;
+            return `│ ${s.name || 'Unknown'} ─ +${number}`;
           })
-        : ['None'];
+        : ['│ None listed'];
 
       const caption = [
-        `*Staff & Mods* (${sorted.length})`,
-        '',
-        '*Owners*',
+        '╭───〔 ⚔️ 𝐒𝐓𝐀𝐅𝐅 & 𝐌𝐎𝐃𝐒 〕───╮',
+        '│',
+        '│ ♢ 𝐎𝐖𝐍𝐄𝐑𝐒',
         ...formatRows(admins),
-        '',
-        '*Staff*',
+        '│',
+        '│ ♢ 𝐒𝐓𝐀𝐅𝐅',
         ...formatRows(staff),
-        '',
-        '*Mods*',
+        '│',
+        '│ ♢ 𝐌𝐎𝐃𝐒',
         ...formatRows(mods),
+        '│',
+        '╰────────────────────╯',
       ].join('\n');
 
       return sock.sendMessage(jid, {
@@ -158,7 +165,14 @@ export default {
 
     if (!targetJid) {
       return sock.sendMessage(jid, {
-        text: `Specify a user: .removemod @user, by reply, or phone number.`,
+        text:
+          `╭───〔 ⚔️ 𝐒𝐓𝐀𝐅𝐅 & 𝐌𝐎𝐃𝐒 〕───╮\n` +
+          `│ ❌ Please specify a user to remove.\n` +
+          `│\n` +
+          `│ Mention: .removemod @user\n` +
+          `│ Reply: .removemod\n` +
+          `│ Phone: .removemod 27628114340\n` +
+          `╰────────────────────╯`,
       }, { quoted: msg });
     }
 
@@ -169,7 +183,10 @@ export default {
       const idx = data.findIndex(e => e.num === num);
       if (idx === -1) {
         return sock.sendMessage(jid, {
-          text: `@${num} is not in the mods list.`,
+          text:
+            `╭───〔 ⚔️ 𝐒𝐓𝐀𝐅𝐅 & 𝐌𝐎𝐃𝐒 〕───╮\n` +
+            `│ ❌ @${num} is not in the mods list.\n` +
+            `╰────────────────────╯`,
           mentions: [targetJid],
         }, { quoted: msg });
       }
@@ -177,7 +194,10 @@ export default {
       data.splice(idx, 1);
       saveModsData(data);
       return sock.sendMessage(jid, {
-        text: `Removed @${num} (${name}) from mods.`,
+        text:
+          `╭───〔 ⚔️ 𝐒𝐓𝐀𝐅𝐅 & 𝐌𝐎𝐃𝐒 〕───╮\n` +
+          `│ ✅ Removed @${num} (${name}) from mods.\n` +
+          `╰────────────────────╯`,
         mentions: [targetJid],
       }, { quoted: msg });
     }
