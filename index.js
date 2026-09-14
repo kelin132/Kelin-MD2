@@ -13,7 +13,8 @@
  */
 
 import "dotenv/config";
-import { readFileSync, existsSync } from "fs";
+import { existsSync } from "fs";
+import { readFile } from "fs/promises";
 import path from "path";
 import { createRequire } from "module";
 import { log } from "./lib/logger.mjs";
@@ -42,14 +43,10 @@ console.log(`  Number  : ${BOT_NUMBER || "⚠  Not set — add BOT_NUMBER to .en
 console.log("═".repeat(50) + "\n");
 
 // ── Multi-bot mode ───────────────────────────────────────────────────────────
-// A .bots directory with at least one JSON definition switches startup to the
-// supervisor. The supervisor owns one isolated child process per WhatsApp
-// account, so one slow reconnect or one account's auth state cannot affect the
-// others. The legacy single-bot environment remains supported when .bots is
-// not configured.
 const botDefinitions = loadBotConfigs();
 const multiBotMode =
   hasBotConfigDirectory() && (botDefinitions.length > 0 || hasBotEntries() || !BOT_NUMBER);
+
 if (multiBotMode) {
   if (!botDefinitions.length && BOT_NUMBER) {
     log("error", "[bots] .bots contains entries but no valid bot definitions were loaded. Fix the JSON/config before restarting.");
@@ -57,78 +54,89 @@ if (multiBotMode) {
   log("info", `[bots] Found ${botDefinitions.length} bot(s) in .bots/`);
   await startBotSupervisor();
 } else {
-const [{ connectBot }, { loadPlugins }, { autoUpdate }, { connectDb }, { initGroupSettings }, { startCardSpawner }, { startTaxScheduler }] =
-  await Promise.all([
-    import("./lib/bot.mjs"),
-    import("./lib/pluginManager.mjs"),
-    import("./lib/updater.js"),
-    import("./lib/mongo.mjs"),
-    import("./lib/groupSettings.js"),
-    import("./lib/cardSpawner.mjs"),
-    import("./lib/taxScheduler.mjs"),
-  ]);
+  // Parallel import of modules
+  const [{ connectBot }, { loadPlugins }, { autoUpdate }, { connectDb }, { initGroupSettings }, { startCardSpawner }, { startTaxScheduler }] =
+    await Promise.all([
+      import("./lib/bot.mjs"),
+      import("./lib/pluginManager.mjs"),
+      import("./lib/updater.js"),
+      import("./lib/mongo.mjs"),
+      import("./lib/groupSettings.js"),
+      import("./lib/cardSpawner.mjs"),
+      import("./lib/taxScheduler.mjs"),
+    ]);
 
-// ── Session check ─────────────────────────────────────────────────────────────
-const CREDS = path.resolve("sessions", "auth", "creds.json");
-function isRegistered() {
-  if (!existsSync(CREDS)) return false;
-  try {
-    return JSON.parse(readFileSync(CREDS, "utf8")).registered === true;
-  } catch { return false; }
-}
-
-if (!isRegistered()) {
-  if (!BOT_NUMBER) {
-    log("error", "No BOT_NUMBER set and no valid session found.");
-    log("error", "Add BOT_NUMBER=<number with country code, no +> to your .env / panel env vars.");
-    process.exit(1);
-  }
-  log("info", `No valid session found. Will request pairing code for +${BOT_NUMBER} ...`);
-} else {
-  log("info", "Existing session found — skipping pairing.");
-}
-
-// ── Connect to MongoDB ────────────────────────────────────────────────────────
-let databaseReady = false;
-try {
-  await connectDb();
-  await initGroupSettings();   // load group settings (welcome, antilink, etc.) from MongoDB
-  databaseReady = true;
-
-  // ── One-time migration: bump cardLimit from 100 → 250 for existing users ──
-  try {
-    const { getDb } = await import("./lib/mongo.mjs");
-    const db = await getDb();
-    const result = await db.collection("mn_users").updateMany(
-      { cardLimit: { $lt: 250 } },
-      { $set: { cardLimit: 250 } }
-    );
-    if (result.modifiedCount > 0) {
-      log("info", `[migration] Bumped cardLimit to 250 for ${result.modifiedCount} existing user(s)`);
+  // ── Session check (Async / Non-blocking) ───────────────────────────────────
+  const CREDS = path.resolve("sessions", "auth", "creds.json");
+  async function isRegistered() {
+    if (!existsSync(CREDS)) return false;
+    try {
+      const data = await readFile(CREDS, "utf8");
+      return JSON.parse(data).registered === true;
+    } catch {
+      return false;
     }
-  } catch (migErr) {
-    log("warn", "[migration] cardLimit migration failed: " + String(migErr));
   }
-} catch (err) {
-  log("error", "MongoDB startup failed: " + String(err));
-  log("warn", "Starting in degraded mode. Database-backed commands (RPG/economy) will retry after MongoDB is fixed.");
-}
 
-// ── Load plugins ──────────────────────────────────────────────────────────────
-const { totalPlugins, totalCommands } = await loadPlugins(PREFIX);
-log("info", `Plugins loaded: ${totalPlugins} plugins, ${totalCommands} commands`);
+  const registered = await isRegistered();
+  if (!registered) {
+    if (!BOT_NUMBER) {
+      log("error", "No BOT_NUMBER set and no valid session found.");
+      log("error", "Add BOT_NUMBER=<number with country code, no +> to your .env / panel env vars.");
+      process.exit(1);
+    }
+    log("info", `No valid session found. Will request pairing code for +${BOT_NUMBER} ...`);
+  } else {
+    log("info", "Existing session found — skipping pairing.");
+  }
 
-// ── Connect bot ───────────────────────────────────────────────────────────────
-await connectBot(BOT_NUMBER || null, PREFIX);
+  // ── Load plugins parallel to DB setup ──────────────────────────────────────
+  const pluginPromise = loadPlugins(PREFIX);
 
-// ── Card auto-spawner (drops a card in enabled groups every 15 min) ───────────
-if (databaseReady) startCardSpawner();
+  // ── Connect to MongoDB ──────────────────────────────────────────────────────
+  let databaseReady = false;
+  try {
+    await connectDb();
+    await initGroupSettings(); // load group settings from MongoDB
+    databaseReady = true;
 
-// ── Tax scheduler (deducts 10% of wallet + bank every 48 h) ──────────────────
-if (databaseReady) startTaxScheduler();
+    // Async Non-Blocking Migration (Runs safely in background)
+    import("./lib/mongo.mjs")
+      .then(({ getDb }) => getDb())
+      .then((db) =>
+        db.collection("mn_users").updateMany(
+          { cardLimit: { $lt: 250 } },
+          { $set: { cardLimit: 250 } }
+        )
+      )
+      .then((result) => {
+        if (result?.modifiedCount > 0) {
+          log("info", `[migration] Bumped cardLimit to 250 for ${result.modifiedCount} existing user(s)`);
+        }
+      })
+      .catch((migErr) => {
+        log("warn", "[migration] cardLimit migration failed: " + String(migErr));
+      });
 
-// ── Auto-update check ─────────────────────────────────────────────────────────
-// Do not compete with the first connection/message burst for network and disk.
-const updateTimer = setTimeout(() => autoUpdate(), 30_000);
-updateTimer.unref?.();
+  } catch (err) {
+    log("error", "MongoDB startup failed: " + String(err));
+    log("warn", "Starting in degraded mode. Database-backed commands (RPG/economy) will retry after MongoDB is fixed.");
+  }
+
+  // Await plugins complete
+  const { totalPlugins, totalCommands } = await pluginPromise;
+  log("info", `Plugins loaded: ${totalPlugins} plugins, ${totalCommands} commands`);
+
+  // ── Connect bot ─────────────────────────────────────────────────────────────
+  await connectBot(BOT_NUMBER || null, PREFIX);
+
+  // ── Background Schedulers ──────────────────────────────────────────────────
+  if (databaseReady) {
+    startCardSpawner();
+    startTaxScheduler();
+  }
+
+  // ── Auto-update check ───────────────────────────────────────────────────────
+  const updateTimer = setTimeout(() => autoUpdate(), 30_000);
+  updateTimer.unref?.();
 }
