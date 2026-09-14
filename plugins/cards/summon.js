@@ -29,7 +29,7 @@ export const SUMMON_COST = {
   Rare:      100000,
   Epic:      150000,
   Legendary: 200000,
-  Mythical:  300000,
+  Mythical:  5000000,
 };
 
 // ── Weighted random tier (bias towards lower tiers) ───────────────────────────
