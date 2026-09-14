@@ -6,7 +6,7 @@
  *
  * Usage:
  *   .summon           — random tier summon; claim it later with .claim
- *   .summon <tier>    — specific tier (1-6 or Common/Uncommon/Rare/Epic/Legendary/Mythical)
+ *   .summon <tier>    — specific tier (1-6, S, or Common/Uncommon/Rare/Epic/Legendary/Mythical/Secret)
  */
 import { findOrCreateUser } from "./db.js";
 import { getUser, saveUser, requireRegistration, addHistory } from "../economy/database.js";
@@ -21,8 +21,6 @@ import {
 import { getSeries } from "../../lib/seriesEnrich.mjs";
 
 // ── Summon costs by tier ──────────────────────────────────────────────────────
-// Higher tiers cost more coins from the user's card balance.
-
 export const SUMMON_COST = {
   Common:    10000,
   Uncommon:  50000,
@@ -30,10 +28,10 @@ export const SUMMON_COST = {
   Epic:      150000,
   Legendary: 200000,
   Mythical:  5000000,
+  Secret:    750000, // Adjusted: Tier S / Secret set to 750k (500k - 1M range)
 };
 
 // ── Weighted random tier (bias towards lower tiers) ───────────────────────────
-
 const RANDOM_TIER_WEIGHTS = [
   { tier: "Common",    weight: 40 },
   { tier: "Uncommon",  weight: 25 },
@@ -58,7 +56,10 @@ function rollRandomTier() {
 function resolveTierName(input) {
   if (!input) return null;
   const lower = input.toLowerCase();
+  
+  if (lower === "secret" || lower === "s" || lower === "7") return "Secret";
   if (TIER_NAME[lower]) return TIER_NAME[lower];
+  
   const found = Object.values(TIER_NAME).find(n => n.toLowerCase() === lower);
   return found || null;
 }
@@ -68,7 +69,7 @@ export default {
   aliases: ["nsummon", "cardsummon", "pull"],
   category: "cards",
   description: "Summon a card to claim later — costs coins based on tier",
-  usage: ".summon [tier]  — e.g. .summon  |  .summon rare  |  .summon 5  |  .summon mythical",
+  usage: ".summon [tier]  — e.g. .summon  |  .summon rare  |  .summon 5  |  .summon mythical  |  .summon secret",
   cooldown: 20,
 
   async run({ sock, msg, args, sender }) {
@@ -92,6 +93,7 @@ export default {
 ┃ 🟣 T4 Epic       › \`$${SUMMON_COST.Epic.toLocaleString()}\`
 ┃ 🟡 T5 Legendary  › \`$${SUMMON_COST.Legendary.toLocaleString()}\`
 ┃ 🔴 T6 Mythical   › \`$${SUMMON_COST.Mythical.toLocaleString()}\`
+┃ 🌌 TS Secret     › \`$${SUMMON_COST.Secret.toLocaleString()}\`
 ┃
 ┣━━━━━━━━━━━━━━━━━━━━━━━━
 ┃ 📖 𝗨𝘀𝗮𝗴𝗲
@@ -103,7 +105,7 @@ export default {
 ┃ \`.summon 4\`        — Epic (T4)
 ┃ \`.summon 5\`        — Legendary (T5)
 ┃ \`.summon 6\`        — Mythical (T6)
-┃ \`.summon secret\`   — summon tier S
+┃ \`.summon secret\`   — Secret (Tier S)
 ┃
 ┃ 💡 Earn coins via \`.daily\` \`.work\` \`.crime\`
 ╰━━━━━━━━━━━━━━━━━━━━━━━━╯`
@@ -147,7 +149,7 @@ export default {
       // Start the cooldown only for a valid summon attempt.
       summonCooldowns.set(sender, now);
 
-      const emoji = TIER_EMOJI[tierName] || "⭐";
+      const emoji = TIER_EMOJI[tierName] || (tierName === "Secret" ? "🌌" : "⭐");
       const cost  = SUMMON_COST[tierName] || SUMMON_COST.Common;
 
       // ── Require economy registration ────────────────────────────────────────
@@ -170,7 +172,8 @@ export default {
       await addHistory(sender, "summon", -cost, `Summoned ${tierName} card`);
 
       // ── Fetch a card from the resolved tier ─────────────────────────────────
-      const pool = await getCardsByTier(TIER_NUM[tierName.toLowerCase()] || "1");
+      const targetTierNum = tierName === "Secret" ? "S" : (TIER_NUM[tierName.toLowerCase()] || "1");
+      const pool = await getCardsByTier(targetTierNum);
       if (!pool || pool.length === 0) {
         // Refund if no cards available
         ecoUser.money += cost;
@@ -204,7 +207,7 @@ export default {
         price:      card.price  || 0,
         series:     card.series || "Unknown",
         media:      card.media  || null,
-        mediaType:  (card.tierNum === "6" || card.tierNum === "S") ? "gif" : "image",
+        mediaType:  (card.tierNum === "6" || card.tierNum === "S" || card.tier === "Secret") ? "gif" : "image",
         summonedAt: new Date(),
       };
 
@@ -212,7 +215,7 @@ export default {
       await cardUser.save();
 
       const claimText =
-`╭━━━〔 ${emoji} 𝑺𝑼𝑴𝑴𝑶𝑵 𝑺𝑼𝑪𝑪𝑬𝑺𝑺 ✨ 〕━━━╮
+`╭━━━〔 ${emoji} 𝑺𝑼𝑴𝑴𝑶𝑵 𝑺𝒀𝑺𝑻𝑬𝑴 ✨ 〕━━━╮
 ┃ ✦ A card has appeared from the ether...
 ┃${isRandom ? `\n┃ 🎲 Roll  ➜ 『 \`${tierName} Tier\` 』` : ""}
 ┃ 🃏 Card  ➜ 『 \`${card.name}\` 』
@@ -248,7 +251,6 @@ export default {
     } catch (err) {
       console.error("SUMMON ERROR:", err);
 
-      // Card API is completely down — give users a clear message instead of a generic error
       if (err.code === "CARD_API_DOWN") {
         return reply(
 `card Api is down, please be patient while our team gets working on the problem`
