@@ -47,11 +47,10 @@ export default {
 
     if (!["heads", "tails", "h", "t"].includes(call) || !rawAmt) {
       return reply(
-`╭─❀「 💰 *𝐂𝐎𝐈𝐍 𝐅𝐋𝐈𝐏* 」❀─╮
-│ Usage: *.coinflip <heads|tails> <amount>*
-│ Example: .coinflip heads 1000
+`╭─❀「 💰 𝐂𝐎𝐈𝐍 𝐅𝐋𝐈𝐏 」❀─╮
+│ Usage  : *.coinflip <heads|tails> <amount>*
 │ Example: .coinflip h 1b
-│ Maximum: *$300B*
+│ Maximum: *1m ryu*
 │
 │ 🎯 *Win Rate* :: *55%*
 │ 💰 *Win*      :: *×2 your bet*
