@@ -28,7 +28,7 @@ export const SUMMON_COST = {
   Epic:      150000,
   Legendary: 200000,
   Mythical:  5000000,
-  Secret:    750000, // Adjusted: Tier S / Secret set to 750k (500k - 1M range)
+  Secret:    750000, // Fixed: Secret tier cost
 };
 
 // ── Weighted random tier (bias towards lower tiers) ───────────────────────────
@@ -55,9 +55,12 @@ function rollRandomTier() {
 
 function resolveTierName(input) {
   if (!input) return null;
-  const lower = input.toLowerCase();
+  const lower = String(input).trim().toLowerCase();
   
-  if (lower === "secret" || lower === "s" || lower === "7") return "Secret";
+  if (["secret", "s", "7", "tier s", "tier 7"].includes(lower)) {
+    return "Secret";
+  }
+  
   if (TIER_NAME[lower]) return TIER_NAME[lower];
   
   const found = Object.values(TIER_NAME).find(n => n.toLowerCase() === lower);
@@ -149,8 +152,9 @@ export default {
       // Start the cooldown only for a valid summon attempt.
       summonCooldowns.set(sender, now);
 
+      // Strict cost lookup
+      const cost = SUMMON_COST[tierName] ?? SUMMON_COST.Common;
       const emoji = TIER_EMOJI[tierName] || (tierName === "Secret" ? "🌌" : "⭐");
-      const cost  = SUMMON_COST[tierName] || SUMMON_COST.Common;
 
       // ── Require economy registration ────────────────────────────────────────
       if (!await requireRegistration(sock, msg, sender)) return;
@@ -186,7 +190,7 @@ export default {
 
       const card = pool[Math.floor(Math.random() * pool.length)];
 
-      // Enrich series from AniList (cache-first; 4 s timeout so summon stays snappy)
+      // Enrich series from AniList
       if (!card.series || card.series === "Unknown") {
         card.series = await getSeries(card.name, { timeout: 4000 });
       }
