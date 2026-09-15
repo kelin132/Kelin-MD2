@@ -1,8 +1,9 @@
 /**
  * Recover the content embedded in a quoted WhatsApp message.
- * This mirrors SUKUNA's .quoted behavior without adding a separate message
- * vault to KELIN MD.
+ * Supports text, viewOnce media, and standard attachments using Baileys.
  */
+import { downloadMediaMessage, downloadContentFromMessage } from "@whiskeysockets/baileys";
+
 export default {
   name: "quoted",
   aliases: ["q", "recover"],
@@ -15,11 +16,18 @@ export default {
   async run({ sock, msg }) {
     const jid = msg.key.remoteJid;
     const ctx = getContext(msg);
-    const quoted = ctx?.quotedMessage;
+    let quoted = ctx?.quotedMessage;
 
     if (!quoted) {
       return send(sock, jid, msg, "❌ Reply to the message you want me to recover, then use .quoted.");
     }
+
+    // Unwrap ephemeral or viewOnce layers
+    quoted = quoted.ephemeralMessage?.message ||
+             quoted.viewOnceMessage?.message ||
+             quoted.viewOnceMessageV2?.message ||
+             quoted.viewOnceMessageV2Extension?.message ||
+             quoted;
 
     const text =
       quoted.conversation ||
@@ -29,31 +37,52 @@ export default {
       quoted.documentMessage?.caption ||
       null;
 
-    if (text) {
+    if (text && !hasMedia(quoted)) {
       return sock.sendMessage(jid, { text }, { quoted: msg });
     }
 
     const media = getMedia(quoted);
     if (!media) {
+      if (text) return sock.sendMessage(jid, { text }, { quoted: msg });
       return send(sock, jid, msg, "❌ I could not recover readable content from that message.");
     }
 
     try {
-      const buffer = await sock.downloadMediaMessage({
+      // Build fake message structure required by Baileys downloadMediaMessage
+      const fakeMsg = {
         key: {
           remoteJid: jid,
           id: ctx.stanzaId,
           participant: ctx.participant,
         },
         message: quoted,
-      });
+      };
 
-      if (!buffer?.length) throw new Error("empty media");
+      let buffer;
+      try {
+        buffer = await downloadMediaMessage(fakeMsg, "buffer", {});
+      } catch {
+        // Fallback to stream extraction if downloadMediaMessage fails
+        const stream = await downloadContentFromMessage(
+          media.message,
+          media.type === "sticker" ? "sticker" : media.type
+        );
+        let chunks = [];
+        for await (const chunk of stream) {
+          chunks.push(chunk);
+        }
+        buffer = Buffer.concat(chunks);
+      }
+
+      if (!buffer?.length) throw new Error("empty media buffer");
+
+      const caption = media.message.caption || text || "";
+
       if (media.type === "image") {
-        return sock.sendMessage(jid, { image: buffer, caption: media.message.caption || "" }, { quoted: msg });
+        return sock.sendMessage(jid, { image: buffer, caption }, { quoted: msg });
       }
       if (media.type === "video") {
-        return sock.sendMessage(jid, { video: buffer, caption: media.message.caption || "" }, { quoted: msg });
+        return sock.sendMessage(jid, { video: buffer, caption }, { quoted: msg });
       }
       if (media.type === "audio") {
         return sock.sendMessage(jid, {
@@ -67,26 +96,37 @@ export default {
           document: buffer,
           mimetype: media.message.mimetype || "application/octet-stream",
           fileName: media.message.fileName || "recovered_file",
-          caption: media.message.caption || "",
+          caption,
         }, { quoted: msg });
       }
       return sock.sendMessage(jid, { sticker: buffer }, { quoted: msg });
     } catch (err) {
       console.error("[quoted] media recovery failed:", err.message);
-      return send(sock, jid, msg, "❌ The quoted media is no longer available.");
+      return send(sock, jid, msg, "❌ The quoted media is no longer available or could not be decrypted.");
     }
   },
 };
 
 function getContext(msg) {
+  const root = msg.message?.ephemeralMessage?.message || msg.message;
   return (
-    msg.message?.extendedTextMessage?.contextInfo ||
-    msg.message?.imageMessage?.contextInfo ||
-    msg.message?.videoMessage?.contextInfo ||
-    msg.message?.documentMessage?.contextInfo ||
-    msg.message?.audioMessage?.contextInfo ||
-    msg.message?.stickerMessage?.contextInfo ||
+    root?.extendedTextMessage?.contextInfo ||
+    root?.imageMessage?.contextInfo ||
+    root?.videoMessage?.contextInfo ||
+    root?.documentMessage?.contextInfo ||
+    root?.audioMessage?.contextInfo ||
+    root?.stickerMessage?.contextInfo ||
     null
+  );
+}
+
+function hasMedia(message) {
+  return !!(
+    message.imageMessage ||
+    message.videoMessage ||
+    message.audioMessage ||
+    message.documentMessage ||
+    message.stickerMessage
   );
 }
 
