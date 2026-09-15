@@ -126,7 +126,7 @@ export default {
 \n${READMORE}\n`
       : `*Hello ${mention}, I am ${runtime.botName}* 👋
 ╭━━━━━━━━━━━━━━━━━━━━╮
-│ ✦ *REGISTER*
+│ ✦ 
 │ ├─ 🌸 ꕥ *${menuPrefix}reg* › Use economy commands
 │ ├─ 📜 ꕥ *${menuPrefix}rules* › Bot rules
 │ ├─ 🌐 ꕥ *${menuPrefix}support* › Official group
