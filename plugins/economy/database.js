@@ -192,6 +192,34 @@ export async function getUser(id) {
   return merged;
 }
 
+/**
+ * Clear an AFK record exactly once.
+ *
+ * The conditional update makes duplicate WhatsApp deliveries harmless:
+ * only the first message that sees `afk.active` can claim and remove it.
+ */
+export async function clearAfk(id) {
+  const db = await getDb();
+  await ensureRyuEconomyMigration(db);
+
+  const normalizedId = normalizeJid(id);
+  const found = await findIdentityUser(db, id);
+  const user = found ? await migrateIdentityUser(db, found, normalizedId) : null;
+  if (!user?.afk?.active) return null;
+
+  const previous = await db.collection("users").findOneAndUpdate(
+    { _id: normalizedId, "afk.active": true },
+    { $unset: { afk: "" } },
+    { returnDocument: "before", includeResultMetadata: false },
+  );
+
+  if (!previous?.afk?.active) return null;
+  return {
+    reason: previous.afk.message || previous.afk.reason || "No reason given",
+    time: previous.afk.since || Date.now(),
+  };
+}
+
 export const WALLET_CAP = 500_000_000_000; // 500 Billion max in wallet
 
 // Fields that must be updated atomically with $inc to prevent race conditions.
