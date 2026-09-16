@@ -110,6 +110,7 @@ A confirmation step is required.`
         coins:         1000,
         party:         [],
         pc:            [],
+        pokemonCount:  0,
         inventory:     { ...STARTER_INVENTORY },
         wins:          0,
         losses:        0,

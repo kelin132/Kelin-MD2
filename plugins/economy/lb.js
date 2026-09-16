@@ -243,38 +243,37 @@ export default {
     // ── TOP POKÉMON ────────────────────────────────────────────────────────────
     if (flag === "pokemon" || flag === "poke" || flag === "pokémon") {
       const text = await getCachedLeaderboard("economy:pokemon:formatted", async () => {
-      const results = await getCachedLeaderboard("economy:pokemon:raw", () => db.collection("pokemon_owned").aggregate([
-        { $group: { _id: "$ownerJid", total: { $sum: 1 } } },
-        { $sort: { total: -1 } },
-        { $limit: 10 },
-      ]).toArray(), { ttlMs: 30_000 });
+      const trainers = await getCachedLeaderboard(
+        "economy:pokemon:raw",
+        () => db.collection("pokemon_trainers").find(
+          { pokemonCount: { $gt: 0 } },
+          { projection: { jid: 1, username: 1, pokemonCount: 1 } },
+        ).sort({ pokemonCount: -1, jid: 1 }).limit(10).toArray(),
+        { ttlMs: 30_000 },
+      );
 
-      if (!results.length) return "";
+      if (!trainers.length) return "";
 
-      // Resolve trainer names from pokemon_trainers, fall back to users collection
-      const ownerJids = results.map(r => r._id).filter(Boolean);
-
-      const [trainerDocs, userDocs] = await Promise.all([
-        db.collection("pokemon_trainers").find(
-          { jid: { $in: ownerJids } },
-          { projection: { jid: 1, username: 1 } }
-        ).toArray(),
-        db.collection("users").find(
-          { _id: { $in: ownerJids } },
-          { projection: { _id: 1, name: 1 } }
-        ).toArray(),
-      ]);
+      // Trainer names are already in the compact result set. Only look up
+      // missing display names in the economy collection.
+      const ownerJids = trainers.map((trainer) => trainer.jid).filter(Boolean);
+      const userDocs = await db.collection("users").find(
+        { _id: { $in: ownerJids } },
+        { projection: { _id: 1, name: 1 } },
+      ).toArray();
 
       const nameMap = {};
       for (const u of userDocs)    nameMap[u._id]    = u.name     || null;
-      for (const t of trainerDocs) nameMap[t.jid]    = t.username || nameMap[t.jid] || null;
 
       return formatLeaderboard({
         subtitle: "Top 10 Pokémon Trainers",
-        rows: results.map((r) => {
-          const ownerId = String(r._id || "");
+        rows: trainers.map((trainer) => {
+          const ownerId = String(trainer.jid || "");
           const num = ownerId.split("@")[0].split(":")[0];
-          return { name: nameMap[ownerId] || `Trainer_${num.slice(-4)}`, value: r.total };
+          return {
+            name: nameMap[ownerId] || trainer.username || `Trainer_${num.slice(-4)}`,
+            value: trainer.pokemonCount,
+          };
         }),
         valueIcon: "🎮",
         valueLabel: "POKÉMON",

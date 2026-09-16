@@ -62,25 +62,25 @@ export default {
 
     // ── Most Pokémon caught ───────────────────────────────────────────────────
     if (sub === "count" || sub === "caught") {
-      const results = await getCachedLeaderboard("pokemon:count", () => db.collection("pokemon_owned").aggregate([
-        { $group: { _id: "$ownerJid", total: { $sum: 1 } } },
-        { $sort: { total: -1 } },
-        { $limit: 10 },
-      ]).toArray(), { ttlMs: 60_000 });
+      const results = await getCachedLeaderboard(
+        "pokemon:count",
+        () => db.collection("pokemon_trainers").find(
+          { pokemonCount: { $gt: 0 } },
+          { projection: { jid: 1, username: 1, pokemonCount: 1 } },
+        ).sort({ pokemonCount: -1, jid: 1 }).limit(10).toArray(),
+        { ttlMs: 60_000 },
+      );
 
       if (!results.length) {
         return sock.sendMessage(jid, { text: "📭 No Pokémon caught yet!" }, { quoted: msg });
       }
 
-      const trainers = await db.collection("pokemon_trainers").find({
-        jid: { $in: results.map(r => r._id) },
-      }).toArray();
-      const nameMap = {};
-      for (const t of trainers) nameMap[t.jid] = t.username || "Trainer";
-
       const text = formatAnimeLeaderboard({
         subtitle: "POKÉMON CATCH LEADERBOARD",
-        rows: results.map((r) => ({ name: nameMap[r._id] || "Trainer", value: r.total })),
+        rows: results.map((trainer) => ({
+          name: trainer.username || "Trainer",
+          value: trainer.pokemonCount,
+        })),
         valueIcon: "🎮",
         valueLabel: "𝐏𝐎𝐊𝐄́𝐌𝐎𝐍",
         footer: "🌸 𝐀𝐍𝐈𝐌𝐄 𝐋𝐄𝐆𝐄𝐍𝐃𝐒",
@@ -92,7 +92,16 @@ export default {
     if (sub === "level" || sub === "levels") {
       const results = await getCachedLeaderboard(
         "pokemon:level",
-        () => db.collection("pokemon_owned").find({})
+        () => db.collection("pokemon_owned").find({}, {
+          projection: {
+            ownerJid: 1,
+            name: 1,
+            displayName: 1,
+            primaryType: 1,
+            level: 1,
+            shiny: 1,
+          },
+        })
           .sort({ level: -1 }).limit(10).toArray(),
         { ttlMs: 30_000 },
       );
