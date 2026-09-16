@@ -1,85 +1,41 @@
 /**
- * KELIN MD — .afk command (Anime Edition)
- *
- * Sets AFK status with an anime-styled message.
- * Auto-removal happens in bot.mjs when the user sends any message.
- * The user does NOT need to type .afk again to come back — it clears automatically.
+ * KELIN MD — .afk command
  */
 import { getUser, saveUser } from "../economy/database.js";
-import { getAfkUser, setAfkUser } from "../../lib/pluginManager.mjs";
+import { setAfkUser } from "../../lib/pluginManager.mjs";
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function formatTime(ts) {
-  const d = new Date(ts);
-  return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
+function cleanJid(jid = "") {
+  return jid.split(":")[0].replace(/@s\.whatsapp\.net$/, "") + "@s.whatsapp.net";
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 export default {
   name: "afk",
   aliases: ["away"],
   category: "group",
-  cooldown: 6,
-  description: "Go AFK — bot will notify others when they tag you.",
+  cooldown: 3,
+  description: "Set your AFK status.",
   usage: ".afk [reason]",
 
   async run({ sock, msg, sender, text: rawText }) {
-    const jid   = msg.key.remoteJid;
-    
-    // FIX 1: Allow custom message options (like mentions) to be passed into the reply helper
-    const reply = (text, options = {}) => 
-      sock.sendMessage(jid, { text, mentions: options.mentions || [] }, { quoted: msg, ...options });
+    const userJid = cleanJid(sender);
+    const reason  = (rawText || "").trim() || "No reason given";
+    const tag     = userJid.split("@")[0];
+    const user    = await getUser(userJid);
+    const since   = Date.now();
 
-    const user   = await getUser(sender);
-    const reason = (rawText || "").trim() || "No reason given";
-    const tag    = sender.split("@")[0].split(":")[0];
-    const name   = user.name || tag;
-
-    const existingAfk = user.afk?.active
-      ? {
-          reason: user.afk.message || user.afk.reason || "No reason given",
-          time: user.afk.since || Date.now(),
-        }
-      : getAfkUser(sender);
-
-    const since = Date.now();
-
-    // ── Save state across DB and memory ──────────────────────────────────────
+    // Save State
     user.afk = { active: true, message: reason, since };
-    await saveUser(sender, user);
+    await saveUser(userJid, user);
+    setAfkUser(userJid, { reason, time: since, username: tag });
 
-    setAfkUser(sender, {
-      reason,
-      time: since,
-      username: name,
-    });
-
-    // ── Already AFK — update the reason ──────────────────────────────────────
-    if (existingAfk) {
-      return reply(
-`╭───〔 💤 𝗔𝗙𝗞 𝗨𝗣𝗗𝗔𝗧𝗘𝗗 〕───╮
-│
-│ 🌸 *@${tag}* is still away~
-│
-│ 📝 𝗥𝗲𝗮𝘀𝗼𝗻: ${reason}
-│ ⏰ 𝗥𝗲𝘀𝗲𝘁: \`\`${formatTime(since)}\`\`
-╰━━━━━━━━━━━━━━━━━━━━━━╯`,
-        { mentions: [sender] }
-      );
-    }
-
-    // ── Set AFK for the first time ───────────────────────────────────────────
-    return reply(
-`╭───〔 🌙 𝗔𝗙𝗞 𝗠𝗢𝗗𝗘 〕───╮
-│
-│ 🌸 *@${tag}* has gone away~
-│
-│ 📝 𝗥𝗲𝗮𝘀𝗼𝗻: ${reason}
-│ 🕐 𝗦𝗶𝗻𝗰𝗲: \`\`${formatTime(since)}\`\`
-╰━━━━━━━━━━━━━━━━━━━━━━╯`,
-      { mentions: [sender] }
+    // Response Message
+    return sock.sendMessage(
+      msg.key.remoteJid,
+      {
+        text: `🌙 *@${tag}* is now AFK!\n\n📝 *Reason:* ${reason}`,
+        mentions: [userJid],
+      },
+      { quoted: msg }
     );
   },
 };
