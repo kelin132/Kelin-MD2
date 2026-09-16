@@ -19,20 +19,20 @@ export default {
   async run({ sock, msg, sender, text: rawText }) {
     const userJid = cleanJid(sender);
     const reason  = (rawText || "").trim() || "No reason given";
-    const tag     = userJid.split("@")[0];
+    const phone   = userJid.split("@")[0];
     const user    = await getUser(userJid);
     const since   = Date.now();
 
     // Save State
     user.afk = { active: true, message: reason, since };
     await saveUser(userJid, user);
-    setAfkUser(userJid, { reason, time: since, username: tag });
+    setAfkUser(userJid, { reason, time: since, username: phone });
 
-    // Response Message
+    // Send Message with Mention
     return sock.sendMessage(
       msg.key.remoteJid,
       {
-        text: `🌙 *@${tag}* is now AFK!\n\n📝 *Reason:* ${reason}`,
+        text: `🌙 *@${phone}* is now AFK!\n\n📝 *Reason:* ${reason}`,
         mentions: [userJid],
       },
       { quoted: msg }
