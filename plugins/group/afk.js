@@ -27,8 +27,12 @@ export default {
 
   async run({ sock, msg, sender, text: rawText }) {
     const jid   = msg.key.remoteJid;
-    const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
-    const user  = await getUser(sender);
+    
+    // FIX 1: Allow custom message options (like mentions) to be passed into the reply helper
+    const reply = (text, options = {}) => 
+      sock.sendMessage(jid, { text, mentions: options.mentions || [] }, { quoted: msg, ...options });
+
+    const user   = await getUser(sender);
     const reason = (rawText || "").trim() || "No reason given";
     const tag    = sender.split("@")[0].split(":")[0];
     const name   = user.name || tag;
@@ -40,18 +44,20 @@ export default {
         }
       : getAfkUser(sender);
 
-    // ── Already AFK — update the reason and reset the timer ─────────────────
+    const since = Date.now();
+
+    // ── Save state across DB and memory ──────────────────────────────────────
+    user.afk = { active: true, message: reason, since };
+    await saveUser(sender, user);
+
+    setAfkUser(sender, {
+      reason,
+      time: since,
+      username: name,
+    });
+
+    // ── Already AFK — update the reason ──────────────────────────────────────
     if (existingAfk) {
-      const since = Date.now();
-      user.afk = { active: true, message: reason, since };
-      await saveUser(sender, user);
-
-      setAfkUser(sender, {
-        reason,
-        time:     since,
-        username: name,
-      });
-
       return reply(
 `╭───〔 💤 𝗔𝗙𝗞 𝗨𝗣𝗗𝗔𝗧𝗘𝗗 〕───╮
 │
@@ -64,17 +70,7 @@ export default {
       );
     }
 
-    // ── Set AFK ───────────────────────────────────────────────────────────────
-    const since = Date.now();
-    user.afk = { active: true, message: reason, since };
-    await saveUser(sender, user);
-
-    setAfkUser(sender, {
-      reason,
-      time:     since,
-      username: name,
-    });
-
+    // ── Set AFK for the first time ───────────────────────────────────────────
     return reply(
 `╭───〔 🌙 𝗔𝗙𝗞 𝗠𝗢𝗗𝗘 〕───╮
 │
