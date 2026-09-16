@@ -55,7 +55,7 @@ if (multiBotMode) {
   await startBotSupervisor();
 } else {
   // Parallel import of modules
-  const [{ connectBot }, { loadPlugins }, { autoUpdate }, { connectDb }, { initGroupSettings }, { startCardSpawner }, { startTaxScheduler }] =
+  const [{ connectBot }, { loadPlugins }, { autoUpdate }, { connectDb, getDb }, { initGroupSettings }, { startCardSpawner }, { startTaxScheduler }] =
     await Promise.all([
       import("./lib/bot.mjs"),
       import("./lib/pluginManager.mjs"),
@@ -100,15 +100,15 @@ if (multiBotMode) {
     await initGroupSettings(); // load group settings from MongoDB
     databaseReady = true;
 
-    // Async Non-Blocking Migration (Runs safely in background)
-    import("./lib/mongo.mjs")
-      .then(({ getDb }) => getDb())
-      .then((db) =>
-        db.collection("mn_users").updateMany(
-          { cardLimit: { $lt: 250 } },
-          { $set: { cardLimit: 250 } }
-        )
-      )
+    // Async Non-Blocking Migration (Runs safely in background).
+    // getDb() is a synchronous getter; only connectDb() is async.
+    // Keeping that distinction explicit prevents the old startup/plugin
+    // promise-type error.
+    const db = getDb();
+    void db.collection("mn_users").updateMany(
+      { cardLimit: { $lt: 250 } },
+      { $set: { cardLimit: 250 } }
+    )
       .then((result) => {
         if (result?.modifiedCount > 0) {
           log("info", `[migration] Bumped cardLimit to 250 for ${result.modifiedCount} existing user(s)`);

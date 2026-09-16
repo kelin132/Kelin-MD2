@@ -3,10 +3,7 @@
  */
 import { getUser, saveUser } from "../economy/database.js";
 import { setAfkUser } from "../../lib/pluginManager.mjs";
-
-function cleanJid(jid = "") {
-  return jid.split(":")[0].replace(/@s\.whatsapp\.net$/, "") + "@s.whatsapp.net";
-}
+import { normalizeJid } from "../../lib/identity.mjs";
 
 export default {
   name: "afk",
@@ -17,7 +14,7 @@ export default {
   usage: ".afk [reason]",
 
   async run({ sock, msg, sender, text: rawText }) {
-    const userJid = cleanJid(sender);
+    const userJid = normalizeJid(sender);
     const reason  = (rawText || "").trim() || "No reason given";
     const phone   = userJid.split("@")[0];
     const user    = await getUser(userJid);
@@ -28,11 +25,11 @@ export default {
     await saveUser(userJid, user);
     setAfkUser(userJid, { reason, time: since, username: phone });
 
-    // Send Message with Mention
+    // Keep the response compact so it is readable in busy group chats.
     return sock.sendMessage(
       msg.key.remoteJid,
       {
-        text: `🌙 *@${phone}* is now AFK!\n\n📝 *Reason:* ${reason}`,
+        text: `🌙 *@${phone}* is now AFK\nReason: ${reason}`,
         mentions: [userJid],
       },
       { quoted: msg }
