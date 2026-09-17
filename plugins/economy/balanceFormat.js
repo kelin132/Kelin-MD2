@@ -30,7 +30,6 @@ export function formatAccountBalance({
   gems = 0,
   orbs,
   bankLimit,
-  bankCard = false,
   netWorth = Number(wallet ?? 0) + Number(bank ?? 0),
   extraRows = [],
   footerLines = [],
@@ -42,7 +41,6 @@ export function formatAccountBalance({
   ];
 
   if (orbs !== undefined) rows.push(row("🔮", "Orbs", number(orbs)));
-  rows.push(row("💳", "Card", bankCard ? "Active" : "Buy in .shop"));
   rows.push(row("🌌", "Net worth", money(netWorth)));
 
   if (extraRows.length) {

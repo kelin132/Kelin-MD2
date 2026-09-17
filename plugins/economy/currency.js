@@ -1,8 +1,18 @@
 export const CURRENCY_NAME = "ryu";
 export const STARTING_MONEY = 30_000;
 export const BASE_BANK_LIMIT = 50_000;
-export const BANK_CARD_PRICE = 5_000;
-export const BANK_LIMIT_UPGRADE_PRICE = 25_000;
+
+// The shop and bankLimitForUser use this same source of truth.
+// Level 0 is the starter account and is free; every later tier is bought in
+// order from .shop banking.
+export const BANK_LIMIT_TIERS = [
+  { level: 0, limit: 50_000, price: 0, item: null, label: "Starter" },
+  { level: 1, limit: 250_000, price: 10_000, item: "bank_limit_tier_1", label: "Basic Plus" },
+  { level: 2, limit: 1_000_000, price: 50_000, item: "bank_limit_tier_2", label: "Vault" },
+  { level: 3, limit: 5_000_000, price: 250_000, item: "bank_limit_tier_3", label: "Reserve" },
+  { level: 4, limit: 25_000_000, price: 1_000_000, item: "bank_limit_tier_4", label: "Fortune" },
+  { level: 5, limit: 100_000_000, price: 5_000_000, item: "bank_limit_tier_5", label: "Grand Vault" },
+];
 
 const BETTING_TIERS = [
   { minimum: 1, maximum: 50_000, winRate: 0.5, multiplier: 1.7 },
@@ -32,10 +42,16 @@ export function formatRyu(value) {
   return `${sign}${compact(amount)} ${CURRENCY_NAME}`;
 }
 
+export function bankTierForUser(user = {}) {
+  const level = Math.max(0, Math.min(
+    BANK_LIMIT_TIERS.length - 1,
+    Math.floor(Number(user.bankUpgradeLevel) || 0),
+  ));
+  return BANK_LIMIT_TIERS[level];
+}
+
 export function bankLimitForUser(user = {}) {
-  const level = Math.max(1, Number(user.level) || 1);
-  const upgrades = Math.max(0, Number(user.bankUpgradeLevel) || 0);
-  return Math.floor(BASE_BANK_LIMIT * (1 + (level - 1) * 0.02 + upgrades * 0.05));
+  return bankTierForUser(user).limit;
 }
 
 export function getBettingTier(amount) {

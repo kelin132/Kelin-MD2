@@ -1,88 +1,86 @@
 import { getUser, saveUser, requireRegistration, addHistory } from "./database.js";
-import { SHOP_ITEMS } from "./_items.js";
+import { getItemDefinition, getSellPrice } from "./_items.js";
+import { formatRyu } from "./currency.js";
+
+function canonical(value) {
+  return String(value).trim().toLowerCase().replace(/\s+/g, "_");
+}
+
+function label(name) {
+  return name.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function summary(sold) {
+  return Object.entries(sold)
+    .map(([name, quantity]) => `${getItemDefinition(name)?.emoji || "📦"} ${label(name)} ×${quantity}`)
+    .join("\n");
+}
 
 export default {
   name: "sell",
   aliases: ["sellitem"],
   category: "economy",
   cooldown: 6,
-  description: "Sell an item from your inventory for cash",
-  usage: ".sell <item>  |  .sell all",
+  description: "Sell an inventory item for ryu",
+  usage: ".sell <item> | .sell <number> | .sell all",
 
   async run({ sock, msg, sender, args }) {
     if (!await requireRegistration(sock, msg, sender)) return;
-
-    const jid   = msg.key.remoteJid;
-    const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
-
+    const jid = msg.key.remoteJid;
+    const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
     const user = await getUser(sender);
-    const inv  = user.inventory || [];
+    const inventory = Array.isArray(user.inventory) ? user.inventory : [];
 
-    if (!args[0]) {
-      if (!inv.length) return reply("❌ Your inventory is empty.");
-
-      const count = {};
-      inv.forEach(i => { count[i] = (count[i] || 0) + 1; });
-
-      let text = "💰 *SELL PRICES*\n\n";
-      for (const [item, qty] of Object.entries(count)) {
-        const def = SHOP_ITEMS[item];
-        if (!def) continue;
-        const price = Math.floor(def.price * def.sellPct);
-        text += `${def.emoji} *${item}* x${qty} → $${price.toLocaleString()} each\n`;
-      }
-      text += "\nUsage: *.sell <item>* or *.sell all*";
-      return reply(text);
+    if (!args.length) {
+      if (!inventory.length) return reply("❌ Your inventory is empty.");
+      const count = new Map();
+      for (const item of inventory) count.set(item, (count.get(item) || 0) + 1);
+      const lines = [...count.entries()].map(([name, quantity]) => {
+        const price = getSellPrice(name);
+        return `${getItemDefinition(name)?.emoji || "📦"} *${label(name)}* ×${quantity} → ${
+          price ? `${formatRyu(price)} each` : "not sellable"
+        }`;
+      });
+      return reply(`💰 *SELL PRICES*\n\n${lines.join("\n")}\n\nUsage: *.sell <item>* or *.sell all*`);
     }
 
-    const target = args[0].toLowerCase();
-
+    const target = canonical(args.join(" "));
     if (target === "all") {
-      if (!inv.length) return reply("❌ Nothing to sell.");
-
-      let total = 0;
+      if (!inventory.length) return reply("❌ Nothing to sell.");
       const sold = {};
-      user.inventory = inv.filter(item => {
-        const def = SHOP_ITEMS[item];
-        if (!def) return true; // keep unknown items
-        const price = Math.floor(def.price * def.sellPct);
+      let total = 0;
+      user.inventory = inventory.filter((name) => {
+        const price = getSellPrice(name);
+        if (!price) return true;
         total += price;
-        sold[item] = (sold[item] || 0) + 1;
+        sold[name] = (sold[name] || 0) + 1;
         return false;
       });
-
+      if (!total) return reply("❌ None of your inventory items have a sale value.");
       user.money = (user.money || 0) + total;
       await saveUser(sender, user);
-      await addHistory(sender, "sell", total, `Sold all items for $${total.toLocaleString()}`);
-
-      let text = "💰 *SOLD ALL ITEMS*\n\n";
-      for (const [item, qty] of Object.entries(sold)) {
-        const def = SHOP_ITEMS[item];
-        text += `${def?.emoji || "📦"} ${item} x${qty}\n`;
-      }
-      text += `\n💰 Total Received: $${total.toLocaleString()}`;
-      return reply(text);
+      await addHistory(sender, "sell", total, `Sold all sellable items for ${formatRyu(total)}`);
+      return reply(`💰 *SOLD ALL SELLABLE ITEMS*\n\n${summary(sold)}\n\n✅ Received: *${formatRyu(total)}*`);
     }
 
-    const def = SHOP_ITEMS[target];
-    if (!def) return reply(`❌ Unknown item: *${target}*`);
+    let itemName = target;
+    if (/^\d+$/.test(target)) {
+      const unique = [...new Set(inventory)];
+      itemName = unique[Number(target) - 1];
+      if (!itemName) return reply("❌ That inventory number does not exist. Check *.inventory*.");
+    }
+    const price = getSellPrice(itemName);
+    if (!price) {
+      return reply(`❌ *${label(itemName)}* is not a recognized sellable item.`);
+    }
+    const index = inventory.indexOf(itemName);
+    if (index === -1) return reply(`❌ You don't have *${label(itemName)}* in your inventory.`);
 
-    const idx = inv.indexOf(target);
-    if (idx === -1) return reply(`❌ You don't have *${target}* in your inventory.`);
-
-    const price = Math.floor(def.price * def.sellPct);
-    inv.splice(idx, 1);
-    user.inventory = inv;
-    user.money     = (user.money || 0) + price;
-
+    inventory.splice(index, 1);
+    user.inventory = inventory;
+    user.money = (user.money || 0) + price;
     await saveUser(sender, user);
-    await addHistory(sender, "sell", price, `Sold ${target} for $${price.toLocaleString()}`);
-
-    return reply(
-`✅ *Item Sold!*
-
-${def.emoji} *${target}* → $${price.toLocaleString()}
-💰 Balance : $${user.money.toLocaleString()}`
-    );
+    await addHistory(sender, "sell", price, `Sold ${itemName} for ${formatRyu(price)}`);
+    return reply(`✅ *Item sold!*\n\n${getItemDefinition(itemName)?.emoji || "📦"} *${label(itemName)}* → *${formatRyu(price)}*\n💰 Wallet: *${formatRyu(user.money)}*`);
   },
 };

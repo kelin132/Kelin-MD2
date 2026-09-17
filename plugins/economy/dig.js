@@ -1,5 +1,5 @@
 import { getUser, saveUser, requireRegistration, addHistory, maybeAwardDiamonds, checkLevelUp } from "./database.js";
-import { DIG_LOOT, SHOP_ITEMS, rollLoot } from "./_items.js";
+import { DIG_LOOT, getItemDefinition, rollLoot } from "./_items.js";
 
 const COOLDOWN = 10 * 1000; // 10 seconds
 
@@ -54,7 +54,7 @@ export default {
     } else if (loot.type === "item") {
       user.inventory = user.inventory || [];
       user.inventory.push(loot.name);
-      const def = SHOP_ITEMS[loot.name];
+      const def = getItemDefinition(loot.name);
       const itemValue = Math.floor(Math.random() * 750) + 150; // Random value $150-$900 per item
       user.money = (user.money || 0) + itemValue;
       resultLine = `⛏️ You dug and found ${def?.emoji || "📦"} ${articleFor(loot.name)} ${loot.name}! (+${fmt(itemValue)})`;

@@ -16,11 +16,6 @@ export default {
 
     const user = await getUser(sender);
     const bankLimit = bankLimitForUser(user);
-    if (!user.bankCard) {
-      return sock.sendMessage(msg.key.remoteJid, {
-        text: "💳 You need a bank card first. Buy one in *.shop*.",
-      }, { quoted: msg });
-    }
 
     if (!args[0]) {
       return sock.sendMessage(msg.key.remoteJid, {

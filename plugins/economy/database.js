@@ -15,7 +15,6 @@ export const DEFAULTS = {
   money:         STARTING_MONEY,
   bank:          0,
   bankLimit:     BASE_BANK_LIMIT,
-  bankCard:      false,
   bankUpgradeLevel: 0,
   orbs:          0,           // premium currency earned from dig/fish/events
   diamonds:      0,           // rare currency earned from lucky activities
@@ -87,7 +86,6 @@ async function ensureRyuEconomyMigration(db) {
               money: STARTING_MONEY,
               bank: 0,
               bankLimit: BASE_BANK_LIMIT,
-              bankCard: false,
               bankUpgradeLevel: 0,
               economyVersion: 1,
             },
@@ -95,6 +93,14 @@ async function ensureRyuEconomyMigration(db) {
           },
         );
       }
+      await db.collection("users").updateMany(
+        { $or: [{ bankCard: { $exists: true } }, { bankLimit: { $exists: true } }] },
+        { $unset: { bankCard: "", bankLimit: "" } },
+      );
+      await db.collection("users").updateMany(
+        { inventory: { $in: ["bank_card", "bank_limit_upgrade"] } },
+        { $pull: { inventory: { $in: ["bank_card", "bank_limit_upgrade"] } } },
+      );
     })().catch((error) => {
       economyMigrationPromise = undefined;
       throw error;
@@ -176,6 +182,10 @@ export async function getUser(id) {
   if (user.registered) await ensurePhoneIdentityFields(db, user, normalizedId);
   const { _id, ...rest } = user;
   const merged = { ...DEFAULTS, ...rest };
+  // Retire the old card/service entries from existing inventories. Bank
+  // access is now available by default and capacity is controlled by tiers.
+  merged.inventory = (Array.isArray(merged.inventory) ? merged.inventory : [])
+    .filter((item) => !["bank_card", "bank_limit_upgrade"].includes(item));
 
   // Snapshot the numeric balance fields at read time.
   // saveUser uses these to compute deltas and apply them with $inc (atomic),
@@ -827,7 +837,7 @@ export async function resetPlayer(id) {
         ...DEFAULTS,
         name, registered, registeredAt, staffLevel, isPremium, staffImmunity,
         websiteSessionRevokedAt: Date.now(),
-        money: STARTING_MONEY, bank: 0, bankLimit: BASE_BANK_LIMIT, bankCard: false, bankUpgradeLevel: 0,
+        money: STARTING_MONEY, bank: 0, bankLimit: BASE_BANK_LIMIT, bankUpgradeLevel: 0,
         totalWealth: STARTING_MONEY, xp: 0, level: 1, inventory: [], history: [],
         websiteBanned: true,
         websiteBanReason: "Account reset by staff",

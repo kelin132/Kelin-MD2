@@ -1,5 +1,5 @@
 import { getUser, saveUser, requireRegistration, addHistory, checkLevelUp } from "./database.js";
-import { FISH_LOOT, SHOP_ITEMS, rollLoot } from "./_items.js";
+import { FISH_LOOT, getItemDefinition, rollLoot } from "./_items.js";
 
 const COOLDOWN = 10 * 1000; // 10 seconds
 
@@ -51,7 +51,7 @@ export default {
     } else if (loot.type === "item") {
       user.inventory = user.inventory || [];
       user.inventory.push(loot.name);
-      const def = SHOP_ITEMS[loot.name];
+      const def = getItemDefinition(loot.name);
       const itemValue = Math.floor(Math.random() * 500) + 100; // Random value $100-$600 per item
       user.money = (user.money || 0) + itemValue;
       resultLine = `🎣 You cast your rod and caught ${def?.emoji || "📦"} ${articleFor(loot.name)} ${loot.name}! (+${fmt(itemValue)})`;

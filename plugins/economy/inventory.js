@@ -1,8 +1,14 @@
 import { getUser, requireRegistration } from "./database.js";
+import { getItemDefinition, getSellPrice } from "./_items.js";
+import { formatRyu } from "./currency.js";
+
+function label(name) {
+  return name.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+}
 
 export default {
   name: "inventory",
-  description: "Check your inventory",
+  description: "Check your inventory and item sale values",
   category: "economy",
   usage: ".inventory",
   aliases: ["inv", "items"],
@@ -12,34 +18,31 @@ export default {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const user = await getUser(sender);
-    const inv  = user.inventory || [];
-
-    if (inv.length === 0) {
+    const inventory = Array.isArray(user.inventory) ? user.inventory : [];
+    if (!inventory.length) {
       return sock.sendMessage(msg.key.remoteJid, {
-        text: [
-          "🎒 Inventory",
-          "",
-          "Your bag is empty.",
-          "Use *.shop buy <item>* to get started.",
-        ].join("\n"),
+        text: "🎒 *Inventory*\n\nYour bag is empty.\nUse *.shop* or *.dig* and *.fish* to get items.",
       }, { quoted: msg });
     }
 
-    const count = {};
-    inv.forEach(item => { count[item] = (count[item] || 0) + 1; });
+    const count = new Map();
+    for (const item of inventory) count.set(item, (count.get(item) || 0) + 1);
+    const lines = [...count.entries()].map(([name, quantity], index) => {
+      const definition = getItemDefinition(name);
+      const price = getSellPrice(name);
+      const value = price ? `💰 ${formatRyu(price)} each` : "🚫 not sellable";
+      return `${index + 1}. ${definition?.emoji || "📦"} *${label(name)}* ×${quantity}\n   ${value}`;
+    });
 
-    const list = Object.entries(count)
-      .map(([item, qty]) => `• ${item}: \`${qty}\``)
-      .join("\n");
-
-    await sock.sendMessage(msg.key.remoteJid, {
+    return sock.sendMessage(msg.key.remoteJid, {
       text: [
-        `🎒 Inventory — ${user.name || "User"}`,
+        `🎒 *Inventory — ${user.name || "User"}*`,
         "",
-        list,
+        ...lines,
         "",
-        `Total items: \`${inv.length}\``,
+        `📦 Total items: *${inventory.length}*`,
+        "💰 Sell one with *.sell <item>* or all sellable items with *.sell all*.",
       ].join("\n"),
     }, { quoted: msg });
-  }
+  },
 };

@@ -17,11 +17,6 @@ export default {
     if (!await requireRegistration(sock, msg, sender)) return;
 
     const user = await getUser(sender);
-    if (!user.bankCard) {
-      return sock.sendMessage(msg.key.remoteJid, {
-        text: "💳 You need a bank card first. Buy one in *.shop*.",
-      }, { quoted: msg });
-    }
 
     if (!args[0]) {
       return sock.sendMessage(msg.key.remoteJid, {
