@@ -11,18 +11,10 @@ export default {
   isPremium: false,
   version: "1.0.0",
   async run({ sock, msg }) {
-    const start = Date.now();
-    
-    // Send initial message
-    const sentMsg = await sock.sendMessage(msg.key.remoteJid, { text: "Pinging..." });
-    
-    // Calculate response latency
-    const ping = Date.now() - start;
-
-    // Edit the previous message to show the formatted result
+    // A send followed by an edit required two WhatsApp round trips. Reply
+    // once so the command cannot add a second network wait by design.
     await sock.sendMessage(msg.key.remoteJid, {
-      text: `❀ \`${ping}ms\``,
-      edit: sentMsg.key,
+      text: "🏓 Pong! Connection is online.",
     });
   },
 };
