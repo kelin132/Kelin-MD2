@@ -11,10 +11,14 @@ export default {
   isPremium: false,
   version: "1.0.0",
   async run({ sock, msg }) {
-    // A send followed by an edit required two WhatsApp round trips. Reply
-    // once so the command cannot add a second network wait by design.
+    const start = Date.now();
+    const sentMsg = await sock.sendMessage(msg.key.remoteJid, {
+      text: "Pinging...",
+    });
+    const ping = Date.now() - start;
     await sock.sendMessage(msg.key.remoteJid, {
-      text: "🏓 Pong! Connection is online.",
+      text: `❀ \`${ping}ms\``,
+      edit: sentMsg.key,
     });
   },
 };
