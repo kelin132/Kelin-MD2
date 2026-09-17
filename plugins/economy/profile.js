@@ -98,22 +98,27 @@ export default {
 
     if (target === sender && !await requireRegistration(sock, msg, sender)) return;
 
-    const cardUser = await getCardUser(target);
+    // `.p` is the fast self-profile shortcut. The generated image does not
+    // use card/Pokémon/trainer details, so avoid those extra database reads.
+    const isQuickProfile = cmd === "p" && target === sender;
+    const cardUser = isQuickProfile ? null : await getCardUser(target);
     const websiteAvatar = [cardUser?.profilePictureUrl, cardUser?.profileImage, cardUser?.avatarUrl]
       .find((value) => typeof value === "string" && /^https?:\/\//i.test(value));
     const [user, profilePic, pokemonCount, guild, trainer] = await Promise.all([
       getUser(target),
       withTimeout(getProfilePic(sock, target, websiteAvatar), 2500),
-      countTrainerPokemon(target),
+      isQuickProfile ? Promise.resolve(0) : countTrainerPokemon(target),
       withTimeout(guildSystem.getUserPrimaryGuild(target), 2500),
-      withTimeout(getTrainer(target), 2500),
+      isQuickProfile ? Promise.resolve(null) : withTimeout(getTrainer(target), 2500),
     ]);
 
     const tag   = target.split("@")[0].split(":")[0];
     const level = user.level ?? 1;
     const xp    = user.xp    ?? 0;
     const registeredName = String(user.name || "User").trim() || "User";
-    const cardsOwned = Array.isArray(cardUser?.cards)
+    const cardsOwned = isQuickProfile
+      ? 0
+      : Array.isArray(cardUser?.cards)
       ? cardUser.cards.length
       : (cardUser?.totalCards ?? 0);
     const history = Array.isArray(user.history) ? user.history : [];
@@ -157,9 +162,15 @@ export default {
     const profileAge = user.age === null || user.age === undefined || user.age === "" ? "N/A" : user.age;
     const profileBirthday = String(user.birthday || "N/A").trim() || "N/A";
     const profileBio = String(user.bio || "N/A").trim() || "N/A";
-    const profileCards = Number.isFinite(Number(cardsOwned)) ? Number(cardsOwned).toLocaleString() : "N/A";
-    const profilePokemon = Number.isFinite(Number(pokemonCount)) ? Number(pokemonCount).toLocaleString() : "N/A";
-    const profileBadges = Number.isFinite(Number(gymProgress.completed)) ? gymProgress.completed : "N/A";
+    const profileCards = isQuickProfile
+      ? "—"
+      : Number.isFinite(Number(cardsOwned)) ? Number(cardsOwned).toLocaleString() : "N/A";
+    const profilePokemon = isQuickProfile
+      ? "—"
+      : Number.isFinite(Number(pokemonCount)) ? Number(pokemonCount).toLocaleString() : "N/A";
+    const profileBadges = isQuickProfile
+      ? "—"
+      : Number.isFinite(Number(gymProgress.completed)) ? gymProgress.completed : "N/A";
     const caption =
 `╭━━━〔 🌸 𝗣𝗥𝗢𝗙𝗜𝗟𝗘 〕━━━╮
 │ ❀ Name : \`${displayName}\`
