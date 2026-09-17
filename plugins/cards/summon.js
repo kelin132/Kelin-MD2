@@ -27,8 +27,8 @@ export const SUMMON_COST = {
   Rare:      100000,
   Epic:      150000,
   Legendary: 200000,
-  Mythical:  5000000,
-  Secret:    750000, // Fixed: Secret tier cost
+  Mythical:  750000,
+  Secret:    1500000, // Fixed: Secret tier cost
 };
 
 // ── Weighted random tier (bias towards lower tiers) ───────────────────────────
