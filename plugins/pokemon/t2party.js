@@ -4,6 +4,7 @@
 import { getTrainer } from "../../lib/pokemon/players.mjs";
 import { getTrainerPC, getTrainerParty, updatePokemon } from "../../lib/pokemon/pokemonDb.mjs";
 import { getDb } from "../../lib/mongo.mjs";
+import { isInBattle } from "../../lib/pokemon/battleState.mjs";
 
 export default {
   name: "t2party",
@@ -14,6 +15,13 @@ export default {
 
   async run({ sock, msg, sender, args }) {
     const jid = msg.key.remoteJid;
+    const battleJid = msg.discordChannelId || jid;
+
+    if (isInBattle(battleJid, sender)) {
+      return sock.sendMessage(jid, {
+        text: "❌ You can't change your party during a battle.\nUse *.battle switch <slot number>* to send out an available Pokémon.",
+      }, { quoted: msg });
+    }
 
     if (!args[0]) {
       return sock.sendMessage(jid, {
