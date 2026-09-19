@@ -214,6 +214,7 @@ export default {
         transactions: user.history?.length   ?? 0,
         profileImage: profilePic,
         profileBackground: user.profileBackground || null,
+        profileFrame: user.profileFrame || null,
         levelRole,
         earnedRoles,
         daysActive,
