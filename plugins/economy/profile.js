@@ -105,10 +105,10 @@ export default {
     // Keep every independent lookup in one batch so another user's profile
     // does not wait for the cards query before starting the other reads.
     const [cardUser, user, profilePicFromSocket, pokemonCount, guild, trainer] = await Promise.all([
-      isQuickProfile ? Promise.resolve(null) : getCardUser(target),
+      getCardUser(target),
       getUser(target),
       withTimeout(getProfilePic(sock, target), 2500),
-      isQuickProfile ? Promise.resolve(0) : countTrainerPokemon(target),
+      countTrainerPokemon(target),
       withTimeout(guildSystem.getUserPrimaryGuild(target), 2500),
       isQuickProfile ? Promise.resolve(null) : withTimeout(getTrainer(target), 2500),
     ]);
@@ -120,9 +120,7 @@ export default {
     const level = user.level ?? 1;
     const xp    = user.xp    ?? 0;
     const registeredName = String(user.name || "User").trim() || "User";
-    const cardsOwned = isQuickProfile
-      ? 0
-      : Array.isArray(cardUser?.cards)
+    const cardsOwned = Array.isArray(cardUser?.cards)
       ? cardUser.cards.length
       : (cardUser?.totalCards ?? 0);
     const history = Array.isArray(user.history) ? user.history : [];
@@ -166,12 +164,12 @@ export default {
     const profileAge = user.age === null || user.age === undefined || user.age === "" ? "N/A" : user.age;
     const profileBirthday = String(user.birthday || "N/A").trim() || "N/A";
     const profileBio = String(user.bio || "N/A").trim() || "N/A";
-    const profileCards = isQuickProfile
-      ? "—"
-      : Number.isFinite(Number(cardsOwned)) ? Number(cardsOwned).toLocaleString() : "N/A";
-    const profilePokemon = isQuickProfile
-      ? "—"
-      : Number.isFinite(Number(pokemonCount)) ? Number(pokemonCount).toLocaleString() : "N/A";
+    const profileCards = Number.isFinite(Number(cardsOwned))
+      ? Number(cardsOwned).toLocaleString()
+      : "N/A";
+    const profilePokemon = Number.isFinite(Number(pokemonCount))
+      ? Number(pokemonCount).toLocaleString()
+      : "N/A";
     const profileBadges = isQuickProfile
       ? "—"
       : Number.isFinite(Number(gymProgress.completed)) ? gymProgress.completed : "N/A";
