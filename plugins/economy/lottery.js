@@ -31,7 +31,16 @@ async function getLottery() {
     doc = { _id: "current", tickets: [], totalTickets: 0, jackpot: base, baseJackpot: base, createdAt: new Date() };
     await db.collection("lottery").insertOne(doc);
   }
-  return doc;
+  const tickets = Array.isArray(doc.tickets) ? doc.tickets : [];
+  const totalTickets = Number.isFinite(Number(doc.totalTickets))
+    ? Number(doc.totalTickets)
+    : tickets.reduce((total, ticket) => total + (Number(ticket.count) || 0), 0);
+  return {
+    ...doc,
+    tickets,
+    totalTickets,
+    jackpot: Number.isFinite(Number(doc.jackpot)) ? Number(doc.jackpot) : 0,
+  };
 }
 
 async function saveLottery(data) {
