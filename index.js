@@ -90,6 +90,10 @@ if (multiBotMode) {
     log("info", "Existing session found — skipping pairing.");
   }
 
+  // ── Update the checkout before loading plugins ──────────────────────────────
+  // This prevents a freshly pulled deployment from importing stale plugin code.
+  await autoUpdate();
+
   // ── Load plugins parallel to DB setup ──────────────────────────────────────
   const pluginPromise = loadPlugins(PREFIX);
 
@@ -136,7 +140,4 @@ if (multiBotMode) {
     startTaxScheduler();
   }
 
-  // ── Auto-update check ───────────────────────────────────────────────────────
-  const updateTimer = setTimeout(() => autoUpdate(), 30_000);
-  updateTimer.unref?.();
 }
