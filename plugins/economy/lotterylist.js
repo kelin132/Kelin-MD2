@@ -1,5 +1,8 @@
 import { getDb } from "../../lib/mongo.mjs";
-import { mentionFor, asJid } from "../../lib/lotteryAutoDraw.mjs";
+import { asJid } from "../../lib/lotteryAutoDraw.mjs";
+
+// Helper for WhatsApp mention formatting
+const mentionFor = (userId) => `@${String(userId).split("@")[0]}`;
 
 export default {
   name: "lotterylist",
