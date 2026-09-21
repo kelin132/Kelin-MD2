@@ -103,6 +103,15 @@ async function valoreAudio(videoUrl) {
   return { dl: audio.url, title: payload?.data?.title || "YouTube Audio" };
 }
 
+function isUnsafeRemoteAudioUrl(value) {
+  try {
+    const host = new URL(value).hostname.toLowerCase();
+    return /(^|\.)googlevideo\.com$|(^|\.)youtube\.com$|(^|\.)youtu\.be$/.test(host);
+  } catch {
+    return true;
+  }
+}
+
 // ── Try downloading via multiple endpoints ────────────────────────────────────
 
 export async function fetchAudio(videoUrl, searchTitle = "") {
@@ -158,8 +167,12 @@ export async function fetchAudio(videoUrl, searchTitle = "") {
         lastError = new Error("Provider returned no audio URL");
         continue;
       }
-      lastDownloadUrl = dl;
-      lastTitle = result?.title || data?.title || "";
+      // Keep a CDN/proxy URL for the final remote fallback. Do not pass
+      // short-lived, IP-bound googlevideo URLs to WhatsApp.
+      if (!isUnsafeRemoteAudioUrl(dl)) {
+        lastDownloadUrl = dl;
+        lastTitle = result?.title || data?.title || "";
+      }
       try {
         const file = await downloadMediaBuffer(dl);
         if (file.mimetype && !file.mimetype.startsWith("audio/") && !/\.(mp3|m4a|aac|ogg|wav)(?:\?|$)/i.test(dl)) {
