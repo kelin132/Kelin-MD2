@@ -4,7 +4,7 @@
  * Tries multiple API endpoints with automatic fallback.
  */
 import yts from "yt-search";
-import { get } from "../../lib/gifted.js";
+import { get } from "../../lib/princeTech.mjs";
 import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
 import { princeMedia, PRINCE_ENDPOINTS } from "../../lib/princeTech.mjs";
 
