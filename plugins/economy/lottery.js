@@ -74,9 +74,12 @@ export default {
 ┃ ✦ Try your luck — win big!
 ┃
 ┃ 💰 Jackpot      › $${lot.jackpot.toLocaleString()}
-┃ 🎫 Total Tickets › ${lot.totalTickets} /${LOTTERY_MAX_ENTRIES}
+┃ 🎫 Total Tickets › ${lot.totalTickets} / ${LOTTERY_MAX_ENTRIES}
 ┃ 🎟️  Your Tickets  › ${myCount}
-┃ 🎯 Your Chance  › ${chance}\% ┃ ┣━━━━━━━━━━━━━━━━━━━━ ┃ 🏷️  Price › $${TICKET_PRICE.toLocaleString()} per ticket
+┃ 🎯 Your Chance  › ${chance}%
+┃
+┣━━━━━━━━━━━━━━━━━━━━
+┃ 🏷️  Price › $${TICKET_PRICE.toLocaleString()} per ticket
 ┃ 🔒 Max   › ${MAX_TICKETS} tickets per player
 ┣━━━━━━━━━━━━━━━━━━━━
 ┃ 💡 .lottery buy <n>  — buy tickets
@@ -120,7 +123,8 @@ export default {
 `╭━━━〔 💸 𝑰𝑵𝑺𝑼𝑭𝑭𝑰𝑪𝑰𝑬𝑵𝑻 𝑭𝑼𝑵𝑫𝑺 〕━━━╮
 ┃ ✦ Not enough cash for tickets!
 ┃
-┃ 🏷️  Cost    › $${cost.toLocaleString()} ┃ 👛 Wallet  › $${user.money.toLocaleString()}
+┃ 🏷️  Cost    › $${cost.toLocaleString()}
+┃ 👛 Wallet  › $${user.money.toLocaleString()}
 ┣━━━━━━━━━━━━━━━━━━━━
 ┃ 💡 Earn more via .work .daily .crime
 ╰━━━━━━━━━━━━━━━━━━━━╯`
@@ -198,8 +202,15 @@ export default {
 ┃ ✦ The winning ticket has been drawn...
 ┃
 ┃ 🏆 Winner  ➜ ${mentionFor(winner.userId)} (${winner.name})
-┃ 🎫 Tickets ➜ 『 ${winner.count} 』 ┃ ┣━━━━━━━━━━━━━━━━━━━━ ┃ 💰 Jackpot Won › $${prize.toLocaleString()}
-
+┃ 🎫 Tickets ➜ 『 ${winner.count} 』
+┃
+┣━━━━━━━━━━━━━━━━━━━━
+┃ 💰 Jackpot Won › $${prize.toLocaleString()}
+┣━━━━━━━━━━━━━━━━━━━━
+┃ 🎉 𝗖𝗢𝗡𝗚𝗥𝗔𝗧𝗨𝗟𝗔𝗧𝗜𝗢𝗡𝗦!
+┃ A new lottery has started!
+╰━━━━━━━━━━━━━━━━━━━━╯`,
+        mentions: winnerJid ? [winnerJid] : [],
       }, { quoted: msg });
     }
 
