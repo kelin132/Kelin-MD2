@@ -4,8 +4,7 @@
  * Tries multiple API endpoints with automatic fallback.
  */
 import yts from "yt-search";
-import { get } from "../../lib/omegaDownload.js";
-import { davidGet } from "../../lib/gifted.js";
+import { get, davidGet } from "../../lib/gifted.js";
 import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
 import { princeMedia, PRINCE_ENDPOINTS } from "../../lib/princeTech.mjs";
 import { kordGet, pickKordMedia, pickKordTitle } from "../../lib/kordApi.mjs";
