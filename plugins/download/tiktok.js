@@ -4,6 +4,8 @@
  * API: https://apis.davidcyril.name.ng/endpoints/download/#tiktok-downloader
  */
 import { davidGet } from "../../lib/gifted.js";
+import { downloadMediaBuffer } from "../../lib/omegaDownload.js";
+import { kordGet, pickKordMedia, pickKordTitle } from "../../lib/kordApi.mjs";
 
 // Deduplicate rapid re-triggers
 const processed = new Set();
@@ -16,6 +18,12 @@ const DAVID_BASE = "https://apis.davidcyril.name.ng";
  */
 async function fetchTikTok(url) {
   const attempts = [
+    async () => {
+      const data = await kordGet("tiktok", url);
+      const dl = pickKordMedia(data, "video");
+      if (!dl) throw new Error("Kord returned no TikTok video link");
+      return { dl, title: pickKordTitle(data, "TikTok Video") };
+    },
     () => davidGet("/download/tiktok",    { url }),
     () => davidGet("/download/tiktokdl",  { url }),
     () => davidGet("/download/tt",        { url }),
@@ -70,10 +78,11 @@ export default {
       await sock.sendMessage(jid, { text: "⏳ Downloading TikTok video, please wait..." }, { quoted: msg });
 
       const { dl, title } = await fetchTikTok(url.trim());
+      const file = await downloadMediaBuffer(dl);
 
       await sock.sendMessage(jid, {
-        video:    { url: dl },
-        mimetype: "video/mp4",
+        video:    file.buffer,
+        mimetype: file.mimetype?.startsWith("video/") ? file.mimetype : "video/mp4",
         caption:  `🎵 *${title}*\n\n✨ Downloaded by *AKIRA*`,
       }, { quoted: msg });
 

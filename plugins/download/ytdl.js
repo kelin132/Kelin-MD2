@@ -6,6 +6,7 @@ import yts from "yt-search";
 import { get, davidGet } from "../../lib/gifted.js";
 import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
 import { princeMedia, PRINCE_ENDPOINTS } from "../../lib/princeTech.mjs";
+import { kordGet, pickKordMedia, pickKordTitle, pickKordYouTubeVideo } from "../../lib/kordApi.mjs";
 
 // ── Search YouTube ────────────────────────────────────────────────────────────
 
@@ -43,6 +44,12 @@ function pickVideo(result) {
 
 async function fetchVideo(videoUrl) {
   const endpoints = [
+    async () => {
+      const data = await kordGet("ytdl", videoUrl);
+      const dl = pickKordYouTubeVideo(data) || pickKordMedia(data, "video");
+      if (!dl) throw new Error("Kord returned no YouTube video link");
+      return { dl, title: pickKordTitle(data) };
+    },
     // OmegaTech all-downloader
     () => omegaDownload("all", { url: videoUrl }),
     () => get("/download/ytdl",    { url: videoUrl }),

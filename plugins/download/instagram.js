@@ -3,15 +3,15 @@
  * Downloads Instagram posts, reels, and videos via yt-dlp (auto-downloaded).
  */
 
-import { readFileSync }          from 'fs';
-import {
-  isValidInstagramUrl,
-  getInstagramInfo,
-  downloadInstagramVideo,
-} from '../../lib/instagram.mjs';
+import { downloadMediaBuffer } from '../../lib/omegaDownload.js';
+import { kordGet, pickKordMedia, pickKordTitle } from '../../lib/kordApi.mjs';
 
 // ── Dedup ─────────────────────────────────────────────────────────────────────
 const processedMessages = new Set();
+
+function isValidInstagramUrl(url) {
+  return /(?:instagram\.com|instagr\.am)/i.test(url);
+}
 
 // ── Plugin ────────────────────────────────────────────────────────────────────
 export default {
@@ -52,42 +52,23 @@ export default {
       await sock.sendMessage(jid, { react: { text: '⏳', key: msg.key } });
       await sock.sendMessage(jid, { text: '⏳ Downloading Instagram media…' }, { quoted: msg });
 
-      const info = await getInstagramInfo(url.trim());
-      const isVideo = !!(info.duration > 0 || /reel|tv/i.test(url));
+      const data = await kordGet('insta', url.trim());
+      const mediaUrl = pickKordMedia(data, 'auto');
+      if (!mediaUrl) throw new Error('Kord returned no Instagram media link');
 
-      const caption =
-        `📥 *${(info.title || 'Instagram Post').slice(0, 200)}*\n` +
-        `👤 *${info.author}*\n` +
-        `✨ *Powered by KELIN MD*`;
+      const file = await downloadMediaBuffer(mediaUrl);
+      const title = pickKordTitle(data, 'Instagram Post').slice(0, 200);
+      const caption = `📥 *${title}*\n✨ *Powered by KELIN MD*`;
+      const mimetype = String(file.mimetype || '').toLowerCase();
 
-      if (isVideo) {
-        const { filePath, cleanup } = await downloadInstagramVideo(url.trim());
-        try {
-          const buffer = readFileSync(filePath);
-          await sock.sendMessage(jid, {
-            video:    buffer,
-            mimetype: 'video/mp4',
-            caption,
-          }, { quoted: msg });
-        } finally {
-          cleanup();
-        }
-      } else {
-        const imageUrl = info.videoUrl || info.thumbnail;
-        const res = await fetch(imageUrl, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Referer':    'https://www.instagram.com/',
-          },
-          signal: AbortSignal.timeout(45_000),
-        });
-        if (!res.ok) throw new Error(`Image fetch failed: HTTP ${res.status}`);
-        const buffer = Buffer.from(await res.arrayBuffer());
-
+      if (mimetype.startsWith('video/') || /reel|tv/i.test(url)) {
         await sock.sendMessage(jid, {
-          image:   buffer,
+          video: file.buffer,
+          mimetype: mimetype.startsWith('video/') ? mimetype : 'video/mp4',
           caption,
         }, { quoted: msg });
+      } else {
+        await sock.sendMessage(jid, { image: file.buffer, caption }, { quoted: msg });
       }
 
       await sock.sendMessage(jid, { react: { text: '✅', key: msg.key } });

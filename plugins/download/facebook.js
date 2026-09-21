@@ -4,6 +4,7 @@
  */
 import { get, davidGet } from "../../lib/gifted.js";
 import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
+import { kordGet, pickKordMedia, pickKordTitle } from "../../lib/kordApi.mjs";
 
 // ── Pick the best video URL from an API result ────────────────────────────────
 
@@ -49,6 +50,14 @@ function pickTitle(result) {
 // ── Multi-source fetcher with fallback ────────────────────────────────────────
 
 async function fetchFacebook(url) {
+  try {
+    const data = await kordGet("facebook", url);
+    const video = pickKordMedia(data, "video");
+    if (video) return { video, title: pickKordTitle(data, "Facebook Video") };
+  } catch (error) {
+    console.error("[facebook kord]", error?.message || error);
+  }
+
   const attempts = [
     // OmegaTech all-downloader
     () => omegaDownload("all", { url }),

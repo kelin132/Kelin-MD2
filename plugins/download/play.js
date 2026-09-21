@@ -5,8 +5,10 @@
  */
 import yts from "yt-search";
 import { get } from "../../lib/omegaDownload.js";
+import { davidGet } from "../../lib/gifted.js";
 import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
 import { princeMedia, PRINCE_ENDPOINTS } from "../../lib/princeTech.mjs";
+import { kordGet, pickKordMedia, pickKordTitle } from "../../lib/kordApi.mjs";
 
 // ── YouTube search ────────────────────────────────────────────────────────────
 
@@ -106,6 +108,12 @@ async function valoreAudio(videoUrl) {
 
 export async function fetchAudio(videoUrl, searchTitle = "") {
   const endpoints = [
+    async () => {
+      const data = await kordGet("yt-song", videoUrl);
+      const dl = pickKordMedia(data, "audio");
+      if (!dl) throw new Error("Kord returned no YouTube audio link");
+      return { dl, title: pickKordTitle(data, "YouTube Audio") };
+    },
     // Gifted API — primary endpoints
     () => get("/download/ytmp3",   { url: videoUrl }),
     () => get("/download/ytaudio", { url: videoUrl }),
