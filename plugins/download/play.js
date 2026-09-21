@@ -139,6 +139,8 @@ export async function fetchAudio(videoUrl, searchTitle = "") {
   ];
 
   let lastError;
+  let lastDownloadUrl = "";
+  let lastTitle = "";
   for (const attempt of endpoints) {
     try {
       const data = await attempt();
@@ -156,6 +158,8 @@ export async function fetchAudio(videoUrl, searchTitle = "") {
         lastError = new Error("Provider returned no audio URL");
         continue;
       }
+      lastDownloadUrl = dl;
+      lastTitle = result?.title || data?.title || "";
       try {
         const file = await downloadMediaBuffer(dl);
         if (file.mimetype && !file.mimetype.startsWith("audio/") && !/\.(mp3|m4a|aac|ogg|wav)(?:\?|$)/i.test(dl)) {
@@ -168,6 +172,12 @@ export async function fetchAudio(videoUrl, searchTitle = "") {
     } catch (error) {
       lastError = error;
     }
+  }
+
+  // Some media hosts deny the bot server's buffer request while still
+  // allowing WhatsApp's media fetcher to retrieve the fresh signed URL.
+  if (lastDownloadUrl && /HTTP 403/i.test(lastError?.message || "")) {
+    return { remoteUrl: lastDownloadUrl, title: lastTitle, mimetype: "audio/mpeg" };
   }
 
   throw new Error(`All audio download sources failed. ${lastError?.message || "No provider returned usable audio."}`);
@@ -196,8 +206,17 @@ export default {
       const meta = await ytSearch(text);
       await sendBanner(sock, jid, msg, meta, "Fetching audio… please wait");
 
-      const { dl, buffer, mimetype: returnedMimetype, title } = await fetchAudio(meta.url, meta.title);
+      const { dl, remoteUrl, buffer, mimetype: returnedMimetype, title } = await fetchAudio(meta.url, meta.title);
       const trackTitle = title || meta.title;
+      if (remoteUrl) {
+        await sock.sendMessage(jid, {
+          audio: { url: remoteUrl },
+          mimetype: "audio/mpeg",
+          fileName: `${trackTitle}.mp3`,
+          ptt: false,
+        }, { quoted: msg });
+        return;
+      }
       const file = buffer ? { buffer, mimetype: returnedMimetype || "audio/mpeg" } : await downloadMediaBuffer(dl);
       const mimetype = file.mimetype.startsWith("audio/") ? file.mimetype : "audio/mpeg";
 
