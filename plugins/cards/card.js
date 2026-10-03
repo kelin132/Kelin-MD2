@@ -36,6 +36,11 @@ export default {
 
       const card  = user.cards[index - 1];
       const emoji = TIER_EMOJI[card.tier] || "⭐";
+      const isAuctionCard = String(card.spawnId || "").startsWith("web-auction-");
+      const priceLabel = isAuctionCard ? "Auction paid" : "Value";
+      const priceText = isAuctionCard
+        ? `${(Number(card.price) || 0).toLocaleString()} coins`
+        : `$${(Number(card.price) || 0).toLocaleString()}`;
 
       const caption =
 `╭─❀「 🎴 *𝐂𝐀𝐑𝐃 𝐕𝐈𝐄𝐖* 」❀─╮
@@ -44,7 +49,7 @@ export default {
 │ 🏷️  *Tier*   :: \`${card.tier || "Unknown"}\`
 │ 📺 *Series* :: \`${card.series || "Unknown"}\`
 │ 🆔 *ID*     :: \`${card.cardId || "Unknown"}\`
-│ 💎 *Value*  :: \`$${(card.price || 0).toLocaleString()}\`
+│ 💎 *${priceLabel}* :: \`${priceText}\`
 │
 │ 🃏 Card \`#${index}\` of \`${user.cards.length}\`
 ╰───────────────❀`;

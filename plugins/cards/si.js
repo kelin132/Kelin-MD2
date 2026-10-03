@@ -72,7 +72,43 @@ function parseInput(raw) {
 /**
  * Find all cards matching a name query across all tiers.
  */
+async function resolveWebsiteAuctionCards(query) {
+  const needle = normaliseQuery(query);
+  if (!needle || needle.length > 80) return [];
+  try {
+    const namePattern = needle.split("").join("[^a-z0-9]*");
+    const cardSelector = {
+      spawnId: { $regex: "^web-auction-" },
+      $or: [
+        { cardId: { $regex: namePattern, $options: "i" } },
+        { name: { $regex: namePattern, $options: "i" } },
+      ],
+    };
+    const users = await (await Col.users())
+      .find({ cards: { $elemMatch: cardSelector } })
+      .project({ cards: { $elemMatch: cardSelector } })
+      .limit(100)
+      .toArray();
+    const matches = new Map();
+    for (const user of users) {
+      for (const card of Array.isArray(user.cards) ? user.cards : []) {
+        if (!String(card.spawnId || "").startsWith("web-auction-")) continue;
+        const cardId = normaliseQuery(card.cardId);
+        const name = normaliseQuery(card.name);
+        if (cardId === needle || name === needle || name.includes(needle)) {
+          matches.set(String(card.cardId || `${name}:${card.tierNum || card.tier}`), card);
+        }
+      }
+    }
+    return [...matches.values()];
+  } catch {
+    return [];
+  }
+}
+
 async function resolveCardsByName(query) {
+  const websiteAuctionCards = await resolveWebsiteAuctionCards(query);
+  if (websiteAuctionCards.length) return websiteAuctionCards;
   const all = await fetchAllCards();
   const needle = normaliseQuery(query);
 
@@ -88,6 +124,17 @@ async function resolveCardsByName(query) {
   }
 
   return [];
+}
+
+function auctionCardDetails(card) {
+  if (!String(card.spawnId || "").startsWith("web-auction-")) return "";
+  return `\n\n🆔 *Card ID:* \`${card.cardId || "—"}\`\n💰 *Auction paid:* \`${(Number(card.price) || 0).toLocaleString()} coins\``;
+}
+
+async function sendSeriesCard(sock, jid, card, text, { quoted, mentions = [] } = {}) {
+  const caption = `${text}${auctionCardDetails(card)}`;
+  if (card.media) return sendCardMedia(sock, jid, card, caption, { quoted, mentions });
+  return sock.sendMessage(jid, { text: caption, mentions }, { quoted });
 }
 
 function ownerJid(user) {
@@ -207,10 +254,7 @@ export default {
         const text =
 `╭━━━━━━━━━━━━━━━━━━━━╮\n│  📚 *Series Info*\n╰━━━━━━━━━━━━━━━━━━━━╯\n\n🗂️ *${card.series || "Unknown"}*\n🃏 ${card.name}\n⭐ ${tierLabel(card.tierNum)}\n\n━━━━━━━━━━━━━━━━━━━━━\n👥 *Owners (${owners.length})*\n━━━━━━━━━━━━━━━━━━━━━\n${ownerLines}\n\n━━━━━━━━━━━━━━━━━━━━━\n💡 _Other tiers: .si ${card.name} <tier>_\nAvailable: ${sortedTiers.map((t) => `T${t}`).join(", ")}`;
 
-        if (card.media) {
-          return sendCardMedia(sock, jid, card, text, { quoted: msg, mentions });
-        }
-        return sock.sendMessage(jid, { text, mentions }, { quoted: msg });
+        return sendSeriesCard(sock, jid, card, text, { quoted: msg, mentions });
       }
 
       // ── No tier specified ───────────────────────────────────────────────────
@@ -232,10 +276,7 @@ export default {
         const text =
 `╭━━━━━━━━━━━━━━━━━━━━╮\n│  📚 *Series Info*\n╰━━━━━━━━━━━━━━━━━━━━╯\n\n🗂️ *${card.series || "Unknown"}*\n🃏 ${card.name}\n⭐ ${tierLabel(card.tierNum)}\n\n━━━━━━━━━━━━━━━━━━━━━\n👥 *Owners (${owners.length})*\n━━━━━━━━━━━━━━━━━━━━━\n${ownerLines}`;
 
-        if (card.media) {
-          return sendCardMedia(sock, jid, card, text, { quoted: msg, mentions });
-        }
-        return sock.sendMessage(jid, { text, mentions }, { quoted: msg });
+        return sendSeriesCard(sock, jid, card, text, { quoted: msg, mentions });
       }
 
       // Multiple tiers — show a summary of all tiers with owner counts
@@ -272,10 +313,7 @@ export default {
 `╭━━━━━━━━━━━━━━━━━━━━╮\n│  📚 *Series Info*\n╰━━━━━━━━━━━━━━━━━━━━╯\n\n🗂️ *${repCard.series || matches[0].series || "Unknown"}*\n🃏 ${matches[0].name}\n\n━━━━━━━━━━━━━━━━━━━━━\n📊 *All Tiers — ${totalOwners} total owners*\n━━━━━━━━━━━━━━━━━━━━━\n${tierSummaries.join("\n┃\n")}\n\n━━━━━━━━━━━━━━━━━━━━━\n💡 _.si <name> <tier>_ for a specific tier`;
 
       const previewCard = byTier.get(sortedTiers[0])[0];
-      if (previewCard.media) {
-        return sendCardMedia(sock, jid, previewCard, text, { quoted: msg, mentions });
-      }
-      return sock.sendMessage(jid, { text, mentions }, { quoted: msg });
+      return sendSeriesCard(sock, jid, previewCard, text, { quoted: msg, mentions });
 
     } catch (err) {
       console.error("SI ERROR:", err);

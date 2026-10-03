@@ -1,5 +1,5 @@
 import { findOrCreateUser, Col, uid } from "./db.js";
-import { fetchAllCards, getCard, searchCards } from "../../lib/cardApi.mjs";
+import { fetchAllCards, getCard, searchCards, sendCardMedia } from "../../lib/cardApi.mjs";
 import { getSeries } from "../../lib/seriesEnrich.mjs";
 
 function normaliseQuery(value) {
@@ -158,6 +158,13 @@ export default {
         ? card.index
         : collNum ?? "—";
       const issueVal = issue ? `#${issue}` : "—";
+      const cardIdVal = card.cardId || "—";
+      const isAuctionCard = String(card.spawnId || "").startsWith("web-auction-");
+      const valueLabel = isAuctionCard ? "Auction paid" : "Value";
+      const cardPrice = Number(card.price) || 0;
+      const priceText = isAuctionCard
+        ? `${cardPrice.toLocaleString()} coins`
+        : `$${cardPrice.toLocaleString()}`;
       const tier     = card.tierNum || card.tier || "—";
       const series   = card.series  || "—";
 
@@ -176,11 +183,18 @@ export default {
 
 ━━━━━━━━━━━━━━━━━━━━━
 ⭐ *Tier:*     \`${tier}\`${tierStars ? `  ${tierStars}` : ""}
+🆔 *Card ID:*  \`${cardIdVal}\`
+💰 *${valueLabel}:* \`${priceText}\`
 🏷️ *Spawn ID:* \`${spawnId}\`
 🔢 *Index:*    \`${indexVal}\`
 📌 *Issue:*    \`${issueVal}\`
 ━━━━━━━━━━━━━━━━━━━━━`;
 
+      if (card.media) {
+        try {
+          return await sendCardMedia(sock, jid, card, text, { quoted: msg });
+        } catch { /* fall back to the matching card details */ }
+      }
       return reply(text);
 
     } catch (err) {
