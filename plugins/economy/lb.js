@@ -9,6 +9,7 @@
  *   .lb            → Shows usage menu
  */
 import { getDb } from "../../lib/mongo.mjs";
+import { ensureTotalWealthMigration } from "./database.js";
 import { formatLeaderboard } from "../../lib/leaderboardFormat.mjs";
 import { getCachedLeaderboard } from "../../lib/leaderboardCache.mjs";
 
@@ -22,11 +23,11 @@ const WEALTH_TIERS = [
 const WEALTH_SEPARATOR = "  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈";
 const formatMoney = (value) => `$${Number(value || 0).toLocaleString()}`;
 async function loadWealthText(db) {
-  // totalWealth is maintained on each economy write, so this uses the
-  // registered/wealth index instead of calculating and sorting every account.
+  // Older reset runs cleared this derived field; repair it once before
+  // using the indexed wealth sort.
   const users = await db.collection("users").find(
     { registered: true },
-    { projection: { _id: 1, name: 1, totalWealth: 1 } },
+    { projection: { _id: 1, name: 1, username: 1, totalWealth: 1 } },
   ).sort({ totalWealth: -1 }).limit(10).toArray();
 
   if (!users.length) return "💰 No registered players yet!";
@@ -62,10 +63,11 @@ async function loadWealthText(db) {
 }
 
 async function getWealthText(db) {
+  await ensureTotalWealthMigration(db);
   return getCachedLeaderboard(
-    "economy:wealth",
+    "economy:wealth:v2",
     () => loadWealthText(db),
-    { ttlMs: 60_000 },
+    { ttlMs: 0, staleWhileRevalidate: false },
   );
 }
 

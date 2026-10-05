@@ -1,26 +1,30 @@
 // plugins/group/warn.js
 // .warn @user [reason] — Strike system; auto-kick at 3 warnings
 import { getDb } from "../../lib/mongo.mjs";
+import { participantActionSucceeded } from "../../lib/groupParticipantAction.mjs";
 
 const MAX_WARNS = 3;
 
 async function getWarns(groupJid, userJid) {
   const db  = getDb();
   const doc = await db.collection("warns").findOne({ _id: `${groupJid}:${userJid}` });
-  return doc || { count: 0, warnings: [] };
+  return {
+    count: Number(doc?.count) || 0,
+    warnings: Array.isArray(doc?.warnings) ? doc.warnings : [],
+  };
 }
 
 async function addWarn(groupJid, userJid, by, reason) {
   const db  = getDb();
-  const key = `${groupJid}:${userJid}`;
-  const doc = await db.collection("warns").findOne({ _id: key }) || { count: 0, warnings: [] };
+  const key = groupJid + ":" + userJid;
   const entry = { by, reason: reason || "No reason given", ts: new Date().toISOString() };
-  await db.collection("warns").updateOne(
+  const result = await db.collection("warns").findOneAndUpdate(
     { _id: key },
-    { $set: { count: doc.count + 1, warnings: [...doc.warnings, entry] } },
-    { upsert: true }
+    { $inc: { count: 1 }, $push: { warnings: entry } },
+    { upsert: true, returnDocument: "after" },
   );
-  return doc.count + 1;
+  const updated = result?.value ?? result;
+  return Number(updated?.count) || 1;
 }
 
 async function resetWarns(groupJid, userJid) {
@@ -114,22 +118,34 @@ export default {
     const tNum     = target.split("@")[0].split(":")[0];
 
     if (count >= MAX_WARNS) {
-      await sock.sendMessage(jid, {
-        text: [
-          `🔨 *@${tNum} has been kicked!*`,
-          ``,
-          `Reached *${MAX_WARNS}/${MAX_WARNS}* warnings.`,
-          `Last reason: ${reason}`,
-        ].join("\n"),
+      let kickError = null;
+      try {
+        const result = await sock.groupParticipantsUpdate(jid, [target], "remove");
+        if (!participantActionSucceeded(result, 1)) {
+          console.error("[warn] WhatsApp did not confirm automatic removal:", result);
+          kickError = new Error("WhatsApp did not confirm the participant removal.");
+        }
+      } catch (error) {
+        console.error("[warn] Automatic kick failed:", error);
+        kickError = error;
+      }
+
+      if (kickError) {
+        return sock.sendMessage(jid, {
+          text: "⚠️ @" + tNum + " reached " + MAX_WARNS + "/" + MAX_WARNS + " warnings, but WhatsApp did not confirm the kick. The warnings were kept. Make sure I'm a group admin and the target isn't an admin, then retry.",
+          mentions: [target],
+        }, { quoted: msg });
+      }
+
+      try {
+        await resetWarns(jid, target);
+      } catch (error) {
+        console.error("[warn] Participant was removed but warnings could not be cleared:", error);
+      }
+      return sock.sendMessage(jid, {
+        text: "🔨 *@" + tNum + " has been kicked!*\n\nReached *" + count + "/" + MAX_WARNS + "* warnings.\nLast reason: " + reason,
         mentions: [target],
       }, { quoted: msg });
-      await resetWarns(jid, target);
-      try {
-        await sock.groupParticipantsUpdate(jid, [target], "remove");
-      } catch {
-        await sock.sendMessage(jid, { text: `⚠️ Could not auto-kick. Make sure I'm an admin.` });
-      }
-      return;
     }
 
     return sock.sendMessage(jid, {

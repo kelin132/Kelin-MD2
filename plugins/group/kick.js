@@ -1,3 +1,5 @@
+import { participantActionSucceeded } from "../../lib/groupParticipantAction.mjs";
+
 export default {
   name: "kick",
   description: "Kick a member from the group",
@@ -31,7 +33,10 @@ export default {
     }
 
     try {
-      await sock.groupParticipantsUpdate(jid, targets, "remove");
+      const result = await sock.groupParticipantsUpdate(jid, targets, "remove");
+      if (!participantActionSucceeded(result, targets.length)) {
+        throw new Error("WhatsApp did not confirm all participant removals.");
+      }
 
       const nameList = targets.map(t => `@${t.split("@")[0]}`).join(", ");
       await sock.sendMessage(jid, {

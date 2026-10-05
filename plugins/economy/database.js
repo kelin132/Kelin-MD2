@@ -70,6 +70,7 @@ export const DEFAULTS = {
 export const REGISTRATION_STARTING_MONEY = STARTING_MONEY;
 
 let economyMigrationPromise;
+let totalWealthMigrationPromise;
 
 async function ensureRyuEconomyMigration(db) {
   if (!economyMigrationPromise) {
@@ -86,11 +87,12 @@ async function ensureRyuEconomyMigration(db) {
             $set: {
               money: STARTING_MONEY,
               bank: 0,
+              totalWealth: STARTING_MONEY,
               bankLimit: BASE_BANK_LIMIT,
               bankUpgradeLevel: 0,
               economyVersion: 1,
             },
-            $unset: { vault: "", totalWealth: "" },
+            $unset: { vault: "" },
           },
         );
       }
@@ -108,6 +110,63 @@ async function ensureRyuEconomyMigration(db) {
     });
   }
   await economyMigrationPromise;
+}
+
+export async function ensureTotalWealthMigration(db) {
+  if (!totalWealthMigrationPromise) {
+    totalWealthMigrationPromise = (async () => {
+      const migrations = db.collection("economy_migrations");
+      const migrationId = "ryu-total-wealth-v1";
+      const marker = await migrations.findOne(
+        { _id: migrationId },
+        { projection: { completedAt: 1 } },
+      );
+      if (marker?.completedAt) return;
+
+      await migrations.updateOne(
+        { _id: migrationId },
+        { $setOnInsert: { createdAt: new Date() }, $set: { status: "running" } },
+        { upsert: true },
+      );
+      await db.collection("users").updateMany(
+        { registered: true },
+        [
+          {
+            $set: {
+              totalWealth: {
+                $add: [
+                  {
+                    $convert: {
+                      input: { $ifNull: ["$money", 0] },
+                      to: "double",
+                      onError: 0,
+                      onNull: 0,
+                    },
+                  },
+                  {
+                    $convert: {
+                      input: { $ifNull: ["$bank", 0] },
+                      to: "double",
+                      onError: 0,
+                      onNull: 0,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      );
+      await migrations.updateOne(
+        { _id: migrationId },
+        { $set: { status: "complete", completedAt: new Date() } },
+      );
+    })().catch((error) => {
+      totalWealthMigrationPromise = undefined;
+      throw error;
+    });
+  }
+  await totalWealthMigrationPromise;
 }
 
 // ─── Core CRUD ────────────────────────────────────────────────────────────────
