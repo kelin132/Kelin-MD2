@@ -8,7 +8,7 @@ export default {
   isOwner: true,
   isAdmin: true,
   isPremium: false, 
-  isStaff: true, 
+  isMod: true, 
   version: "1.2.0",
 
   async run({ sock, msg }) {
