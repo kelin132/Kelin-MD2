@@ -5,7 +5,7 @@ export default {
   usage: ".promote @user  |  reply to their message + .promote",
   aliases: [],
   cooldown: 3,
-  isOwner: false,
+  isOwner: true,
   isAdmin: true,
   isPremium: false,
   version: "1.2.0",
