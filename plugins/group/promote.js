@@ -5,10 +5,10 @@ export default {
   usage: ".promote @user  |  reply to their message + .promote",
   aliases: [],
   cooldown: 3,
-  isOwner: true,
+  isOwner: fslse,
   isAdmin: true,
-  isPremium: false, 
-  isMod: true, 
+  isPremium:false, 
+  isMod:true, 
   version: "1.2.0",
 
   async run({ sock, msg }) {
