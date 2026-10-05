@@ -7,7 +7,8 @@ export default {
   cooldown: 3,
   isOwner: true,
   isAdmin: true,
-  isPremium: false,
+  isPremium: false, 
+  isStaff: true, 
   version: "1.2.0",
 
   async run({ sock, msg }) {
