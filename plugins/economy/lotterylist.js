@@ -37,13 +37,13 @@ export default {
 
       const sorted = [...lot.tickets].sort((a, b) => Number(b.count || 0) - Number(a.count || 0));
       
-      // Clean up identity keys (strip @s.whatsapp.net / @lid) for reliable DB matching
+      // Extract numeric user IDs, filtering out raw @lid suffixes
       const identities = [...new Set(sorted.map((ticket) => {
-        const rawId = lotteryWinnerIdentity(ticket);
-        return rawId ? String(rawId).split("@")[0] : null;
+        const rawId = lotteryWinnerIdentity(ticket) || ticket.userId;
+        return rawId ? String(rawId).split("@")[0].split(":")[0] : null;
       }).filter(Boolean))];
 
-      // Match users by raw number ID, full JID, or LID in MongoDB
+      // Query database for matching user names
       const profiles = identities.length
         ? await db.collection("users").find({
             $or: [
@@ -54,10 +54,10 @@ export default {
           }, { projection: { name: 1, username: 1 } }).toArray()
         : [];
 
-      // Build name lookup map using clean numeric IDs
+      // Map clean numeric ID -> user display name
       const names = new Map();
       for (const profile of profiles) {
-        const cleanId = String(profile._id).split("@")[0];
+        const cleanId = String(profile._id).split("@")[0].split(":")[0];
         const displayName = String(profile.name || profile.username || "").trim();
         if (displayName) names.set(cleanId, displayName);
       }
@@ -66,22 +66,31 @@ export default {
       const mentions = [];
 
       const rows = sorted.map((ticket, index) => {
-        const rawIdentity = lotteryWinnerIdentity(ticket);
-        const cleanIdentity = rawIdentity ? String(rawIdentity).split("@")[0] : "";
-        const whatsappJid = getWhatsAppParticipantId(ticket.userId) || "";
+        const rawIdentity = lotteryWinnerIdentity(ticket) || ticket.userId || "";
+        const cleanIdentity = String(rawIdentity).split("@")[0].split(":")[0];
+        const rawWaJid = getWhatsAppParticipantId(ticket.userId) || ticket.userId || "";
+
+        // Determine if target JID is standard phone or LID
+        const isStandardJid = String(rawWaJid).endsWith("@s.whatsapp.net");
         
-        // Lookup display name
-        const name = names.get(cleanIdentity) || lotteryDisplayName(ticket) || `User_${cleanIdentity.slice(-4)}`;
+        // Lookup display name fallback
+        const savedName = names.get(cleanIdentity);
+        let fallbackName = lotteryDisplayName(ticket);
+        
+        // If lotteryDisplayName returned a raw LID string, clean it up
+        if (fallbackName && (fallbackName.includes("@lid") || /^\d+$/.test(fallbackName))) {
+          fallbackName = `User_${cleanIdentity.slice(-4)}`;
+        }
 
-        // Handle LID vs standard phone JID formatting
-        const isLid = whatsappJid.endsWith("@lid");
+        const name = savedName || fallbackName || `User_${cleanIdentity.slice(-4)}`;
+
         let player = name;
-
-        if (whatsappJid && !isLid) {
-          const phoneNum = whatsappJid.split("@")[0].split(":")[0];
-          player = `@${phoneNum}`;
-          mentions.push(whatsappJid);
-        } else if (isLid && name) {
+        if (isStandardJid) {
+          // Standard WhatsApp phone JID -> build mention
+          player = `@${cleanIdentity}`;
+          mentions.push(`${cleanIdentity}@s.whatsapp.net`);
+        } else {
+          // LID user -> display clean name directly without unformatted @ LID numbers
           player = name;
         }
 
