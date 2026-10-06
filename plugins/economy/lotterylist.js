@@ -43,7 +43,7 @@ export default {
         return rawId ? String(rawId).split("@")[0] : null;
       }).filter(Boolean))];
 
-      // Match users by either raw number ID, full JID, or LID in MongoDB
+      // Match users by raw number ID, full JID, or LID in MongoDB
       const profiles = identities.length
         ? await db.collection("users").find({
             $or: [
@@ -70,4 +70,48 @@ export default {
         const cleanIdentity = rawIdentity ? String(rawIdentity).split("@")[0] : "";
         const whatsappJid = getWhatsAppParticipantId(ticket.userId) || "";
         
-        
+        // Lookup display name
+        const name = names.get(cleanIdentity) || lotteryDisplayName(ticket) || `User_${cleanIdentity.slice(-4)}`;
+
+        // Handle LID vs standard phone JID formatting
+        const isLid = whatsappJid.endsWith("@lid");
+        let player = name;
+
+        if (whatsappJid && !isLid) {
+          const phoneNum = whatsappJid.split("@")[0].split(":")[0];
+          player = `@${phoneNum}`;
+          mentions.push(whatsappJid);
+        } else if (isLid && name) {
+          player = name;
+        }
+
+        const chance = totalTickets > 0 ? ((Number(ticket.count || 0) / totalTickets) * 100).toFixed(1) : "0.0";
+        const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`;
+
+        return [
+          `${medal} *${player}*`,
+          `🎫 Tickets: ${Number(ticket.count || 0)}`,
+          `📊 Chance: ${chance}%`,
+        ].join("\n");
+      });
+
+      const response = [
+        "ㅤㅤ∘]───❀───[∘",
+        "*∘₊✧ LOTTERY LIST* ❀",
+        "      ∘]───❀───[∘",
+        "",
+        `𝗧𝗶𝗰𝗸𝗲𝘁𝘀: ${totalTickets} total`,
+        "",
+        "━━━━━━━━━━━━━━━",
+        rows.join("\n\n"),
+        "━━━━━━━━━━━━━━━",
+        "_Use .lottery buy to join_",
+      ].join("\n");
+
+      return sock.sendMessage(jid, { text: response, mentions: [...new Set(mentions)] }, { quoted: msg });
+    } catch (error) {
+      console.error("LOTTERYLIST ERROR:", error);
+      return reply("❌ Failed to load lottery.");
+    }
+  },
+};
