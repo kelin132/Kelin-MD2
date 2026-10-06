@@ -36,50 +36,38 @@ export default {
       }
 
       const sorted = [...lot.tickets].sort((a, b) => Number(b.count || 0) - Number(a.count || 0));
-      const identities = [...new Set(sorted.map((ticket) => lotteryWinnerIdentity(ticket)).filter(Boolean))];
+      
+      // Clean up identity keys (strip @s.whatsapp.net / @lid) for reliable DB matching
+      const identities = [...new Set(sorted.map((ticket) => {
+        const rawId = lotteryWinnerIdentity(ticket);
+        return rawId ? String(rawId).split("@")[0] : null;
+      }).filter(Boolean))];
+
+      // Match users by either raw number ID, full JID, or LID in MongoDB
       const profiles = identities.length
-        ? await db.collection("users").find({ _id: { $in: identities } }, { projection: { name: 1 } }).toArray()
+        ? await db.collection("users").find({
+            $or: [
+              { _id: { $in: identities } },
+              { _id: { $in: identities.map(id => `${id}@s.whatsapp.net`) } },
+              { _id: { $in: identities.map(id => `${id}@lid`) } }
+            ]
+          }, { projection: { name: 1, username: 1 } }).toArray()
         : [];
-      const names = new Map(profiles.map((profile) => [String(profile._id), String(profile.name || "").trim()]));
+
+      // Build name lookup map using clean numeric IDs
+      const names = new Map();
+      for (const profile of profiles) {
+        const cleanId = String(profile._id).split("@")[0];
+        const displayName = String(profile.name || profile.username || "").trim();
+        if (displayName) names.set(cleanId, displayName);
+      }
+
       const totalTickets = Number(lot.totalTickets || sorted.reduce((sum, ticket) => sum + (Number(ticket.count) || 0), 0));
       const mentions = [];
 
       const rows = sorted.map((ticket, index) => {
-        const identity = lotteryWinnerIdentity(ticket);
-        const whatsappJid = getWhatsAppParticipantId(ticket.userId);
-        const name = names.get(identity) || lotteryDisplayName(ticket);
-        const player = whatsappJid
-          ? "@" + whatsappJid.split("@")[0] + " (" + name + ")"
-          : name;
-        if (whatsappJid) mentions.push(whatsappJid);
-
-        const chance = totalTickets > 0 ? ((Number(ticket.count || 0) / totalTickets) * 100).toFixed(1) : "0.0";
-        const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`;
-
-        return [
-          `${medal} *${player}*`,
-          `🎫 Tickets: ${Number(ticket.count || 0)}`,
-          `📊 Chance: ${chance}%`,
-        ].join("\n");
-      });
-
-      const response = [
-        "ㅤㅤ∘]───❀───[∘",
-        "*∘₊✧ LOTTERY LIST* ❀",
-        "      ∘]───❀───[∘",
-        "",
-        `𝗧𝗶𝗰𝗸𝗲𝘁𝘀: ${totalTickets} total`,
-        "",
-        "━━━━━━━━━━━━━━━",
-        rows.join("\n\n"),
-        "━━━━━━━━━━━━━━━",
-        "_Use .lottery buy to join_",
-      ].join("\n");
-
-      return sock.sendMessage(jid, { text: response, mentions: [...new Set(mentions)] }, { quoted: msg });
-    } catch (error) {
-      console.error("LOTTERYLIST ERROR:", error);
-      return reply("❌ Failed to load lottery.");
-    }
-  },
-};
+        const rawIdentity = lotteryWinnerIdentity(ticket);
+        const cleanIdentity = rawIdentity ? String(rawIdentity).split("@")[0] : "";
+        const whatsappJid = getWhatsAppParticipantId(ticket.userId) || "";
+        
+        
