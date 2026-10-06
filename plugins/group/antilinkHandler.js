@@ -10,7 +10,7 @@ const linkRegex =
 
 /**
  * Normalizes JIDs by stripping device suffixes (e.g., :42@s.whatsapp.net -> @s.whatsapp.net)
- * Preserves LID domains when present.
+ * Keeps LID domains intact.
  */
 function normalizeJid(jid = "") {
   if (!jid) return "";
@@ -20,10 +20,10 @@ function normalizeJid(jid = "") {
 }
 
 /**
- * Normalizes phone numbers for comparisons (removes @... suffix)
+ * Normalizes phone numbers for comparison (removes @... suffix)
  */
 function toNum(jid = "") {
-  return jid.split(":")[0].split("@")[0];
+  return (jid || "").split(":")[0].split("@")[0];
 }
 
 async function getLinkWarns(groupJid, userJid) {
@@ -37,13 +37,16 @@ async function addLinkWarn(groupJid, userJid) {
   const db = getDb();
   const cleanUser = normalizeJid(userJid);
   const key = `${groupJid}:${cleanUser}`;
+
   const doc = (await db.collection("antilinkWarns").findOne({ _id: key })) || { count: 0 };
-  const newCount = doc.count + 1;
+  const newCount = (doc.count || 0) + 1;
+
   await db.collection("antilinkWarns").updateOne(
     { _id: key },
     { $set: { count: newCount, lastWarn: new Date().toISOString() } },
     { upsert: true }
   );
+
   return newCount;
 }
 
@@ -80,8 +83,9 @@ export async function antiLinkHandler({ sock, msg }) {
   const senderNum = toNum(sender);
 
   // Identify bot
-  const botJid = normalizeJid(sock.user?.id ?? sock.user?.jid ?? "");
-  const botNum = toNum(botJid);
+  const botId = sock.user?.id || sock.user?.jid || "";
+  const botNum = toNum(botId);
+  const botNorm = normalizeJid(botId);
 
   // Never execute on the bot itself
   if (senderNum === botNum) return;
@@ -94,22 +98,45 @@ export async function antiLinkHandler({ sock, msg }) {
     const meta = await sock.groupMetadata(jid);
     const participants = meta.participants || [];
 
-    // Match participant JID strictly from metadata
-    const senderParticipant = participants.find(
-      p => normalizeJid(p.id) === sender || toNum(p.id) === senderNum
-    );
+    // Match sender using exact raw ID + normalized + numeric comparisons
+    const senderParticipant = participants.find((p) => {
+      const pid = p.id || "";
+      return (
+        pid === rawSender ||
+        normalizeJid(pid) === sender ||
+        toNum(pid) === senderNum
+      );
+    });
 
     if (senderParticipant) {
-      participantJidForKick = senderParticipant.id; // Use raw participant ID from metadata
+      participantJidForKick = senderParticipant.id; // exact metadata participant ID
       senderIsAdmin = !!senderParticipant.admin;
     }
 
-    // Check if bot is admin
-    const botParticipant = participants.find(
-      p => normalizeJid(p.id) === botJid || toNum(p.id) === botNum
-    );
+    // Match bot using exact raw ID + normalized + numeric comparisons
+    const botParticipant = participants.find((p) => {
+      const pid = p.id || "";
+      return (
+        pid === botId ||
+        normalizeJid(pid) === botNorm ||
+        toNum(pid) === botNum
+      );
+    });
+
     botIsAdmin = !!botParticipant?.admin;
 
+    console.log("[AntiLink] Admin check:", {
+      botId,
+      botNorm,
+      botNum,
+      botFound: !!botParticipant,
+      botIsAdmin,
+      senderId: rawSender,
+      senderNum,
+      senderFound: !!senderParticipant,
+      senderIsAdmin,
+      participantJidForKick,
+    });
   } catch (err) {
     console.error("[AntiLink] Metadata fetch failed:", err.message);
   }
@@ -137,43 +164,73 @@ export async function antiLinkHandler({ sock, msg }) {
         );
       }
 
-      console.log(`[AntiLink] Removing participant: ${participantJidForKick} from group:${jid}`);
-      
-      const kickResult = await sock.groupParticipantsUpdate(
-        jid,
-        [participantJidForKick],
-        "remove"
-      );
+      console.log(`[AntiLink] Kicking participant: ${participantJidForKick}`);
 
-      console.log("[AntiLink] Kick Response:", kickResult);
+      try {
+        await sock.groupParticipantsUpdate(jid, [participantJidForKick], "remove");
 
-      await sock.sendMessage(jid, {
-        text: `🚫 @${senderNum} was removed for sending a link.`,
-        mentions: [sender],
-      });
+        await sock.sendMessage(jid, {
+          text: `🚫 @${senderNum} was removed for sending a link.`,
+          mentions: [sender],
+        });
+      } catch (kickErr) {
+        console.error("[AntiLink] Kick failed:", kickErr.message);
+        await sock.sendMessage(jid, {
+          text: `⚠️ Failed to remove @${senderNum}. Error: ${kickErr.message}`,
+          mentions: [sender],
+        });
+      }
 
-    // ── ACTION: WARN ────────────────────────────────────────────────────────
+      // ── ACTION: WARN ────────────────────────────────────────────────────────
     } else if (action === "warn") {
       const count = await addLinkWarn(jid, sender);
 
       if (count >= maxWarns) {
         await resetLinkWarns(jid, sender);
 
-        if (botIsAdmin) {
-          console.log(`[AntiLink] Warn limit reached. Removing participant: ${participantJidForKick}`);
-          await sock.groupParticipantsUpdate(jid, [participantJidForKick], "remove");
-        }
+        if (botIsAdmin && participantJidForKick) {
+          console.log(`[AntiLink] Warn limit reached. Kicking: ${participantJidForKick}`);
 
-        await sock.sendMessage(jid, {
-          text: [
-            `🚫 *@${senderNum} has been removed from the group!*`,
-            ``,
-            `Reason: Reached *${maxWarns}/${maxWarns}* anti-link warnings.`,
-          ].join("\n"),
-          mentions: [sender],
-        });
+          try {
+            await sock.groupParticipantsUpdate(jid, [participantJidForKick], "remove");
+
+            await sock.sendMessage(jid, {
+              text: [
+                `🚫 *@${senderNum} has been removed from the group!*`,
+                ``,
+                `Reason: Reached *${maxWarns}/${maxWarns}* anti-link warnings.`,
+              ].join("\n"),
+              mentions: [sender],
+            });
+          } catch (kickErr) {
+            console.error("[AntiLink] Warn-limit kick failed:", kickErr.message);
+
+            await sock.sendMessage(jid, {
+              text: [
+                `⚠️ *@${senderNum} reached the warn limit*`,
+                ``,
+                `Reason: *${maxWarns}/${maxWarns}* anti-link warnings`,
+                ``,
+                `❌ Removal failed: ${kickErr.message}`,
+              ].join("\n"),
+              mentions: [sender],
+            });
+          }
+        } else {
+          await sock.sendMessage(jid, {
+            text: [
+              `⚠️ *@${senderNum} reached the warn limit*`,
+              ``,
+              `Reason: *${maxWarns}/${maxWarns}* anti-link warnings`,
+              ``,
+              `❌ I cannot remove them because I'm not an admin!`,
+            ].join("\n"),
+            mentions: [sender],
+          });
+        }
       } else {
         const remaining = maxWarns - count;
+
         await sock.sendMessage(jid, {
           text: [
             `⚠️ *ANTI-LINK WARNING*`,
@@ -189,14 +246,13 @@ export async function antiLinkHandler({ sock, msg }) {
         });
       }
 
-    // ── ACTION: DELETE ONLY ────────────────────────────────────────────────
+      // ── ACTION: DELETE ONLY ────────────────────────────────────────────────
     } else {
       await sock.sendMessage(jid, {
         text: `⚠️ @${senderNum}, links are not allowed in this group!`,
         mentions: [sender],
       });
     }
-
   } catch (err) {
     console.error("[AntiLink] Execution error:", err);
   }
