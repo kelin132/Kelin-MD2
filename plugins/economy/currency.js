@@ -1,4 +1,4 @@
-export const CURRENCY_NAME = "ryu";
+export const CURRENCY_NAME = "orbs";
 export const STARTING_MONEY = 30_000;
 export const BASE_BANK_LIMIT = 50_000;
 
