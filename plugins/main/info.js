@@ -25,7 +25,7 @@ Hi, my name is ${getBotName()}. I am a private anime community bot created to he
 𝗢𝗙𝗙𝗜𝗖𝗜𝗔𝗟 𝗖𝗥𝗘𝗗𝗜𝗧𝗦
 ❀ Owner: \`Kelin\`
 ❀ Creator: \`AIDORU Team\`
-❀ Registered users: \`112\`
+❀ Registered users: \`479\`
 ❀ created : \`18/07/26\`
 
 𝗖𝗢𝗠𝗠𝗨𝗡𝗜𝗧𝗬 𝗛𝗘𝗟𝗣
