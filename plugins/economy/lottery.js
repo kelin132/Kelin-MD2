@@ -1,16 +1,16 @@
 /**
  * .lottery  — enter the global lottery ($10,000, one ticket per round)
- * .lottery draw           — owner-only: draw the jackpot
+ * .lottery draw           — owner/staff: draw three prizes after 15 entries
  * .lottery info           — show jackpot + your tickets
- * The round auto-draws three prizes when it reaches seven total tickets.
+ * The round auto-draws three prizes when it reaches fifteen total tickets.
  */
-import { getUser, saveUser, requireRegistration, addHistory, getAllUsers } from "./database.js";
+import { getUser, saveUser, requireRegistration, addHistory } from "./database.js";
 import { getDb } from "../../lib/mongo.mjs";
 import {
-  asJid,
   formatLotteryResults,
   LOTTERY_MAX_ENTRIES,
   maybeAutoDraw,
+  queueLotteryAnnouncement,
 } from "../../lib/lotteryAutoDraw.mjs";
 
 const mentionFor = (userId) => `@${String(userId).split("@")[0]}`;
@@ -42,6 +42,19 @@ async function getLottery() {
     totalTickets,
     jackpot: Number.isFinite(Number(doc.jackpot)) ? Number(doc.jackpot) : 0,
   };
+}
+
+
+async function announceLotteryDraw({ sock, jid, msg, result }) {
+  const content = formatLotteryResults(result);
+  await sock.sendMessage(jid, content, { quoted: msg });
+  const groupId = String(jid || "").endsWith("@g.us") ? String(jid) : result.whatsappGroupId;
+  if (groupId && String(groupId) !== String(jid)) {
+    await sock.sendMessage(groupId, content).catch((error) => {
+      console.error("[lottery] Failed to post WhatsApp group results:", error?.message || error);
+    });
+  }
+  await queueLotteryAnnouncement({ db: getDb(), result, sourcePlatform: "whatsapp", whatsappGroupId: groupId });
 }
 
 async function saveLottery(data) {
@@ -98,7 +111,8 @@ export default {
       if (lot.totalTickets >= LOTTERY_MAX_ENTRIES) {
         const automaticDraw = await maybeAutoDraw();
         if (automaticDraw) {
-          return sock.sendMessage(jid, formatLotteryResults(automaticDraw), { quoted: msg });
+          await announceLotteryDraw({ sock, jid, msg, result: automaticDraw });
+          return;
         }
       }
 
@@ -138,8 +152,9 @@ export default {
       lot.jackpot += cost;
       if (myEntry) {
         myEntry.count += canBuy;
+        if (jid.endsWith("@g.us")) myEntry.groupId = jid;
       } else {
-        lot.tickets.push({ userId, name: user.name || "User", count: canBuy });
+        lot.tickets.push({ userId, name: user.name || "User", count: canBuy, ...(jid.endsWith("@g.us") ? { groupId: jid } : {}) });
       }
       lot.totalTickets += canBuy;
       await saveLottery(lot);
@@ -150,7 +165,8 @@ export default {
       if (lot.totalTickets >= LOTTERY_MAX_ENTRIES) {
         const automaticDraw = await maybeAutoDraw();
         if (automaticDraw) {
-          return sock.sendMessage(jid, formatLotteryResults(automaticDraw), { quoted: msg });
+          await announceLotteryDraw({ sock, jid, msg, result: automaticDraw });
+          return;
         }
       }
 
@@ -162,56 +178,19 @@ export default {
     // ── DRAW (owner only) ──────────────────────────────────────────────────────
     if (sub === "draw") {
       if (!isOwner && (staffLevel || 0) < 2) return reply(
-`╭━━━〔 🔒 𝑨𝑪𝑪𝑬𝑺𝑺 𝑫𝑬𝑵𝑰𝑬𝑫 〕━━━╮
-┃ ✦ Insufficient permissions!
-┃
-┃ 🎰 Drawing requires:
-┃    › Owner  OR  Staff Level 2+
-╰━━━━━━━━━━━━━━━━━━━━╯`
+"╭━━━〔 🔒 𝑨𝑪𝑪𝑬𝑺𝑺 𝑫𝑬𝑵𝑰𝑬𝑫 〕━━━╮\n┃ ✦ Insufficient permissions!\n┃\n┃ 🎰 Drawing requires:\n┃    › Owner  OR  Staff Level 2+\n╰━━━━━━━━━━━━━━━━━━━━╯"
       );
 
       const lot = await getLottery();
       if (lot.totalTickets === 0) return reply("❌ No tickets have been bought yet.");
-
-      // Weighted random — more tickets = higher chance
-      const pool = [];
-      for (const t of lot.tickets) {
-        for (let i = 0; i < t.count; i++) pool.push(t);
+      if (lot.totalTickets < LOTTERY_MAX_ENTRIES) {
+        return reply("❌ Need at least " + LOTTERY_MAX_ENTRIES + " participants to draw. Current: " + lot.totalTickets);
       }
 
-      const winner = pool[Math.floor(Math.random() * pool.length)];
-      const prize  = lot.jackpot;
-
-      // Award prize
-      const winnerJid = asJid(winner.userId);
-      const winUser   = await getUser(winnerJid);
-      winUser.money   += prize;
-      await saveUser(winnerJid, winUser);
-      await addHistory(winnerJid, "lottery_win", prize, `Won lottery jackpot $${prize.toLocaleString()}`);
-
-      // Reset lottery with a fresh random base jackpot
-      const newBase = randomBaseJackpot();
-      await getDb().collection("lottery").updateOne(
-        { _id: "current" },
-        { $set: { tickets: [], totalTickets: 0, jackpot: newBase, baseJackpot: newBase, createdAt: new Date() } }
-      );
-
-      return await sock.sendMessage(jid, {
-        text:
-`╭━━━〔 🎰 𝑳𝑶𝑻𝑻𝑬𝑹𝒀 𝑫𝑹𝑨𝑾 🏆 〕━━━╮
-┃ ✦ The winning ticket has been drawn...
-┃
-┃ 🏆 Winner  ➜ ${mentionFor(winner.userId)} (${winner.name})
-┃ 🎫 Tickets ➜ 『 ${winner.count} 』
-┃
-┣━━━━━━━━━━━━━━━━━━━━
-┃ 💰 Jackpot Won › $${prize.toLocaleString()}
-┣━━━━━━━━━━━━━━━━━━━━
-┃ 🎉 𝗖𝗢𝗡𝗚𝗥𝗔𝗧𝗨𝗟𝗔𝗧𝗜𝗢𝗡𝗦!
-┃ A new lottery has started!
-╰━━━━━━━━━━━━━━━━━━━━╯`,
-        mentions: winnerJid ? [winnerJid] : [],
-      }, { quoted: msg });
+      const result = await maybeAutoDraw();
+      if (!result) return reply("⏳ The lottery draw is already in progress. Please try again shortly.");
+      await announceLotteryDraw({ sock, jid, msg, result });
+      return;
     }
 
     return reply(

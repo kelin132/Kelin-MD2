@@ -1,5 +1,5 @@
 // plugins/economy/ll.js
-// .ll          — show lottery pool status; auto-draws at 7 entries
+// .ll          — show lottery pool status; auto-draws at 15 entries
 // .ll draw     — owner-only: draw the three configured prizes
 
 import { getDb } from "../../lib/mongo.mjs";
@@ -8,9 +8,23 @@ import {
   formatLotteryResults,
   LOTTERY_MAX_ENTRIES,
   maybeAutoDraw,
+  queueLotteryAnnouncement,
 } from "../../lib/lotteryAutoDraw.mjs";
 
 const REQUIRED = LOTTERY_MAX_ENTRIES;
+
+async function announceLotteryDraw({ sock, jid, msg, result, db }) {
+  const content = formatLotteryResults(result);
+  await sock.sendMessage(jid, content, { quoted: msg });
+  const groupId = String(jid || "").endsWith("@g.us") ? String(jid) : result.whatsappGroupId;
+  if (groupId && String(groupId) !== String(jid)) {
+    await sock.sendMessage(groupId, content).catch((error) => {
+      console.error("[lottery] Failed to post WhatsApp group results:", error?.message || error);
+    });
+  }
+  await queueLotteryAnnouncement({ db, result, sourcePlatform: "whatsapp", whatsappGroupId: groupId });
+}
+
 
 export default {
   name: "ll",
@@ -40,13 +54,15 @@ export default {
 
         const result = await maybeAutoDraw();
         if (!result) return reply("❌ The lottery draw is already in progress.");
-        return sock.sendMessage(jid, formatLotteryResults(result), { quoted: msg });
+        await announceLotteryDraw({ sock, jid, msg, result, db });
+        return;
       }
 
       // ── STATUS (poll-style) ───────────────────────────────────────────────
       const automaticDraw = await maybeAutoDraw();
       if (automaticDraw) {
-        return sock.sendMessage(jid, formatLotteryResults(automaticDraw), { quoted: msg });
+        await announceLotteryDraw({ sock, jid, msg, result: automaticDraw, db });
+        return;
       }
 
       const tickets = lot?.tickets || [];
