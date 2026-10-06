@@ -22,11 +22,16 @@ export default {
       const lot = await db.collection("lottery").findOne({ _id: "current" });
       if (!lot || !Array.isArray(lot.tickets) || !lot.tickets.length) {
         return reply([
-          "╭━━━〔 🎰 𝑳𝑶𝑻𝑻𝑬𝑹𝒀 〕━━━╮",
-          "┃ ✦ No tickets bought yet!",
-          "┃",
-          "┃ 💡 Be the first — .lottery buy",
-          "╰━━━━━━━━━━━━━━━━━━━━╯",
+          "ㅤㅤ∘]───❀───[∘",
+          "*∘₊✧ LOTTERY LIST* ❀",
+          "      ∘]───❀───[∘",
+          "",
+          "𝗧𝗶𝗰𝗸𝗲𝘁𝘀: 0 total",
+          "",
+          "━━━━━━━━━━━━━━━",
+          "No tickets bought yet!",
+          "━━━━━━━━━━━━━━━",
+          "_Use .lottery buy to join_",
         ].join("\n"));
       }
 
@@ -38,6 +43,7 @@ export default {
       const names = new Map(profiles.map((profile) => [String(profile._id), String(profile.name || "").trim()]));
       const totalTickets = Number(lot.totalTickets || sorted.reduce((sum, ticket) => sum + (Number(ticket.count) || 0), 0));
       const mentions = [];
+
       const rows = sorted.map((ticket, index) => {
         const identity = lotteryWinnerIdentity(ticket);
         const whatsappJid = getWhatsAppParticipantId(ticket.userId);
@@ -46,22 +52,30 @@ export default {
           ? "@" + whatsappJid.split("@")[0] + " (" + name + ")"
           : name;
         if (whatsappJid) mentions.push(whatsappJid);
+
         const chance = totalTickets > 0 ? ((Number(ticket.count || 0) / totalTickets) * 100).toFixed(1) : "0.0";
-        const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : String(index + 1) + ".";
-        return "┃ " + medal + " " + player + " › " + Number(ticket.count || 0) + " ticket(s) · " + chance + "%";
+        const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`;
+
+        return [
+          `${medal} *${player}*`,
+          `🎫 Tickets: ${Number(ticket.count || 0)}`,
+          `📊 Chance: ${chance}%`,
+        ].join("\n");
       });
+
       const response = [
-        "╭━━━〔 🎰 𝑳𝑶𝑻𝑻𝑬𝑹𝒀 𝑳𝑰𝑺𝑻 🎟️ 〕━━━╮",
-        "┃ ✦ Current round participants",
-        "┃",
-        "┃ 💰 Jackpot › $" + Number(lot.jackpot || 0).toLocaleString(),
-        "┃ 🎫 Tickets › " + totalTickets + " total",
-        "┣━━━━━━━━━━━━━━━━━━━━",
-        ...rows,
-        "┣━━━━━━━━━━━━━━━━━━━━",
-        "┃ 💡 .lottery buy to join",
-        "╰━━━━━━━━━━━━━━━━━━━━╯",
+        "ㅤㅤ∘]───❀───[∘",
+        "*∘₊✧ LOTTERY LIST* ❀",
+        "      ∘]───❀───[∘",
+        "",
+        `𝗧𝗶𝗰𝗸𝗲𝘁𝘀: ${totalTickets} total`,
+        "",
+        "━━━━━━━━━━━━━━━",
+        rows.join("\n\n"),
+        "━━━━━━━━━━━━━━━",
+        "_Use .lottery buy to join_",
       ].join("\n");
+
       return sock.sendMessage(jid, { text: response, mentions: [...new Set(mentions)] }, { quoted: msg });
     } catch (error) {
       console.error("LOTTERYLIST ERROR:", error);
