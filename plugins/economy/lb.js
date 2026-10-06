@@ -10,37 +10,45 @@
  */
 import { getDb } from "../../lib/mongo.mjs";
 import { ensureTotalWealthMigration } from "./database.js";
-import { formatLeaderboard } from "../../lib/leaderboardFormat.mjs";
 import { getCachedLeaderboard } from "../../lib/leaderboardCache.mjs";
 
-const MEDALS = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
-const WEALTH_RANKS = ["𝟏", "𝟐", "𝟑", "𝟒", "𝟓", "𝟔", "𝟕", "𝟖", "𝟗", "𝟏𝟎"];
-const WEALTH_TIERS = [
-  ["⚡", "Legendary Hero"], ["🌸", "Elite Warrior"], ["🗡️", "Grand Swordsman"],
-  ["✨", "Skilled Fighter"], ["🌙", "Rising Star"], ["🎴", "Card Master"],
-  ["🔥", "Flame Bearer"], ["💧", "Tide Turner"], ["🌿", "Forest Spirit"], ["⭐", "Chosen One"],
-];
-const WEALTH_SEPARATOR = "  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈";
 const formatMoney = (value) => `$${Number(value || 0).toLocaleString()}`;
+
+function getMedal(index) {
+  if (index === 0) return "🥇";
+  if (index === 1) return "🥈";
+  if (index === 2) return "🥉";
+  return `${index + 1}.`;
+}
+
 async function loadWealthText(db) {
-  // Older reset runs cleared this derived field; repair it once before
-  // using the indexed wealth sort.
   const users = await db.collection("users").find(
     { registered: true },
     { projection: { _id: 1, name: 1, username: 1, totalWealth: 1 } },
   ).sort({ totalWealth: -1 }).limit(10).toArray();
 
-  if (!users.length) return "💰 No registered players yet!";
+  if (!users.length) {
+    return [
+      "ㅤㅤ∘]───❀───[∘",
+      "*∘₊✧ WEALTH RANKINGS* ❀",
+      "      ∘]───❀───[∘",
+      "",
+      "━━━━━━━━━━━━━━━",
+      "💰 No registered players yet!",
+      "━━━━━━━━━━━━━━━",
+      "_Earn money to join_",
+    ].join("\n");
+  }
 
   const userJids = users
     .map((user) => String(user._id || user.jid || user.whatsappNumber || ""))
     .filter(Boolean);
   const [cardDocs, pokemonDocs, companyDocs] = await Promise.all([
     db.collection("mn_users").find({
-      $or: [{ whatsappNumber: { $in: userJids } }, { userId: { $in: userJids } }],
+      $or: [{ whatsappNumber: { $in: userJids } }, { userId: {$in: userJids } }],
     }, { projection: { userId: 1, whatsappNumber: 1, totalCards: 1, cards: 1 } }).toArray(),
     db.collection("pokemon_owned").aggregate([
-      { $match: { ownerJid: { $in: userJids } } },
+      { $match: { ownerJid: {$in: userJids } } },
       { $group: { _id: "$ownerJid", total: { $sum: 1 } } },
     ]).toArray(),
     db.collection("companies").find({ ownerId: { $in: userJids } }, {
@@ -59,6 +67,7 @@ async function loadWealthText(db) {
   }
   const pokemonCounts = new Map(pokemonDocs.map((doc) => [String(doc._id), Number(doc.total || 0)]));
   const companies = new Map(companyDocs.map((company) => [String(company.ownerId), company]));
+
   return formatWealthLeaderboard(users, cardCounts, pokemonCounts, companies);
 }
 
@@ -72,55 +81,69 @@ async function getWealthText(db) {
 }
 
 function formatWealthLeaderboard(users, cardCounts, pokemonCounts, companies) {
-  const lines = [
-    "⛩️  *𝗪𝗘𝗔𝗟𝗧𝗛  𝗥𝗔𝗡𝗞𝗜𝗡𝗚𝗦* ⛩️",
-    "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄",
-    "  🌸 *Top 10 Richest Warriors*",
-    "  ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦",
-    "",
-  ];
-  users.forEach((user, index) => {
+  const rows = users.map((user, index) => {
     const userJid = String(user._id || user.jid || user.whatsappNumber || "");
-    const [tierIcon, tierName] = WEALTH_TIERS[index] || ["⭐", "Chosen One"];
     const name = user.name || user.username || `User_${userJid.slice(-4)}`;
     const cardCount = cardCounts.get(userJid) || 0;
     const pokemonCount = pokemonCounts.get(userJid) || 0;
     const company = companies.get(userJid);
-    lines.push(`『 ${WEALTH_RANKS[index] || String(index + 1)} 』 *${name}*`);
-    lines.push(`  ┗ ${tierIcon} ${tierName}`);
-    lines.push(`  💰 *${formatMoney(user.totalWealth)}*  🃏 *${cardCount}* cards  🎮 *${pokemonCount}* pkm`);
-    if (company?.name) lines.push(`  🏯 *${company.name}*`);
-    if (index < users.length - 1) lines.push(WEALTH_SEPARATOR);
+    const medal = getMedal(index);
+
+    const block = [
+      `${medal} *${name}*`,
+      `💰 Wealth: ${formatMoney(user.totalWealth)}`,
+      `🃏 Cards: ${cardCount} · 🎮 Pokémon: ${pokemonCount}`,
+    ];
+    if (company?.name) block.push(`🏯 Company: ${company.name}`);
+    return block.join("\n");
   });
-  lines.push("", "✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦", "🌺 _May your wealth grow like the sakura_");
-  return lines.join("\n");
+
+  return [
+    "ㅤㅤ∘]───❀───[∘",
+    "*∘₊✧ WEALTH RANKINGS* ❀",
+    "      ∘]───❀───[∘",
+    "",
+    "🌸 *Top 10 Richest Warriors*",
+    "",
+    "━━━━━━━━━━━━━━━",
+    rows.join("\n\n"),
+    "━━━━━━━━━━━━━━━",
+    "_May your wealth grow like the sakura_",
+  ].join("\n");
 }
 
-function formatCategoryLeaderboard({ heading, subtitle, rows, valueIcon, valueLabel, footer }) {
+function formatCategoryLeaderboard({ title, subtitle, rows, valueIcon, valueLabel, footer }) {
   const visibleRows = rows.slice(0, 10);
-  const lines = [
-    "⛩️  *𝗪𝗘𝗔𝗟𝗧𝗛  𝗥𝗔𝗡𝗞𝗜𝗡𝗚𝗦* ⛩️",
-    "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄",
-    `  🌸 *${subtitle || heading}*`,
-    "  ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦",
-    "",
-  ];
-  visibleRows.forEach((row, index) => {
+  const formattedRows = visibleRows.map((row, index) => {
     const name = String(row.name || "Trainer").trim();
     const value = Number(row.value) || 0;
-    lines.push(`『 ${WEALTH_RANKS[index] || String(index + 1)} 』 *${name}*`);
-    lines.push(`  ┗ ${valueIcon} *${value.toLocaleString()} ${valueLabel}*`);
-    if (index < visibleRows.length - 1) lines.push(WEALTH_SEPARATOR);
+    const medal = getMedal(index);
+
+    return [
+      `${medal} *${name}*`,
+      `${valueIcon} ${valueLabel}: ${value.toLocaleString()}`,
+    ].join("\n");
   });
-  lines.push("", "✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦ ✦", `🌺 _${footer || heading}_`);
-  return lines.join("\n");
+
+  return [
+    "ㅤㅤ∘]───❀───[∘",
+    `*∘₊✧ ${title.toUpperCase()}* ❀`,
+    "      ∘]───❀───[∘",
+    "",
+    `🌸 *${subtitle}*`,
+    "",
+    "━━━━━━━━━━━━━━━",
+    formattedRows.join("\n\n"),
+    "━━━━━━━━━━━━━━━",
+    `_${footer}_`,
+  ].join("\n");
 }
 
 export default {
   name: "lb",
-  description: "Leaderboard — top cards or top Pokémon collectors",
+  description: "Leaderboard — top wealth, cards, levels, or Pokémon collectors",
   category: "economy",
-  usage: ".lb --cards | .lb --pokemon",
+  usage: ".lb --cards | .lb --pokemon | .lb --level",
   aliases: ["kb", "leaderboard"],
   cooldown: 8,
 
@@ -157,11 +180,12 @@ export default {
         return sock.sendMessage(jid, { text: "⭐ No registered players yet!" }, { quoted: msg });
       }
 
-      const text = formatLeaderboard({
+      const text = formatCategoryLeaderboard({
+        title: "LEVEL RANKINGS",
         subtitle: "Top 10 Players by Level",
         rows: users.map((user) => ({ name: user.name || "User", value: user.level || 1 })),
         valueIcon: "⭐",
-        valueLabel: "LEVEL",
+        valueLabel: "Level",
         footer: "Level up and claim your place",
       });
       return sock.sendMessage(jid, { text }, { quoted: msg });
@@ -170,70 +194,64 @@ export default {
     // ── TOP CARDS ──────────────────────────────────────────────────────────────
     if (flag === "cards" || flag === "card") {
       const text = await getCachedLeaderboard("economy:cards:formatted", async () => {
-      // totalCards is maintained by card commands and can use the background
-      // index. Keep an aggregate fallback for older records without the field.
-      let results = await getCachedLeaderboard("economy:cards:raw", () => db.collection("mn_users")
-        .find({ totalCards: { $gt: 0 } }, {
-          projection: { userId: 1, whatsappNumber: 1, username: 1, totalCards: 1 },
-        })
-        .sort({ totalCards: -1, userId: 1 })
-        .limit(10)
-        .toArray(), { ttlMs: 30_000 });
-      if (!results.length) {
-        results = await getCachedLeaderboard("economy:cards:legacy", () => db.collection("mn_users").aggregate([
-          { $match: { cards: { $exists: true, $type: "array", $ne: [] } } },
-          { $project: { userId: 1, whatsappNumber: 1, username: 1, cardCount: { $size: "$cards" } } },
-          { $sort: { cardCount: -1 } },
-          { $limit: 10 },
-        ]).toArray(), { ttlMs: 30_000 });
-      }
+        let results = await getCachedLeaderboard("economy:cards:raw", () => db.collection("mn_users")
+          .find({ totalCards: { $gt: 0 } }, {
+            projection: { userId: 1, whatsappNumber: 1, username: 1, totalCards: 1 },
+          })
+          .sort({ totalCards: -1, userId: 1 })
+          .limit(10)
+          .toArray(), { ttlMs: 30_000 });
+        if (!results.length) {
+          results = await getCachedLeaderboard("economy:cards:legacy", () => db.collection("mn_users").aggregate([
+            { $match: { cards: {$exists: true, $type: "array", $ne: [] } } },
+            { $project: { userId: 1, whatsappNumber: 1, username: 1, cardCount: { $size: "$cards" } } },
+            { $sort: { cardCount: -1 } },             {$limit: 10 },
+          ]).toArray(), { ttlMs: 30_000 });
+        }
 
-      if (!results.length) return "";
+        if (!results.length) return "";
 
-      // Pull full mn_users docs to get whatsappNumber (full JID) and username
-      const userIds = results.map(r => r.userId).filter(Boolean);
-      const mnDocs  = await db.collection("mn_users")
-        .find({
-          $or: [
-            { userId: { $in: userIds } },
-            { whatsappNumber: { $in: userIds } },
-          ],
-        }, { projection: { userId: 1, username: 1, whatsappNumber: 1 } })
-        .toArray();
+        const userIds = results.map(r => r.userId).filter(Boolean);
+        const mnDocs = await db.collection("mn_users")
+          .find({
+            $or: [
+              { userId: { $in: userIds } },
+              { whatsappNumber: { $in: userIds } },
+            ],
+          }, { projection: { userId: 1, username: 1, whatsappNumber: 1 } })
+          .toArray();
 
-      // userId → whatsappNumber (full JID)
-      const jidMap = {};
-      for (const doc of mnDocs) {
-        if (doc.whatsappNumber) jidMap[doc.userId] = doc.whatsappNumber;
-      }
+        const jidMap = {};
+        for (const doc of mnDocs) {
+          if (doc.whatsappNumber) jidMap[doc.userId] = doc.whatsappNumber;
+        }
 
-      // Collect all known JIDs and look them up in the economy users collection
-      const allJids = Object.values(jidMap).filter(Boolean);
-      const econDocs = allJids.length
-        ? await db.collection("users")
-            .find({ _id: { $in: allJids } }, { projection: { _id: 1, name: 1 } })
-            .toArray()
-        : [];
+        const allJids = Object.values(jidMap).filter(Boolean);
+        const econDocs = allJids.length
+          ? await db.collection("users")
+              .find({ _id: { $in: allJids } }, { projection: { _id: 1, name: 1 } })
+              .toArray()
+          : [];
 
-      // Build lookup: JID → name
-      const econNameMap = {};
-      for (const u of econDocs) econNameMap[u._id] = u.name || null;
+        const econNameMap = {};
+        for (const u of econDocs) econNameMap[u._id] = u.name || null;
 
-      // Final name resolver: economy name via JID → cards username → fallback
-      const mnNameMap = {};
-      for (const doc of mnDocs) {
-        const econName = econNameMap[doc.whatsappNumber] || null;
-        mnNameMap[doc.userId] = econName || doc.username || null;
-      }
+        const mnNameMap = {};
+        for (const doc of mnDocs) {
+          const econName = econNameMap[doc.whatsappNumber] || null;
+          mnNameMap[doc.userId] = econName || doc.username || null;
+        }
 
-      return formatLeaderboard({
-        subtitle: "Top 10 Card Collectors",
-         rows: results.map((r) => ({ name: mnNameMap[r.userId] || `User_${String(r.userId).slice(-4)}`, value: r.cardCount ?? r.totalCards })),
-        valueIcon: "🃏",
-        valueLabel: "CARDS",
-        footer: "Collect • compete • become a legend",
-      });
+        return formatCategoryLeaderboard({
+          title: "CARD RANKINGS",
+          subtitle: "Top 10 Card Collectors",
+          rows: results.map((r) => ({ name: mnNameMap[r.userId] || `User_${String(r.userId).slice(-4)}`, value: r.cardCount ?? r.totalCards })),
+          valueIcon: "🃏",
+          valueLabel: "Cards",
+          footer: "Collect • compete • become a legend",
+        });
       }, { ttlMs: 30_000 });
+
       if (!text) {
         return sock.sendMessage(jid, {
           text: "🃏 No cards collected yet!\nUse the card game commands to start collecting.",
@@ -245,43 +263,43 @@ export default {
     // ── TOP POKÉMON ────────────────────────────────────────────────────────────
     if (flag === "pokemon" || flag === "poke" || flag === "pokémon") {
       const text = await getCachedLeaderboard("economy:pokemon:formatted", async () => {
-      const trainers = await getCachedLeaderboard(
-        "economy:pokemon:raw",
-        () => db.collection("pokemon_trainers").find(
-          { pokemonCount: { $gt: 0 } },
-          { projection: { jid: 1, username: 1, pokemonCount: 1 } },
-        ).sort({ pokemonCount: -1, jid: 1 }).limit(10).toArray(),
-        { ttlMs: 30_000 },
-      );
+        const trainers = await getCachedLeaderboard(
+          "economy:pokemon:raw",
+          () => db.collection("pokemon_trainers").find(
+            { pokemonCount: { $gt: 0 } },
+            { projection: { jid: 1, username: 1, pokemonCount: 1 } },
+          ).sort({ pokemonCount: -1, jid: 1 }).limit(10).toArray(),
+          { ttlMs: 30_000 },
+        );
 
-      if (!trainers.length) return "";
+        if (!trainers.length) return "";
 
-      // Trainer names are already in the compact result set. Only look up
-      // missing display names in the economy collection.
-      const ownerJids = trainers.map((trainer) => trainer.jid).filter(Boolean);
-      const userDocs = await db.collection("users").find(
-        { _id: { $in: ownerJids } },
-        { projection: { _id: 1, name: 1 } },
-      ).toArray();
+        const ownerJids = trainers.map((trainer) => trainer.jid).filter(Boolean);
+        const userDocs = await db.collection("users").find(
+          { _id: { $in: ownerJids } },
+          { projection: { _id: 1, name: 1 } },
+        ).toArray();
 
-      const nameMap = {};
-      for (const u of userDocs)    nameMap[u._id]    = u.name     || null;
+        const nameMap = {};
+        for (const u of userDocs) nameMap[u._id] = u.name || null;
 
-      return formatLeaderboard({
-        subtitle: "Top 10 Pokémon Trainers",
-        rows: trainers.map((trainer) => {
-          const ownerId = String(trainer.jid || "");
-          const num = ownerId.split("@")[0].split(":")[0];
-          return {
-            name: nameMap[ownerId] || trainer.username || `Trainer_${num.slice(-4)}`,
-            value: trainer.pokemonCount,
-          };
-        }),
-        valueIcon: "🎮",
-        valueLabel: "POKÉMON",
-        footer: "Catch • train • rise to the top",
-      });
+        return formatCategoryLeaderboard({
+          title: "POKÉMON RANKINGS",
+          subtitle: "Top 10 Pokémon Trainers",
+          rows: trainers.map((trainer) => {
+            const ownerId = String(trainer.jid || "");
+            const num = ownerId.split("@")[0].split(":")[0];
+            return {
+              name: nameMap[ownerId] || trainer.username || `Trainer_${num.slice(-4)}`,
+              value: trainer.pokemonCount,
+            };
+          }),
+          valueIcon: "🎮",
+          valueLabel: "Pokémon",
+          footer: "Catch • train • rise to the top",
+        });
       }, { ttlMs: 30_000 });
+
       if (!text) {
         return sock.sendMessage(jid, {
           text: "🎮 No Pokémon caught yet!\nUse *.spawnpoke* then *.catch* to start your collection.",
