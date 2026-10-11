@@ -2,6 +2,7 @@ import { getCard, TIER_EMOJI } from "../../lib/cardApi.mjs";
 
 const TIER_POWER = {
   Common: 1, Uncommon: 2, Rare: 3, Epic: 4, Legendary: 5,
+  Mythical: 5, Secret: 5, C: 5, R: 5, SR: 5, SSR: 5, UR: 5, X: 5,
 };
 
 export default {
@@ -24,7 +25,7 @@ export default {
 
       const power = TIER_POWER[card.tier] || 1;
       const emoji = TIER_EMOJI[card.tier]  || "⭐";
-      const bar   = "█".repeat(power) + "░".repeat(5 - power);
+      const bar   = "█".repeat(power) + "░".repeat(Math.max(0, 5 - power));
 
       const text =
 `🃏 *RARITY CHECK*
@@ -37,7 +38,7 @@ ${emoji} *${card.name}*
 💥 Power: *${power}/5*
 📊 [${bar}]
 
-> ${card.tier === "Legendary" ? "Extremely rare! 🔥" :
+> ${power === 5 ? "Top rarity — an excellent collector card! 🔥" :
     card.tier === "Epic"      ? "Very hard to find! ✨" :
     card.tier === "Rare"      ? "A solid card! 💪" :
     card.tier === "Uncommon"  ? "Decent pick." :

@@ -8,10 +8,7 @@
  * Trades expire after 5 minutes.
  */
 import { findOrCreateUser } from "./db.js";
-
-const TIER_EMOJI = {
-  Common: "⚪", Uncommon: "🟢", Rare: "🔵", Epic: "🟣", Legendary: "🟡",
-};
+import { TIER_EMOJI } from "../../lib/cardApi.mjs";
 
 const EXPIRE_MS = 5 * 60 * 1000; // 5 minutes
 

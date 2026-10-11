@@ -5,12 +5,9 @@
  * .ci <card name>     — show card details
  */
 import { findOrCreateUser } from "./db.js";
+import { TIER_EMOJI, TIER_NAME } from "../../lib/cardApi.mjs";
 
-const TIER_EMOJI = {
-  Common: "⚪", Uncommon: "🟢", Rare: "🔵", Epic: "🟣", Legendary: "🟡",
-};
-
-const TIER_ORDER = ["Legendary", "Epic", "Rare", "Uncommon", "Common"];
+const TIER_ORDER = [...Object.values(TIER_NAME)].reverse();
 
 export default {
   name:     "myseries",

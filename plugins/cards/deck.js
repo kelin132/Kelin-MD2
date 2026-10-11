@@ -1,9 +1,10 @@
 import { findOrCreateUser } from "./db.js";
+import { TIER_EMOJI } from "../../lib/cardApi.mjs";
 
-const TIER_EMOJI = {
-  Common: "⚪", Uncommon: "🟢", Rare: "🔵", Epic: "🟣", Legendary: "🟡",
+const STARS = {
+  Common: 1, Uncommon: 2, Rare: 3, Epic: 4, Legendary: 5, Mythical: 5, Secret: 5,
+  C: 5, R: 5, SR: 5, SSR: 5, UR: 5, X: 5,
 };
-const STARS = { Common: 1, Uncommon: 2, Rare: 3, Epic: 4, Legendary: 5 };
 const MAX_DECKS = 10;
 const MAX_CARDS_PER_DECK = 12;
 

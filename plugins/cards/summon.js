@@ -6,7 +6,7 @@
  *
  * Usage:
  *   .summon           — random tier summon; claim it later with .claim
- *   .summon <tier>    — specific tier (1-6, S, or Common/Uncommon/Rare/Epic/Legendary/Mythical/Secret)
+ *   .summon <tier>    — specific tier (1-6, S, C, R, SR, SSR, UR, X, or a tier name)
  */
 import { findOrCreateUser } from "./db.js";
 import { getUser, saveUser, requireRegistration, addHistory } from "../economy/database.js";
@@ -29,6 +29,12 @@ export const SUMMON_COST = {
   Legendary: 200000,
   Mythical:  750000,
   Secret:    1500000, // Fixed: Secret tier cost
+  C:         3000000,
+  R:         4000000,
+  SR:        8000000,
+  SSR:       15000000,
+  UR:        30000000,
+  X:         60000000,
 };
 
 // ── Weighted random tier (bias towards lower tiers) ───────────────────────────
@@ -39,6 +45,13 @@ const RANDOM_TIER_WEIGHTS = [
   { tier: "Epic",      weight: 10 },
   { tier: "Legendary", weight:  5 },
   { tier: "Mythical",  weight:  2 },
+  { tier: "Secret",    weight:  0.7 },
+  { tier: "C",         weight:  0.25 },
+  { tier: "R",         weight:  0.1 },
+  { tier: "SR",        weight:  0.05 },
+  { tier: "SSR",       weight:  0.02 },
+  { tier: "UR",        weight:  0.01 },
+  { tier: "X",         weight:  0.005 },
 ];
 const TOTAL_WEIGHT = RANDOM_TIER_WEIGHTS.reduce((s, t) => s + t.weight, 0);
 const SUMMON_COOLDOWN_MS = 20_000;
@@ -55,13 +68,14 @@ function rollRandomTier() {
 
 function resolveTierName(input) {
   if (!input) return null;
-  const lower = String(input).trim().toLowerCase();
+  const lower = String(input).trim().toLowerCase().replace(/^tier\s+/, "");
   
-  if (["secret", "s", "7", "tier s", "tier 7"].includes(lower)) {
+  if (["secret", "s", "7"].includes(lower)) {
     return "Secret";
   }
   
-  if (TIER_NAME[lower]) return TIER_NAME[lower];
+  const tierNum = TIER_NUM[lower] || TIER_NUM[lower.toUpperCase()];
+  if (tierNum && TIER_NAME[tierNum]) return TIER_NAME[tierNum];
   
   const found = Object.values(TIER_NAME).find(n => n.toLowerCase() === lower);
   return found || null;
@@ -97,6 +111,12 @@ export default {
 ┃ 🟡 T5 Legendary  › \`$${SUMMON_COST.Legendary.toLocaleString()}\`
 ┃ 🔴 T6 Mythical   › \`$${SUMMON_COST.Mythical.toLocaleString()}\`
 ┃ 🌌 TS Secret     › \`$${SUMMON_COST.Secret.toLocaleString()}\`
+┃ 💠 C              › \`$${SUMMON_COST.C.toLocaleString()}\`
+┃ 🔷 R              › \`$${SUMMON_COST.R.toLocaleString()}\`
+┃ 🟣 SR             › \`$${SUMMON_COST.SR.toLocaleString()}\`
+┃ 💎 SSR            › \`$${SUMMON_COST.SSR.toLocaleString()}\`
+┃ 🌠 UR             › \`$${SUMMON_COST.UR.toLocaleString()}\`
+┃ ✨ X              › \`$${SUMMON_COST.X.toLocaleString()}\`
 ┃
 ┣━━━━━━━━━━━━━━━━━━━━━━━━
 ┃ 📖 𝗨𝘀𝗮𝗴𝗲
@@ -109,6 +129,8 @@ export default {
 ┃ \`.summon 5\`        — Legendary (T5)
 ┃ \`.summon 6\`        — Mythical (T6)
 ┃ \`.summon secret\`   — Secret (Tier S)
+┃ \`.summon C/R/SR\`   — Higher tiers
+┃ \`.summon SSR/UR/X\` — Top tiers
 ┃
 ┃ 💡 Earn coins via \`.daily\` \`.work\` \`.crime\`
 ╰━━━━━━━━━━━━━━━━━━━━━━━━╯`
@@ -176,7 +198,7 @@ export default {
       await addHistory(sender, "summon", -cost, `Summoned ${tierName} card`);
 
       // ── Fetch a card from the resolved tier ─────────────────────────────────
-      const targetTierNum = tierName === "Secret" ? "S" : (TIER_NUM[tierName.toLowerCase()] || "1");
+      const targetTierNum = TIER_NUM[tierName.toLowerCase()] || "1";
       const pool = await getCardsByTier(targetTierNum);
       if (!pool || pool.length === 0) {
         // Refund if no cards available
@@ -211,7 +233,7 @@ export default {
         price:      card.price  || 0,
         series:     card.series || "Unknown",
         media:      card.media  || null,
-        mediaType:  (card.tierNum === "6" || card.tierNum === "S" || card.tier === "Secret") ? "gif" : "image",
+        mediaType:  card.mediaType || ((card.tierNum === "6" || card.tierNum === "S" || card.tier === "Secret") ? "gif" : "image"),
         summonedAt: new Date(),
       };
 

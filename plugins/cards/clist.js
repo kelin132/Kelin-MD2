@@ -2,11 +2,15 @@ import { getCardsByTier, TIER_EMOJI } from "../../lib/cardApi.mjs";
 
 const RARITY_MAP = {
   "1": "1", "2": "2", "3": "3", "4": "4", "5": "5",
+  "6": "6", "s": "S", "c": "C", "r": "R", "sr": "SR",
+  "ssr": "SSR", "ur": "UR", "x": "X",
   "common":    "1",
   "uncommon":  "2",
   "rare":      "3",
   "epic":      "4",
   "legendary": "5",
+  "mythical":  "6",
+  "secret":    "S",
 };
 
 export default {
@@ -30,14 +34,17 @@ export default {
 3 = Rare
 4 = Epic
 5 = Legendary
+6 = Mythical
+S = Secret
+C, R, SR, SSR, UR, X = higher tiers
 
-Example: .clist 3  or  .clist rare 2`
+Example: .clist 3  or  .clist rare 2  or  .clist UR`
         );
       }
 
       const input  = args[0].toLowerCase();
       const tierNum = RARITY_MAP[input];
-      if (!tierNum) return reply("Invalid tier. Use 1–5 or the tier name.");
+      if (!tierNum) return reply("Invalid tier. Use 1–6, S, C, R, SR, SSR, UR, X, or a tier name.");
 
       let page = parseInt(args[1]) || 1;
       if (page < 1) page = 1;

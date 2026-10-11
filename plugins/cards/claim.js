@@ -14,7 +14,7 @@ function toOwnedCard(card, spawnId) {
     price:      card.price || 0,
     series:     card.series || "Unknown",
     media:      card.media || null,
-    mediaType:  (card.tierNum === "6" || card.tierNum === "S") ? "gif" : "image",
+    mediaType:  card.mediaType || ((card.tierNum === "6" || card.tierNum === "S") ? "gif" : "image"),
     obtainedAt: new Date(),
   };
 }

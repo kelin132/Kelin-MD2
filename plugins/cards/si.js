@@ -48,7 +48,9 @@ function parseInput(raw) {
 
   const tierMap = {
     "1": "1", "2": "2", "3": "3", "4": "4", "5": "5", "6": "6", "s": "S",
+    "c": "C", "r": "R", "sr": "SR", "ssr": "SSR", "ur": "UR", "x": "X",
     "t1": "1", "t2": "2", "t3": "3", "t4": "4", "t5": "5", "t6": "6", "ts": "S",
+    "tc": "C", "tr": "R", "tsr": "SR", "tssr": "SSR", "tur": "UR", "tx": "X",
     "common": "1", "uncommon": "2", "rare": "3", "epic": "4",
     "legendary": "5", "mythical": "6", "secret": "S",
   };
@@ -221,9 +223,13 @@ export default {
         byTier.get(key).push(card);
       }
 
-      const tierOrder = ["1", "2", "3", "4", "5", "6", "S"];
+      const tierOrder = ["1", "2", "3", "4", "5", "6", "S", "C", "R", "SR", "SSR", "UR", "X"];
       const sortedTiers = [...byTier.keys()].sort(
-        (a, b) => tierOrder.indexOf(a) - tierOrder.indexOf(b)
+        (a, b) => {
+          const aIndex = tierOrder.indexOf(a);
+          const bIndex = tierOrder.indexOf(b);
+          return (aIndex < 0 ? tierOrder.length : aIndex) - (bIndex < 0 ? tierOrder.length : bIndex);
+        }
       );
 
       // ── Tier specified: show that specific tier ────────────────────────────

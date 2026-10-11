@@ -1,16 +1,19 @@
 import { findOrCreateUser } from "./db.js";
+import { TIER_NAME, TIER_NUM } from "../../lib/cardApi.mjs";
 
-const TIER_MAP = {
-  Common: "1", Uncommon: "2", Rare: "3",
-  Epic: "4", Legendary: "5", Mythical: "6", Mythic: "6", Secret: "S",
-};
+const TIER_ORDER = Object.keys(TIER_NAME);
+
+function cardTier(card) {
+  const value = String(card.tierNum || card.tier || "").trim();
+  return TIER_NUM[value.toLowerCase()] || TIER_NUM[value.toUpperCase()] || value.toUpperCase();
+}
 
 export default {
   name: "tier",
   aliases: ["mytiers"],
   category: "cards",
   description: "View your cards grouped by tier",
-   usage: ".tier [1-6 or S]",
+   usage: ".tier [1-6, S, C, R, SR, SSR, UR, or X]",
 
   async run({ sock, msg, args, sender }) {
     const jid   = msg.key.remoteJid;
@@ -23,11 +26,14 @@ export default {
         return reply("❌ You don't have any cards.");
       }
 
-      const validTiers  = ["1", "2", "3", "4", "5", "6", "S"];
-      const filterTier  = args[0];
+      const validTiers  = TIER_ORDER;
+      const filterInput = args[0];
+      const filterTier  = filterInput
+        ? TIER_NUM[String(filterInput).toLowerCase()] || TIER_NUM[String(filterInput).toUpperCase()]
+        : null;
 
-      if (filterTier && !validTiers.includes(filterTier)) {
-        return reply("❌ Invalid tier. Use 1,2,3,4,5,6,S");
+      if (filterInput && (!filterTier || !validTiers.includes(filterTier))) {
+        return reply("❌ Invalid tier. Use 1–6, S, C, R, SR, SSR, UR, or X.");
       }
 
       const ReadMore = "\u200e".repeat(4000);
@@ -40,7 +46,7 @@ ${ReadMore}
 `;
 
       const filtered = filterTier
-        ? user.cards.filter(c => (TIER_MAP[c.tier] || "?") === filterTier)
+        ? user.cards.filter(c => cardTier(c) === filterTier)
         : user.cards;
 
       if (filterTier && filtered.length === 0) {
@@ -51,9 +57,9 @@ ${ReadMore}
         text += `\n🎯 *Tier ${filterTier} Cards:*\n\n`;
         filtered.forEach((card, i) => { text += `${i + 1}. 🃏 ${card.name}\n`; });
       } else {
-        const grouped = { "1": [], "2": [], "3": [], "4": [], "5": [], "S": [] };
+        const grouped = Object.fromEntries(validTiers.map((tier) => [tier, []]));
         for (const card of filtered) {
-          const t = card.tierNum || TIER_MAP[card.tier] || "?";
+          const t = cardTier(card);
           if (grouped[t]) grouped[t].push(card.name);
         }
 

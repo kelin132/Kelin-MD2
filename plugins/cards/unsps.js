@@ -1,4 +1,4 @@
-import { getTierCounts, TIER_EMOJI } from "../../lib/cardApi.mjs";
+import { getTierCounts, TIER_EMOJI, TIER_NAME } from "../../lib/cardApi.mjs";
 
 export default {
   name: "unsps",
@@ -16,7 +16,7 @@ export default {
       const activeIds    = Object.values(activeSpawns).map(s => s.cardId).filter(Boolean);
 
       const counts = await getTierCounts();
-      const tiers  = ["Common", "Uncommon", "Rare", "Epic", "Legendary"];
+      const tiers  = Object.values(TIER_NAME);
       const total  = Object.values(counts).reduce((a, b) => a + b, 0);
 
       let text = `🎴 *CARD POOL STATS*\n\n`;

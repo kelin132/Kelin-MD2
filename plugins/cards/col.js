@@ -1,9 +1,5 @@
 import { findOrCreateUser } from "./db.js";
-
-const TIER_EMOJI = {
-  Common: "⚪", Uncommon: "🟢", Rare: "🔵", Epic: "🟣", Legendary: "🟡",
-  Mythical: "🔴", Secret: "🌟",
-};
+import { TIER_EMOJI } from "../../lib/cardApi.mjs";
 
 export default {
   name: "col",
