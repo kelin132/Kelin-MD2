@@ -2,6 +2,7 @@ import { getDb } from "../../lib/mongo.mjs";
 import {
   lotteryDisplayName,
   lotteryWinnerIdentity,
+  sanitizeLotteryDisplayName,
 } from "../../lib/lotteryAutoDraw.mjs";
 
 export default {
@@ -55,7 +56,7 @@ export default {
       const names = new Map();
       for (const profile of profiles) {
         const cleanId = String(profile._id).split("@")[0].split(":")[0];
-        const displayName = String(profile.name || profile.username || "").trim();
+        const displayName = sanitizeLotteryDisplayName(profile.name || profile.username);
         if (displayName) names.set(cleanId, displayName);
       }
 
@@ -65,15 +66,11 @@ export default {
         const rawIdentity = lotteryWinnerIdentity(ticket) || ticket.userId || "";
         const cleanIdentity = String(rawIdentity).split("@")[0].split(":")[0];
 
-        // Resolve clean display name without any raw LID/phone formatting
+        // Prefer a saved username; the shared formatter never returns a raw
+        // JID or privacy LID.
         const savedName = names.get(cleanIdentity);
-        let fallbackName = lotteryDisplayName(ticket);
-
-        if (fallbackName && (fallbackName.includes("@lid") || /^\d+$/.test(fallbackName))) {
-          fallbackName = `User_${cleanIdentity.slice(-4)}`;
-        }
-
-        const player = savedName || fallbackName || `User_${cleanIdentity.slice(-4)}`;
+        const fallbackName = lotteryDisplayName(ticket);
+        const player = savedName || fallbackName || "WhatsApp user";
         const chance = totalTickets > 0 ? ((Number(ticket.count || 0) / totalTickets) * 100).toFixed(1) : "0.0";
         const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`;
 
