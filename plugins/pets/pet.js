@@ -1,8 +1,8 @@
 // plugins/pets/pet.js
 // .pet — View your active pet with RPG card
-import { getActivePet, savePet } from "../../lib/petDatabase.js";
+import { getActivePet } from "../../lib/petDatabase.js";
 import { RARITIES, PET_SPECIES } from "../../lib/petData.js";
-import { getPetImage } from "../../lib/petImages.mjs";
+import { renderPetProfile } from "../../lib/petVisuals.mjs";
 
 function bar(value, max, len = 10) {
   const filled = Math.round((value / max) * len);
@@ -31,13 +31,6 @@ export default {
     const rarity = RARITIES[pet.rarity] || RARITIES.common;
     const hunger = Math.max(0, pet.hunger ?? 100);
     const happy  = Math.max(0, pet.happiness ?? 100);
-
-    // Older pets were created before pet images existed — backfill once, then reuse.
-    let imageUrl = pet.imageUrl;
-    if (!imageUrl) {
-      imageUrl = await getPetImage(pet.species);
-      if (imageUrl) await savePet(sender, pet.petId, { imageUrl });
-    }
 
     const caption = [
       `꧁━━〔 🐾 *P E T  P R O F I L E* 〕━━꧂`,
@@ -68,9 +61,11 @@ export default {
       `꧂━━━━━━━━━━━━━━━━━━━━━━━━꧁`,
     ].join("\n");
 
-    if (imageUrl) {
-      return sock.sendMessage(jid, { image: { url: imageUrl }, caption }, { quoted: msg });
-    }
-    return sock.sendMessage(jid, { text: caption }, { quoted: msg });
+    const image = await renderPetProfile(pet);
+    return sock.sendMessage(jid, {
+      image,
+      fileName: "pet-profile.png",
+      caption,
+    }, { quoted: msg });
   },
 };

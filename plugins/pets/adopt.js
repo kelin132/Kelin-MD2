@@ -2,7 +2,7 @@
 // .adopt — Get your first pet (free starter, one-time)
 import { getAllPets, createPet } from "../../lib/petDatabase.js";
 import { PET_SPECIES, RARITIES } from "../../lib/petData.js";
-import { getPetImage } from "../../lib/petImages.mjs";
+import { renderPetProfile } from "../../lib/petVisuals.mjs";
 
 const STARTER_SPECIES = ["cat", "dog", "bunny", "fox", "moon_cat", "sakura_bunny", "fire_slime"];
 
@@ -46,8 +46,7 @@ export default {
     }
 
     const sp        = PET_SPECIES[choice];
-    const imageUrl  = await getPetImage(choice);
-    const pet       = await createPet(sender, choice, imageUrl || "", true);
+    const pet       = await createPet(sender, choice, "", true);
     const rarity    = RARITIES[pet.rarity];
 
     const caption = [
@@ -73,9 +72,11 @@ export default {
       `🎮 *Commands:* \`.pet\` • \`.feed\` • \`.play\` • \`.trainpet\``,
     ].join("\n");
 
-    if (imageUrl) {
-      return sock.sendMessage(jid, { image: { url: imageUrl }, caption }, { quoted: msg });
-    }
-    return sock.sendMessage(jid, { text: caption }, { quoted: msg });
+    const image = await renderPetProfile(pet);
+    return sock.sendMessage(jid, {
+      image,
+      fileName: "pet-profile.png",
+      caption,
+    }, { quoted: msg });
   },
 };

@@ -2,7 +2,7 @@
 // .hatch — Hatch a random egg into a pet (rarity-weighted roll)
 import { getAllPets, createPet } from "../../lib/petDatabase.js";
 import { rollRarity, pickSpecies, PET_SPECIES, RARITIES } from "../../lib/petData.js";
-import { getPetImage } from "../../lib/petImages.mjs";
+import { renderPetProfile } from "../../lib/petVisuals.mjs";
 
 const MAX_PETS = 5;
 
@@ -33,8 +33,7 @@ export default {
     const speciesKey = pickSpecies(rarity);
     const sp         = PET_SPECIES[speciesKey];
     const isFirst    = all.length === 0;
-    const imageUrl   = await getPetImage(speciesKey);
-    const pet        = await createPet(sender, speciesKey, imageUrl || "", isFirst);
+    const pet        = await createPet(sender, speciesKey, "", isFirst);
     const rarityData = RARITIES[rarity];
 
     let exclaim = "✨ A new companion has hatched!";
@@ -62,9 +61,11 @@ export default {
         : `💡 Use *.pets select ${pet.petId}* to make it active.`,
     ].join("\n");
 
-    if (imageUrl) {
-      return sock.sendMessage(jid, { image: { url: imageUrl }, caption }, { quoted: msg });
-    }
-    return sock.sendMessage(jid, { text: caption }, { quoted: msg });
+    const image = await renderPetProfile(pet);
+    return sock.sendMessage(jid, {
+      image,
+      fileName: "pet-profile.png",
+      caption,
+    }, { quoted: msg });
   },
 };
