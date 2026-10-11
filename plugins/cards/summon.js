@@ -225,6 +225,7 @@ export default {
 
       const pendingCard = {
         cardId:     card.cardId,
+        claimId:    card.claimId || card.index || card.cardId,
         name:       card.name,
         tier:       card.tier,
         tierNum:    card.tierNum || card.tier,
@@ -247,6 +248,7 @@ export default {
 ┃ 🃏 Card  ➜ 『 \`${card.name}\` 』
 ┃ ${emoji} Tier  ➜ 『 \`${card.tier}\` 』
 ┃ 📺 Series ➜ 『 \`${card.series}\` 』
+┃ 🔢 Claim # ➜ 『 \`${pendingCard.claimId}\` 』
 ┃
 ┣━━━━━━━━━━━━━━━━━━━━
 ┃ 💸 Cost   › \`$${cost.toLocaleString()}\`
@@ -254,7 +256,7 @@ export default {
 ┣━━━━━━━━━━━━━━━━━━━━
 ┃ ✨ 𝗖𝗟𝗔𝗜𝗠 𝗥𝗘𝗔𝗗𝗬!
 ┃ The card is waiting for you.
-┃ Use \`.claim\` to add it to your collection.
+┃ Use \`.claim ${pendingCard.claimId}\` to add this card.
 ╰━━━━━━━━━━━━━━━━━━━━╯`;
 
       if (card.media) {
