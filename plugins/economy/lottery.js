@@ -8,6 +8,8 @@ import { getUser, saveUser, requireRegistration, addHistory } from "./database.j
 import { getDb } from "../../lib/mongo.mjs";
 import {
   formatLotteryResults,
+  findLotteryTicket,
+  getWhatsAppParticipantId,
   LOTTERY_MAX_ENTRIES,
   maybeAutoDraw,
   queueLotteryAnnouncement,
@@ -80,7 +82,7 @@ export default {
     // ── INFO ───────────────────────────────────────────────────────────────────
     if (sub === "info") {
       const lot      = await getLottery();
-      const myCount  = lot.tickets.filter(t => t.userId === sender.split("@")[0]).reduce((s, t) => s + t.count, 0);
+      const myCount  = findLotteryTicket(lot.tickets, sender)?.count ?? 0;
       const chance   = lot.totalTickets > 0 ? ((myCount / lot.totalTickets) * 100).toFixed(1) : "0.0";
       return reply(
 `╭━━━〔 🎰 𝑳𝑶𝑻𝑻𝑬𝑹𝒀 𝑰𝑵𝑭𝑶 🎟️ 〕━━━╮
@@ -116,8 +118,10 @@ export default {
         }
       }
 
-      const userId  = sender.split("@")[0];
-      const myEntry = lot.tickets.find(t => t.userId === userId);
+      const userId = sender.startsWith("discord:")
+        ? sender
+        : getWhatsAppParticipantId(sender) || sender;
+      const myEntry = findLotteryTicket(lot.tickets, sender);
       const myCount = myEntry?.count ?? 0;
 
       if (myCount >= MAX_TICKETS) {
@@ -152,6 +156,7 @@ export default {
       lot.jackpot += cost;
       if (myEntry) {
         myEntry.count += canBuy;
+        myEntry.userId = userId;
         if (jid.endsWith("@g.us")) myEntry.groupId = jid;
       } else {
         lot.tickets.push({ userId, name: user.name || "User", count: canBuy, ...(jid.endsWith("@g.us") ? { groupId: jid } : {}) });
