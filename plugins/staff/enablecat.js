@@ -20,7 +20,7 @@ const PROTECTED_CATS = new Set(["main", "staff", "owner", "group"]);
 // All known categories — no circular import needed
 const ALL_CATS = [
   "main", "economy", "company", "guild", "pets", "cards",
-  "naruto", "pokemon", "dragonball", "games", "fun", "ai",
+  "pokemon", "dragonball", "games", "fun", "ai",
   "search", "media", "image", "utilities", "download",
   "group", "anime", "staff", "owner",
 ];
@@ -29,7 +29,6 @@ const categoryEmojis = {
   main:       "🏡",
   economy:    "💰",
   guild:      "⚔️",
-  naruto:     "🪾",
   dragonball: "🐉",
   pokemon:    "🎮",
   cards:      "🃏",

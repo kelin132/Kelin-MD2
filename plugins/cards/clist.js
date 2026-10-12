@@ -68,7 +68,7 @@ Example: .clist 3  or  .clist rare 2  or  .clist UR`
 
 `;
       slice.forEach((card, i) => {
-        text += `  *${start + i + 1}.* *${card.name}*\n       \`${card.cardId}\`\n`;
+        text += `  *${card.claimId || card.index}.* *${card.name}*\n`;
       });
 
       text += `\n  _Use .clist <tier> <page> for more_`;

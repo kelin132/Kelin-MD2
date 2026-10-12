@@ -21,7 +21,7 @@ export default {
         const similar = await searchCards(query, 5);
         if (similar.length) {
           let suggest = `❌ Card not found for "${query}".\n\nDid you mean:\n\n`;
-          similar.forEach((c, i) => { suggest += `${i + 1}. ${c.name} (${c.cardId})\n`; });
+          similar.forEach((c, i) => { suggest += `${i + 1}. ${c.name} (#${c.claimId || c.index})\n`; });
           return reply(suggest);
         }
         return reply(`❌ No card found matching "${query}".`);
@@ -36,7 +36,7 @@ export default {
 𝗡𝗮𝗺𝗲: ${card.name}
 𝗧𝗶𝗲𝗿: ${emoji} ${card.tier}
 𝗣𝗿𝗶𝗰𝗲: $${card.price.toLocaleString()}
-𝗜𝗗: ${card.cardId}
+𝗜𝗗: ${card.claimId || card.index}
 𝗦𝗲𝗿𝗶𝗲𝘀: ${card.series}
 
   *❀────⋆⋅∘⋅⋆────❀*

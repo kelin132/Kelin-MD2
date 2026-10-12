@@ -123,7 +123,7 @@ export default {
           const similar = await searchCards(input, 5);
           if (similar.length) {
             let suggest = `╭─❀「 🎴 *𝐂𝐀𝐑𝐃 𝐈𝐍𝐅𝐎* 」❀─╮\n│ ❌ Card not found. Did you mean:\n│\n`;
-            similar.forEach((c, i) => { suggest += `│ \`${i + 1}\`. \`${c.name}\` — \`${c.cardId}\`\n`; });
+            similar.forEach((c, i) => { suggest += `│ \`${i + 1}\`. \`${c.name}\` — \`#${c.claimId || c.index}\`\n`; });
             suggest += `╰───────────────❀`;
             return reply(suggest);
           }
@@ -136,7 +136,7 @@ export default {
         if (result.duplicates) {
           let msg = `╭─❀「 🎴 *𝐂𝐀𝐑𝐃 𝐈𝐍𝐅𝐎* 」❀─╮\n│ ⚠️ Multiple cards match that name!\n│ Use \`.ci <collection #>\` to pick one:\n│\n`;
           result.duplicates.forEach(({ card: c, index: i }) => {
-            msg += `│ \`#${i + 1}\` — \`${c.name}\` · \`${c.cardId}\`\n`;
+            msg += `│ \`#${i + 1}\` — \`${c.name}\` · \`#${c.claimId || c.index}\`\n`;
           });
           msg += `╰───────────────❀`;
           return reply(msg);
@@ -158,7 +158,7 @@ export default {
         ? card.index
         : collNum ?? "—";
       const issueVal = issue ? `#${issue}` : "—";
-      const cardIdVal = card.cardId || "—";
+      const cardIdVal = card.claimId || card.index || "—";
       const isAuctionCard = String(card.spawnId || "").startsWith("web-auction-");
       const valueLabel = isAuctionCard ? "Auction paid" : "Value";
       const cardPrice = Number(card.price) || 0;

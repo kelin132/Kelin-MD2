@@ -5,7 +5,7 @@ import { getRuntimeSettings } from "../../lib/runtimeSettings.mjs";
 const READMORE = "\u200B".repeat(4000);
 
 const categoryEmojis = {
-  main: "🏡", economy: "💰", guild: "⚔️", naruto: "🪾", dragonball: "🐉",
+  main: "🏡", economy: "💰", guild: "⚔️", dragonball: "🐉",
   pokemon: "🎮", ptcg: "🎴", cards: "🃏", pets: "🐾", anime: "🍡", staff: "🛡️",
   company: "🏢", games: "🎲", fun: "🎀", ai: "🪄", search: "🔎",
   image: "🎨", utilities: "🔧", download: "📥", group: "🌸", admin: "⚜️",
@@ -21,7 +21,7 @@ const categoryTitles = {
   search: "SEARCH", image: "IMAGE", utilities: "UTILITIES",
   download: "DOWNLOAD", group: "GROUP", anime: "ANIME",
   staff: "STAFF", owner: "OWNER", company: "COMPANY",
-  naruto: "NARUTO", media: "MEDIA", admin: "ADMIN",
+  media: "MEDIA", admin: "ADMIN",
   tools: "TOOLS", weapons: "WEAPONS", armor: "ARMOR",
   potions: "POTIONS", consumables: "CONSUMABLES", scrolls: "SCROLLS",
   cosmetics: "COSMETICS", exchange: "EXCHANGE", gacha: "GACHA",
@@ -96,7 +96,7 @@ export default {
 
     const showStaff = isOwner || isStaff || isMod;
     const order = [
-      "main", "economy", "company", "guild", "pets", "cards", "ptcg", "naruto",
+      "main", "economy", "company", "guild", "pets", "cards", "ptcg",
       "pokemon", "dragonball", "dbz", "rpg", "games", "fun", "ai", "search", "media",
       "image", "utilities", "download", "group", "admin", "anime",
       "tools", "weapons", "armor", "potions", "consumables", "scrolls",

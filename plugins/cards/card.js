@@ -48,7 +48,7 @@ export default {
 │
 │ 🏷️  *Tier*   :: \`${card.tier || "Unknown"}\`
 │ 📺 *Series* :: \`${card.series || "Unknown"}\`
-│ 🆔 *ID*     :: \`${card.cardId || "Unknown"}\`
+│ 🆔 *ID*     :: \`${card.claimId || card.index || index}\`
 │ 💎 *${priceLabel}* :: \`${priceText}\`
 │
 │ 🃏 Card \`#${index}\` of \`${user.cards.length}\`
