@@ -66,3 +66,22 @@ test("animated X-tier cards use the looping-video delivery path", () => {
   const card = normalise({ tier: "X", title: "Animated X", image: "https://cards.example/media?id=x", media_type: "gif" }, 100);
   assert.equal(getCardMediaKind(card), "animated");
 });
+
+test("Secret cards with extensionless image proxy URLs use the animated delivery path", () => {
+  const card = normalise({
+    tier: "S",
+    title: "Secret card",
+    image: "https://api.shoob.gg/site/api/cardr/example?size=700",
+    media_type: "image",
+    source_media_type: "image",
+    is_animated: false,
+  }, 101);
+
+  assert.equal(card.mediaType, "gif");
+  assert.equal(getCardMediaKind(card), "animated");
+  assert.equal(getCardMediaKind({
+    tierNum: "S",
+    mediaType: "image",
+    media: "https://api.shoob.gg/site/api/cardr/legacy?size=700",
+  }), "animated");
+});
