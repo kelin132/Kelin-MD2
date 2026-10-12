@@ -53,6 +53,16 @@ if (multiBotMode) {
   }
   log("info", `[bots] Found ${botDefinitions.length} bot(s) in .bots/`);
   await startBotSupervisor();
+  try {
+    const [{ connectDb }, { startTaxScheduler }] = await Promise.all([
+      import("./lib/mongo.mjs"),
+      import("./lib/taxScheduler.mjs"),
+    ]);
+    await connectDb();
+    await startTaxScheduler();
+  } catch (error) {
+    log("warn", `[tax] Scheduler unavailable in multi-bot mode: ${error.message}`);
+  }
 } else {
   // Parallel import of modules
   const [{ connectBot }, { loadPlugins }, { autoUpdate }, { connectDb, getDb }, { initGroupSettings }, { startCardSpawner }, { startTaxScheduler }] =
