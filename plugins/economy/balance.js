@@ -10,9 +10,9 @@ export default {
   cooldown: 6,
 
   async run({ sock, msg, sender }) {
-    if (!await requireRegistration(sock, msg, sender)) return;
-
     const user = await getUser(sender);
+    if (!await requireRegistration(sock, msg, sender, user)) return;
+
     const jid  = msg.key.remoteJid;
     const wallet = Number(user.money ?? 0);
     const bank = Number(user.bank ?? 0);

@@ -631,8 +631,10 @@ export async function registerUser(id, name) {
 }
 
 /** Convenience: send a "you need to register" message and return false */
-export async function requireRegistration(sock, msg, sender) {
-  const ok = await isRegistered(sender);
+export async function requireRegistration(sock, msg, sender, user = null) {
+  // Commands that already loaded the user's account can reuse that snapshot
+  // instead of issuing a second identity lookup to MongoDB.
+  const ok = user ? user.registered === true : await isRegistered(sender);
   if (!ok) {
     await sock.sendMessage(
       msg.key.remoteJid,

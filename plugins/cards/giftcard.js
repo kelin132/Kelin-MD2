@@ -31,8 +31,10 @@ export default {
       const index = parseInt(args[0], 10) - 1;
       if (isNaN(index) || index < 0) return reply(" Usage: .giftcard <card number> @user");
 
-      const senderUser = await findOrCreateUser(sender);
-      const targetUser = await findOrCreateUser(target);
+      const [senderUser, targetUser] = await Promise.all([
+        findOrCreateUser(sender),
+        findOrCreateUser(target),
+      ]);
 
       senderUser.cards = Array.isArray(senderUser.cards) ? senderUser.cards : [];
       targetUser.cards = Array.isArray(targetUser.cards) ? targetUser.cards : [];
@@ -50,8 +52,7 @@ export default {
       senderUser.totalCards = Math.max(0, (senderUser.totalCards || 1) - 1);
       targetUser.totalCards = (targetUser.totalCards || 0) + 1;
 
-      await senderUser.save();
-      await targetUser.save();
+      await Promise.all([senderUser.save(), targetUser.save()]);
 
       return await sock.sendMessage(jid, {
         text:
