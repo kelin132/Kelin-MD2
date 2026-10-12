@@ -39,19 +39,13 @@ function makePages(rows, groupCount) {
 export default {
   name: "groups",
   aliases: ["grouplist", "botgroups", "mygroups"],
-  category: "owner",
+  category: "staff",
   description: "List all WhatsApp groups the bot has joined with their invite links",
   usage: ".groups",
-  isOwner: true,
   cooldown: 15,
 
   async run({ sock, msg }) {
     const chatJid = msg.key.remoteJid;
-    if (chatJid?.endsWith("@g.us")) {
-      return sock.sendMessage(chatJid, {
-        text: "🔒 Use `.groups` in the bot's private chat so group invite links aren't posted publicly.",
-      }, { quoted: msg });
-    }
 
     try {
       const participating = await sock.groupFetchAllParticipating();

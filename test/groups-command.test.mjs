@@ -23,7 +23,8 @@ test("groups command lists names, invite links, and membership status", async ()
 
   await groupsCommand.run({ sock, msg });
 
-  assert.equal(groupsCommand.isOwner, true);
+  assert.equal(groupsCommand.category, "staff");
+  assert.equal(groupsCommand.isOwner, undefined);
   assert.equal(sent.length, 1);
   assert.equal(sent[0].jid, "owner@s.whatsapp.net");
   assert.match(sent[0].content.text, /Groups this bot is in: 2/);
@@ -34,23 +35,30 @@ test("groups command lists names, invite links, and membership status", async ()
   assert.match(sent[0].content.text, /✅ bot is in group/);
 });
 
-test("groups command won't disclose invite links in a group chat", async () => {
+test("groups command can list links publicly in a group chat", async () => {
   let fetched = false;
   const sent = [];
   const sock = {
     async groupFetchAllParticipating() {
       fetched = true;
-      return {};
+      return {
+        "111@g.us": { id: "111@g.us", subject: "Alpha Group" },
+      };
+    },
+    async groupInviteCode() {
+      return "alphaCode";
     },
     async sendMessage(jid, content) {
       sent.push({ jid, content });
     },
   };
-  const msg = { key: { remoteJid: "public-group@g.us" } };
+  const msg = { key: { remoteJid: "staff-group@g.us" } };
 
   await groupsCommand.run({ sock, msg });
 
-  assert.equal(fetched, false);
+  assert.equal(fetched, true);
   assert.equal(sent.length, 1);
-  assert.match(sent[0].content.text, /private chat/);
+  assert.equal(sent[0].jid, "staff-group@g.us");
+  assert.match(sent[0].content.text, /Alpha Group/);
+  assert.match(sent[0].content.text, /https:\/\/chat\.whatsapp\.com\/alphaCode/);
 });
