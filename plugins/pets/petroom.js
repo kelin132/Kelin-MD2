@@ -1,5 +1,5 @@
 import { getActivePet } from "../../lib/petDatabase.js";
-import { renderPetRoom } from "../../lib/petVisuals.mjs";
+import { getPetRoomMedia } from "../../lib/petVisuals.mjs";
 
 export default {
   name: "petroom",
@@ -20,10 +20,9 @@ export default {
       }, { quoted: msg });
     }
 
-    const image = await renderPetRoom(pet);
+    const media = await getPetRoomMedia(pet);
     return sock.sendMessage(jid, {
-      image,
-      fileName: "pet-room.png",
+      ...media,
       caption: `🏠 ${pet.name}'s room · Lv. ${pet.level || 1}`,
     }, { quoted: msg });
   },

@@ -1,8 +1,8 @@
 // plugins/pets/feed.js
 // .feed — Feed your active pet to restore hunger
 import { getActivePet, savePet } from "../../lib/petDatabase.js";
+import { PET_FEED_COOLDOWN_MS } from "../../lib/petCooldowns.mjs";
 
-const COOLDOWN_MS  = 2 * 60 * 60 * 1000; // 2 hours
 const HUNGER_GAIN  = 30;
 
 export default {
@@ -29,8 +29,8 @@ export default {
     const lastFed  = pet.lastFed ? new Date(pet.lastFed).getTime() : 0;
     const elapsed  = now - lastFed;
 
-    if (elapsed < COOLDOWN_MS) {
-      const remaining = COOLDOWN_MS - elapsed;
+    if (elapsed < PET_FEED_COOLDOWN_MS) {
+      const remaining = PET_FEED_COOLDOWN_MS - elapsed;
       const mins      = Math.ceil(remaining / 60000);
       return sock.sendMessage(jid, {
         text: `🍖 *${pet.name}* is still full!\n\nCome back in *${mins} minute${mins !== 1 ? "s" : ""}* to feed again.`,

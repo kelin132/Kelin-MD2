@@ -2,7 +2,7 @@
 // .pet — View your active pet with RPG card
 import { getActivePet } from "../../lib/petDatabase.js";
 import { RARITIES, PET_SPECIES } from "../../lib/petData.js";
-import { renderPetProfile } from "../../lib/petVisuals.mjs";
+import { getPetProfileMedia } from "../../lib/petVisuals.mjs";
 
 function bar(value, max, len = 10) {
   const filled = Math.round((value / max) * len);
@@ -61,11 +61,7 @@ export default {
       `꧂━━━━━━━━━━━━━━━━━━━━━━━━꧁`,
     ].join("\n");
 
-    const image = await renderPetProfile(pet);
-    return sock.sendMessage(jid, {
-      image,
-      fileName: "pet-profile.png",
-      caption,
-    }, { quoted: msg });
+    const media = await getPetProfileMedia(pet);
+    return sock.sendMessage(jid, { ...media, caption }, { quoted: msg });
   },
 };

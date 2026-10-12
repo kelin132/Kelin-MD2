@@ -1,8 +1,8 @@
 // plugins/pets/petdaily.js
 // .petdaily — Daily EXP + hunger + happiness restore for active pet
 import { getActivePet, savePet, awardExp } from "../../lib/petDatabase.js";
+import { PET_DAILY_COOLDOWN_MS } from "../../lib/petCooldowns.mjs";
 
-const COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
 export default {
   name: "petdaily",
@@ -26,8 +26,8 @@ export default {
     const now      = Date.now();
     const lastUsed = pet.lastPetDaily || 0;
 
-    if (now - lastUsed < COOLDOWN_MS) {
-      const remaining = COOLDOWN_MS - (now - lastUsed);
+    if (now - lastUsed < PET_DAILY_COOLDOWN_MS) {
+      const remaining = PET_DAILY_COOLDOWN_MS - (now - lastUsed);
       const hours     = Math.floor(remaining / 3_600_000);
       const mins      = Math.floor((remaining % 3_600_000) / 60_000);
       return sock.sendMessage(jid, {

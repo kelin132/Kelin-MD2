@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  getCardMediaKind,
   normalise,
   pickRandomCardFromCatalog,
   TIER_WEIGHTS,
@@ -52,4 +53,16 @@ test("falls back to an available card if a selected tier has no cards", () => {
   const cards = [{ tierNum: "X", name: "only-card" }];
   assert.equal(pickRandomCardFromCatalog(cards, () => 0.01), cards[0]);
   assert.equal(pickRandomCardFromCatalog([], () => 0.01), null);
+});
+
+
+test("large X-tier still cards use the compact-image delivery path", () => {
+  const card = normalise({ tier: "X", title: "Large X image", image: "https://cards.example/full-resolution.jpg" }, 99);
+  assert.equal(card.mediaType, "image");
+  assert.equal(getCardMediaKind(card), "image");
+});
+
+test("animated X-tier cards use the looping-video delivery path", () => {
+  const card = normalise({ tier: "X", title: "Animated X", image: "https://cards.example/media?id=x", media_type: "gif" }, 100);
+  assert.equal(getCardMediaKind(card), "animated");
 });

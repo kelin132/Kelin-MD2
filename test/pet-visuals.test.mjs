@@ -19,6 +19,12 @@ test("visually distinct animal families use their own sprite silhouettes", () =>
   assert.deepEqual([...forms].sort(), ["bear", "bird", "bunny", "canine", "cat", "dragon", "fish", "slime"]);
 });
 
+test("the dog uses the mint night-room palette from the reference", () => {
+  const dog = getPetAppearance("dog");
+  assert.equal(dog.colors.body, "#a8d9bf");
+  assert.equal(dog.room, "moon");
+});
+
 test("pet mood follows health, hunger, and happiness", () => {
   assert.equal(getPetMood({ hp: 20, maxHp: 100, hunger: 100, happiness: 100 }), "TIRED");
   assert.equal(getPetMood({ hp: 100, maxHp: 100, hunger: 20, happiness: 100 }), "HUNGRY");

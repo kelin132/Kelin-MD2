@@ -1,8 +1,8 @@
 // plugins/pets/play.js
 // .petplay — Play with your pet to increase happiness
 import { getActivePet, savePet } from "../../lib/petDatabase.js";
+import { PET_PLAY_COOLDOWN_MS } from "../../lib/petCooldowns.mjs";
 
-const COOLDOWN_MS   = 1 * 60 * 60 * 1000; // 1 hour
 const HAPPY_GAIN    = 20;
 
 const PLAY_ACTIONS = [
@@ -41,8 +41,8 @@ export default {
     const lastPlayed = pet.lastPlayed ? new Date(pet.lastPlayed).getTime() : 0;
     const elapsed    = now - lastPlayed;
 
-    if (elapsed < COOLDOWN_MS) {
-      const remaining = COOLDOWN_MS - elapsed;
+    if (elapsed < PET_PLAY_COOLDOWN_MS) {
+      const remaining = PET_PLAY_COOLDOWN_MS - elapsed;
       const mins      = Math.ceil(remaining / 60000);
       return sock.sendMessage(jid, {
         text: `😊 *${pet.name}* is tired from playing!\n\nCome back in *${mins} minute${mins !== 1 ? "s" : ""}* to play again.`,

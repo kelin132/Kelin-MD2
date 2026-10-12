@@ -2,6 +2,7 @@
 // .pets — Show all owned pets
 import { getAllPets, setActivePet } from "../../lib/petDatabase.js";
 import { RARITIES } from "../../lib/petData.js";
+import { formatPetCooldown, PET_DAILY_COOLDOWN_MS, PET_FEED_COOLDOWN_MS, PET_PLAY_COOLDOWN_MS } from "../../lib/petCooldowns.mjs";
 
 export default {
   name: "pets",
@@ -40,7 +41,8 @@ export default {
     const petList = all.map((p, i) => {
       const rarity = RARITIES[p.rarity] || RARITIES.common;
       const active = p.isActive ? " 🌟" : "";
-      return `│ \`${i + 1}.\` *${p.name}*${active} [Lv. \`${p.level || 1}\`]\n│    ${rarity.color} ${rarity.label} · ⚔️ \`${p.attack}\` · ❤️ \`${p.maxHp}\`\n│    🍖 \`${p.hunger ?? 100}%\` · 😊 \`${p.happiness ?? 100}%\` · 🆔 \`${p.petId}\``;
+      const timers = `🍖 Feed \`${formatPetCooldown(p.lastFed, PET_FEED_COOLDOWN_MS)}\` · 🎾 Play \`${formatPetCooldown(p.lastPlayed, PET_PLAY_COOLDOWN_MS)}\` · 🌅 Daily \`${formatPetCooldown(p.lastPetDaily, PET_DAILY_COOLDOWN_MS)}\``;
+      return `│ \`${i + 1}.\` *${p.name}*${active} [Lv. \`${p.level || 1}\`]\n│    ${rarity.color} ${rarity.label} · ⚔️ \`${p.attack}\` · ❤️ \`${p.maxHp}\`\n│    🍖 \`${p.hunger ?? 100}%\` · 😊 \`${p.happiness ?? 100}%\` · 🆔 \`${p.petId}\`\n│    ⏳ ${timers}`;
     }).join("\n│\n");
 
     const text = 
