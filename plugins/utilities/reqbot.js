@@ -1,8 +1,7 @@
 // plugins/utilities/reqbot.js
 // Member requests the bot to join their group.
-// The request is forwarded to the staff notification group.
-
-const NOTIFY_INVITE_CODE = "KgE1ZjLKbrGDQa5AUwOswx"; // group where requests land
+// Requests are queued until a bot admin in the staff notification group forwards them.
+import { enqueueReqbotRequest } from "../../lib/reqbotRelay.mjs";
 
 export default {
   name: "reqbot",
@@ -28,48 +27,29 @@ export default {
         }, { quoted: msg });
       }
 
-      const inviteRegex = /^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]+/i;
-      if (!inviteRegex.test(text.trim())) {
+      const groupLink = text.trim();
+      const inviteRegex = /^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]+\/?$/i;
+      if (!inviteRegex.test(groupLink)) {
         return await sock.sendMessage(jid, {
           text: "❌ That doesn't look like a valid WhatsApp group invite link."
         }, { quoted: msg });
       }
 
-      // ── Resolve the notification group JID ─────────────────────────────
-      let notifyJid;
-      try {
-        const info = await sock.groupGetInviteInfo(NOTIFY_INVITE_CODE);
-        notifyJid = info.id;
-      } catch {
-        // Bot may not be in the group yet — fall back to owner DM
-        const { createRequire } = await import("module");
-        const require = createRequire(import.meta.url);
-        const settings = require("../../settings.cjs");
-        notifyJid = `${settings.ownerNumber}@s.whatsapp.net`;
-      }
+      const requestId = await enqueueReqbotRequest({
+        sender,
+        groupLink,
+        sourceChatJid: jid,
+        sourceBotName: process.env.BOT_NAME || "KELIN MD",
+      });
 
-      const requestMessage =
-        `╭━━━〔 📩 BOT REQUEST 〕━━━╮\n\n` +
-        `👤 *Requested By:*\n` +
-        `• JID: ${sender}\n` +
-        `• Number: +${sender.split("@")[0]}\n\n` +
-        `📎 *Group Link:*\n${text.trim()}\n\n` +
-        `🕒 *Time:* ${new Date().toLocaleString()}\n\n` +
-        `━━━━━━━━━━━━━━━━━━\n` +
-        `Reply or use *.join <link>* to add the bot.\n` +
-        `╰━━━━━━━━━━━━━━━━━━╯`;
-
-      await sock.sendMessage(notifyJid, { text: requestMessage });
-
-      // Remove the user's invite-link message after the request is safely
-      // forwarded. This requires the bot to have delete permission in groups.
+      // Remove the user's invite-link message after it's safely queued.
       await sock.sendMessage(jid, { delete: msg.key }).catch(() => {});
 
       await sock.sendMessage(jid, {
         text:
-          `✅ *Request sent!*\n\n` +
-          `Your bot request has been forwarded to the staff group.\n` +
-          `Please wait while the team reviews it.`
+          `✅ *Request queued!*\n\n` +
+          `It will be forwarded by a bot that is an admin in the staff-request group.\n` +
+          `Request ID: \`${requestId.slice(0, 8)}\``
       }, { quoted: msg });
 
     } catch (err) {
