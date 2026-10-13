@@ -24,7 +24,7 @@ async function closeAuction(groupJid) {
   if (!a) return;
   deleteAuction(groupJid);
 
-  const { sock, card, sellerJid, currentBid, currentBidder, startBid } = a;
+  const { sock, card, sellerJid, currentBid, currentBidder } = a;
   const cardEmoji = TIER_EMOJI[card.tier] || "⭐";
 
   // ── No bids — return card to seller ────────────────────────────────────
@@ -47,22 +47,16 @@ async function closeAuction(groupJid) {
     });
   }
 
-  // ── Winner found ────────────────────────────────────────────────────────
+  // ── Winner found (Funds were already collected during bidding) ─────────
   try {
-    // Deduct from winner
-    const winner       = await getEconomyUser(currentBidder);
-    winner.money       = Math.max(0, (winner.money || 0) - currentBid);
-    await saveEconomyUser(currentBidder, winner);
-    await addHistory(currentBidder, "auction_win", -currentBid, `Won auction: ${card.name}`);
-
     // Credit seller
-    const seller       = await getEconomyUser(sellerJid);
-    seller.money       = (seller.money || 0) + currentBid;
+    const seller = await getEconomyUser(sellerJid);
+    seller.money = (seller.money || 0) + currentBid;
     await saveEconomyUser(sellerJid, seller);
     await addHistory(sellerJid, "auction_sold", currentBid, `Sold card at auction: ${card.name}`);
 
     // Transfer card to winner
-    const winnerCards  = await findOrCreateUser(currentBidder);
+    const winnerCards = await findOrCreateUser(currentBidder);
     winnerCards.cards.push({ ...card, obtainedAt: new Date().toISOString() });
     winnerCards.totalCards = (winnerCards.totalCards || 0) + 1;
     await winnerCards.save();
@@ -78,7 +72,7 @@ async function closeAuction(groupJid) {
         ``,
         `🏆 Winner : @${winnerNum}`,
         `💰 Paid   : $${currentBid.toLocaleString()}`,
-        `📤 Seller : @${sellerNum} received $${currentBid.toLocaleString()}`,
+        `📤 Seller : @${sellerNum} received$${currentBid.toLocaleString()}`,
         ``,
         `Congratulations! Use *.col* to see your new card.`,
       ].join("\n"),
@@ -104,12 +98,10 @@ export default {
     const groupJid = msg.key.remoteJid;
     const reply    = (text) => sock.sendMessage(groupJid, { text }, { quoted: msg });
 
-    // ── Groups only ────────────────────────────────────────────────────────
     if (!groupJid.endsWith("@g.us")) {
       return reply("❌ Auctions can only be started in groups.");
     }
 
-    // ── Usage ──────────────────────────────────────────────────────────────
     if (!args[0]) {
       return reply(
         `🔨 *CARD AUCTION*\n\n` +
@@ -120,19 +112,16 @@ export default {
       );
     }
 
-    // ── One auction per group ──────────────────────────────────────────────
     if (hasAuction(groupJid)) {
       const a    = getAuction(groupJid);
       const secs = Math.max(0, Math.ceil((a.endsAt - Date.now()) / 1000));
-      return reply(`⏳ An auction is already running in this group!\n\n🃏 *${a.card.name}* — ${secs}s left\n\nUse *.bid <amount>* to place a bid.`);
+      return reply(`⏳ An auction is already running in this group!\n\n🃏 *${a.card.name}* —${secs}s left\n\nUse *.bid <amount>* to place a bid.`);
     }
 
-    // ── Economy registration check ─────────────────────────────────────────
     if (!await isRegistered(sender)) {
       return reply("❌ You need an economy account to run auctions.\n\nUse *.register <your name>* first.");
     }
 
-    // ── Parse args ─────────────────────────────────────────────────────────
     const cardIndex = parseInt(args[0]) - 1;
     if (isNaN(cardIndex) || cardIndex < 0) {
       return reply("❌ Invalid card index. Use *.col* to see your cards.");
@@ -153,12 +142,11 @@ export default {
     let startBid = args[1] ? parseInt(args[1]) : Math.floor(baseValue * 0.3);
     if (isNaN(startBid) || startBid < MIN_START) startBid = MIN_START;
 
-    // ── Remove card from seller immediately ────────────────────────────────
+    // Remove card from seller
     cardUser.cards.splice(cardIndex, 1);
     cardUser.totalCards = Math.max(0, (cardUser.totalCards || 1) - 1);
     await cardUser.save();
 
-    // ── Register auction ───────────────────────────────────────────────────
     const endsAt = Date.now() + DURATION_MS;
     const timer  = setTimeout(() => closeAuction(groupJid), DURATION_MS);
 
