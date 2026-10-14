@@ -1,4 +1,4 @@
-import { getAnimeGif } from "./_helper.js";
+import { sendAnimeMedia } from "./_helper.js";
 
 export default {
   name: "waifu",
@@ -11,21 +11,18 @@ export default {
     const jid = msg.key.remoteJid;
 
     try {
-      const { url } = await getAnimeGif("waifu");
-
-      await sock.sendMessage(
-        jid,
-        {
-          image: { url },
-          caption:
+      await sendAnimeMedia({
+        sock,
+        msg,
+        type: "waifu",
+        allowStatic: true,
+        caption:
 `🌸 *Random Waifu Alert!*
 
 _Treat her well or face my wrath, senpai 💢_
 
-> Powered by nekos.best`,
-        },
-        { quoted: msg }
-      );
+> Powered by anime media sources`,
+      });
     } catch (err) {
       console.error("[waifu]", err.message);
       await sock.sendMessage(jid, { text: "❌ The waifu ran away. Try again!" }, { quoted: msg });

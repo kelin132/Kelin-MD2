@@ -1,4 +1,4 @@
-import { getAnimeGif } from "./_helper.js";
+import { sendAnimeMedia } from "./_helper.js";
 
 export default {
   name: "neko",
@@ -11,21 +11,18 @@ export default {
     const jid = msg.key.remoteJid;
 
     try {
-      const { url } = await getAnimeGif("neko");
-
-      await sock.sendMessage(
-        jid,
-        {
-          image: { url },
-          caption:
+      await sendAnimeMedia({
+        sock,
+        msg,
+        type: "neko",
+        allowStatic: true,
+        caption:
 `🐱 *Nyan~!*
 
 Here's your random anime neko!
 
-> Powered by nekos.best`,
-        },
-        { quoted: msg }
-      );
+> Powered by anime media sources`,
+      });
     } catch (err) {
       console.error("[neko]", err.message);
       await sock.sendMessage(jid, { text: "❌ The neko ran away. Try again later!" }, { quoted: msg });

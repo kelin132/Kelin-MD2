@@ -2,12 +2,18 @@
  * KELIN MD — Economy database (MongoDB-backed)
  * All economy / staff plugins import from here.
  */
+import { randomUUID } from "node:crypto";
 import { getDb } from "../../lib/mongo.mjs";
 import {
   normalizeJid,
   phoneIdentityFields,
   whatsappIdentityVariants,
 } from "../../lib/identity.mjs";
+import {
+  invalidateAfkLookup,
+  readAfkLookup,
+  writeAfkLookup,
+} from "../../lib/afkLookupCache.mjs";
 import { BASE_BANK_LIMIT, STARTING_MONEY } from "./currency.js";
 
 export const DEFAULTS = {
@@ -70,7 +76,74 @@ export const DEFAULTS = {
 export const REGISTRATION_STARTING_MONEY = STARTING_MONEY;
 
 let economyMigrationPromise;
+let economyCleanupPromise;
 let totalWealthMigrationPromise;
+
+async function ensureLegacyEconomyCleanup(db) {
+  const migrations = db.collection("economy_migrations");
+  const migrationId = "ryu-economy-cleanup-v1";
+  const now = new Date();
+  await migrations.updateOne(
+    { _id: migrationId },
+    { $setOnInsert: { status: "pending", createdAt: now } },
+    { upsert: true },
+  );
+
+  const owner = randomUUID();
+  const claim = await migrations.updateOne(
+    {
+      _id: migrationId,
+      $or: [
+        { status: { $in: ["pending", "failed"] } },
+        { status: "running", leaseUntil: { $lt: now } },
+      ],
+    },
+    {
+      $set: {
+        status: "running",
+        owner,
+        startedAt: now,
+        leaseUntil: new Date(now.getTime() + 30 * 60 * 1000),
+      },
+    },
+  );
+  if (claim.modifiedCount !== 1) return;
+
+  try {
+    await db.collection("users").updateMany(
+      { $or: [{ bankCard: { $exists: true } }, { bankLimit: { $exists: true } }] },
+      { $unset: { bankCard: "", bankLimit: "" } },
+    );
+    await db.collection("users").updateMany(
+      { inventory: { $in: ["bank_card", "bank_limit_upgrade"] } },
+      { $pull: { inventory: { $in: ["bank_card", "bank_limit_upgrade"] } } },
+    );
+    await migrations.updateOne(
+      { _id: migrationId, status: "running", owner },
+      {
+        $set: { status: "complete", completedAt: new Date() },
+        $unset: { owner: "", leaseUntil: "", lastError: "" },
+      },
+    );
+  } catch (error) {
+    await migrations.updateOne(
+      { _id: migrationId, status: "running", owner },
+      {
+        $set: { status: "failed", lastError: String(error?.message || error).slice(0, 300) },
+        $unset: { owner: "", leaseUntil: "" },
+      },
+    ).catch(() => {});
+    throw error;
+  }
+}
+
+function scheduleLegacyEconomyCleanup(db) {
+  if (economyCleanupPromise) return;
+  economyCleanupPromise = ensureLegacyEconomyCleanup(db).catch((error) => {
+    economyCleanupPromise = null;
+    console.warn("[economy] Legacy field cleanup failed; it will retry:", error?.message || error);
+  });
+}
 
 async function ensureRyuEconomyMigration(db) {
   if (!economyMigrationPromise) {
@@ -96,20 +169,16 @@ async function ensureRyuEconomyMigration(db) {
           },
         );
       }
-      await db.collection("users").updateMany(
-        { $or: [{ bankCard: { $exists: true } }, { bankLimit: { $exists: true } }] },
-        { $unset: { bankCard: "", bankLimit: "" } },
-      );
-      await db.collection("users").updateMany(
-        { inventory: { $in: ["bank_card", "bank_limit_upgrade"] } },
-        { $pull: { inventory: { $in: ["bank_card", "bank_limit_upgrade"] } } },
-      );
     })().catch((error) => {
       economyMigrationPromise = undefined;
       throw error;
     });
   }
   await economyMigrationPromise;
+  // These deprecated-field cleanups touch the whole users collection. Run
+  // them once per database in the background instead of blocking a command in
+  // every worker process.
+  scheduleLegacyEconomyCleanup(db);
 }
 
 export async function ensureTotalWealthMigration(db) {
@@ -242,6 +311,8 @@ export async function getUser(id) {
   if (user.registered) await ensurePhoneIdentityFields(db, user, normalizedId);
   const { _id, ...rest } = user;
   const merged = { ...DEFAULTS, ...rest };
+  delete merged.bankCard;
+  delete merged.bankLimit;
   // Retire the old card/service entries from existing inventories. Bank
   // access is now available by default and capacity is controlled by tiers.
   merged.inventory = (Array.isArray(merged.inventory) ? merged.inventory : [])
@@ -263,6 +334,34 @@ export async function getUser(id) {
 }
 
 /**
+ * Lightweight AFK read for the message pipeline. Ordinary chat messages only
+ * need these two fields; loading/migrating an entire economy profile here made
+ * every sender pay for unrelated MongoDB work.
+ */
+export async function getAfkStatus(id) {
+  const normalizedId = normalizeJid(id);
+  const cached = readAfkLookup(normalizedId);
+  if (cached.hit) return cached.value;
+
+  const users = getDb().collection("users");
+  const projection = { projection: { afk: 1, name: 1 } };
+  let user = await users.findOne({ _id: normalizedId }, projection);
+  if (!user) {
+    user = await users.findOne(identityQuery(id), projection);
+  }
+
+  const result = user?.afk?.active
+    ? {
+        reason: user.afk.message || user.afk.reason || "No reason given",
+        time: user.afk.since || Date.now(),
+        username: user.name || normalizedId.split("@")[0],
+      }
+    : null;
+  writeAfkLookup(normalizedId, result);
+  return result;
+}
+
+/**
  * Clear an AFK record exactly once.
  *
  * The conditional update makes duplicate WhatsApp deliveries harmless:
@@ -270,9 +369,9 @@ export async function getUser(id) {
  */
 export async function clearAfk(id) {
   const db = await getDb();
-  await ensureRyuEconomyMigration(db);
 
   const normalizedId = normalizeJid(id);
+  invalidateAfkLookup(normalizedId);
   const found = await findIdentityUser(db, id);
   const user = found ? await migrateIdentityUser(db, found, normalizedId) : null;
   if (!user?.afk?.active) return null;
@@ -283,6 +382,7 @@ export async function clearAfk(id) {
     { returnDocument: "before", includeResultMetadata: false },
   );
 
+  invalidateAfkLookup(normalizedId);
   if (!previous?.afk?.active) return null;
   return {
     reason: previous.afk.message || previous.afk.reason || "No reason given",
@@ -400,6 +500,7 @@ export async function saveUser(id, data) {
       { upsert: true }
     );
   }
+  if (Object.hasOwn(safeData, "afk")) invalidateAfkLookup(normalizedId);
 }
 
 /**
@@ -586,9 +687,15 @@ export async function getAllUsers() {
 export async function isRegistered(id) {
   const db   = await getDb();
   const normalizedId = normalizeJid(id);
-  const found = await findIdentityUser(db, id);
-  const user = found ? await migrateIdentityUser(db, found, normalizedId) : null;
-  return !!(user?.registered);
+  const users = db.collection("users");
+  const options = { projection: { registered: 1 } };
+  const canonicalUser = await users.findOne({ _id: normalizedId }, options);
+  if (canonicalUser) return canonicalUser.registered === true;
+
+  // Legacy aliases are uncommon; keep their compatibility fallback narrow so
+  // registration checks don't download or migrate the user's full profile.
+  const legacyUser = await users.findOne(identityQuery(id), options);
+  return legacyUser?.registered === true;
 }
 
 export async function registerUser(id, name) {
@@ -632,8 +739,7 @@ export async function registerUser(id, name) {
 
 /** Convenience: send a "you need to register" message and return false */
 export async function requireRegistration(sock, msg, sender, user = null) {
-  // Commands that already loaded the user's account can reuse that snapshot
-  // instead of issuing a second identity lookup to MongoDB.
+  // Commands that already loaded the user's account can reuse that snapshot.
   const ok = user ? user.registered === true : await isRegistered(sender);
   if (!ok) {
     await sock.sendMessage(

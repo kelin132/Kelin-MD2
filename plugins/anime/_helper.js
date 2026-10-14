@@ -7,19 +7,22 @@
  *   3. otakugifs   — https://api.otakugifs.xyz/gif?reaction=<type>
  *   4. GiftedTech  — https://api.gifted.co.ke/api/anime/<type> (has API key)
  *
- * GIFs are converted to MP4 via FFmpeg so WhatsApp plays them animated.
- * Static images (.png/.jpg) are sent as regular image messages.
+ * Media is identified from its bytes. GIFs are converted to MP4 so WhatsApp
+ * plays them animated; static images are only allowed by image-oriented commands.
  * Target resolution supports @mention AND reply-to-message.
  */
 
-import { exec }  from "child_process";
+import { execFile } from "child_process";
+import { randomUUID } from "crypto";
 import { existsSync, mkdirSync, writeFileSync, readFileSync, unlinkSync } from "fs";
 import { join, resolve } from "path";
 import { fileURLToPath } from "url";
 import { KEY as GIFTED_KEY, ANIME_BASE as GIFTED_ANIME_BASE } from "../../lib/gifted.js";
 import { requestJson, requestBuffer } from "../../lib/http.mjs";
+import { detectMediaType } from "../../lib/mediaType.mjs";
 
 const UA = { "User-Agent": "Mozilla/5.0 (compatible; KelinMD/1.0)" };
+const FFMPEG_BIN = process.env.FFMPEG_PATH || "ffmpeg";
 
 // Temp directory for FFmpeg conversion
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
@@ -38,7 +41,7 @@ const WAIFU_MAP = {
   waifu: "waifu", wave: "wave", yeet: "yeet",
   // remaps
   happy: "smile", sad: "cry", kill: "bonk", kick: "yeet",
-  feed: "nom", meow: "neko", kitsune: "neko", foxgirl: "neko",
+  angry: "punch", feed: "nom", meow: "neko", kitsune: "neko", foxgirl: "neko",
   fox_girl: "neko", woof: "awoo", ngif: "neko", wallpaper: "waifu",
   wink: "smile", poke: "nom",
 };
@@ -58,7 +61,7 @@ const NEKOS_MAP = {
   bite: "bite", blush: "blush", baka: "baka", bonk: "bonk",
   bully: "bully", cry: "cry", cuddle: "cuddle", dance: "dance",
   feed: "feed", glomp: "glomp", handhold: "handhold",
-  happy: "happy", highfive: "highfive", hug: "hug", kick: "kick",
+  angry: "punch", happy: "happy", highfive: "highfive", hug: "hug", kick: "kick",
   kiss: "kiss", laugh: "laugh", nom: "nom", pat: "pat",
   poke: "poke", run: "run", slap: "slap", sleep: "sleep",
   smile: "smile", smug: "smug", tickle: "tickle", wave: "wave",
@@ -83,7 +86,7 @@ async function fetchNekos(type) {
 // ── Source 3: otakugifs ───────────────────────────────────────────────────────
 
 const OTAKU_MAP = {
-  bite: "bite", blush: "blush", cry: "cry", cuddle: "cuddle",
+  angry: "punch", bite: "bite", blush: "blush", cry: "cry", cuddle: "cuddle",
   dance: "dance", handhold: "handhold", hug: "hug", kiss: "kiss",
   lick: "lick", pat: "pat", poke: "poke", punch: "punch",
   slap: "slap", smack: "smack", smile: "smile", smug: "smug",
@@ -139,34 +142,31 @@ async function downloadBuffer(url) {
 // ── GIF → MP4 conversion via FFmpeg ──────────────────────────────────────────
 // WhatsApp requires MP4 for animated gifPlayback; raw GIF buffers don't animate.
 
-async function convertGifToMp4(gifBuffer, label = "reaction") {
-  const ts     = Date.now();
-  const input  = join(TEMP_DIR, `${label}_${ts}.gif`);
-  const output = join(TEMP_DIR, `${label}_${ts}.mp4`);
+export async function convertGifToMp4(gifBuffer, label = "reaction") {
+  const safeLabel = String(label).replace(/[^a-z0-9_-]/gi, "_").slice(0, 32) || "reaction";
+  const uniqueId = randomUUID();
+  const input  = join(TEMP_DIR, `${safeLabel}_${uniqueId}.gif`);
+  const output = join(TEMP_DIR, `${safeLabel}_${uniqueId}.mp4`);
 
   try {
     writeFileSync(input, gifBuffer);
 
-    const cmd = [
-      "ffmpeg -y",
-      `-i "${input}"`,
-      `-vf "fps=15,scale=480:480:flags=lanczos:force_original_aspect_ratio=decrease,pad=480:480:(ow-iw)/2:(oh-ih)/2:color=black@0"`,
-      "-c:v libx264",
-      "-preset ultrafast",
-      "-crf 28",
-      "-pix_fmt yuv420p",
-      "-movflags +faststart",
-      "-an",               // no audio track
-      `-t 12`,             // cap at 12s
-      `"${output}"`,
-    ].join(" ");
-
     await new Promise((resolve, reject) => {
-      const proc = exec(cmd, { maxBuffer: 30 * 1024 * 1024 }, (err) => {
+      execFile(FFMPEG_BIN, [
+        "-y",
+        "-i", input,
+        "-vf", "fps=15,scale=480:480:flags=lanczos:force_original_aspect_ratio=decrease,pad=480:480:(ow-iw)/2:(oh-ih)/2",
+        "-c:v", "libx264",
+        "-preset", "ultrafast",
+        "-crf", "28",
+        "-pix_fmt", "yuv420p",
+        "-movflags", "+faststart",
+        "-an",
+        "-t", "12",
+        output,
+      ], { maxBuffer: 30 * 1024 * 1024, timeout: 25_000 }, (err) => {
         if (err) reject(err); else resolve();
       });
-      // Hard timeout — kill FFmpeg if it hangs
-      setTimeout(() => { proc.kill("SIGTERM"); reject(new Error("FFmpeg timeout")); }, 25_000);
     });
 
     if (!existsSync(output)) throw new Error("FFmpeg produced no output file");
@@ -188,9 +188,10 @@ async function convertGifToMp4(gifBuffer, label = "reaction") {
  * @param {string} type  — reaction name (e.g. "hug", "kiss")
  * @returns {Promise<{ buffer: Buffer, isGif: boolean }>}
  */
-export async function getAnimeGif(type) {
+export async function getAnimeGif(type, { allowStatic = false } = {}) {
   const lower  = type.toLowerCase();
   const errors = [];
+  let staticFallback = null;
 
   const sources = [
     ["waifu.pics", () => fetchWaifu(lower)],
@@ -203,14 +204,54 @@ export async function getAnimeGif(type) {
     try {
       const mediaUrl = await fn();
       const buffer   = await downloadBuffer(mediaUrl);
-      const isGif    = /\.gif($|\?)/i.test(mediaUrl) || mediaUrl.includes("gif");
-      return { buffer, isGif };
+      const mediaType = detectMediaType(buffer);
+      if (mediaType === "gif" || mediaType === "mp4") {
+        return { buffer, mediaType, isGif: mediaType === "gif", source: name };
+      }
+      if (["png", "jpeg", "webp"].includes(mediaType)) {
+        if (!staticFallback) staticFallback = { buffer, mediaType, isGif: false, source: name };
+        errors.push(`${name}: returned a static image`);
+        continue;
+      }
+      errors.push(`${name}: unsupported media format`);
     } catch (err) {
       errors.push(`${name}: ${err.message}`);
     }
   }
 
+  if (allowStatic && staticFallback) return staticFallback;
   throw new Error(`All sources failed for "${type}":\n${errors.join("\n")}`);
+}
+
+export async function sendAnimeMedia({
+  sock,
+  msg,
+  type,
+  caption,
+  allowStatic = false,
+  mentions = [],
+}) {
+  const chatId = msg.key.remoteJid;
+  const { buffer, mediaType } = await getAnimeGif(type, { allowStatic });
+  if (mediaType === "gif" || mediaType === "mp4") {
+    const video = mediaType === "gif"
+      ? await convertGifToMp4(buffer, type)
+      : buffer;
+    return sock.sendMessage(chatId, {
+      video,
+      mimetype: "video/mp4",
+      gifPlayback: true,
+      caption,
+      mentions,
+    }, { quoted: msg });
+  }
+
+  return sock.sendMessage(chatId, {
+    image: buffer,
+    mimetype: `image/${mediaType}`,
+    caption,
+    mentions,
+  }, { quoted: msg });
 }
 
 // ── Public: sendReaction ──────────────────────────────────────────────────────
@@ -266,39 +307,7 @@ export async function sendReaction({
     : soloCaption;
 
   try {
-    const { buffer, isGif } = await getAnimeGif(type);
-
-    if (isGif) {
-      // Convert GIF → MP4 so WhatsApp plays it animated
-      let mp4Buffer;
-      try {
-        mp4Buffer = await convertGifToMp4(buffer, type);
-      } catch (convErr) {
-        console.error(`[anime/${type}] FFmpeg failed, sending as image fallback:`, convErr.message);
-        // Fallback: send as static image
-        await sock.sendMessage(chatId, {
-          image:   buffer,
-          caption,
-          mentions,
-        }, { quoted: msg });
-        return;
-      }
-
-      await sock.sendMessage(chatId, {
-        video:       mp4Buffer,
-        mimetype:    "video/mp4",
-        gifPlayback: true,
-        caption,
-        mentions,
-      }, { quoted: msg });
-    } else {
-      // Static image (PNG/JPG from nekos.best etc.)
-      await sock.sendMessage(chatId, {
-        image:   buffer,
-        caption,
-        mentions,
-      }, { quoted: msg });
-    }
+    await sendAnimeMedia({ sock, msg, type, caption, mentions });
 
   } catch (err) {
     console.error(`[anime/${type}] ${err.message}`);
