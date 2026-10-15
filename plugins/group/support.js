@@ -21,7 +21,7 @@ export default {
 
 *Join our official support group:*
 
-🔗 https://chat.whatsapp.com/LWlL76sLg9zAKbAJ2YHReL
+🔗 https://chat.whatsapp.com/LPAJoRnzzdaKkHAyBGQytg
 
 ╰━━━━━━━━━━━━━━━━━━━━╯
 
