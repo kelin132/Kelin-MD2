@@ -28,7 +28,7 @@ export default {
               body: "Tap to join the community",
               mediaType: 1,
               previewType: 0,
-              thumbnailUrl: "https://i.imgur.com/your-image-url.jpg",
+              thumbnailUrl: "https://cdn.phototourl.com/member/2026-10-15-2d9bc601-85a4-47d1-9483-d0b34859e118.jpg",
               sourceUrl: "https://chat.whatsapp.com/LPAJoRnzzdaKkHAyBGQytg",
               renderLargerThumbnail: true
             }
