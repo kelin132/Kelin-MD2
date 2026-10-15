@@ -110,6 +110,24 @@ test("weighted spawning can select every catalog tier, including C, R, and X", (
   }
 });
 
+test("R, SR, UR, and X keep a meaningful combined share of group auto-spawns", () => {
+  const totalWeight = TIER_WEIGHTS.reduce((sum, tier) => sum + tier.weight, 0);
+  const higherTierWeight = ["R", "SR", "UR", "X"].reduce(
+    (sum, num) => sum + (TIER_WEIGHTS.find(tier => tier.num === num)?.weight || 0),
+    0,
+  );
+
+  assert.ok(higherTierWeight / totalWeight >= 0.1);
+  for (const num of ["R", "SR", "UR", "X"]) {
+    const tier = TIER_WEIGHTS.find(item => item.num === num);
+    assert.ok(tier?.weight > 0, `${num} must remain in the automatic spawn rotation`);
+    assert.equal(pickRandomTier(() => (
+      TIER_WEIGHTS.slice(0, TIER_WEIGHTS.indexOf(tier)).reduce((sum, item) => sum + item.weight, 0)
+      + tier.weight / 2
+    ) / totalWeight), num);
+  }
+});
+
 test("falls back to an available card if a selected tier has no cards", () => {
   const cards = [{ tierNum: "X", name: "only-card" }];
   assert.equal(pickRandomCardFromCatalog(cards, () => 0.01), cards[0]);
