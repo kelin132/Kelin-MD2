@@ -23,7 +23,7 @@ async function getPokeSpawn(chatId) {
 export default {
   name:        "pokespawn",
   aliases:     ["pokeautospawn", "wildautospawn"],
-  description: "[Mod] Enable/disable automatic Pokémon spawning every 10 min",
+  description: "[Mod] Enable/disable automatic Pokémon spawning every 15–20 min",
   category:    "pokemon",
   usage:       ".pokespawn on | off | status",
   isMod:       true,
@@ -35,7 +35,7 @@ export default {
     if (sub === "on" || sub === "enable") {
       await setPokeSpawn(jid, true);
       return sock.sendMessage(jid, {
-        text: "✅ *Pokémon auto-spawn ENABLED!*\nA wild Pokémon will appear every *10 minutes* in this group.",
+        text: "✅ *Pokémon auto-spawn ENABLED!*\nA wild Pokémon will appear every *15–20 minutes* in this group.",
       }, { quoted: msg });
     }
 
@@ -53,7 +53,7 @@ export default {
 `🌿 *Pokémon Auto-Spawn*
 
 Status: ${enabled ? "✅ Enabled" : "❌ Disabled"}
-Interval: every *10 minutes*
+Interval: every *15–20 minutes*
 
 *.pokespawn on* — enable
 *.pokespawn off* — disable`,

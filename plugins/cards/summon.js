@@ -11,7 +11,7 @@
 import { findOrCreateUser } from "./db.js";
 import { getUser, saveUser, requireRegistration, addHistory } from "../economy/database.js";
 import {
-  getCardsByTier,
+  fetchCardByTier,
   sendCardMedia,
   TIER_EMOJI,
   TIER_NUM,
@@ -198,9 +198,8 @@ export default {
       await addHistory(sender, "summon", -cost, `Summoned ${tierName} card`);
 
       // ── Fetch a card from the resolved tier ─────────────────────────────────
-      const targetTierNum = TIER_NUM[tierName.toLowerCase()] || "1";
-      const pool = await getCardsByTier(targetTierNum);
-      if (!pool || pool.length === 0) {
+      const card = await fetchCardByTier(tierName);
+      if (!card) {
         // Refund if no cards available
         ecoUser.money += cost;
         await saveUser(sender, ecoUser);
@@ -209,8 +208,6 @@ export default {
 `No cards found for this tier`
         );
       }
-
-      const card = pool[Math.floor(Math.random() * pool.length)];
 
       // Enrich series from AniList
       if (!card.series || card.series === "Unknown") {
@@ -234,6 +231,7 @@ export default {
         price:      card.price  || 0,
         series:     card.series || "Unknown",
         media:      card.media  || null,
+        thumbnail: card.thumbnail || card.thumbnailUrl || null,
         mediaType:  card.mediaType || ((card.tierNum === "6" || card.tierNum === "S" || card.tier === "Secret") ? "gif" : "image"),
         summonedAt: new Date(),
       };

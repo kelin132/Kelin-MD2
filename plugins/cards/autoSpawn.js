@@ -5,14 +5,15 @@
  * since this is a NEW file, the panel picks it up automatically.
  *
  * Cards are fetched from the external Card API via lib/cardApi.mjs.
- * Runs independently of (and duplicates) cardSpawner.mjs if both are active;
- * the guard `global.__cardApiSpawnerRunning` prevents double-spawning.
+ * The shared singleton guard also prevents the legacy cardSpawner.mjs loop
+ * from starting a second scheduler in standalone mode.
  */
 import { pickRandomCard, createSpawnId, buildCardSpawnCaption, sendCardMedia } from "../../lib/cardApi.mjs";
 import { getSeries } from "../../lib/seriesEnrich.mjs";
 import { getEnabledSpawnChats }            from "./db.js";
 import { log }                             from "../../lib/logger.mjs";
 import { getPrefix }                       from "../../lib/bot.mjs";
+import { reserveCardSpawn, releaseCardSpawn } from "../../lib/cardSpawnState.mjs";
 
 const SPAWN_MIN_MS       = 20 * 60 * 1000; // 20 minutes
 const SPAWN_MAX_MS       = 25 * 60 * 1000; // 25 minutes
@@ -23,22 +24,23 @@ const EXPIRE_MS          = 10 * 60 * 1000; // 10 minutes claim window
 if (!global.__cardApiSpawnerRunning) {
   global.__cardApiSpawnerRunning = true;
 
-  async function spawnCardInChat(sock, chatId, card) {
+  async function spawnCardInChat(sock, chatId) {
     const spawns = global.activeSpawns || (global.activeSpawns = {});
-    if (spawns[chatId]) return; // don't overwrite unclaimed spawn
-
-    // Enrich series from AniList before displaying (4 s timeout)
-    if (!card.series || card.series === "Unknown") {
-      card.series = await getSeries(card.name, { timeout: 4000 });
-    }
-
-    const spawnId = createSpawnId();
-    spawns[chatId] = { cardId: card.cardId, spawnId, card };
-
-    const caption = buildCardSpawnCaption(card, spawnId, getPrefix());
-
+    if (!reserveCardSpawn(chatId)) return false;
+    let spawnId;
     try {
+      const card = await pickRandomCard();
+      if (!card) return false;
+      if (!card.series || card.series === "Unknown") {
+        card.series = await getSeries(card.name, { timeout: 4000 });
+      }
+      if (spawns[chatId]) return false;
+
+      spawnId = createSpawnId();
+      spawns[chatId] = { cardId: card.cardId, spawnId, card };
+      const caption = buildCardSpawnCaption(card, spawnId, getPrefix());
       await sendCardMedia(sock, chatId, card, caption);
+      if (spawns[chatId]?.spawnId !== spawnId) return false;
 
       // Auto-expire
       setTimeout(() => {
@@ -49,10 +51,14 @@ if (!global.__cardApiSpawnerRunning) {
           }).catch(() => {});
         }
       }, EXPIRE_MS);
+      return true;
 
     } catch (err) {
-      delete spawns[chatId];
-      log("warn", `[autoSpawn] Failed to send to ${chatId}: ${err.message}`);
+      if (spawns[chatId]?.spawnId === spawnId) delete spawns[chatId];
+      log("warn", `[autoSpawn] Failed to spawn in ${chatId}: ${err.message}`);
+      return false;
+    } finally {
+      releaseCardSpawn(chatId);
     }
   }
 
@@ -66,13 +72,12 @@ if (!global.__cardApiSpawnerRunning) {
       const chats = await getEnabledSpawnChats();
       if (!chats.length) return;
 
+      let spawned = 0;
       for (const chatId of chats) {
-        const card = await pickRandomCard();
-        if (!card) continue;
-        await spawnCardInChat(sock, chatId, card);
+        if (await spawnCardInChat(sock, chatId)) spawned += 1;
       }
 
-      log("info", `[autoSpawn] Spawned in ${chats.length} chat(s)`);
+      log("info", `[autoSpawn] Spawned in ${spawned}/${chats.length} enabled chat(s)`);
     } catch (err) {
       log("warn", `[autoSpawn] Cycle error: ${err.message}`);
     }

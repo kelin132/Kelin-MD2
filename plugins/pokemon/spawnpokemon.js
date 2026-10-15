@@ -2,7 +2,7 @@
 // Mods/Owners: spawn a specific Pokémon in the group (or give to a user)
 
 import { fetchPokemon, getImageMessage } from "../../lib/pokemon/api.mjs";
-import { getWild, setWild } from "../../lib/pokemon/wildState.mjs";
+import { getWild, setWild, clearWild, reserveWildSpawn, releaseWildSpawn } from "../../lib/pokemon/wildState.mjs";
 import { wildLevel, getMovesForType } from "../../lib/pokemon/gameLogic.mjs";
 import { getRepel } from "../../lib/pokemon/itemState.mjs";
 
@@ -25,9 +25,21 @@ export default {
       }, { quoted: msg });
     }
 
+    if (getWild(jid)) {
+      return sock.sendMessage(jid, {
+        text: "⚠️ A wild Pokémon is already here. Use *.catch* before spawning another.",
+      }, { quoted: msg });
+    }
+
     if (!args[0]) {
       return sock.sendMessage(jid, {
         text: "Usage: *.spawnpokemon <name or number>*\nExample: `.spawnpokemon pikachu` or `.spawnpokemon 25`",
+      }, { quoted: msg });
+    }
+
+    if (!reserveWildSpawn(jid)) {
+      return sock.sendMessage(jid, {
+        text: "⏳ A Pokémon spawn is already being prepared for this group. Try again in a moment.",
       }, { quoted: msg });
     }
 
@@ -35,6 +47,7 @@ export default {
     try {
       apiData = await fetchPokemon(args[0]);
     } catch {
+      releaseWildSpawn(jid);
       return sock.sendMessage(jid, {
         text: `❌ Couldn't find a Pokémon named *${args[0]}*. Check the name and try again.`,
       }, { quoted: msg });
@@ -76,14 +89,21 @@ export default {
 Use *.catch* to battle this Pokémon!
 ⏰ It will flee in 30 minutes.`;
 
-    // Use local sprite file when available (no CDN); falls back to URL, then text-only
-    const imgMsg = await getImageMessage(apiData);
-    if (imgMsg) {
-      try {
-        await sock.sendMessage(jid, { ...imgMsg, caption: summonCaption }, { quoted: msg });
-        return;
-      } catch { /* fall through to text */ }
+    try {
+      // Use the provider image when available, then fall back to text.
+      const imgMsg = await getImageMessage(apiData);
+      if (imgMsg) {
+        try {
+          await sock.sendMessage(jid, { ...imgMsg, caption: summonCaption }, { quoted: msg });
+          return;
+        } catch { /* fall through to text */ }
+      }
+      await sock.sendMessage(jid, { text: summonCaption }, { quoted: msg });
+    } catch (error) {
+      clearWild(jid);
+      throw error;
+    } finally {
+      releaseWildSpawn(jid);
     }
-    await sock.sendMessage(jid, { text: summonCaption }, { quoted: msg });
   },
 };

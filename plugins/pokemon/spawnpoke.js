@@ -2,7 +2,7 @@
 // Spawn a random wild Pokémon in the group
 
 import { fetchRandom, getImageMessage } from "../../lib/pokemon/api.mjs";
-import { getWild, setWild } from "../../lib/pokemon/wildState.mjs";
+import { getWild, setWild, clearWild, reserveWildSpawn, releaseWildSpawn } from "../../lib/pokemon/wildState.mjs";
 import { getTrainer } from "../../lib/pokemon/players.mjs";
 import { randomWildLevel, getMovesForType } from "../../lib/pokemon/gameLogic.mjs";
 import { getRepel } from "../../lib/pokemon/itemState.mjs";
@@ -50,10 +50,17 @@ export default {
       }, { quoted: msg });
     }
 
+    if (!reserveWildSpawn(jid)) {
+      return sock.sendMessage(jid, {
+        text: "⏳ A Pokémon spawn is already being prepared for this group. Try again in a moment.",
+      }, { quoted: msg });
+    }
+
     let apiData;
     try {
       apiData = await fetchRandom();
     } catch {
+      releaseWildSpawn(jid);
       return sock.sendMessage(jid, { text: "❌ Couldn't fetch a Pokémon right now. Try again!" }, { quoted: msg });
     }
 
@@ -81,8 +88,6 @@ export default {
         text: `🌿 *${pokeName}* got tired of waiting and *fled away!* 🏃\nUse \`.spawnpoke\` to encounter a new wild Pokémon.`,
       }).catch(() => {});
     });
-    spawnCooldowns.set(jid, Date.now());
-
     const typeEmojis = { fire:"🔥",water:"💧",grass:"🍃",electric:"⚡",psychic:"🔮",
       normal:"⭐",flying:"🌤️",bug:"🐛",poison:"☠️",rock:"🪨",ground:"🌍",
       ice:"❄️",fighting:"🥊",ghost:"👻",dragon:"🐉",dark:"🌑",steel:"⚙️",fairy:"🌸" };
@@ -99,14 +104,23 @@ export default {
 Use \`.catch\` to battle this Pokémon!
 ⏰ It will flee in 30 minutes.`;
 
-    // Use local sprite file when available (no CDN); falls back to URL, then text-only
-    const imgMsg = await getImageMessage(apiData);
-    if (imgMsg) {
-      try {
-        await sock.sendMessage(jid, { ...imgMsg, caption: spawnCaption }, { quoted: msg });
-        return;
-      } catch { /* fall through to text */ }
+    try {
+      // Use the API image when available; fall back to text without losing the spawn.
+      const imgMsg = await getImageMessage(apiData);
+      if (imgMsg) {
+        try {
+          await sock.sendMessage(jid, { ...imgMsg, caption: spawnCaption }, { quoted: msg });
+          spawnCooldowns.set(jid, Date.now());
+          return;
+        } catch { /* fall through to text */ }
+      }
+      await sock.sendMessage(jid, { text: spawnCaption }, { quoted: msg });
+      spawnCooldowns.set(jid, Date.now());
+    } catch (error) {
+      clearWild(jid);
+      throw error;
+    } finally {
+      releaseWildSpawn(jid);
     }
-    await sock.sendMessage(jid, { text: spawnCaption }, { quoted: msg });
   },
 };
