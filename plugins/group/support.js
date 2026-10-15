@@ -8,30 +8,32 @@ export default {
   isOwner: false,
   isAdmin: false,
   isPremium: false,
-  version: "1.0.0",
+  version: "1.2.0",
 
   async run({ sock, msg }) {
     try {
-      const supportMessage = `
-╭━━━〔 🌸 *AKIRA MD SUPPORT* 〕━━━╮
+      const supportMessage = `🌸 *AIDORU SUPPORT GC*
 
-✨ Need help with the bot?
-✨ Found a bug?
-✨ Want updates and new features?
+✨ Need help or want updates? Join our official community below!
 
-*Join our official support group:*
-
-🔗 https://chat.whatsapp.com/LPAJoRnzzdaKkHAyBGQytg
-
-╰━━━━━━━━━━━━━━━━━━━━╯
-
-🌸 Stay connected, Nakama!
-⚔️ Anime power activated...
-`;
+🔗 https://chat.whatsapp.com/LPAJoRnzzdaKkHAyBGQytg`;
 
       await sock.sendMessage(
         msg.key.remoteJid,
-        { text: supportMessage },
+        {
+          text: supportMessage,
+          contextInfo: {
+            externalAdReply: {
+              title: "AKIRA-MD Support Hub",
+              body: "Tap to join the community",
+              mediaType: 1,
+              previewType: 0,
+              thumbnailUrl: "https://i.imgur.com/your-image-url.jpg",
+              sourceUrl: "https://chat.whatsapp.com/LPAJoRnzzdaKkHAyBGQytg",
+              renderLargerThumbnail: true
+            }
+          }
+        },
         { quoted: msg }
       );
 
@@ -40,9 +42,7 @@ export default {
 
       await sock.sendMessage(
         msg.key.remoteJid,
-        {
-          text: "❌ Failed to send support link."
-        },
+        { text: "❌ Failed to send support link." },
         { quoted: msg }
       );
     }
