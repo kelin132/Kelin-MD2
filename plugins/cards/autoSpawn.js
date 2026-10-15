@@ -12,7 +12,6 @@ import { pickRandomCard, createSpawnId, buildCardSpawnCaption, sendCardMedia } f
 import { getSeries } from "../../lib/seriesEnrich.mjs";
 import { getEnabledSpawnChats }            from "./db.js";
 import { log }                             from "../../lib/logger.mjs";
-import { getPrefix }                       from "../../lib/bot.mjs";
 import { reserveCardSpawn, releaseCardSpawn } from "../../lib/cardSpawnState.mjs";
 
 const SPAWN_MIN_MS       = 20 * 60 * 1000; // 20 minutes
@@ -38,7 +37,7 @@ if (!global.__cardApiSpawnerRunning) {
 
       spawnId = createSpawnId();
       spawns[chatId] = { cardId: card.cardId, spawnId, card };
-      const caption = buildCardSpawnCaption(card, spawnId, getPrefix());
+      const caption = buildCardSpawnCaption(card, spawnId);
       await sendCardMedia(sock, chatId, card, caption);
       if (spawns[chatId]?.spawnId !== spawnId) return false;
 

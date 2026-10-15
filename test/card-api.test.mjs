@@ -2,11 +2,14 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   fetchRandomCard,
+  buildCardSpawnCaption,
   clearCache,
   getCardMediaKind,
   normalise,
+  normalizeCardMediaUrl,
   pickRandomCardFromCatalog,
   pickRandomTier,
+  resolveSummonTier,
   TIER_WEIGHTS,
 } from "../lib/cardApi.mjs";
 
@@ -40,6 +43,59 @@ test("normalises video-backed cards even when their media URL has no GIF extensi
   }, 7);
 
   assert.equal(card.mediaType, "gif");
+});
+
+test("normalises API media URLs and preserves alternate card images", () => {
+  const card = normalise({
+    id: "new-card",
+    tier: "SSR",
+    title: "New API card",
+    image: "https://eula-cardapi.suhotech.xyz/api/image?id=new-card",
+    gifUrl: "https://eula-cardapi.suhotech.xyz/api/image?id=new-card",
+    media_type: "gif",
+    image_fallbacks: ["https://eula-cardapi.suhotech.xyz/api/image?id=backup"],
+    thumbnailUrl: "https://cdn.example/thumb.jpg",
+  }, 22);
+
+  assert.equal(card.media, "https://cardapi.eulaorg.app/api/image?id=new-card");
+  assert.deepEqual(card.mediaFallbacks, [
+    "https://cardapi.eulaorg.app/api/image?id=backup",
+    "https://cdn.example/thumb.jpg",
+  ]);
+  assert.equal(normalizeCardMediaUrl("https://eula-cardapi.suhotech.xyz/api/image?id=x"),
+    "https://cardapi.eulaorg.app/api/image?id=x");
+});
+
+test("accepts individual tiers and slash-separated higher/top-tier summon groups", () => {
+  const tiers = [
+    ["1", "Common"], ["2", "Uncommon"], ["3", "Rare"], ["4", "Epic"],
+    ["5", "Legendary"], ["6", "Mythical"], ["S", "Secret"], ["C", "C"],
+    ["R", "R"], ["SR", "SR"], ["SSR", "SSR"], ["UR", "UR"], ["X", "X"],
+  ];
+  for (const [code, name] of tiers) {
+    assert.equal(resolveSummonTier(code, () => 0), name);
+  }
+  assert.equal(resolveSummonTier("secret", () => 0), "Secret");
+  assert.equal(resolveSummonTier("7", () => 0), "Secret");
+  assert.equal(resolveSummonTier("C/R/SR", () => 0), "C");
+  assert.equal(resolveSummonTier("C/R/SR", () => 0.99), "SR");
+  assert.equal(resolveSummonTier("SSR/UR/X", () => 0.5), "UR");
+  assert.equal(resolveSummonTier("SSR/UR/X", () => 0.99), "X");
+  assert.equal(resolveSummonTier("C/invalid", () => 0), null);
+});
+
+test("spawn card captions omit the bottom claim instructions", () => {
+  const caption = buildCardSpawnCaption({
+    name: "Test Card",
+    tier: "C",
+    series: "Test Series",
+    claimId: "42",
+  }, "spawn-1", "!");
+
+  assert.match(caption, /Test Card/);
+  assert.match(caption, /Claim #/);
+  assert.doesNotMatch(caption, /Type .*claim/);
+  assert.doesNotMatch(caption, /First come/);
 });
 
 test("weighted spawning can select every catalog tier, including C, R, and X", () => {
@@ -98,7 +154,7 @@ test("fetches one tiered card and keeps its API ID claimable", async () => {
 
   try {
     const card = await fetchRandomCard("Tier UR");
-    assert.equal(requestUrl, "https://eula-cardapi.suhotech.xyz/api/random?tier=UR");
+    assert.equal(requestUrl, "https://cardapi.eulaorg.app/api/random?tier=UR");
     assert.equal(requestCount, 2);
     assert.equal(card.claimId, "5c7c49");
     assert.equal(card.cardId, "5C7C49");
@@ -114,6 +170,7 @@ test("falls back to the filtered catalog when random draws keep returning event 
   const originalFetch = globalThis.fetch;
   let randomRequests = 0;
   let catalogRequests = 0;
+  let catalogRequestUrl;
   globalThis.fetch = async (url) => {
     if (String(url).includes("/api/random?")) {
       randomRequests += 1;
@@ -126,6 +183,7 @@ test("falls back to the filtered catalog when random draws keep returning event 
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
+    catalogRequestUrl = String(url);
     catalogRequests += 1;
     return new Response(JSON.stringify([
       {
@@ -153,6 +211,7 @@ test("falls back to the filtered catalog when random draws keep returning event 
     const card = await fetchRandomCard("Common");
     assert.equal(randomRequests, 4);
     assert.equal(catalogRequests, 1);
+    assert.equal(catalogRequestUrl, "https://cardapi.eulaorg.app/api/download");
     assert.equal(card.name, "Normal card");
     assert.equal(card.cardId, "NORMAL-CARD");
   } finally {

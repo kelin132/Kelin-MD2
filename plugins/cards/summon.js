@@ -14,9 +14,8 @@ import {
   fetchCardByTier,
   sendCardMedia,
   TIER_EMOJI,
-  TIER_NUM,
-  TIER_NAME,
   createSpawnId,
+  resolveSummonTier,
 } from "../../lib/cardApi.mjs";
 import { getSeries } from "../../lib/seriesEnrich.mjs";
 
@@ -64,21 +63,6 @@ function rollRandomTier() {
     if (r <= 0) return t.tier;
   }
   return "Common";
-}
-
-function resolveTierName(input) {
-  if (!input) return null;
-  const lower = String(input).trim().toLowerCase().replace(/^tier\s+/, "");
-  
-  if (["secret", "s", "7"].includes(lower)) {
-    return "Secret";
-  }
-  
-  const tierNum = TIER_NUM[lower] || TIER_NUM[lower.toUpperCase()];
-  if (tierNum && TIER_NAME[tierNum]) return TIER_NAME[tierNum];
-  
-  const found = Object.values(TIER_NAME).find(n => n.toLowerCase() === lower);
-  return found || null;
 }
 
 export default {
@@ -129,8 +113,8 @@ export default {
 ┃ \`.summon 5\`        — Legendary (T5)
 ┃ \`.summon 6\`        — Mythical (T6)
 ┃ \`.summon secret\`   — Secret (Tier S)
-┃ \`.summon C/R/SR\`   — Higher tiers
-┃ \`.summon SSR/UR/X\` — Top tiers
+┃ \`.summon C/R/SR\`   — random higher tier
+┃ \`.summon SSR/UR/X\` — random top tier
 ┃
 ┃ 💡 Earn coins via \`.daily\` \`.work\` \`.crime\`
 ╰━━━━━━━━━━━━━━━━━━━━━━━━╯`
@@ -163,7 +147,7 @@ export default {
         isRandom = true;
         tierName = rollRandomTier();
       } else {
-        tierName = resolveTierName(args[0]);
+        tierName = resolveSummonTier(args[0]);
         if (!tierName) {
           return reply(
 `unknown tier, check the tier list again`
@@ -231,6 +215,7 @@ export default {
         price:      card.price  || 0,
         series:     card.series || "Unknown",
         media:      card.media  || null,
+        mediaFallbacks: Array.isArray(card.mediaFallbacks) ? card.mediaFallbacks : [],
         thumbnail: card.thumbnail || card.thumbnailUrl || null,
         mediaType:  card.mediaType || ((card.tierNum === "6" || card.tierNum === "S" || card.tier === "Secret") ? "gif" : "image"),
         summonedAt: new Date(),
