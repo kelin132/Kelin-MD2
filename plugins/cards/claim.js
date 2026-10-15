@@ -1,23 +1,12 @@
 import { findOrCreateUser } from "./db.js";
-import { sendCardMedia } from "../../lib/cardApi.mjs";
+import { getSpawnClaimId, matchesSpawnClaimId, sendCardMedia } from "../../lib/cardApi.mjs";
 
 const activeSpawns = global.activeSpawns || (global.activeSpawns = {});
-
-function getClaimId(card) {
-  return String(card?.claimId ?? card?.index ?? card?.cardId ?? "").trim();
-}
-
-function matchesClaimId(card, input) {
-  const target = String(input || "").trim().toUpperCase();
-  return [card?.claimId, card?.index, card?.cardId].some(
-    (value) => String(value ?? "").trim().toUpperCase() === target,
-  );
-}
 
 function toOwnedCard(card, spawnId) {
   return {
     cardId:     card.cardId,
-    claimId:    getClaimId(card),
+    claimId:    getSpawnClaimId(card, spawnId),
     name:       card.name,
     tier:       card.tier,
     tierNum:    card.tierNum || card.tier,
@@ -39,7 +28,7 @@ function claimText(card, sender, prefix = "𝐂𝐀𝐑𝐃 𝐂𝐋𝐀𝐈𝐌
 │ 🃏 *Name*      :: \`${card.name}\`
 │ ⭐ *Tier*      :: \`${card.tier}\`
 │ 📺 *Series*    :: \`${card.series}\`
-│ 🔢 *Claim #*  :: \`${getClaimId(card)}\`
+│ 🔢 *Claim #*  :: \`${getSpawnClaimId(card)}\`
 │
 │ Use \`.col\` to view it.
 ╰───────────────❀`;
@@ -63,18 +52,15 @@ export default {
       user.pendingCards = Array.isArray(user.pendingCards) ? user.pendingCards : [];
 
       // Personal pending claims created by .summon.
-      const numericPending = cardIdInput
-        ? user.pendingCards.find((card) => String(card.claimId ?? card.index ?? "").trim().toUpperCase() === cardIdInput)
-        : null;
-      const legacyPending = cardIdInput
-        ? user.pendingCards.find((card) => String(card.cardId || "").trim().toUpperCase() === cardIdInput)
+      const matchingPending = cardIdInput
+        ? user.pendingCards.find(card => matchesSpawnClaimId(card, cardIdInput))
         : null;
       const hasMatchingPending = cardIdInput
-        ? Boolean(numericPending || legacyPending)
+        ? Boolean(matchingPending)
         : user.pendingCards.length > 0;
       if (hasMatchingPending) {
         const selected = cardIdInput
-          ? [numericPending || legacyPending].filter(Boolean)
+          ? [matchingPending]
           : user.pendingCards.slice();
 
         user.cards.push(...selected.map((card) => toOwnedCard(card, card.spawnId)));
@@ -108,7 +94,11 @@ export default {
       if (!cardIdInput) return reply("❌ No pending summon or card spawn.\n\nUse \`.claim <number>\` for a chat spawn.");
       const spawn = activeSpawns[jid];
       if (!spawn) return reply("❌ No active card spawn in this chat.");
-      if (!matchesClaimId({ ...(spawn.card || {}), cardId: spawn.card?.cardId || spawn.cardId }, cardIdInput)) {
+      if (!matchesSpawnClaimId(
+        { ...(spawn.card || {}), cardId: spawn.card?.cardId || spawn.cardId },
+        cardIdInput,
+        spawn.spawnId,
+      )) {
         return reply("❌ Wrong claim number! Try again.");
       }
 
@@ -123,7 +113,7 @@ export default {
       await user.save();
       delete activeSpawns[jid];
 
-      const text = claimText(card, sender);
+      const text = claimText({ ...card, spawnId: spawn.spawnId }, sender);
       if (card.media) {
         try {
           return await sendCardMedia(sock, jid, card, text, { quoted: msg, mentions: [sender] });

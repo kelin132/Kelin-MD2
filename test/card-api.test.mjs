@@ -4,7 +4,10 @@ import {
   fetchRandomCard,
   buildCardSpawnCaption,
   clearCache,
+  createSpawnId,
   getCardMediaKind,
+  getSpawnClaimId,
+  matchesSpawnClaimId,
   normalise,
   normalizeCardMediaUrl,
   pickRandomCardFromCatalog,
@@ -85,17 +88,35 @@ test("accepts individual tiers and slash-separated higher/top-tier summon groups
 });
 
 test("spawn card captions omit the bottom claim instructions", () => {
+  const compactId = "ABC1234";
+  const fullCardId = "1a579aea03cd6540b5592d64";
   const caption = buildCardSpawnCaption({
     name: "Test Card",
     tier: "C",
     series: "Test Series",
-    claimId: "42",
-  }, "spawn-1", "!");
+    claimId: fullCardId,
+  }, compactId);
 
   assert.match(caption, /Test Card/);
   assert.match(caption, /Claim #/);
+  assert.match(caption, new RegExp(compactId));
+  assert.doesNotMatch(caption, new RegExp(fullCardId));
+  assert.doesNotMatch(caption, /Spawn/);
   assert.doesNotMatch(caption, /Type .*claim/);
   assert.doesNotMatch(caption, /First come/);
+});
+
+test("spawn claim IDs are compact and match both new and legacy identifiers", () => {
+  const id = createSpawnId();
+  const card = { spawnId: id, claimId: "1a579aea03cd6540b5592d64", cardId: "CARD-42" };
+
+  assert.match(id, /^[A-Z0-9]{7}$/);
+  assert.equal(getSpawnClaimId(card), id);
+  assert.equal(getSpawnClaimId({ claimId: "legacy" }, "NEW1234"), "NEW1234");
+  assert.equal(matchesSpawnClaimId(card, id), true);
+  assert.equal(matchesSpawnClaimId(card, "1a579aea03cd6540b5592d64"), true);
+  assert.equal(matchesSpawnClaimId(card, "CARD-42"), true);
+  assert.equal(matchesSpawnClaimId(card, "wrong"), false);
 });
 
 test("weighted spawning can select every catalog tier, including C, R, and X", () => {

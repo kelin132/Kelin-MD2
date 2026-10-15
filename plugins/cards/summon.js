@@ -231,7 +231,7 @@ export default {
 ┃ 🃏 Card  ➜ 『 \`${card.name}\` 』
 ┃ ${emoji} Tier  ➜ 『 \`${card.tier}\` 』
 ┃ 📺 Series ➜ 『 \`${card.series}\` 』
-┃ 🔢 Claim # ➜ 『 \`${pendingCard.claimId}\` 』
+┃ 🔢 Claim # ➜ 『 \`${pendingCard.spawnId}\` 』
 ┃
 ┣━━━━━━━━━━━━━━━━━━━━
 ┃ 💸 Cost   › \`$${cost.toLocaleString()}\`
@@ -239,7 +239,7 @@ export default {
 ┣━━━━━━━━━━━━━━━━━━━━
 ┃ ✨ 𝗖𝗟𝗔𝗜𝗠 𝗥𝗘𝗔𝗗𝗬!
 ┃ The card is waiting for you.
-┃ Use \`.claim ${pendingCard.claimId}\` to add this card.
+┃ Use \`.claim ${pendingCard.spawnId}\` to add this card.
 ╰━━━━━━━━━━━━━━━━━━━━╯`;
 
       if (card.media) {
