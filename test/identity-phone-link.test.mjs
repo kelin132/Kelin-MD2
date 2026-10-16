@@ -1,9 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { resolveLid } from "../lib/permissions.mjs";
 import {
   migrateLidData,
   mergeRegisteredIdentityDocuments,
   phoneIdentityFields,
+  participantMatchesIdentity,
   resolveAndMigrateIdentity,
   resolveJidToLid,
   resolveLidToJid,
@@ -101,6 +103,21 @@ function fakeDatabase(collections = {}) {
   };
 }
 
+test("permission LID resolution returns only verified phone digits", async () => {
+  const phoneJid = "263771234567@s.whatsapp.net";
+  const mappedSock = {
+    signalRepository: {
+      lidMapping: {
+        async getPNForLID() { return phoneJid; },
+      },
+    },
+  };
+  const unmappedSock = {};
+
+  assert.equal(await resolveLid("12345@lid", mappedSock, "group@g.us"), "263771234567");
+  assert.equal(await resolveLid("12345@lid", unmappedSock, "group@g.us"), "");
+});
+
 test("privacy LID digits are not exposed as phone-number aliases", () => {
   const variants = whatsappIdentityVariants("12345:7@lid");
 
@@ -109,6 +126,53 @@ test("privacy LID digits are not exposed as phone-number aliases", () => {
   assert.ok(!variants.includes("12345"));
   assert.ok(!variants.includes("+12345"));
   assert.ok(!variants.includes("12345@s.whatsapp.net"));
+});
+
+test("group participant matching recognizes JID/LID aliases without comparing LID digits as a phone", () => {
+  const phoneJid = "263771234567@s.whatsapp.net";
+  const lid = "12345@lid";
+
+  assert.equal(
+    participantMatchesIdentity({ id: lid, lid, phoneNumber: phoneJid }, [phoneJid]),
+    true,
+  );
+  assert.equal(participantMatchesIdentity({ id: phoneJid, lid }, [lid]), true);
+  assert.equal(participantMatchesIdentity({ id: lid, lid }, [phoneJid]), false);
+});
+
+test("group metadata resolves an LID participant through its verified phoneNumber", async () => {
+  const phoneJid = "263771234567@s.whatsapp.net";
+  const lid = "12345@lid";
+  const sock = {
+    async groupMetadata() {
+      return { participants: [{ id: lid, lid, phoneNumber: "263771234567" }] };
+    },
+  };
+
+  assert.equal(await resolveLidToJid(lid, sock, "group@g.us"), phoneJid);
+});
+
+test("an LID group message preserves the existing registered account when participant phoneNumber identifies it", async () => {
+  const phoneJid = "263771234567@s.whatsapp.net";
+  const lid = "12345@lid";
+  const db = fakeDatabase({
+    users: [{ _id: lid, registered: true, name: "Original account", money: 900, bank: 25 }],
+  });
+  const sock = {
+    async groupMetadata() {
+      return { participants: [{ id: lid, lid, phoneNumber: phoneJid }] };
+    },
+  };
+
+  const resolved = await resolveAndMigrateIdentity(lid, sock, "group@g.us", "", db);
+  const account = await db.collection("users").findOne({ _id: phoneJid });
+
+  assert.equal(resolved, phoneJid);
+  assert.equal(account.registered, true);
+  assert.equal(account.name, "Original account");
+  assert.equal(account.money, 900);
+  assert.equal(account.bank, 25);
+  assert.equal(await db.collection("users").findOne({ _id: lid }), null);
 });
 
 test("LID resolution uses Baileys phone mapping and strips device suffixes", async () => {
