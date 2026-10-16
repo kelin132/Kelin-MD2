@@ -46,13 +46,17 @@ On **Pterodactyl / katabump** you can paste these directly into the panel's **St
 
 ### 3. Start
 ```
-node index.js
+bash start.sh
 ```
 
 Or set your panel's **Start Command** to:
 ```
-node index.js
+bash start.sh
 ```
+
+The launcher ignores a missing or unreadable `NODE_EXTRA_CA_CERTS` path some
+panels inject, preventing repeated Node.js startup warnings. It does not disable
+TLS certificate verification; Node continues using its default CA certificates.
 
 ---
 
