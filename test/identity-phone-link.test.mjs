@@ -383,7 +383,7 @@ test("verified LID aliases survive reconnects even without a registered user rec
 
   assert.equal(resolved, phoneJid);
   assert.equal(alias.jid, phoneJid);
-  assert.equal(alias.migrationVersion, 3);
+  assert.equal(alias.migrationVersion, 4);
   assert.equal(await resolveJidToLid(phoneJid, {}, db), lid);
   assert.equal((await db.collection("pokemon_trainers").findOne({ jid: phoneJid })).username, "Eclipse");
 });
@@ -443,7 +443,52 @@ test("previously migrated accounts reconcile LID records created after the old m
   assert.equal(account.money, 900);
   assert.equal(account.bank, 25);
   assert.equal(await db.collection("users").findOne({ _id: lid }), null);
-  assert.equal(alias.migrationVersion, 3);
+  assert.equal(alias.migrationVersion, 4);
+});
+
+test("reconciles an existing LID/JID split to the richer KELIN.PYT profile and keeps both inventories", async () => {
+  const lid = "12345@lid";
+  const phoneJid = "263771234567@s.whatsapp.net";
+  const db = fakeDatabase({
+    whatsapp_identity_aliases: [{ _id: lid, jid: phoneJid, migrationVersion: 3 }],
+    users: [{
+      _id: phoneJid,
+      registered: true,
+      name: "KELIN",
+      age: null,
+      birthday: null,
+      bio: "",
+      identityMigrationConflicts: {
+        [lid]: {
+          name: "KELIN.PYT",
+          birthday: "18 May",
+          bio: "I build stuff",
+        },
+      },
+    }],
+    mn_users: [
+      { _id: "cards-lid", userId: "12345", cards: [{ ownedId: "lid-card" }], totalCards: 1 },
+      { _id: "cards-phone", userId: "263771234567", cards: [{ ownedId: "phone-card" }], totalCards: 1 },
+    ],
+    pokemon_owned: [
+      { _id: "pokemon-lid", ownerJid: lid },
+      { _id: "pokemon-phone", ownerJid: phoneJid },
+    ],
+  });
+
+  assert.equal(await resolveAndMigrateIdentity(lid, {}, "group@g.us", "", db), phoneJid);
+
+  const profile = await db.collection("users").findOne({ _id: phoneJid });
+  const cards = await db.collection("mn_users").findOne({ userId: "263771234567" });
+  const pokemon = await db.collection("pokemon_owned").find({ ownerJid: phoneJid }).toArray();
+  const alias = await db.collection("whatsapp_identity_aliases").findOne({ _id: lid });
+
+  assert.equal(profile.name, "KELIN.PYT");
+  assert.equal(profile.birthday, "18 May");
+  assert.equal(profile.bio, "I build stuff");
+  assert.deepEqual(cards.cards.map((card) => card.ownedId), ["lid-card", "phone-card"]);
+  assert.equal(pokemon.length, 2);
+  assert.equal(alias.migrationVersion, 4);
 });
 
 test("concurrent and repeated identity repairs share one successful migration", async () => {
@@ -513,6 +558,34 @@ test("legacy registered-account values remain primary when phone-keyed records c
     name: "New duplicate",
     money: 0,
   });
+});
+
+test("more complete phone-keyed profile fields beat an incomplete LID profile", () => {
+  const merged = mergeRegisteredIdentityDocuments(
+    {
+      _id: "12345@lid",
+      registered: true,
+      name: "KELIN",
+      age: null,
+      birthday: null,
+      bio: "",
+    },
+    {
+      _id: "263771234567@s.whatsapp.net",
+      registered: true,
+      name: "KELIN.PYT",
+      age: 24,
+      birthday: "18 May",
+      bio: "I build stuff",
+    },
+    "12345@lid",
+    "263771234567@s.whatsapp.net",
+  );
+
+  assert.equal(merged.name, "KELIN.PYT");
+  assert.equal(merged.age, 24);
+  assert.equal(merged.birthday, "18 May");
+  assert.equal(merged.bio, "I build stuff");
 });
 
 test("LID migration rekeys old card users and merges cards into an existing phone record", async () => {
