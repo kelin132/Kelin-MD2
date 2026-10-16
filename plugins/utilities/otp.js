@@ -1,49 +1,52 @@
 import { getPendingWebsiteCode } from "../../lib/websiteAuth.mjs";
 
-export default {
-  name: "otp",
-  description: "Send the one-time AIDORU website code in a public group chat",
-  category: "utilities",
-  usage: ".otp",
-  cooldown: 30,
+export function createOtpPlugin(getPendingCode = getPendingWebsiteCode) {
+  return {
+    name: "otp",
+    description: "Send the one-time AIDORU website code in a private chat",
+    category: "utilities",
+    usage: ".otp",
+    cooldown: 30,
 
-  async run({ sock, msg, sender }) {
-    const sourceChat = String(msg.key.remoteJid || "").trim();
-    const senderJid = String(sender || msg.key.participant || sourceChat || "").trim();
-    const quoted = { quoted: msg };
-    const isGroup = sourceChat.endsWith("@g.us");
+    async run({ sock, msg, sender }) {
+      const sourceChat = String(msg.key.remoteJid || "").trim();
+      const senderJid = String(sender || msg.key.participant || sourceChat || "").trim();
+      const quoted = { quoted: msg };
+      const isGroup = sourceChat.endsWith("@g.us");
 
-    if (!senderJid) return;
-    
-    // Inverted check: restrict execution to group chats only
-    if (!isGroup) {
-      await sock.sendMessage(
-        sourceChat,
-        { text: "This command can only be used in group chats." },
-        quoted,
-      );
-      return;
-    }
+      if (!senderJid) return;
+      if (isGroup) {
+        await sock.sendMessage(
+          sourceChat,
+          { text: "For account security, please send *.otp* in a private chat with the bot." },
+          quoted,
+        );
+        return;
+      }
 
-    try {
-      const pending = await getPendingWebsiteCode(senderJid);
-      await sock.sendMessage(
-        sourceChat,
-        createOtpPayload({ pending, senderJid }),
-        quoted,
-      );
-    } catch (error) {
-      const originalMessage = error instanceof Error
-        ? error.message
-        : "Could not create a reset code.";
-      const message = senderJid.endsWith("@lid") &&
-        /register first|no active website code/i.test(originalMessage)
-        ? "I could not safely map this private WhatsApp ID to a phone number. Try again once WhatsApp provides the verified phone mapping, or contact the bot owner."
-        : originalMessage;
-      await sock.sendMessage(sourceChat, { text: `❌ ${message}` }, quoted);
-    }
-  },
-};
+      try {
+        const pending = await getPendingCode(senderJid);
+        await sock.sendMessage(
+          sourceChat,
+          createOtpPayload({ pending, senderJid }),
+          quoted,
+        );
+      } catch (error) {
+        const originalMessage = error instanceof Error
+          ? error.message
+          : "Could not create a reset code.";
+        const message = senderJid.endsWith("@lid") &&
+          /register first|no active website code/i.test(originalMessage)
+          ? "I could not safely map this private WhatsApp ID to a phone number. Try again once WhatsApp provides the verified phone mapping, or contact the bot owner."
+          : originalMessage;
+        await sock.sendMessage(sourceChat, { text: `❌ ${message}` }, quoted);
+      }
+    },
+  };
+}
+
+const otpPlugin = createOtpPlugin();
+export default otpPlugin;
 
 export function createOtpPayload({ pending, senderJid }) {
   return {
