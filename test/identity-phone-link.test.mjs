@@ -382,9 +382,49 @@ test("verified LID aliases survive reconnects even without a registered user rec
 
   assert.equal(resolved, phoneJid);
   assert.equal(alias.jid, phoneJid);
-  assert.equal(alias.migrationVersion, 2);
+  assert.equal(alias.migrationVersion, 3);
   assert.equal(await resolveJidToLid(phoneJid, {}, db), lid);
   assert.equal((await db.collection("pokemon_trainers").findOne({ jid: phoneJid })).username, "Eclipse");
+});
+
+test("a persisted verified alias resolves an LID after reconnect without a live mapping", async () => {
+  const lid = "12345@lid";
+  const phoneJid = "263771234567@s.whatsapp.net";
+  const db = fakeDatabase({
+    whatsapp_identity_aliases: [{ _id: lid, jid: phoneJid, migrationVersion: 2 }],
+  });
+
+  assert.equal(
+    await resolveLidToJid(lid, {}, "group@g.us", "", db),
+    phoneJid,
+  );
+});
+
+test("previously migrated accounts reconcile LID records created after the old migration", async () => {
+  const lid = "12345@lid";
+  const phoneJid = "263771234567@s.whatsapp.net";
+  const db = fakeDatabase({
+    whatsapp_identity_aliases: [{ _id: lid, jid: phoneJid, migrationVersion: 2 }],
+    users: [{
+      _id: lid,
+      registered: true,
+      name: "Recovered account",
+      money: 900,
+      bank: 25,
+    }],
+  });
+
+  const resolved = await resolveAndMigrateIdentity(lid, {}, "group@g.us", "", db);
+  const account = await db.collection("users").findOne({ _id: phoneJid });
+  const alias = await db.collection("whatsapp_identity_aliases").findOne({ _id: lid });
+
+  assert.equal(resolved, phoneJid);
+  assert.equal(account.registered, true);
+  assert.equal(account.name, "Recovered account");
+  assert.equal(account.money, 900);
+  assert.equal(account.bank, 25);
+  assert.equal(await db.collection("users").findOne({ _id: lid }), null);
+  assert.equal(alias.migrationVersion, 3);
 });
 
 test("concurrent and repeated identity repairs share one successful migration", async () => {
