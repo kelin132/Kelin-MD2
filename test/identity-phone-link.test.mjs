@@ -67,11 +67,20 @@ function fakeDatabase(collections = {}) {
           return doc ? structuredClone(doc) : null;
         },
         find: cursor,
-        async updateOne(query, update) {
-          const doc = docs.find((item) => matches(item, query));
-          if (!doc) return { matchedCount: 0 };
+        async updateOne(query, update, options = {}) {
+          let doc = docs.find((item) => matches(item, query));
+          let upsertedId;
+          if (!doc && options.upsert) {
+            doc = {};
+            if (query._id !== undefined && (typeof query._id !== "object" || query._id === null)) {
+              doc._id = query._id;
+            }
+            docs.push(doc);
+            upsertedId = doc._id;
+          }
+          if (!doc) return { matchedCount: 0, acknowledged: true };
           applyUpdate(doc, update);
-          return { matchedCount: 1 };
+          return { matchedCount: upsertedId === undefined ? 1 : 0, upsertedId, acknowledged: true };
         },
         async updateMany(query, update) {
           let matchedCount = 0;
@@ -272,7 +281,7 @@ test("missing phone-to-LID lookups are cached, then replaced by a verified alter
   assert.equal(await resolveJidToLid(phoneJid, sock, db), "");
   assert.equal(await resolveJidToLid(phoneJid, sock, db), "");
   assert.equal(mappingLookups, 1);
-  assert.equal(databaseLookups, 1);
+  assert.equal(databaseLookups, 2); // alias collection first, then pre-upgrade user fallback
 
   await resolveAndMigrateIdentity(phoneJid, sock, "", lid, fakeDatabase());
   assert.equal(await resolveJidToLid(phoneJid, sock, db), lid);
@@ -332,6 +341,50 @@ test("phone-message identity recovery migrates old card data using the persisted
   assert.equal(resolved, phoneJid);
   assert.deepEqual(cardUser.cards, [{ cardId: "legacy-card" }]);
   assert.equal(await db.collection("mn_users").findOne({ userId: "12345" }), null);
+});
+
+test("legacy user documents keyed by an LID field migrate to the canonical phone account", async () => {
+  const lid = "12345@lid";
+  const phoneJid = "263771234567@s.whatsapp.net";
+  const db = fakeDatabase({
+    users: [{
+      _id: "legacy-user-document",
+      userId: lid,
+      registered: true,
+      name: "Original account",
+      money: 900,
+      bank: 25,
+    }],
+  });
+
+  const resolved = await resolveAndMigrateIdentity(lid, {}, "group@g.us", phoneJid, db);
+  const user = await db.collection("users").findOne({ _id: phoneJid });
+
+  assert.equal(resolved, phoneJid);
+  assert.equal(user.registered, true);
+  assert.equal(user.name, "Original account");
+  assert.equal(user.money, 900);
+  assert.equal(user.bank, 25);
+  assert.equal(user.whatsappNumber, phoneJid);
+  assert.equal(user.migratedFrom, lid);
+  assert.equal(await db.collection("users").findOne({ _id: "legacy-user-document" }), null);
+});
+
+test("verified LID aliases survive reconnects even without a registered user record", async () => {
+  const lid = "12345@lid";
+  const phoneJid = "263771234567@s.whatsapp.net";
+  const db = fakeDatabase({
+    pokemon_trainers: [{ _id: "trainer-old", jid: lid, username: "Eclipse", party: [] }],
+  });
+
+  const resolved = await resolveAndMigrateIdentity(lid, {}, "group@g.us", phoneJid, db);
+  const alias = await db.collection("whatsapp_identity_aliases").findOne({ _id: lid });
+
+  assert.equal(resolved, phoneJid);
+  assert.equal(alias.jid, phoneJid);
+  assert.equal(alias.migrationVersion, 2);
+  assert.equal(await resolveJidToLid(phoneJid, {}, db), lid);
+  assert.equal((await db.collection("pokemon_trainers").findOne({ jid: phoneJid })).username, "Eclipse");
 });
 
 test("concurrent and repeated identity repairs share one successful migration", async () => {
