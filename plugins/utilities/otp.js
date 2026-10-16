@@ -2,7 +2,7 @@ import { getPendingWebsiteCode } from "../../lib/websiteAuth.mjs";
 
 export default {
   name: "otp",
-  description: "Send the one-time AIDORU website code in a private chat",
+  description: "Send the one-time AIDORU website code in a public group chat",
   category: "utilities",
   usage: ".otp",
   cooldown: 30,
@@ -14,10 +14,12 @@ export default {
     const isGroup = sourceChat.endsWith("@g.us");
 
     if (!senderJid) return;
-    if (isGroup) {
+    
+    // Inverted check: restrict execution to group chats only
+    if (!isGroup) {
       await sock.sendMessage(
         sourceChat,
-        { text: "For account security, please send *.otp* in a private chat with the bot." },
+        { text: "This command can only be used in group chats." },
         quoted,
       );
       return;
