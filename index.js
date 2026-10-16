@@ -52,16 +52,35 @@ if (multiBotMode) {
     log("error", "[bots] .bots contains entries but no valid bot definitions were loaded. Fix the JSON/config before restarting.");
   }
   log("info", `[bots] Found ${botDefinitions.length} bot(s) in .bots/`);
-  await startBotSupervisor();
+
+  // Fetch once, before workers are spawned. Workers share this checkout and
+  // concurrent git fetches can exhaust the panel's process limit.
+  const { autoUpdate } = await import("./lib/updater.js");
+  await autoUpdate();
+
+  let databaseReady = false;
+  let startTaxScheduler;
   try {
-    const [{ connectDb }, { startTaxScheduler }] = await Promise.all([
+    const [{ connectDb }, taxScheduler] = await Promise.all([
       import("./lib/mongo.mjs"),
       import("./lib/taxScheduler.mjs"),
     ]);
+    startTaxScheduler = taxScheduler.startTaxScheduler;
     await connectDb();
-    await startTaxScheduler();
+    databaseReady = true;
   } catch (error) {
     log("warn", `[tax] Scheduler unavailable in multi-bot mode: ${error.message}`);
+  }
+
+  // The parent owns startup indexes/backfills. Workers connect only after that
+  // one maintenance pass has completed.
+  await startBotSupervisor();
+  if (databaseReady) {
+    try {
+      await startTaxScheduler();
+    } catch (error) {
+      log("warn", `[tax] Scheduler unavailable in multi-bot mode: ${error.message}`);
+    }
   }
 } else {
   // Parallel import of modules

@@ -179,6 +179,41 @@ test("phone JIDs can resolve the original LID through Baileys' reverse mapping",
   assert.equal(await resolveJidToLid(phoneJid, sock), "12345@lid");
 });
 
+test("missing phone-to-LID lookups are cached, then replaced by a verified alternate", async () => {
+  const phoneJid = "263771234567@s.whatsapp.net";
+  const lid = "12345@lid";
+  let mappingLookups = 0;
+  let databaseLookups = 0;
+  const sock = {
+    signalRepository: {
+      lidMapping: {
+        async getLIDForPN() {
+          mappingLookups += 1;
+          return null;
+        },
+      },
+    },
+  };
+  const db = {
+    collection() {
+      return {
+        async findOne() {
+          databaseLookups += 1;
+          return null;
+        },
+      };
+    },
+  };
+
+  assert.equal(await resolveJidToLid(phoneJid, sock, db), "");
+  assert.equal(await resolveJidToLid(phoneJid, sock, db), "");
+  assert.equal(mappingLookups, 1);
+  assert.equal(databaseLookups, 1);
+
+  await resolveAndMigrateIdentity(phoneJid, sock, "", lid, fakeDatabase());
+  assert.equal(await resolveJidToLid(phoneJid, sock, db), lid);
+});
+
 test("phone JIDs recover the original LID from a prior migration record", async () => {
   const phoneJid = "263771234567@s.whatsapp.net";
   const db = fakeDatabase({
@@ -233,6 +268,41 @@ test("phone-message identity recovery migrates old card data using the persisted
   assert.equal(resolved, phoneJid);
   assert.deepEqual(cardUser.cards, [{ cardId: "legacy-card" }]);
   assert.equal(await db.collection("mn_users").findOne({ userId: "12345" }), null);
+});
+
+test("concurrent and repeated identity repairs share one successful migration", async () => {
+  const lid = "12345@lid";
+  const phoneJid = "263771234567@s.whatsapp.net";
+  const baseDb = fakeDatabase();
+  let databaseOperations = 0;
+  const db = {
+    collection(name) {
+      const collection = baseDb.collection(name);
+      return new Proxy(collection, {
+        get(target, property) {
+          const value = target[property];
+          if (typeof value !== "function") return value;
+          return (...args) => {
+            databaseOperations += 1;
+            return value.apply(target, args);
+          };
+        },
+      });
+    },
+  };
+  const sock = {};
+
+  const [first, concurrent] = await Promise.all([
+    resolveAndMigrateIdentity(lid, sock, "", phoneJid, db),
+    resolveAndMigrateIdentity(lid, sock, "", phoneJid, db),
+  ]);
+  assert.equal(first, phoneJid);
+  assert.equal(concurrent, phoneJid);
+  const operationsAfterMigration = databaseOperations;
+  assert.ok(operationsAfterMigration > 0);
+
+  assert.equal(await resolveAndMigrateIdentity(lid, sock, "", phoneJid, db), phoneJid);
+  assert.equal(databaseOperations, operationsAfterMigration);
 });
 
 test("legacy registered-account values remain primary when phone-keyed records collide", () => {
