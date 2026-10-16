@@ -14,19 +14,71 @@ function fakeDatabase(collections = {}) {
   return {
     collection(name) {
       const docs = collections[name] || (collections[name] = []);
-      const matches = (doc, query) =>
-        Object.entries(query).every(([key, value]) => doc?.[key] === value);
+      const getValue = (doc, path) => {
+        const [key, ...rest] = path.split(".");
+        if (!key) return doc;
+        if (Array.isArray(doc)) return doc.flatMap((item) => {
+          const value = getValue(item, path);
+          return Array.isArray(value) ? value : [value];
+        });
+        return rest.length ? getValue(doc?.[key], rest.join(".")) : doc?.[key];
+      };
+      const matchesValue = (actual, expected) => {
+        if (expected && typeof expected === "object" && !Array.isArray(expected)) {
+          if (Object.hasOwn(expected, "$in")) {
+            return expected.$in.some((value) =>
+              Array.isArray(actual) ? actual.includes(value) : actual === value
+            );
+          }
+          if (Object.hasOwn(expected, "$regex")) {
+            return new RegExp(expected.$regex, expected.$options || "").test(String(actual || ""));
+          }
+        }
+        return actual === expected;
+      };
+      const matches = (doc, query = {}) =>
+        Object.entries(query).every(([key, value]) => {
+          if (key === "$or") return value.some((branch) => matches(doc, branch));
+          return matchesValue(getValue(doc, key), value);
+        });
+      const setPath = (doc, path, value) => {
+        const parts = path.split(".");
+        let current = doc;
+        for (const part of parts.slice(0, -1)) {
+          current[part] ??= {};
+          current = current[part];
+        }
+        current[parts.at(-1)] = value;
+      };
+      const applyUpdate = (doc, update) => {
+        for (const [key, value] of Object.entries(update.$set || {})) setPath(doc, key, structuredClone(value));
+      };
+      const cursor = (query) => ({
+        async toArray() {
+          return docs.filter((item) => matches(item, query)).map((item) => structuredClone(item));
+        },
+      });
 
       return {
         async findOne(query) {
           const doc = docs.find((item) => matches(item, query));
           return doc ? structuredClone(doc) : null;
         },
+        find: cursor,
         async updateOne(query, update) {
           const doc = docs.find((item) => matches(item, query));
           if (!doc) return { matchedCount: 0 };
-          Object.assign(doc, update.$set || {});
+          applyUpdate(doc, update);
           return { matchedCount: 1 };
+        },
+        async updateMany(query, update) {
+          let matchedCount = 0;
+          for (const doc of docs) {
+            if (!matches(doc, query)) continue;
+            applyUpdate(doc, update);
+            matchedCount += 1;
+          }
+          return { matchedCount, modifiedCount: matchedCount, acknowledged: true };
         },
         async insertOne(doc) {
           docs.push(structuredClone(doc));
@@ -285,4 +337,153 @@ test("LID migration rekeys card users when there is no phone-keyed record yet", 
   assert.equal(cardUser._id, "old-card-user");
   assert.equal(cardUser.whatsappNumber, "263771234567@s.whatsapp.net");
   assert.deepEqual(cardUser.cards, [{ cardId: "old-card" }]);
+});
+
+test("verified LID migration reconnects the user's bot data across all owner collections", async () => {
+  const lid = "12345@lid";
+  const phoneJid = "263771234567@s.whatsapp.net";
+  const db = fakeDatabase({
+    users: [{ _id: phoneJid, registered: true, migratedFrom: lid }],
+    rpg_users: [{ _id: lid, level: 12, xp: 40 }],
+    pokemon_trainers: [{
+      _id: "trainer-old",
+      jid: lid,
+      username: "Eclipse",
+      party: ["old-pokemon"],
+      pc: ["old-pc-pokemon"],
+      inventory: { potion: 3 },
+    }],
+    pokemon_owned: [{ _id: "pokemon-old", ownerJid: lid, name: "Pikachu" }],
+    dbz_players: [{
+      _id: "dbz-old",
+      jid: lid,
+      character: "Goku",
+      inventory: ["senzu"],
+      techniques: ["kamehameha"],
+    }],
+    dbz_fighters: [{ _id: "fighter-old", ownerJid: lid, name: "Goku", level: 20 }],
+    ptcg_players: [{
+      _id: "ptcg-old",
+      jid: lid,
+      cards: [{ ownedId: "old-owned-card" }],
+      cardsPulled: 1,
+      packsOpened: 2,
+    }],
+    pets: [{ _id: "pet-old", owner: lid, petId: "44001", name: "Mochi" }],
+    ptcg_market: [{ _id: "listing-old", sellerJid: lid, status: "active" }],
+    ptcg_trades: [{ _id: "trade-old", fromJid: lid, toJid: "other@s.whatsapp.net" }],
+    mn_card_market: [{ _id: "card-listing-old", sellerId: "12345" }],
+    account_links: [{ _id: "discord-link", whatsappId: lid, discordId: "discord-user", status: "active" }],
+    companies: [{ _id: "company-old", ownerId: lid, name: "Eclipse shop" }],
+    guilds: [{
+      _id: "Eclipse guild",
+      owner: lid,
+      members: [lid, "other@s.whatsapp.net"],
+    }],
+    guildWars: [{
+      _id: "war-old",
+      createdBy: lid,
+      guildA: { owner: lid },
+      matchups: [{ a: { jid: lid, name: "Eclipse" }, reportedBy: lid }],
+    }],
+    web_battle_rooms: [{
+      _id: "battle-old",
+      challenger: { id: lid },
+      invitedOpponentId: lid,
+      spectatorIds: [lid],
+    }],
+    akira_memory: [{
+      _id: lid,
+      userJid: lid,
+      history: [{ role: "user", text: "hello", ts: 1, chatJid: "group@g.us" }],
+      messageCount: 1,
+    }],
+    workSessions: [{ _id: lid, lastCollectTime: 123 }],
+    petpvp_cd: [{ _id: lid, lastPvp: 456 }],
+    lottery: [{
+      _id: "current",
+      tickets: [{ userId: "12345", count: 1 }, { userId: "another-user", count: 1 }],
+    }],
+    lottery_announcements: [{
+      _id: "draw-old",
+      payload: {
+        mentions: [lid],
+        winners: [{ userId: lid, name: "Eclipse" }],
+      },
+    }],
+    warns: [{
+      _id: `group@g.us:${lid}`,
+      count: 2,
+      warnings: [{ by: lid, reason: "legacy", ts: "2026-01-01" }],
+    }],
+    antilinkWarns: [{ _id: `group@g.us:${lid}`, count: 1 }],
+  });
+
+  const resolved = await resolveAndMigrateIdentity(phoneJid, {}, "", "", db);
+
+  assert.equal(resolved, phoneJid);
+  assert.equal((await db.collection("pokemon_trainers").findOne({ jid: phoneJid })).username, "Eclipse");
+  assert.equal((await db.collection("pokemon_owned").findOne({ _id: "pokemon-old" })).ownerJid, phoneJid);
+  assert.equal((await db.collection("dbz_players").findOne({ jid: phoneJid })).character, "Goku");
+  assert.equal((await db.collection("dbz_fighters").findOne({ ownerJid: phoneJid })).level, 20);
+  assert.equal((await db.collection("ptcg_players").findOne({ jid: phoneJid })).cards[0].ownedId, "old-owned-card");
+  assert.equal((await db.collection("pets").findOne({ owner: phoneJid })).name, "Mochi");
+  assert.equal((await db.collection("ptcg_market").findOne({ sellerJid: phoneJid })).status, "active");
+  assert.equal((await db.collection("ptcg_trades").findOne({ fromJid: phoneJid })).toJid, "other@s.whatsapp.net");
+  assert.equal((await db.collection("mn_card_market").findOne({ sellerId: "263771234567" }))._id, "card-listing-old");
+  assert.equal((await db.collection("account_links").findOne({ whatsappId: phoneJid })).discordId, "discord-user");
+  assert.equal((await db.collection("companies").findOne({ ownerId: phoneJid })).name, "Eclipse shop");
+  assert.equal((await db.collection("rpg_users").findOne({ _id: phoneJid })).level, 12);
+  assert.deepEqual((await db.collection("guilds").findOne({ _id: "Eclipse guild" })).members, [
+    phoneJid,
+    "other@s.whatsapp.net",
+  ]);
+  assert.equal((await db.collection("guilds").findOne({ _id: "Eclipse guild" })).owner, phoneJid);
+  const war = await db.collection("guildWars").findOne({ _id: "war-old" });
+  assert.equal(war.createdBy, phoneJid);
+  assert.equal(war.matchups[0].a.jid, phoneJid);
+  assert.equal((await db.collection("web_battle_rooms").findOne({ _id: "battle-old" })).challenger.id, phoneJid);
+  assert.equal((await db.collection("akira_memory").findOne({ _id: phoneJid })).history[0].text, "hello");
+  assert.equal((await db.collection("workSessions").findOne({ _id: phoneJid })).lastCollectTime, 123);
+  assert.equal((await db.collection("petpvp_cd").findOne({ _id: phoneJid })).lastPvp, 456);
+  assert.equal((await db.collection("lottery").findOne({ _id: "current" })).tickets[0].userId, "263771234567");
+  const archivedDraw = await db.collection("lottery_announcements").findOne({ _id: "draw-old" });
+  assert.deepEqual(archivedDraw.payload.mentions, [phoneJid]);
+  assert.equal(archivedDraw.payload.winners[0].userId, phoneJid);
+  assert.equal((await db.collection("warns").findOne({ _id: `group@g.us:${phoneJid}` })).warnings[0].by, phoneJid);
+  assert.equal((await db.collection("antilinkWarns").findOne({ _id: `group@g.us:${phoneJid}` })).count, 1);
+});
+
+test("colliding user progress records merge instead of dropping the old LID record", async () => {
+  const lid = "12345@lid";
+  const phoneJid = "263771234567@s.whatsapp.net";
+  const db = fakeDatabase({
+    pokemon_trainers: [
+      { _id: "old-trainer", jid: lid, username: "Eclipse", party: ["old"], pc: ["old-pc"] },
+      { _id: "phone-trainer", jid: phoneJid, username: "New profile", party: ["new"], pc: [] },
+    ],
+    ptcg_players: [
+      { _id: "old-player", jid: lid, cards: [{ ownedId: "old-card" }], packsOpened: 2 },
+      { _id: "phone-player", jid: phoneJid, cards: [{ ownedId: "phone-card" }], packsOpened: 3 },
+    ],
+    petpvp_cd: [
+      { _id: lid, lastPvp: 100 },
+      { _id: phoneJid, lastPvp: 200 },
+    ],
+  });
+
+  assert.equal(await migrateLidData(lid, phoneJid, db), true);
+  const trainer = await db.collection("pokemon_trainers").findOne({ jid: phoneJid });
+  const player = await db.collection("ptcg_players").findOne({ jid: phoneJid });
+
+  assert.deepEqual(trainer.party, ["old", "new"]);
+  assert.deepEqual(trainer.pc, ["old-pc"]);
+  assert.equal(trainer.username, "Eclipse");
+  assert.equal(trainer.identityMigrationConflicts[lid].username, "New profile");
+  assert.deepEqual(player.cards.map((card) => card.ownedId), ["old-card", "phone-card"]);
+  assert.equal(player.packsOpened, 5);
+  assert.equal((await db.collection("petpvp_cd").findOne({ _id: phoneJid })).lastPvp, 200);
+  assert.equal(await db.collection("pokemon_trainers").findOne({ _id: "old-trainer" }), null);
+  assert.equal(await db.collection("ptcg_players").findOne({ _id: "old-player" }), null);
+  assert.equal(await db.collection("petpvp_cd").findOne({ _id: lid }), null);
 });
