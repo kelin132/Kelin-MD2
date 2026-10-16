@@ -11,6 +11,7 @@ import {
   resolveLidToJid,
   whatsappIdentityVariants,
 } from "../lib/identity.mjs";
+import { resolveProfileTarget } from "../lib/profileIdentity.mjs";
 
 function fakeDatabase(collections = {}) {
   return {
@@ -398,6 +399,24 @@ test("a persisted verified alias resolves an LID after reconnect without a live 
     await resolveLidToJid(lid, {}, "group@g.us", "", db),
     phoneJid,
   );
+});
+
+test("profile lookups resolve a quoted LID to the same canonical user as its phone JID", async () => {
+  const lid = "12345@lid";
+  const phoneJid = "263771234567@s.whatsapp.net";
+  const db = fakeDatabase({
+    whatsapp_identity_aliases: [{ _id: lid, jid: phoneJid, migrationVersion: 3 }],
+  });
+
+  const target = await resolveProfileTarget({
+    quotedParticipant: lid,
+    sender: "requester@s.whatsapp.net",
+    sock: {},
+    chatId: "group@g.us",
+    database: db,
+  });
+
+  assert.equal(target, phoneJid);
 });
 
 test("previously migrated accounts reconcile LID records created after the old migration", async () => {

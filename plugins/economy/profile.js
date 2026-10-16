@@ -7,6 +7,7 @@ import { guildSystem } from "../../lib/guildSystem.js";
 import { GYMS } from "../../lib/pokemon/gymData.mjs";
 import { getTrainer } from "../../lib/pokemon/players.mjs";
 import { buildEconomyExternalAdReply } from "../../lib/economyPreview.mjs";
+import { resolveProfileTarget } from "../../lib/profileIdentity.mjs";
 
 const xpForLevel = (level) => level * 100;
 
@@ -94,7 +95,13 @@ export default {
     const mentioned   = contextInfo?.mentionedJid?.[0];
     const quotedUser  = contextInfo?.participant;
 
-    const target = mentioned || quotedUser || sender;
+    const target = await resolveProfileTarget({
+      mentionedJid: mentioned,
+      quotedParticipant: quotedUser,
+      sender,
+      sock,
+      chatId: jid,
+    });
 
     if (target === sender && !await requireRegistration(sock, msg, sender)) return;
 
