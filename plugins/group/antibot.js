@@ -99,6 +99,14 @@ Usage:
   },
 };
 
-function normalizeJid(value) {
-  return String(value || "").split(":")[0].replace(/@lid$/, "@s.whatsapp.net");
+function normalizeJid(value = "") {
+  if (typeof value !== "string") return "";
+  const raw = value.trim();
+  if (!raw) return "";
+
+  const [localWithDevice = "", server = "s.whatsapp.net"] = raw.split("@");
+  const local = String(localWithDevice).split(":")[0];
+  const normalizedServer = String(server).toLowerCase();
+  const safeServer = normalizedServer === "c.us" ? "s.whatsapp.net" : normalizedServer || "s.whatsapp.net";
+  return `${local}@${safeServer}`;
 }
