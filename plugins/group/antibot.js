@@ -1,18 +1,3 @@
-import { groupSettings } from "../../lib/groupSettings.js";
-
-export default {
-  name: "antibot",
-  aliases: ["nobot", "antibots"],
-  description: "Detect and manage bots in the group",
-  category: "group",
-  usage: ".antibot on | off | warn | kick | status | scan",
-  isAdmin: true,
-  cooldown: 5,
-
-  async run({ sock, msg, args }) {
-    const jid = msg.key.remoteJid;
-    const action = (args[0] || "").toLowerCase();
-    const settings = groupSettings.get(jid);
     const enabled = settings.antibot === true;
     const mode = settings.antibotMode || "kick";
 
@@ -100,5 +85,12 @@ Usage:
 };
 
 function normalizeJid(value) {
-  return String(value || "").split(":")[0].replace(/@lid$/, "@s.whatsapp.net");
+  const raw = String(value ?? "").trim();
+  if (!raw) return "";
+  const [local = "", server = "s.whatsapp.net"] = raw.split("@");
+  const cleanLocal = local.split(":")[0];
+  const normalizedServer = (server || "s.whatsapp.net").toLowerCase() === "c.us"
+    ? "s.whatsapp.net"
+    : (server || "s.whatsapp.net").toLowerCase();
+  return `${cleanLocal}@${normalizedServer}`;
 }
