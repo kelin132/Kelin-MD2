@@ -4,6 +4,7 @@
 import { getTrainer, addToParty, addToPC } from "../../lib/pokemon/players.mjs";
 import { buildPokemon, savePokemon, updatePokemon } from "../../lib/pokemon/pokemonDb.mjs";
 import { fetchPokemon, getImageMessage } from "../../lib/pokemon/api.mjs";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 export default {
   name: "givepokemon",
@@ -23,7 +24,7 @@ export default {
       }, { quoted: msg });
     }
 
-    const targetJid = mentioned[0];
+    const targetJid = await resolveTargetIdentity(mentioned[0], { sender, sock, chatId: jid });
     const pokemonQuery = args[1];
     const level = parseInt(args[2]) || 10;
 

@@ -4,7 +4,7 @@
 import { findTrainerByUsername, getTrainer, pickLeadFromParty } from "../../lib/pokemon/players.mjs";
 import { healPartyAndGet } from "../../lib/pokemon/pokemonDb.mjs";
 import { createWebBattleRoom, webBattleUrl } from "../../lib/webBattleRoom.mjs";
-import { resolveLid } from "../../lib/permissions.mjs";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 function normaliseLabel(value) {
   return String(value ?? "")
@@ -102,27 +102,18 @@ export default {
         : null);
 
     const rawTargetJid = mentionedJid || quotedSender || null;
-    let resolvedRawTargetJid = rawTargetJid;
-    if (rawTargetJid?.endsWith("@lid")) {
-      const groupMemberJid = await findGroupMemberByLabel(sock, jid, rawTargetJid);
-      if (groupMemberJid) {
-        resolvedRawTargetJid = groupMemberJid;
-      } else {
-        const digits = await resolveLid(rawTargetJid, sock, jid);
-        resolvedRawTargetJid = digits ? `${digits}@s.whatsapp.net` : null;
-      }
-    }
 
     const typedLabel = args.join(" ");
     const typedTarget = typedLabel ? await findTrainerByUsername(typedLabel) : null;
-    const groupTarget = !resolvedRawTargetJid && !typedTarget
+    const groupTarget = !rawTargetJid && !typedTarget
       ? await findGroupMemberByLabel(sock, jid, typedLabel)
       : null;
-    const targetJid =
-      resolvedRawTargetJid ||
+    const rawResolvedTargetJid =
+      rawTargetJid ||
       typedTarget?.jid ||
       groupTarget ||
       (rawTargetJid && !rawTargetJid.endsWith("@lid") ? rawTargetJid : null);
+    const targetJid = await resolveTargetIdentity(rawResolvedTargetJid, { sender, sock, chatId: jid });
 
     if (!targetJid) {
       return sock.sendMessage(

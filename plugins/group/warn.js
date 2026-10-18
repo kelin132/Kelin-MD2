@@ -2,6 +2,7 @@
 // .warn @user [reason] — Strike system; auto-kick at 3 warnings
 import { getDb } from "../../lib/mongo.mjs";
 import { participantActionSucceeded } from "../../lib/groupParticipantAction.mjs";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 const MAX_WARNS = 3;
 
@@ -41,25 +42,29 @@ export default {
   cooldown: 3,
   isAdmin: true,
 
-  async run({ sock, msg, args }) {
+  async run({ sock, msg, args, sender }) {
     const jid      = msg.key.remoteJid;
-    const sender   = msg.key.participant || msg.key.remoteJid;
-    const mentions = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+    const rawSender = msg.key.participant || msg.key.remoteJid;
+    const context = msg.message?.extendedTextMessage?.contextInfo || {};
+    const mentions = context.mentionedJid || [];
+    const rawTargetFromMessage = mentions[0] || context.participant || context.quotedParticipant;
 
     if (!jid.endsWith("@g.us")) {
       return sock.sendMessage(jid, {
         text: `❌ This command can only be used in groups.`,
       }, { quoted: msg });
     }
+    const canonicalSender = sender || await resolveTargetIdentity(rawSender, { sock, chatId: jid });
 
     // .warn list @user
     if (args[0] === "list" || args[0] === "check") {
-      const target = mentions[0];
-      if (!target) {
+      const rawTarget = rawTargetFromMessage;
+      if (!rawTarget) {
         return sock.sendMessage(jid, {
           text: `❌ Mention a user: *.warn check @user*`,
         }, { quoted: msg });
       }
+      const target = await resolveTargetIdentity(rawTarget, { sender: canonicalSender, sock, chatId: jid });
       const data   = await getWarns(jid, target);
       const tNum   = target.split("@")[0].split(":")[0];
       const list   = data.warnings.map((w, i) =>
@@ -79,12 +84,13 @@ export default {
 
     // .warn reset @user
     if (args[0] === "reset" || args[0] === "clear") {
-      const target = mentions[0];
-      if (!target) {
+      const rawTarget = rawTargetFromMessage;
+      if (!rawTarget) {
         return sock.sendMessage(jid, {
           text: `❌ Mention a user: *.warn reset @user*`,
         }, { quoted: msg });
       }
+      const target = await resolveTargetIdentity(rawTarget, { sender: canonicalSender, sock, chatId: jid });
       await resetWarns(jid, target);
       const tNum = target.split("@")[0].split(":")[0];
       return sock.sendMessage(jid, {
@@ -108,19 +114,25 @@ export default {
       }, { quoted: msg });
     }
 
-    const target = mentions[0];
-    if (target === sender) {
+    const rawTarget = rawTargetFromMessage;
+    if (!rawTarget) {
+      return sock.sendMessage(jid, {
+        text: `❌ Mention a user: *.warn @user [reason]*`,
+      }, { quoted: msg });
+    }
+    const target = await resolveTargetIdentity(rawTarget, { sender: canonicalSender, sock, chatId: jid });
+    if (target === canonicalSender) {
       return sock.sendMessage(jid, { text: `❌ You can't warn yourself.` }, { quoted: msg });
     }
 
     const reason   = args.filter(a => !a.startsWith("@")).join(" ") || "No reason given";
-    const count    = await addWarn(jid, target, sender, reason);
+    const count    = await addWarn(jid, target, canonicalSender, reason);
     const tNum     = target.split("@")[0].split(":")[0];
 
     if (count >= MAX_WARNS) {
       let kickError = null;
       try {
-        const result = await sock.groupParticipantsUpdate(jid, [target], "remove");
+        const result = await sock.groupParticipantsUpdate(jid, [rawTarget], "remove");
         if (!participantActionSucceeded(result, 1)) {
           console.error("[warn] WhatsApp did not confirm automatic removal:", result);
           kickError = new Error("WhatsApp did not confirm the participant removal.");

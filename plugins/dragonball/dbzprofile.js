@@ -9,6 +9,7 @@
 
 import players from "../../lib/dragonball/players.js";
 import { xpNeeded } from "../../lib/dragonball/utils.js";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 export default {
   name:        "dbzprofile",
@@ -17,13 +18,18 @@ export default {
   category:    "dbz",
   usage:       ".dbzprofile [@user]",
 
-  async run({ sock, msg, sender, args }) {
+  async run({ sock, msg, sender }) {
     const jid = msg.key.remoteJid;
 
     // Resolve target (self or mentioned)
     const ctx           = msg.message?.extendedTextMessage?.contextInfo;
     const mentionedJid  = ctx?.mentionedJid?.[0] || null;
-    const targetJid     = mentionedJid || sender;
+    const quotedJid     = ctx?.participant || ctx?.quotedParticipant || null;
+    const targetJid     = await resolveTargetIdentity(mentionedJid || quotedJid || sender, {
+      sender,
+      sock,
+      chatId: jid,
+    });
     const isSelf        = targetJid === sender;
 
     // Read from dbz_players — same collection that dbztrain and dbzhunt update

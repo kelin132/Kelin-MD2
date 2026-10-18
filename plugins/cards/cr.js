@@ -1,5 +1,6 @@
 import { findOrCreateUser, fmt, tag } from "./db.js";
 import { getUser, saveUser } from "../economy/database.js";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 // In-memory trade requests — keyed by jid+target so each chat is isolated
 const tradeRequests = new Map();
@@ -84,13 +85,15 @@ export default {
       }
 
       // ── CREATE REQUEST ───────────────────────────────────────────────────────
-      const target = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0]
-                  || msg.message?.extendedTextMessage?.contextInfo?.participant;
+      const rawTarget = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0]
+                     || msg.message?.extendedTextMessage?.contextInfo?.participant
+                     || msg.message?.extendedTextMessage?.contextInfo?.quotedParticipant;
 
-      if (!target) {
+      if (!rawTarget) {
         return reply("❌ Mention or reply to a user to sell them a card.\nUsage: .cr <price> <index> @user");
       }
 
+      const target = await resolveTargetIdentity(rawTarget, { sender, sock, chatId: jid });
       if (target === sender) return reply("❌ You can't sell a card to yourself.");
 
       const price = parseInt(args[0]);

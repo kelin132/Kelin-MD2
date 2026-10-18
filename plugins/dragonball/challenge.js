@@ -12,6 +12,7 @@ import {
   clearPendingChallenge, startPvPBattle, hasBattle,
 } from "../../lib/dbz/battleState.mjs";
 import { generateBattleScene } from "../../lib/dbz/canvas.mjs";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 export default {
   name:        "dbzchallenge",
@@ -124,7 +125,8 @@ export default {
       (msg.quoted?.key?.participant ?? null) ||
       (msg.quoted?.key?.remoteJid !== jid ? msg.quoted?.key?.remoteJid : null);
 
-    const targetJid = mentionedJid || quotedSender || null;
+    const rawTargetJid = mentionedJid || quotedSender || null;
+    const targetJid = await resolveTargetIdentity(rawTargetJid, { sender, sock, chatId: jid });
 
     if (!targetJid) {
       return sock.sendMessage(jid, {

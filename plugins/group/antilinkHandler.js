@@ -3,6 +3,7 @@
  * Actions: "delete" | "kick" | "warn"
  */
 import { groupSettings } from "../../lib/groupSettings.js";
+import { participantMatchesIdentity } from "../../lib/identity.mjs";
 import { getDb } from "../../lib/mongo.mjs";
 
 const linkRegex =
@@ -56,7 +57,7 @@ async function resetLinkWarns(groupJid, userJid) {
   await db.collection("antilinkWarns").deleteOne({ _id: `${groupJid}:${cleanUser}` });
 }
 
-export async function antiLinkHandler({ sock, msg }) {
+export async function antiLinkHandler({ sock, msg, sender: canonicalSender = "" }) {
   const jid = msg.key.remoteJid;
 
   // Ensure this is running inside a group
@@ -79,7 +80,7 @@ export async function antiLinkHandler({ sock, msg }) {
   const rawSender = msg.key.participant || msg.key.remoteJid;
   if (!rawSender) return;
 
-  const sender = normalizeJid(rawSender);
+  const sender = normalizeJid(canonicalSender || rawSender);
   const senderNum = toNum(sender);
 
   // Identify bot
@@ -92,21 +93,17 @@ export async function antiLinkHandler({ sock, msg }) {
 
   let botIsAdmin = false;
   let senderIsAdmin = false;
-  let participantJidForKick = sender;
+  let participantJidForKick = rawSender;
 
   try {
     const meta = await sock.groupMetadata(jid);
     const participants = meta.participants || [];
 
     // Match sender using exact raw ID + normalized + numeric comparisons
-    const senderParticipant = participants.find((p) => {
-      const pid = p.id || "";
-      return (
-        pid === rawSender ||
-        normalizeJid(pid) === sender ||
-        toNum(pid) === senderNum
-      );
-    });
+    const senderParticipant = participants.find((p) =>
+      participantMatchesIdentity(p, [rawSender, sender]) ||
+      toNum(p?.id || "") === senderNum,
+    );
 
     if (senderParticipant) {
       participantJidForKick = senderParticipant.id; // exact metadata participant ID
@@ -114,14 +111,10 @@ export async function antiLinkHandler({ sock, msg }) {
     }
 
     // Match bot using exact raw ID + normalized + numeric comparisons
-    const botParticipant = participants.find((p) => {
-      const pid = p.id || "";
-      return (
-        pid === botId ||
-        normalizeJid(pid) === botNorm ||
-        toNum(pid) === botNum
-      );
-    });
+    const botParticipant = participants.find((p) =>
+      participantMatchesIdentity(p, [botId, botNorm]) ||
+      toNum(p?.id || "") === botNum,
+    );
 
     botIsAdmin = !!botParticipant?.admin;
 

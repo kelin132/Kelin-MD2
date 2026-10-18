@@ -1,5 +1,7 @@
 // plugins/fun/ship.js
 // .ship @user1 @user2 (or .ship @user to ship with yourself)
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
+
 export default {
   name: "ship",
   description: "Check compatibility between two users",
@@ -8,15 +10,17 @@ export default {
   aliases: ["compatibility", "lovemeter"],
   cooldown: 3,
 
-  async run({ sock, msg }) {
+  async run({ sock, msg, sender }) {
     const jid      = msg.key.remoteJid;
-    const sender   = msg.key.participant || msg.key.remoteJid;
-    const mentions = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+    const rawMentions = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+    const mentions = await Promise.all(rawMentions.map((target) =>
+      resolveTargetIdentity(target, { sender, sock, chatId: jid }),
+    ));
 
     let userA, userB;
 
     if (mentions.length >= 2) {
-      [userA, userB] = mentions;
+      [userA, userB] = mentions.slice(0, 2);
     } else if (mentions.length === 1) {
       userA = sender;
       userB = mentions[0];

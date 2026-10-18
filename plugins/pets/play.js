@@ -26,9 +26,8 @@ export default {
   aliases: ["playpet"],
   checkJail: true,
 
-  async run({ sock, msg }) {
+  async run({ sock, msg, sender }) {
     const jid    = msg.key.remoteJid;
-    const sender = msg.key.participant || msg.key.remoteJid;
 
     const pet = await getActivePet(sender);
     if (!pet) {

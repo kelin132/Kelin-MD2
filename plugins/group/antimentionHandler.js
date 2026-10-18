@@ -7,18 +7,20 @@
  * delete the message and warn; second offence → remove.
  */
 import { groupSettings } from "../../lib/groupSettings.js";
+import { participantMatchesIdentity } from "../../lib/identity.mjs";
 
 // Map<groupJid, Map<senderJid, { warned, warnTimer }>>
 const mentionTracker = new Map();
 
-export async function antimentionHandler({ sock, msg }) {
+export async function antimentionHandler({ sock, msg, sender: canonicalSender = "" }) {
   const jid = msg.key.remoteJid;
   if (!jid?.endsWith("@g.us")) return;
 
   const settings = groupSettings.get(jid) || {};
   if (!settings.antimention) return;
 
-  const sender = msg.key.participant || msg.key.remoteJid;
+  const rawSender = msg.key.participant || msg.key.remoteJid;
+  const sender = canonicalSender || rawSender;
   if (!sender) return;
 
   // Never act on the bot's own messages
@@ -28,8 +30,11 @@ export async function antimentionHandler({ sock, msg }) {
   // Skip admins
   try {
     const meta   = await sock.groupMetadata(jid);
-    const admins = meta.participants.filter(p => p.admin).map(p => p.id);
-    if (admins.includes(sender)) return;
+    const admins = meta.participants.filter((p) => p.admin);
+    if (admins.some((participant) => participantMatchesIdentity(
+      participant,
+      [rawSender, sender],
+    ))) return;
   } catch { /* continue */ }
 
   // Count mentions in this message
@@ -69,7 +74,15 @@ Next offence you will be removed.`,
     } else {
       userData.warned = false;
       clearTimeout(userData.warnTimer);
-      await sock.groupParticipantsUpdate(jid, [sender], "remove");
+      let participantJidForKick = rawSender;
+      try {
+        const meta = await sock.groupMetadata(jid);
+        const participant = (meta.participants || []).find((entry) =>
+          participantMatchesIdentity(entry, [rawSender, sender]),
+        );
+        if (participant?.id) participantJidForKick = participant.id;
+      } catch { /* keep the original participant ID */ }
+      await sock.groupParticipantsUpdate(jid, [participantJidForKick], "remove");
       await sock.sendMessage(jid, {
         text: `🚫 @${senderNum} was removed for mass-mentioning members.`,
         mentions: [sender],

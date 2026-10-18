@@ -48,9 +48,8 @@ export default {
   aliases: ["guildwar"],
   cooldown: 5,
 
-  async run({ sock, msg, text }) {
+  async run({ sock, msg, text, sender }) {
     const jid = msg.key.remoteJid;
-    const sender = msg.key.participant || msg.key.remoteJid;
     const input = String(text || "").trim();
     const action = input.split(/\s+/, 1)[0] || "help";
     const argumentText = input.slice(action.length).trim();

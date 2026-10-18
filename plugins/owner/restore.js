@@ -4,6 +4,7 @@
  * Owner only.
  */
 import { restoreWebsiteUser, getUser } from "../economy/database.js";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 export default {
   name: "restore",
@@ -13,7 +14,7 @@ export default {
   aliases: ["restoreweb", "unbanweb"],
   isOwner: true,
 
-  async run({ sock, msg, args }) {
+  async run({ sock, msg, args, sender }) {
     const jid = msg.key.remoteJid;
     const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
     const targetJid = mentioned || (args[0]?.match(/^\d+$/) ? `${args[0]}@s.whatsapp.net` : null);
@@ -25,10 +26,11 @@ export default {
         { quoted: msg },
       );
     }
+    const resolvedTargetJid = await resolveTargetIdentity(targetJid, { sender, sock, chatId: jid });
 
     let user;
     try {
-      user = await getUser(targetJid);
+      user = await getUser(resolvedTargetJid);
     } catch {
       user = null;
     }
@@ -40,23 +42,23 @@ export default {
     if (!user.websiteBanned) {
       return sock.sendMessage(
         jid,
-        { text: `❌ *${user.name || targetJid.split("@")[0]}* is not currently banned from the website.` },
+        { text: `❌ *${user.name || resolvedTargetJid.split("@")[0]}* is not currently banned from the website.` },
         { quoted: msg },
       );
     }
 
-    await restoreWebsiteUser(targetJid);
+    await restoreWebsiteUser(resolvedTargetJid);
 
     return sock.sendMessage(
       jid,
       {
         text:
           `✅ *Website Access Restored*\n\n` +
-          `👤 Player : ${user.name || targetJid.split("@")[0]}\n` +
+          `👤 Player : ${user.name || resolvedTargetJid.split("@")[0]}\n` +
           `🌐 Access : AIDORU website restored\n` +
           `🔐 Session : Previous website sessions revoked\n\n` +
           `_Bot ban status was not changed. The player must log in again._`,
-        mentions: [targetJid],
+        mentions: [resolvedTargetJid],
       },
       { quoted: msg },
     );

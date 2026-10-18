@@ -11,7 +11,8 @@ import {
   resolveLidToJid,
   whatsappIdentityVariants,
 } from "../lib/identity.mjs";
-import { resolveProfileTarget } from "../lib/profileIdentity.mjs";
+import { resolveProfileTarget, resolveTargetIdentity } from "../lib/profileIdentity.mjs";
+import { groupSettings } from "../lib/groupSettings.js";
 
 function fakeDatabase(collections = {}) {
   return {
@@ -383,7 +384,7 @@ test("verified LID aliases survive reconnects even without a registered user rec
 
   assert.equal(resolved, phoneJid);
   assert.equal(alias.jid, phoneJid);
-  assert.equal(alias.migrationVersion, 4);
+  assert.equal(alias.migrationVersion, 5);
   assert.equal(await resolveJidToLid(phoneJid, {}, db), lid);
   assert.equal((await db.collection("pokemon_trainers").findOne({ jid: phoneJid })).username, "Eclipse");
 });
@@ -419,6 +420,99 @@ test("profile lookups resolve a quoted LID to the same canonical user as its pho
   assert.equal(target, phoneJid);
 });
 
+test("command targets resolve verified LIDs and normalize device-suffixed self targets", async () => {
+  const lid = "12345@lid";
+  const phoneJid = "263771234567@s.whatsapp.net";
+  const db = fakeDatabase({
+    whatsapp_identity_aliases: [{ _id: lid, jid: phoneJid, migrationVersion: 3 }],
+  });
+
+  assert.equal(
+    await resolveTargetIdentity(lid, {
+      sender: "requester@s.whatsapp.net",
+      sock: {},
+      chatId: "group@g.us",
+      database: db,
+    }),
+    phoneJid,
+  );
+  assert.equal(
+    await resolveTargetIdentity("263771234567:2@s.whatsapp.net", {
+      sender: phoneJid,
+      sock: {},
+      chatId: "group@g.us",
+      database: db,
+    }),
+    phoneJid,
+  );
+});
+
+test("LID migration reconciles muted users and group activity under safe canonical keys", async () => {
+  const lid = "12345@lid";
+  const phoneJid = "263771234567@s.whatsapp.net";
+  const db = fakeDatabase({
+    whatsapp_identity_aliases: [{ _id: lid, jid: phoneJid, migrationVersion: 4 }],
+    groupSettings: [{
+      _id: "group@g.us",
+      mutedUsers: {
+        [lid]: { mutedAt: "2026-10-16T12:00:00.000Z", reason: "legacy mute" },
+        [phoneJid]: { mutedAt: "2026-10-15T12:00:00.000Z", reason: "older mute" },
+      },
+      activityCounts: {
+        [lid]: 3,
+        [phoneJid]: 2,
+      },
+      activityLastSeen: {
+        [lid]: 100,
+        [phoneJid]: 200,
+      },
+    }],
+  });
+
+  assert.equal(
+    await resolveAndMigrateIdentity(lid, {}, "group@g.us", "", db),
+    phoneJid,
+  );
+
+  const settings = await db.collection("groupSettings").findOne({ _id: "group@g.us" });
+  const activityKey = `jid_${Buffer.from(phoneJid, "utf8").toString("base64url")}`;
+  assert.deepEqual(settings.mutedUsers, {
+    [phoneJid]: { mutedAt: "2026-10-16T12:00:00.000Z", reason: "legacy mute" },
+  });
+  assert.deepEqual(settings.activityCounts, { [activityKey]: 5 });
+  assert.deepEqual(settings.activityLastSeen, { [activityKey]: 200 });
+});
+
+test("live group settings rekey muted users and pending activity after identity migration", () => {
+  const lid = "12345@lid";
+  const phoneJid = "263771234567@s.whatsapp.net";
+  const groupJid = "identity-cache-test@g.us";
+  const originalError = console.error;
+  console.error = () => {};
+
+  try {
+    groupSettings.set(groupJid, {
+      mutedUsers: {
+        [lid]: { mutedAt: "2026-10-16T12:00:00.000Z", reason: "legacy mute" },
+        [phoneJid]: { mutedAt: "2026-10-15T12:00:00.000Z", reason: "older mute" },
+      },
+      activityCounts: { [lid]: 3, [phoneJid]: 2 },
+      activityLastSeen: { [lid]: 100, [phoneJid]: 200 },
+    });
+    groupSettings.rekeyIdentity(lid, phoneJid);
+
+    const settings = groupSettings.get(groupJid);
+    assert.deepEqual(settings.mutedUsers, {
+      [phoneJid]: { mutedAt: "2026-10-16T12:00:00.000Z", reason: "legacy mute" },
+    });
+    assert.deepEqual(settings.activityCounts, { [phoneJid]: 5 });
+    assert.deepEqual(settings.activityLastSeen, { [phoneJid]: 200 });
+  } finally {
+    groupSettings.delete(groupJid);
+    console.error = originalError;
+  }
+});
+
 test("previously migrated accounts reconcile LID records created after the old migration", async () => {
   const lid = "12345@lid";
   const phoneJid = "263771234567@s.whatsapp.net";
@@ -443,7 +537,7 @@ test("previously migrated accounts reconcile LID records created after the old m
   assert.equal(account.money, 900);
   assert.equal(account.bank, 25);
   assert.equal(await db.collection("users").findOne({ _id: lid }), null);
-  assert.equal(alias.migrationVersion, 4);
+  assert.equal(alias.migrationVersion, 5);
 });
 
 test("reconciles an existing LID/JID split to the richer KELIN.PYT profile and keeps both inventories", async () => {
@@ -488,7 +582,7 @@ test("reconciles an existing LID/JID split to the richer KELIN.PYT profile and k
   assert.equal(profile.bio, "I build stuff");
   assert.deepEqual(cards.cards.map((card) => card.ownedId), ["lid-card", "phone-card"]);
   assert.equal(pokemon.length, 2);
-  assert.equal(alias.migrationVersion, 4);
+  assert.equal(alias.migrationVersion, 5);
 });
 
 test("concurrent and repeated identity repairs share one successful migration", async () => {

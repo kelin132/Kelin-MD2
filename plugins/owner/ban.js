@@ -6,6 +6,7 @@
 import { banUser, getUser, isRegistered } from "../economy/database.js";
 import { generateBanCard } from "../../lib/banCanvas.mjs";
 import { getProfilePic } from "../../lib/profileGen.mjs";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 export default {
   name: "ban",
@@ -30,6 +31,7 @@ export default {
         text: "❓ *Usage:* `.ban @user [reason]`\n\nExample: `.ban @user spamming the bot`",
       }, { quoted: msg });
     }
+    targetJid = await resolveTargetIdentity(targetJid, { sender, sock, chatId: jid });
 
     // Cannot ban yourself
     if (targetJid === sender) {

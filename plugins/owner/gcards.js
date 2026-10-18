@@ -1,5 +1,6 @@
 import { createSpawnId, fetchAllCards, TIER_NAME, TIER_NUM } from "../../lib/cardApi.mjs";
 import { findOrCreateUser, uid } from "../cards/db.js";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 const MAX_BULK_CARDS = 100;
 
@@ -96,7 +97,7 @@ export default {
   usage: ".gcards <card|card1,card2|series name> @user",
   cooldown: 3,
 
-  async run({ sock, msg, args, isOwner, staffLevel }) {
+  async run({ sock, msg, args, sender, isOwner, staffLevel }) {
     const jid = msg.key.remoteJid;
     const reply = (text, extra = {}) => sock.sendMessage(jid, { text, ...extra }, { quoted: msg });
 
@@ -104,7 +105,8 @@ export default {
       return reply("❌ This command is restricted to the bot owner and level 3 administrators.");
     }
 
-    const targetJid = resolveTarget(msg);
+    const rawTargetJid = resolveTarget(msg);
+    const targetJid = await resolveTargetIdentity(rawTargetJid, { sender, sock, chatId: jid });
     if (!targetJid) return reply(`❌ Mention the recipient or reply to their message.\n\n${formatUsage()}`);
 
     const input = args.join(" ").replace(/@[\d+]+/g, "").trim();

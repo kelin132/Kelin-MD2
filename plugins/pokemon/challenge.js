@@ -10,6 +10,7 @@ import {
 } from "../../lib/pokemon/battleState.mjs";
 import { generateBattleScene } from "../../lib/pokemon/canvas.mjs";
 import { generateChallengeCanvas } from "../../lib/pokemon/challengeCanvas.mjs";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 function unwrapMessage(message) {
   let current = message || {};
@@ -152,7 +153,8 @@ export default {
         ? msg.quoted?.key?.remoteJid
         : null);
 
-    const targetJid = mentionedJid || quotedSender || null;
+    const rawTargetJid = mentionedJid || quotedSender || null;
+    const targetJid = await resolveTargetIdentity(rawTargetJid, { sender, sock, chatId: jid });
 
     if (!targetJid) {
       return sock.sendMessage(jid, {

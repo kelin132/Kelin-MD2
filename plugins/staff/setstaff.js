@@ -5,6 +5,7 @@
  * Aliases: setmod, addstaff
  */
 import { setStaffLevel, getUser, isRegistered } from "../economy/database.js";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 const LEVEL_NAMES = { 1: "Mod", 2: "Staff", 3: "Admin" };
 
@@ -37,6 +38,7 @@ export default {
           `_Example: \`.setstaff @user 2\`_`
       }, { quoted: msg });
     }
+    targetJid = await resolveTargetIdentity(targetJid, { sender, sock, chatId: jid });
 
     // Determine requested level
     const requestedLevel = parseInt(args[args.length - 1]) || 1;

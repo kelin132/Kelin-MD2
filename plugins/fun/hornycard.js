@@ -1,5 +1,6 @@
 // plugins/fun/hornycard.js
 // .hornycard — Generate a horny card image for a mentioned/replied user
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 export default {
   name: "hornycard",
@@ -16,7 +17,11 @@ export default {
     const quoted    = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
     const quotedParticipant = msg.message?.extendedTextMessage?.contextInfo?.participant;
 
-    const who = quotedParticipant || mentioned[0] || sender;
+    const who = await resolveTargetIdentity(quotedParticipant || mentioned[0] || sender, {
+      sender,
+      sock,
+      chatId: jid,
+    });
 
     let avatar;
     try {

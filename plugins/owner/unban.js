@@ -6,6 +6,7 @@
 import { unbanUser, getUser } from "../economy/database.js";
 import { generateBanCard } from "../../lib/banCanvas.mjs";
 import { getProfilePic } from "../../lib/profileGen.mjs";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 export default {
   name: "unban",
@@ -15,7 +16,7 @@ export default {
   aliases: ["botunban", "unblockuser"],
   isOwner: true,
 
-  async run({ sock, msg, args }) {
+  async run({ sock, msg, args, sender }) {
     const jid = msg.key.remoteJid;
 
     const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
@@ -30,6 +31,7 @@ export default {
         text: "❓ *Usage:* `.unban @user`",
       }, { quoted: msg });
     }
+    targetJid = await resolveTargetIdentity(targetJid, { sender, sock, chatId: jid });
 
     // Load user info before clearing ban
     let userName = targetJid.split("@")[0].split(":")[0];

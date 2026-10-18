@@ -13,6 +13,7 @@
  */
 import { groupSettings } from "../../lib/groupSettings.js";
 import { resetLinkWarns } from "./antilinkHandler.js";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 export default {
   name: "antilink",
@@ -23,7 +24,7 @@ export default {
   cooldown: 5,
   isAdmin: true,
 
-  async run({ sock, msg, args }) {
+  async run({ sock, msg, args, sender }) {
     const jid = msg.key.remoteJid;
 
     if (!jid.endsWith("@g.us")) {
@@ -59,13 +60,14 @@ export default {
 
     // ── .antilink resetwarn @user ──────────────────────────────────────────
     if (option === "resetwarn") {
-      const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
-      const target = mentioned[0];
-      if (!target) {
+      const context = msg.message?.extendedTextMessage?.contextInfo || {};
+      const rawTarget = context.mentionedJid?.[0] || context.participant || context.quotedParticipant;
+      if (!rawTarget) {
         return sock.sendMessage(jid, {
           text: "❌ Mention a user to reset their antilink warnings.\nExample: *.antilink resetwarn @user*",
         }, { quoted: msg });
       }
+      const target = await resolveTargetIdentity(rawTarget, { sender, sock, chatId: jid });
       await resetLinkWarns(jid, target);
       return sock.sendMessage(jid, {
         text: `✅ Anti-link warnings reset for @${target.split("@")[0]}.`,

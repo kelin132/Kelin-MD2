@@ -1,4 +1,5 @@
 import { getUser } from "../economy/database.js";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 export default {
   name: "scouter",
@@ -11,8 +12,9 @@ export default {
     const jid = msg.key.remoteJid;
     const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
     
-    const target = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0] || 
-                   (args[0]?.endsWith("@s.whatsapp.net") ? args[0] : sender);
+    const rawTarget = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0] ||
+      (args[0]?.endsWith("@s.whatsapp.net") ? args[0] : sender);
+    const target = await resolveTargetIdentity(rawTarget, { sender, sock, chatId: jid });
     
     try {
       const user = await getUser(target);

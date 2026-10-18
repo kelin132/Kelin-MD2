@@ -8,6 +8,7 @@
  *   .repairlevel all     — repair every registered player (owner only)
  */
 import { repairUserLevel, repairAllLevels } from "../economy/database.js";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 export default {
   name: "repairlevel",
@@ -83,6 +84,7 @@ export default {
 ╰━━━━━━━━━━━━━━━━━━━━╯`
       );
     }
+    targetJid = await resolveTargetIdentity(targetJid, { sender, sock, chatId: jid });
 
     try {
       const result = await repairUserLevel(targetJid);

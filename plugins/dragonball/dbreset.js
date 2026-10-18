@@ -11,6 +11,7 @@
  */
 
 import { getDb } from "../../lib/mongo.mjs";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 async function deletePlayerData(jid) {
   const db = await getDb();
@@ -88,11 +89,12 @@ _May your new journey be stronger!_ ⚡`,
 └───────────────◆`,
       }, { quoted: msg });
     }
+    const targetJid = await resolveTargetIdentity(mentioned, { sender, sock, chatId: jid });
 
     // Fetch their name if possible
     const db = await getDb();
-    const legacy  = await db.collection("dbz_players").findOne({ jid: mentioned });
-    const fighter = await db.collection("dbz_fighters").findOne({ ownerJid: mentioned });
+    const legacy  = await db.collection("dbz_players").findOne({ jid: targetJid });
+    const fighter = await db.collection("dbz_fighters").findOne({ ownerJid: targetJid });
 
     if (!legacy && !fighter) {
       return sock.sendMessage(jid, {
@@ -101,10 +103,10 @@ _May your new journey be stronger!_ ⚡`,
     }
 
     const charName   = legacy?.character   || fighter?.name   || "Unknown Fighter";
-    const playerName = legacy?.username    || fighter?.name   || mentioned.split("@")[0];
+    const playerName = legacy?.username    || fighter?.name   || targetJid.split("@")[0];
     const level      = legacy?.level       || fighter?.level  || "?";
 
-    await deletePlayerData(mentioned);
+    await deletePlayerData(targetJid);
 
     await sock.sendMessage(jid, {
       text:
@@ -115,7 +117,7 @@ _May your new journey be stronger!_ ⚡`,
   🗑️ Status: *Wiped from both collections*
 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
 🌸 They can start fresh with *.dbzstart*`,
-      mentions: [mentioned],
+      mentions: [targetJid],
     }, { quoted: msg });
   },
 };

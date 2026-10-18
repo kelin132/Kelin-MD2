@@ -10,6 +10,8 @@
  *   .mutelist                — show all currently muted members
  */
 import { groupSettings } from "../../lib/groupSettings.js";
+import { participantMatchesIdentity } from "../../lib/identity.mjs";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 function resolveTarget(msg) {
   const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
@@ -28,7 +30,7 @@ export default {
   isAdmin: true,
   cooldown: 3,
 
-  async run({ sock, msg, cmd, args }) {
+  async run({ sock, msg, cmd, args, sender }) {
     const jid = msg.key.remoteJid;
 
     if (!jid.endsWith("@g.us")) {
@@ -58,27 +60,30 @@ export default {
     }
 
     const isUnmute = cmd === "unmuteuser" || cmd === "unmute-user";
-    const target = resolveTarget(msg);
+    const rawTarget = resolveTarget(msg);
 
-    if (!target) {
+    if (!rawTarget) {
       return sock.sendMessage(jid, {
         text: isUnmute
           ? "❌ Mention or reply to the user you want to unmute.\n*.unmuteuser @user*"
           : "❌ Mention or reply to the user you want to mute.\n*.muteuser @user [reason]*",
       }, { quoted: msg });
     }
+    const target = await resolveTargetIdentity(rawTarget, { sender, sock, chatId: jid });
 
     // Never mute the bot itself
     const botNum = (sock.user?.id ?? "").split(":")[0];
-    if (target.startsWith(botNum)) {
+    if (botNum && target.startsWith(botNum)) {
       return sock.sendMessage(jid, { text: "❌ I can't mute myself." }, { quoted: msg });
     }
 
     // Don't mute group admins
     try {
       const meta    = await sock.groupMetadata(jid);
-      const admins  = meta.participants.filter(p => p.admin).map(p => p.id);
-      if (!isUnmute && admins.includes(target)) {
+      const admins = meta.participants.filter((participant) => participant.admin);
+      if (!isUnmute && admins.some((participant) =>
+        participantMatchesIdentity(participant, [rawTarget, target]),
+      )) {
         return sock.sendMessage(jid, {
           text: "❌ You can't mute a group admin.",
         }, { quoted: msg });

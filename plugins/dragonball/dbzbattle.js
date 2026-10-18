@@ -2,6 +2,7 @@
  * KELIN MD — .dbzbattle command
  * Simple Dragon Ball themed duel between users.
  */
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 export default {
   name: "dbzbattle",
@@ -11,15 +12,12 @@ export default {
   aliases: ["dbzb", "saiyanbattle"],
   cooldown: 10,
 
-  async run({ sock, msg, text }) {
+  async run({ sock, msg, sender }) {
     const jid = msg.key.remoteJid;
-    const sender = msg.key.participant || msg.key.remoteJid;
     
     const ctx = msg.message?.extendedTextMessage?.contextInfo;
-    const mentionJid = ctx?.mentionedJid?.[0];
-    const quotedPart = ctx?.participant;
-    
-    const target = mentionJid || quotedPart;
+    const rawTarget = ctx?.mentionedJid?.[0] || ctx?.participant || ctx?.quotedParticipant;
+    const target = await resolveTargetIdentity(rawTarget, { sender, sock, chatId: jid });
     
     if (!target || target === sender) {
       return sock.sendMessage(jid, {

@@ -1,4 +1,5 @@
 import { findOrCreateUser } from "./db.js";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 function resolveTarget(msg) {
   const ctx = msg.message?.extendedTextMessage?.contextInfo
@@ -20,7 +21,11 @@ export default {
     const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
 
     try {
-      const target = resolveTarget(msg);
+      const target = await resolveTargetIdentity(resolveTarget(msg), {
+        sender,
+        sock,
+        chatId: jid,
+      });
 
       if (!target) {
         return reply(" Mention or reply to the user you want to give your card");

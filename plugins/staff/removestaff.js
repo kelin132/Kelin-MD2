@@ -3,6 +3,7 @@
  * Remove a user's staff/mod rank (set level back to 0).
  */
 import { removeStaffLevel, getUser, isRegistered } from "../economy/database.js";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 export default {
   name: "removestaff",
@@ -27,6 +28,7 @@ export default {
         text: "❓ *Usage:* `.removestaff @user`"
       }, { quoted: msg });
     }
+    targetJid = await resolveTargetIdentity(targetJid, { sender, sock, chatId: jid });
 
     if (targetJid === sender) {
       return sock.sendMessage(jid, { text: "❌ You can't remove your own rank." }, { quoted: msg });

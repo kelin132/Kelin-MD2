@@ -9,6 +9,7 @@
  */
 import { findOrCreateUser } from "./db.js";
 import { TIER_EMOJI } from "../../lib/cardApi.mjs";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 const EXPIRE_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -179,7 +180,11 @@ Both cards have been swapped! 🎉`,
 
     // ── PROPOSE TRADE ────────────────────────────────────────────────────────
     // Usage: .trade <my index> @user <their index>
-    const target = resolveTarget(msg);
+    const target = await resolveTargetIdentity(resolveTarget(msg), {
+      sender,
+      sock,
+      chatId: jid,
+    });
     if (!target) {
       return reply(
         "❌ Mention the user you want to trade with.\n\n" +

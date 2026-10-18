@@ -7,6 +7,7 @@
 import { getUser, saveUser, requireRegistration, isRegistered, addHistory } from "./database.js";
 import { parseAmount } from "./parseAmount.js";
 import { formatWalletTransfer } from "./walletMessage.js";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 function resolveTarget(msg) {
   // 1. Direct @mention
@@ -52,6 +53,7 @@ export default {
       return reply("❌ Please mention a user, reply to their message, or specify a phone number.\nUsage: `.donate @user <amount>`");
     }
 
+    targetJid = await resolveTargetIdentity(targetJid, { sender, sock, chatId: jid });
     if (targetJid === sender) {
       return reply("❌ You can't donate to yourself!");
     }

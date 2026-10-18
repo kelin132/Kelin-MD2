@@ -1,5 +1,6 @@
 import { guildSystem, guildUpgradeRequirements } from "../../lib/guildSystem.js";
 import { requireRegistration } from "./database.js";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 export default {
   name: "addmember",
@@ -14,8 +15,9 @@ export default {
 
     if (!await requireRegistration(sock, msg, sender)) return;
 
-    const targetJid = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0]
+    const rawTargetJid = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0]
       || (args[0]?.match(/^[0-9]+$/) ? `${args[0]}@s.whatsapp.net` : null);
+    const targetJid = await resolveTargetIdentity(rawTargetJid, { sender, sock, chatId: jid });
 
     if (!targetJid) {
       return sock.sendMessage(jid, {

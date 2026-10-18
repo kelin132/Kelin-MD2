@@ -4,6 +4,7 @@
  * Requires staff rank. Irreversible — prompts for confirmation.
  */
 import { deletePlayer, getUser, isRegistered } from "../economy/database.js";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 // Simple in-memory confirmation map: targetJid -> { requesterJid, ts }
 const pending = new Map();
@@ -32,6 +33,7 @@ export default {
         text: "❓ *Usage:* `.deleteplayer @user`\n\n_You will be asked to confirm before deletion._"
       }, { quoted: msg });
     }
+    targetJid = await resolveTargetIdentity(targetJid, { sender, sock, chatId: jid });
 
     if (!await isRegistered(targetJid)) {
       return sock.sendMessage(jid, { text: "❌ That player is not registered." }, { quoted: msg });

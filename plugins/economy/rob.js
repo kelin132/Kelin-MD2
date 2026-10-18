@@ -1,5 +1,6 @@
 import { getUser, saveUser, requireRegistration, isRegistered, addHistory } from "./database.js";
 import { hasActiveGun } from "../../lib/economySecurity.mjs";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 function fmt(n) {
   const amount = Math.max(0, Number(n) || 0);
@@ -31,8 +32,10 @@ export default {
     const jid = msg.key.remoteJid;
     const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
 
-    const targetJid = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0]
+    const context = msg.message?.extendedTextMessage?.contextInfo || {};
+    const rawTargetJid = context.mentionedJid?.[0] || context.participant || context.quotedParticipant
       || (args[0]?.match(/^[0-9]+$/) ? `${args[0]}@s.whatsapp.net` : null);
+    const targetJid = await resolveTargetIdentity(rawTargetJid, { sender, sock, chatId: jid });
 
     if (!targetJid) {
       return reply("🦹 Usage: .rob @user\n🎯 55% success chance • 🔫 An active gun is required.");

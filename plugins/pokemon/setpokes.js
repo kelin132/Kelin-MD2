@@ -1,6 +1,7 @@
 import { getTrainer, addToParty, addToPC } from "../../lib/pokemon/players.mjs";
 import { buildPokemon, savePokemon, updatePokemon } from "../../lib/pokemon/pokemonDb.mjs";
 import { fetchPokemon } from "../../lib/pokemon/api.mjs";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 function parsePokemonNames(args) {
   return args.join(" ")
@@ -39,7 +40,7 @@ export default {
     }
     if (names.length > 30) return reply("❌ You can restore up to 30 Pokémon in one command.");
 
-    const targetJid = mentioned[0];
+    const targetJid = await resolveTargetIdentity(mentioned[0], { sender, sock, chatId: jid });
     const trainer = await getTrainer(targetJid);
     if (!trainer) {
       return reply(`❌ @${targetJid.split("@")[0]} has not started their Pokémon journey yet.`, { mentions: [targetJid] });

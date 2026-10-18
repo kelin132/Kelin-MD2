@@ -20,6 +20,7 @@ import { fileURLToPath } from "url";
 import { KEY as GIFTED_KEY, ANIME_BASE as GIFTED_ANIME_BASE } from "../../lib/gifted.js";
 import { requestJson, requestBuffer } from "../../lib/http.mjs";
 import { detectMediaType } from "../../lib/mediaType.mjs";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 const UA = { "User-Agent": "Mozilla/5.0 (compatible; KelinMD/1.0)" };
 const FFMPEG_BIN = process.env.FFMPEG_PATH || "ffmpeg";
@@ -296,7 +297,10 @@ export async function sendReaction({
   soloCaption, duoCaption, errorText,
 }) {
   const chatId    = msg.key.remoteJid;
-  const mentioned = resolveTarget(msg);
+  const rawMentioned = resolveTarget(msg);
+  const mentioned = rawMentioned
+    ? await resolveTargetIdentity(rawMentioned, { sender, sock, chatId })
+    : null;
 
   const senderTag = `@${(sender ?? "").split("@")[0].split(":")[0]}`;
   const targetTag = mentioned ? `@${mentioned.split("@")[0].split(":")[0]}` : null;

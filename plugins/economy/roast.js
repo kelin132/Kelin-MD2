@@ -1,3 +1,5 @@
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
+
 const ROASTS = [
   "You're the reason they put instructions on shampoo bottles.",
   "I'd roast you, but my mom said I'm not allowed to burn trash.",
@@ -43,9 +45,10 @@ export default {
 
   async run({ sock, msg, sender }) {
     const jid      = msg.key.remoteJid;
-    const target   = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0]
+    const rawTarget = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0]
                   || msg.message?.extendedTextMessage?.contextInfo?.quotedParticipant
                   || sender;
+    const target = await resolveTargetIdentity(rawTarget, { sender, sock, chatId: jid });
 
     const roast    = ROASTS[Math.floor(Math.random() * ROASTS.length)];
     const tag      = `@${target.split("@")[0].split(":")[0]}`;

@@ -24,9 +24,8 @@ export default {
   aliases: ["remind", "remindme"],
   cooldown: 5,
 
-  async run({ sock, msg, args }) {
+  async run({ sock, msg, args, sender }) {
     const jid    = msg.key.remoteJid;
-    const sender = msg.key.participant || msg.key.remoteJid;
 
     if (!args[0]) {
       return sock.sendMessage(jid, {

@@ -4,6 +4,7 @@
  * Threshold: 5 messages within 5 seconds → warn; second offence → kick.
  */
 import { groupSettings } from "../../lib/groupSettings.js";
+import { participantMatchesIdentity } from "../../lib/identity.mjs";
 
 // Map<groupJid, Map<senderJid, { count, timer, warned }>>
 const spamTracker = new Map();
@@ -11,14 +12,15 @@ const spamTracker = new Map();
 const LIMIT    = 5;    // messages
 const WINDOW   = 5000; // milliseconds
 
-export async function antispamHandler({ sock, msg }) {
+export async function antispamHandler({ sock, msg, sender: canonicalSender = "" }) {
   const jid = msg.key.remoteJid;
   if (!jid?.endsWith("@g.us")) return;
 
   const settings = groupSettings.get(jid);
   if (!settings?.antispam) return;
 
-  const sender = msg.key.participant || msg.key.remoteJid;
+  const rawSender = msg.key.participant || msg.key.remoteJid;
+  const sender = canonicalSender || rawSender;
   if (!sender) return;
 
   // Never act on the bot itself
@@ -28,8 +30,11 @@ export async function antispamHandler({ sock, msg }) {
   // Don't act on admins
   try {
     const meta   = await sock.groupMetadata(jid);
-    const admins = meta.participants.filter(p => p.admin).map(p => p.id);
-    if (admins.includes(sender)) return;
+    const admins = meta.participants.filter((p) => p.admin);
+    if (admins.some((participant) => participantMatchesIdentity(
+      participant,
+      [rawSender, sender],
+    ))) return;
   } catch { /* continue */ }
 
   // Init group tracker
@@ -69,7 +74,15 @@ export async function antispamHandler({ sock, msg }) {
     } else {
       // Second offence: kick
       userData.warned = false;
-      await sock.groupParticipantsUpdate(jid, [sender], "remove");
+      let participantJidForKick = rawSender;
+      try {
+        const meta = await sock.groupMetadata(jid);
+        const participant = (meta.participants || []).find((entry) =>
+          participantMatchesIdentity(entry, [rawSender, sender]),
+        );
+        if (participant?.id) participantJidForKick = participant.id;
+      } catch { /* keep the original participant ID */ }
+      await sock.groupParticipantsUpdate(jid, [participantJidForKick], "remove");
       await sock.sendMessage(jid, {
         text: `🚫 @${sender.split("@")[0]} was removed for spamming.`,
         mentions: [sender],

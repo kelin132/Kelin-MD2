@@ -11,9 +11,8 @@ export default {
   usage: ".pets [select <petId>]",
   aliases: ["mypets", "petlist"],
 
-  async run({ sock, msg, args }) {
+  async run({ sock, msg, args, sender }) {
     const jid    = msg.key.remoteJid;
-    const sender = msg.key.participant || msg.key.remoteJid;
 
     // Handle: .pets select <petId>
     if (args[0]?.toLowerCase() === "select" && args[1]) {

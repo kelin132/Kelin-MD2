@@ -1,3 +1,5 @@
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
+
 export default {
   name: "gayrate",
   aliases: ["gay"],
@@ -9,9 +11,10 @@ export default {
     const jid = msg.key.remoteJid;
     
     // Resolve target: mentioned user, replied user, or the sender themselves
-    let target = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0] || 
-                 msg.message?.extendedTextMessage?.contextInfo?.participant || 
-                 sender;
+    const rawTarget = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0] ||
+      msg.message?.extendedTextMessage?.contextInfo?.participant ||
+      sender;
+    const target = await resolveTargetIdentity(rawTarget, { sender, sock, chatId: jid });
     
     const rate = Math.floor(Math.random() * 101);
     const bar = "🏳️‍🌈".repeat(Math.floor(rate / 10)) + "⚪".repeat(10 - Math.floor(rate / 10));

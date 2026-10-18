@@ -21,11 +21,11 @@ export default {
   hidden: false,
   isAdmin: true,
 
-  async run({ sock, msg, text, args }) {
+  async run({ sock, msg, text, args, sender }) {
     const chatJid = msg.key.remoteJid || "";
     if (!chatJid.endsWith("@g.us")) return;
 
-    const userJid = msg.key.participant || msg.key.remoteJid || "";
+    const userJid = sender || msg.key.participant || msg.key.remoteJid || "";
     const subcommand = String(args?.[0] || "").toLowerCase();
 
     if (subcommand === "on" || subcommand === "off") {
@@ -95,6 +95,6 @@ export default {
       return;
     }
 
-    await callAkira(sock, msg, prompt);
+    await callAkira(sock, msg, prompt, userJid);
   }
 };

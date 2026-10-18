@@ -13,9 +13,8 @@ export default {
   aliases: ["petname", "namepet"],
   checkJail: true,
 
-  async run({ sock, msg, text }) {
+  async run({ sock, msg, text, sender }) {
     const jid    = msg.key.remoteJid;
-    const sender = msg.key.participant || msg.key.remoteJid;
 
     const newName = (text || "").trim();
 

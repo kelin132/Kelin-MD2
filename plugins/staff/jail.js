@@ -5,6 +5,7 @@
  * Staff-immune players cannot be jailed.
  */
 import { jailUser, getUser, isRegistered, addHistory } from "../economy/database.js";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 function parseDuration(str) {
   if (!str) return 0;
@@ -26,7 +27,7 @@ export default {
   aliases: ["jailplayer"],
   isMod: true,
 
-  async run({ sock, msg, args, isOwner, staffLevel }) {
+  async run({ sock, msg, args, sender, isOwner, staffLevel }) {
     const jid = msg.key.remoteJid;
 
     const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
@@ -43,6 +44,7 @@ export default {
           "*Duration examples:*\n• `30m` — 30 minutes\n• `2h` — 2 hours\n• `1d` — 1 day\n• _(omit for indefinite)_"
       }, { quoted: msg });
     }
+    targetJid = await resolveTargetIdentity(targetJid, { sender, sock, chatId: jid });
 
     if (!await isRegistered(targetJid)) {
       return sock.sendMessage(jid, { text: "❌ That player is not registered." }, { quoted: msg });

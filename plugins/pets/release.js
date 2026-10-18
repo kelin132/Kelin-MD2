@@ -14,9 +14,8 @@ export default {
   aliases: ["releasepet", "freepet"],
   checkJail: true,
 
-  async run({ sock, msg, args }) {
+  async run({ sock, msg, args, sender }) {
     const jid    = msg.key.remoteJid;
-    const sender = msg.key.participant || msg.key.remoteJid;
 
     const sub = (args[0] || "").toLowerCase();
 

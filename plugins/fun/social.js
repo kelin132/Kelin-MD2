@@ -1,4 +1,5 @@
 import axios from "axios";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 const ACTIONS = {
   kiss: { verb: "kissed", emoji: "💋" },
@@ -24,8 +25,9 @@ export default {
     const action = ACTIONS[actionKey];
     if (!action) return;
 
-    const target = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
-    if (!target) return reply(`❌ Mention someone to ${actionKey}!`);
+    const rawTarget = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+    if (!rawTarget) return reply(`❌ Mention someone to ${actionKey}!`);
+    const target = await resolveTargetIdentity(rawTarget, { sender, sock, chatId: jid });
     if (target === sender) return reply(`❌ You can't ${actionKey} yourself!`);
 
     try {

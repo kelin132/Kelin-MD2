@@ -3,6 +3,7 @@
  * Release a jailed player.
  */
 import { unjailUser, getUser, isRegistered, addHistory } from "../economy/database.js";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 export default {
   name: "unjail",
@@ -12,7 +13,7 @@ export default {
   aliases: ["freeplayer", "release"],
   isMod: true,
 
-  async run({ sock, msg, args }) {
+  async run({ sock, msg, args, sender }) {
     const jid = msg.key.remoteJid;
 
     const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
@@ -27,6 +28,7 @@ export default {
         text: "❓ *Usage:* `.unjail @user`"
       }, { quoted: msg });
     }
+    targetJid = await resolveTargetIdentity(targetJid, { sender, sock, chatId: jid });
 
     if (!await isRegistered(targetJid)) {
       return sock.sendMessage(jid, { text: "❌ That player is not registered." }, { quoted: msg });

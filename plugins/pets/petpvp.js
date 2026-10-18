@@ -3,6 +3,7 @@
 import { getActivePet, awardExp } from "../../lib/petDatabase.js";
 import { RARITIES } from "../../lib/petData.js";
 import { getDb } from "../../lib/mongo.mjs";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 const COOLDOWN_MS = 20 * 60 * 1000; // 20 minutes
 const EXP_WIN     = 80;
@@ -57,18 +58,19 @@ export default {
   aliases: ["petbattle2", "pvp"],
   cooldown: 5,
 
-  async run({ sock, msg }) {
+  async run({ sock, msg, sender }) {
     const jid      = msg.key.remoteJid;
-    const sender   = msg.key.participant || msg.key.remoteJid;
-    const mentions = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+    const context  = msg.message?.extendedTextMessage?.contextInfo || {};
+    const mentions = context.mentionedJid || [];
+    const rawOpponent = mentions[0] || context.participant || context.quotedParticipant;
 
-    if (!mentions.length) {
+    if (!rawOpponent) {
       return sock.sendMessage(jid, {
         text: `⚔️ *PET PVP*\n\nChallenge someone's pet!\nUsage: *.petpvp @user*`,
       }, { quoted: msg });
     }
 
-    const opponent = mentions[0];
+    const opponent = await resolveTargetIdentity(rawOpponent, { sender, sock, chatId: jid });
     if (opponent === sender) {
       return sock.sendMessage(jid, {
         text: `❌ You can't battle yourself!`,

@@ -4,6 +4,7 @@
  * Only staff+ can grant immunity.
  */
 import { setStaffImmunity, getUser, isRegistered } from "../economy/database.js";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 export default {
   name: "staffimmunity",
@@ -13,7 +14,7 @@ export default {
   aliases: ["immunity", "setimmunity"],
   isStaff: true,
 
-  async run({ sock, msg, args }) {
+  async run({ sock, msg, args, sender }) {
     const jid = msg.key.remoteJid;
 
     const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
@@ -28,6 +29,7 @@ export default {
         text: "❓ *Usage:* `.staffimmunity @user [on|off]`\n\n_Default is 'on' if not specified._"
       }, { quoted: msg });
     }
+    targetJid = await resolveTargetIdentity(targetJid, { sender, sock, chatId: jid });
 
     if (!await isRegistered(targetJid)) {
       return sock.sendMessage(jid, { text: "❌ That player is not registered." }, { quoted: msg });

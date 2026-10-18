@@ -1,4 +1,5 @@
 import { startTicTacToe } from "../../lib/kordGames.mjs";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 export default {
   name: "ttt",
@@ -8,7 +9,10 @@ export default {
   cooldown: 5,
 
   async run({ sock, msg, sender, prefix }) {
-    const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+    const rawMentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+    const mentioned = rawMentioned.length
+      ? [await resolveTargetIdentity(rawMentioned[0], { sender, sock, chatId: msg.key.remoteJid })]
+      : [];
     return startTicTacToe({ sock, msg, sender, mentioned, prefix });
   },
 };

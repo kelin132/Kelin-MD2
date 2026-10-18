@@ -3,8 +3,9 @@
  * Called on every message to check for filtered words.
  */
 import { groupSettings } from "../../lib/groupSettings.js";
+import { participantMatchesIdentity } from "../../lib/identity.mjs";
 
-export async function antibadwordHandler({ sock, msg }) {
+export async function antibadwordHandler({ sock, msg, sender: canonicalSender = "" }) {
   const jid = msg.key.remoteJid;
   if (!jid?.endsWith("@g.us")) return;
 
@@ -25,7 +26,8 @@ export async function antibadwordHandler({ sock, msg }) {
   const found = wordList.find(w => text.includes(w));
   if (!found) return;
 
-  const sender = msg.key.participant || msg.key.remoteJid;
+  const rawSender = msg.key.participant || msg.key.remoteJid;
+  const sender = canonicalSender || rawSender;
   if (!sender) return;
 
   // Don't act on the bot itself
@@ -35,8 +37,11 @@ export async function antibadwordHandler({ sock, msg }) {
   // Don't act on admins
   try {
     const meta    = await sock.groupMetadata(jid);
-    const admins  = meta.participants.filter(p => p.admin).map(p => p.id);
-    if (admins.includes(sender)) return;
+    const admins = meta.participants.filter((p) => p.admin);
+    if (admins.some((participant) => participantMatchesIdentity(
+      participant,
+      [rawSender, sender],
+    ))) return;
   } catch { /* continue anyway */ }
 
   try {

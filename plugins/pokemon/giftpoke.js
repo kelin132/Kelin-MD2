@@ -7,6 +7,7 @@ import {
   removeFromParty, removeFromPC,
 } from "../../lib/pokemon/players.mjs";
 import { getTrainerParty, getPokemon, updatePokemon } from "../../lib/pokemon/pokemonDb.mjs";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 export default {
   name: "giftpoke",
@@ -22,7 +23,11 @@ export default {
     const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
     // Also support replying to a message from the target user
     const quotedSender = msg.message?.extendedTextMessage?.contextInfo?.participant;
-    const targetJid    = mentioned[0] || quotedSender;
+    const targetJid    = await resolveTargetIdentity(mentioned[0] || quotedSender, {
+      sender,
+      sock,
+      chatId: jid,
+    });
     const slotArg      = args.find(a => /^\d+$/.test(a));
 
     // Show usage if missing info

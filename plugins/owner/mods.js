@@ -4,6 +4,7 @@
 
 import { getModsData, saveModsData } from '../../lib/permissions.mjs';
 import { getStaffMembers } from '../economy/database.js';
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 import {
   bareNumber,
   getAllGroupNumberMap,
@@ -49,7 +50,7 @@ export default {
   cooldown:    5,
   isOwner:     false,
 
-  async run({ sock, msg, cmd }) {
+  async run({ sock, msg, cmd, sender }) {
     const jid  = msg.key.remoteJid;
     const data = getModsData();
 
@@ -158,10 +159,15 @@ export default {
     const numArg   = rawText.trim().split(/\s+/).slice(1)[0];
     const numMatch = numArg?.replace(/\D/g, '');
 
-    const targetJid =
+    const rawTargetJid =
       mentionJid ||
       quotedPart ||
       (numMatch?.length >= 7 ? `${numMatch}@s.whatsapp.net` : null);
+    const targetJid = await resolveTargetIdentity(rawTargetJid, {
+      sender,
+      sock,
+      chatId: jid,
+    });
 
     if (!targetJid) {
       return sock.sendMessage(jid, {

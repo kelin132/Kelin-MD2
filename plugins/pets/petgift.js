@@ -3,6 +3,7 @@
 import { getAllPets, getPetById, releasePet, createPet, countPets } from "../../lib/petDatabase.js";
 import { PET_SPECIES } from "../../lib/petData.js";
 import { getDb } from "../../lib/mongo.mjs";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 const MAX_PETS = 5;
 
@@ -14,18 +15,19 @@ export default {
   aliases: ["givepet", "sendpet"],
   cooldown: 10,
 
-  async run({ sock, msg, args }) {
+  async run({ sock, msg, args, sender }) {
     const jid      = msg.key.remoteJid;
-    const sender   = msg.key.participant || msg.key.remoteJid;
-    const mentions = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+    const context  = msg.message?.extendedTextMessage?.contextInfo || {};
+    const mentions = context.mentionedJid || [];
 
-    if (!mentions.length) {
+    const rawTarget = mentions[0] || context.participant || context.quotedParticipant;
+    if (!rawTarget) {
       return sock.sendMessage(jid, {
         text: `🎁 *PET GIFT*\n\nUsage: *.petgift @user <petId>*\n\nGet your pet IDs with *.pets*`,
       }, { quoted: msg });
     }
 
-    const target = mentions[0];
+    const target = await resolveTargetIdentity(rawTarget, { sender, sock, chatId: jid });
     if (target === sender) {
       return sock.sendMessage(jid, {
         text: `❌ You can't gift a pet to yourself!`,

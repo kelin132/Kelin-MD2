@@ -10,6 +10,7 @@
 import { getTrainer, updateTrainer } from "../../lib/pokemon/players.mjs";
 import { getDb } from "../../lib/mongo.mjs";
 import { getUser } from "../economy/database.js";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 // ── Confirmation store ────────────────────────────────────────────────────────
 const pending = new Map();
@@ -49,9 +50,12 @@ export default {
     const mentioned  = ctx?.mentionedJid?.[0];
     let targetJid = null;
 
-    if (quotedJid && quotedJid !== (msg.key.participant || msg.key.remoteJid)) {
+    const canonicalQuotedJid = quotedJid
+      ? await resolveTargetIdentity(quotedJid, { sender, sock, chatId: jid })
+      : "";
+    if (canonicalQuotedJid && canonicalQuotedJid !== sender) {
       // Only use quoted sender if it's a different person (not the mod themselves)
-      targetJid = quotedJid;
+      targetJid = canonicalQuotedJid;
     } else if (mentioned) {
       targetJid = mentioned;
     } else if (args[0]?.match(/^\d+$/)) {
@@ -68,6 +72,7 @@ Wipes the target's Pokémon journey:
 A confirmation step is required.`
       );
     }
+    targetJid = await resolveTargetIdentity(targetJid, { sender, sock, chatId: jid });
 
     // ── Check trainer exists ──────────────────────────────────────────────────
     const trainer = await getTrainer(targetJid);

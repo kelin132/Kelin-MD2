@@ -4,6 +4,7 @@
  * Fields: money, bank, diamonds, xp, level
  */
 import { setPlayerFields, getUser, isRegistered } from "../economy/database.js";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 const ALLOWED_FIELDS = {
   money:  "number",
@@ -21,7 +22,7 @@ export default {
   aliases: ["editplayer", "setstat"],
   isStaff: true,
 
-  async run({ sock, msg, args }) {
+  async run({ sock, msg, args, sender }) {
     const jid = msg.key.remoteJid;
 
     const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
@@ -41,6 +42,7 @@ export default {
           Object.keys(ALLOWED_FIELDS).map(f => `• \`${f}\``).join("\n")
       }, { quoted: msg });
     }
+    targetJid = await resolveTargetIdentity(targetJid, { sender, sock, chatId: jid });
 
     // field and value are the last two args
     const field = args[args.length - 2]?.toLowerCase();

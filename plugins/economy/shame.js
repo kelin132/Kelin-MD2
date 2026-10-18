@@ -1,4 +1,5 @@
 import { getUser, saveUser, requireRegistration, isRegistered } from "./database.js";
+import { resolveTargetIdentity } from "../../lib/profileIdentity.mjs";
 
 const SHAME_COOLDOWN = 60 * 60 * 1000; // 1 hour per target
 
@@ -31,8 +32,9 @@ export default {
 
     const jid    = msg.key.remoteJid;
     const reply  = (t) => sock.sendMessage(jid, { text: t }, { quoted: msg });
-    const target = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0]
-                || msg.message?.extendedTextMessage?.contextInfo?.quotedParticipant;
+    const rawTarget = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0]
+                   || msg.message?.extendedTextMessage?.contextInfo?.quotedParticipant;
+    const target = await resolveTargetIdentity(rawTarget, { sender, sock, chatId: jid });
 
     if (!target)         return reply("❌ Mention or reply to a user to shame them.\nUsage: .shame @user");
     if (target === sender) return reply("😬 Can't shame yourself — that's just depression.");
