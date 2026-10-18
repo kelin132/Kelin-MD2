@@ -14,6 +14,13 @@ bot changes. Existing accounts whose LID-to-phone mapping was never stored
 must interact with the bot after WhatsApp supplies that verified mapping;
 the website deliberately does not guess phone numbers from privacy LIDs.
 
+Bot collection readers also use the economy account resolver: `mn_users`
+looks up legacy/full/numeric ownership keys and combines matching card records,
+while Pokémon trainer/party/PC/count readers use the same verified aliases.
+An empty phone-keyed record cannot hide a populated legacy collection. Card
+saves retain each copy in its original document, and trainer writes target the
+resolved trainer rather than a newly invented phone-keyed account.
+
 ## MongoDB maintenance
 
 Performance-index setup runs in the background and checks existing index keys
@@ -46,3 +53,6 @@ Run `node --test test/*.test.mjs` from the repository root. Focused coverage is
 in `account-identity.test.mjs`, `git-updater.test.mjs`, and
 `performance-indexes.test.mjs`. Tests use fixtures and local Git repositories;
 they do not connect to the production database.
+`collection-account-resolution.test.mjs` additionally checks actual `.col`
+output, separate users, legacy numeric card keys, party/PC reads, transfers,
+and saves to existing records.

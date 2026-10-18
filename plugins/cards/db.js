@@ -4,6 +4,8 @@
  */
 import { getDb } from "../../lib/mongo.mjs";
 import { normalizeJid } from "../../lib/identity.mjs";
+import { BSON } from "mongodb";
+import { accountIdentityValues, collectionIdentityQuery } from "../../lib/collectionIdentity.mjs";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -38,6 +40,8 @@ export const Col = {
  * Find or create a user. Returns the document with a save() method attached.
  */
 export async function findOrCreateUser(sender) {
+  const existing = await getUser(sender);
+  if (existing) return existing;
   const col    = await Col.users();
   // Normalize the sender to strip device suffixes and handle JID/LID split
   const normalized = normalizeJid(sender);
@@ -62,14 +66,7 @@ export async function findOrCreateUser(sender) {
     { upsert: true, returnDocument: "after", includeResultMetadata: false },
   );
 
-  user.markModified = () => {}; // no-op — raw driver doesn't need it
-  user.save = async () => {
-    const c = Col.users();
-    const { _id, save, markModified, ...data } = user;
-    await c.updateOne({ userId }, { $set: data });
-  };
-
-  return user;
+  return attachCardSave([user]);
 }
 
 /**
@@ -77,16 +74,60 @@ export async function findOrCreateUser(sender) {
  */
 export async function getUser(sender) {
   const col    = await Col.users();
-  const normalized = normalizeJid(sender);
-  const userId = normalized.split("@")[0];
-  const user   = await col.findOne({ userId });
-  if (!user) return null;
+  const values = await accountIdentityValues(sender);
+  const records = await col.find(collectionIdentityQuery(values,
+    ["_id", "userId", "whatsappNumber", "jid", "owner", "identityAliases"],
+  )).toArray();
+  if (!records.length) return null;
+  // An empty recently-created phone record must not hide an older collection.
+  records.sort((a, b) => (b.cards?.length || 0) - (a.cards?.length || 0) ||
+    String(a._id).localeCompare(String(b._id)));
+  return attachCardSave(records);
+}
 
+function attachCardSave(records) {
+  const primary = records[0];
+  const sources = new WeakMap();
+  const originals = new Map();
+  const cards = records.flatMap((record) => {
+    const owned = Array.isArray(record.cards) ? record.cards : [];
+    originals.set(record, BSON.deserialize(BSON.serialize({ cards: owned })).cards);
+    for (const card of owned) {
+      if (card && typeof card === "object") sources.set(card, record);
+    }
+    return owned;
+  });
+  const user = { ...primary, cards, totalCards: cards.length };
   user.markModified = () => {};
   user.save = async () => {
-    const c = Col.users();
-    const { _id, save, markModified, ...data } = user;
-    await c.updateOne({ userId }, { $set: data });
+    const { _id, save, markModified, cards: currentCards, totalCards, ...data } = user;
+    const grouped = new Map(records.map((record) => [record, []]));
+    for (const card of currentCards) {
+      // New or transferred copies belong to this account's primary record.
+      const source = card && typeof card === "object" ? sources.get(card) : null;
+      grouped.get(source || primary).push(card);
+    }
+    for (const record of records) {
+      const owned = grouped.get(record);
+      const result = await Col.users().updateOne(
+        {
+          _id: record._id,
+          ...(Array.isArray(record.cards) ? { cards: originals.get(record) } : {}),
+        },
+        { $set: {
+          ...(record === primary ? data : {}),
+          cards: owned,
+          totalCards: owned.length,
+        } },
+      );
+      if (result.matchedCount === 0) throw new Error("Your collection changed. Reload it and retry.");
+      originals.set(record, BSON.deserialize(BSON.serialize({ cards: owned })).cards);
+      record.cards = owned;
+      for (const card of owned) {
+        if (card && typeof card === "object") sources.set(card, record);
+      }
+    }
+    user.totalCards = currentCards.length;
   };
   return user;
 }

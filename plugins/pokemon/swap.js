@@ -2,10 +2,9 @@
 // Swap two Pokémon positions in your party with .swap <slot1> <slot2>
 // .swap 1 5 — makes slot 5 your lead Pokémon (or any two positions)
 
-import { getTrainer, setLeadPokemonId } from "../../lib/pokemon/players.mjs";
+import { getTrainer, setLeadPokemonId, updateTrainer } from "../../lib/pokemon/players.mjs";
 import { getTrainerParty } from "../../lib/pokemon/pokemonDb.mjs";
 import { getBattle } from "../../lib/pokemon/battleState.mjs";
-import { getDb } from "../../lib/mongo.mjs";
 
 const typeEmojis = {
   fire:"🔥",water:"💧",grass:"🍃",electric:"⚡",psychic:"🔮",normal:"⭐",
@@ -64,10 +63,9 @@ export default {
 
     // If there are orphaned Pokémon, repair the trainer.party array silently
     if (orphaned.length > 0) {
-      const db = await getDb();
       const repairedIds = orderedParty.map(p => (p._id || p.id)?.toString());
-      await db.collection("pokemon_trainers").updateOne(
-        { jid: sender },
+      await updateTrainer(
+        sender,
         { $set: { party: repairedIds } }
       ).catch(() => {});
     }
@@ -132,9 +130,8 @@ Example: \`.swap 1 3\` — swap slots 1 and 3
     [newIdArray[idx1], newIdArray[idx2]] = [newIdArray[idx2], newIdArray[idx1]];
 
     // Save the new order
-    const db = await getDb();
-    await db.collection("pokemon_trainers").updateOne(
-      { jid: sender },
+    await updateTrainer(
+      sender,
       { $set: { party: newIdArray } }
     );
 
