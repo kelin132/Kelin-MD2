@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto";
 import { getDb } from "../../lib/mongo.mjs";
 import {
   normalizeJid,
+  findUserByIdentity,
   phoneIdentityFields,
   whatsappIdentityVariants,
 } from "../../lib/identity.mjs";
@@ -262,34 +263,13 @@ function identityQuery(id) {
 }
 
 async function findIdentityUser(db, id) {
-  const collection = db.collection("users");
-  const normalizedId = normalizeJid(id);
-  const canonical = await collection.findOne({ _id: normalizedId });
-  if (canonical) return canonical;
-  return collection.findOne(identityQuery(id));
+  return findUserByIdentity(id);
 }
 
-async function migrateIdentityUser(db, user, normalizedId) {
-  const sourceId = user?._id;
-  if (!sourceId || sourceId === normalizedId) return user;
-
-  const collection = db.collection("users");
-  const destination = await collection.findOne({ _id: normalizedId });
-  if (destination) return destination;
-
-  const { _id: ignoredId, ...copy } = user;
-  try {
-    await collection.insertOne({
-      ...copy,
-      _id: normalizedId,
-      migratedFrom: sourceId,
-      migratedAt: new Date(),
-    });
-    await collection.deleteOne({ _id: sourceId });
-    return { ...copy, _id: normalizedId };
-  } catch {
-    return (await collection.findOne({ _id: normalizedId })) || user;
-  }
+async function storedUserId(db, id) {
+  // Keep the account's immutable key and unique login fields in one document.
+  // Copy-then-delete fails on users_websiteId_unique and invalidates sessions.
+  return (await findIdentityUser(db, id))?._id ?? normalizeJid(id);
 }
 
 async function ensurePhoneIdentityFields(db, user, id) {
@@ -297,7 +277,7 @@ async function ensurePhoneIdentityFields(db, user, id) {
   if (Object.keys(fields).length === 0) return;
   const needsRepair = Object.entries(fields).some(([key, value]) => user?.[key] !== value);
   if (needsRepair) {
-    await db.collection("users").updateOne({ _id: normalizeJid(id) }, { $set: fields });
+    await db.collection("users").updateOne({ _id: user._id }, { $set: fields });
   }
 }
 
@@ -305,8 +285,7 @@ export async function getUser(id) {
   const db   = await getDb();
   await ensureRyuEconomyMigration(db);
   const normalizedId = normalizeJid(id);
-  const found = await findIdentityUser(db, id);
-  const user = found ? await migrateIdentityUser(db, found, normalizedId) : null;
+  const user = await findIdentityUser(db, id);
   if (!user) return { ...DEFAULTS };
   if (user.registered) await ensurePhoneIdentityFields(db, user, normalizedId);
   const { _id, ...rest } = user;
@@ -372,12 +351,11 @@ export async function clearAfk(id) {
 
   const normalizedId = normalizeJid(id);
   invalidateAfkLookup(normalizedId);
-  const found = await findIdentityUser(db, id);
-  const user = found ? await migrateIdentityUser(db, found, normalizedId) : null;
+  const user = await findIdentityUser(db, id);
   if (!user?.afk?.active) return null;
 
   const previous = await db.collection("users").findOneAndUpdate(
-    { _id: normalizedId, "afk.active": true },
+    { _id: user._id, "afk.active": true },
     { $unset: { afk: "" } },
     { returnDocument: "before", includeResultMetadata: false },
   );
@@ -422,7 +400,7 @@ const MONOTONIC_FIELDS = new Set(["level"]);
 
 export async function saveUser(id, data) {
   const db = await getDb();
-  const normalizedId = normalizeJid(id);
+  const normalizedId = await storedUserId(db, id);
   // Strip _id and _snap — neither should be stored in MongoDB
   const { _id, _snap, ...safeData } = data;
 
@@ -526,7 +504,7 @@ export async function claimWorkShift(id, {
   historyDescription,
 }) {
   const db = await getDb();
-  const normalizedId = normalizeJid(id);
+  const normalizedId = await storedUserId(db, id);
   const result = await db.collection("users").findOneAndUpdate(
     {
       _id: normalizedId,
@@ -586,7 +564,7 @@ export async function claimWorkShift(id, {
  */
 export async function restoreWorkEnergy(id, now, cooldownMs, amount) {
   const db = await getDb();
-  const normalizedId = normalizeJid(id);
+  const normalizedId = await storedUserId(db, id);
   const result = await db.collection("users").findOneAndUpdate(
     {
       _id: normalizedId,
@@ -636,7 +614,7 @@ export async function restoreWorkEnergy(id, now, cooldownMs, amount) {
  */
 export async function startInvestment(id, investment, amount) {
   const db = await getDb();
-  const normalizedId = normalizeJid(id);
+  const normalizedId = await storedUserId(db, id);
   return db.collection("users").findOneAndUpdate(
     {
       _id: normalizedId,
@@ -661,7 +639,7 @@ export async function startInvestment(id, investment, amount) {
  */
 export async function collectInvestment(id, investment, payout) {
   const db = await getDb();
-  const normalizedId = normalizeJid(id);
+  const normalizedId = await storedUserId(db, id);
   return db.collection("users").findOneAndUpdate(
     {
       _id: normalizedId,
@@ -685,29 +663,15 @@ export async function getAllUsers() {
 // ─── Registration ─────────────────────────────────────────────────────────────
 
 export async function isRegistered(id) {
-  const db   = await getDb();
-  const normalizedId = normalizeJid(id);
-  const users = db.collection("users");
-  const options = { projection: { registered: 1 } };
-  const canonicalUser = await users.findOne({ _id: normalizedId }, options);
-  if (canonicalUser) return canonicalUser.registered === true;
-
-  // Legacy aliases are uncommon; keep their compatibility fallback narrow so
-  // registration checks don't download or migrate the user's full profile.
-  const legacyUser = await users.findOne(identityQuery(id), options);
-  return legacyUser?.registered === true;
+  return (await findUserByIdentity(id, { projection: { registered: 1 } }))?.registered === true;
 }
 
 export async function registerUser(id, name) {
   const db = await getDb();
-  const normalizedId = normalizeJid(id);
-  const existing = await findIdentityUser(db, id);
-  if (existing && existing._id !== normalizedId) {
-    await migrateIdentityUser(db, existing, normalizedId);
-  }
+  const normalizedId = await storedUserId(db, id);
   const { name: _n, registered: _r, registeredAt: _ra, ...insertDefaults } = DEFAULTS;
   const registrationFields = {
-    ...phoneIdentityFields(normalizedId),
+    ...phoneIdentityFields(id),
     name: name || "User",
     registered: true,
     registeredAt: new Date().toISOString(),
@@ -762,7 +726,7 @@ export async function requireRegistration(sock, msg, sender, user = null) {
  */
 export async function addHistory(id, type, amount, desc) {
   const db = await getDb();
-  const normalizedId = normalizeJid(id);
+  const normalizedId = await storedUserId(db, id);
   const entry = { type, amount, desc, ts: Date.now() };
   await db.collection("users").updateOne(
     { _id: normalizedId },
@@ -783,7 +747,7 @@ export async function addHistory(id, type, amount, desc) {
  */
 export async function addMoney(id, amount) {
   const db = await getDb();
-  const normalizedId = normalizeJid(id);
+  const normalizedId = await storedUserId(db, id);
   await db.collection("users").updateOne(
     { _id: normalizedId },
     { $inc: { money: amount, totalWealth: amount } }

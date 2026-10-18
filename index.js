@@ -17,10 +17,32 @@ import { existsSync } from "fs";
 import { readFile } from "fs/promises";
 import path from "path";
 import { createRequire } from "module";
+import { spawn } from "node:child_process";
+import { autoUpdate } from "./lib/updater.js";
 import { log } from "./lib/logger.mjs";
 import { getRuntimeSettings } from "./lib/runtimeSettings.mjs";
 import { hasBotConfigDirectory, hasBotEntries, loadBotConfigs } from "./lib/botConfig.mjs";
 import { startBotSupervisor } from "./lib/botSupervisor.mjs";
+
+// Update before either single-bot or supervisor startup. Static imports are
+// already cached, so execute the updated entry point in a fresh process rather
+// than mixing new plugins with old database/core modules.
+const checkoutUpdate = await autoUpdate();
+if (!checkoutUpdate.sameRev) {
+  const child = spawn(process.execPath, [...process.execArgv, ...process.argv.slice(1)], {
+    cwd: process.cwd(),
+    env: process.env,
+    stdio: "inherit",
+  });
+  for (const signal of ["SIGINT", "SIGTERM"]) {
+    process.on(signal, () => child.kill(signal));
+  }
+  const exitCode = await new Promise((resolve) => {
+    child.once("error", () => resolve(1));
+    child.once("exit", (code, signal) => resolve(code ?? (signal ? 1 : 0)));
+  });
+  process.exit(exitCode);
+}
 
 // settings.js is CommonJS — import via createRequire
 const _require  = createRequire(import.meta.url);
@@ -65,11 +87,10 @@ if (multiBotMode) {
   }
 } else {
   // Parallel import of modules
-  const [{ connectBot }, { loadPlugins }, { autoUpdate }, { connectDb, getDb }, { initGroupSettings }, { startCardSpawner }, { startTaxScheduler }] =
+  const [{ connectBot }, { loadPlugins }, { connectDb, getDb }, { initGroupSettings }, { startCardSpawner }, { startTaxScheduler }] =
     await Promise.all([
       import("./lib/bot.mjs"),
       import("./lib/pluginManager.mjs"),
-      import("./lib/updater.js"),
       import("./lib/mongo.mjs"),
       import("./lib/groupSettings.js"),
       import("./lib/cardSpawner.mjs"),
@@ -99,10 +120,6 @@ if (multiBotMode) {
   } else {
     log("info", "Existing session found — skipping pairing.");
   }
-
-  // ── Update the checkout before loading plugins ──────────────────────────────
-  // This prevents a freshly pulled deployment from importing stale plugin code.
-  await autoUpdate();
 
   // ── Load plugins parallel to DB setup ──────────────────────────────────────
   const pluginPromise = loadPlugins(PREFIX);
