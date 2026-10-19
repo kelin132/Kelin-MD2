@@ -78,6 +78,19 @@ function gymAchievementSummary(trainer) {
   };
 }
 
+export function buildQuickProfileCaption({ name, age, birthday, cards, pokemon, badges, role }) {
+  return `*Edit your profile image here:*
+https://aidoru.zone.id/profile
+
+❀ *Name* : \`${name}\`
+❀ *Age* : \`${age}\`
+❀ *Bday* : \`${birthday}\`
+❀ *Cards*: \`${cards}\`
+❀ *Pokémon*: \`${pokemon}\`
+❀ *Badges* : \`${badges}\`
+❀ *Role* : \`${role}\``;
+}
+
 export default {
   name: "profile",
   description: "View your economy profile card",
@@ -173,7 +186,17 @@ export default {
     const profileBadges = isQuickProfile
       ? "—"
       : Number.isFinite(Number(gymProgress.completed)) ? gymProgress.completed : "N/A";
-    const caption =
+    const caption = isQuickProfile
+      ? buildQuickProfileCaption({
+        name: displayName,
+        age: profileAge,
+        birthday: profileBirthday,
+        cards: profileCards,
+        pokemon: profilePokemon,
+        badges: profileBadges,
+        role,
+      })
+      :
 `╭━━━〔 🌸 𝗣𝗥𝗢𝗙𝗜𝗟𝗘 〕━━━╮
 │ ❀ Name : \`${displayName}\`
 │ ❀ Age : \`${profileAge}\`

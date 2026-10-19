@@ -74,17 +74,26 @@ if (multiBotMode) {
     log("error", "[bots] .bots contains entries but no valid bot definitions were loaded. Fix the JSON/config before restarting.");
   }
   log("info", `[bots] Found ${botDefinitions.length} bot(s) in .bots/`);
-  await startBotSupervisor();
+  let parentDbReady = false;
   try {
-    const [{ connectDb }, { startTaxScheduler }] = await Promise.all([
-      import("./lib/mongo.mjs"),
-      import("./lib/taxScheduler.mjs"),
-    ]);
+    const { connectDb } = await import("./lib/mongo.mjs");
     await connectDb();
-    await startTaxScheduler();
+    // The root process owns shared index maintenance for all worker bots.
+    // Workers still connect to Mongo, but avoid repeating every listIndexes scan.
+    process.env.SKIP_PERFORMANCE_INDEXES = "true";
+    parentDbReady = true;
   } catch (error) {
-    log("warn", `[tax] Scheduler unavailable in multi-bot mode: ${error.message}`);
+    log("warn", `[mongo] Shared database/index setup unavailable in multi-bot mode: ${error.message}`);
   }
+  if (parentDbReady) {
+    try {
+      const { startTaxScheduler } = await import("./lib/taxScheduler.mjs");
+      await startTaxScheduler();
+    } catch (error) {
+      log("warn", `[tax] Scheduler unavailable in multi-bot mode: ${error.message}`);
+    }
+  }
+  await startBotSupervisor();
 } else {
   // Parallel import of modules
   const [{ connectBot }, { loadPlugins }, { connectDb, getDb }, { initGroupSettings }, { startCardSpawner }, { startTaxScheduler }] =

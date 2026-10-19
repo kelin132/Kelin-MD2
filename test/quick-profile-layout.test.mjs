@@ -1,0 +1,30 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { buildQuickProfileCaption } from "../plugins/economy/profile.js";
+import { resolveRole } from "../lib/profileGen.mjs";
+
+test("quick profile caption uses the requested compact layout", () => {
+  const caption = buildQuickProfileCaption({
+    name: "KELIN",
+    age: "10",
+    birthday: "18 May",
+    cards: "145",
+    pokemon: "6",
+    badges: "—",
+    role: "Owner",
+  });
+  assert.match(caption, /^\*Edit your profile image here:\*\nhttps:\/\/aidoru\.zone\.id\/profile/);
+  for (const line of [
+    "❀ *Name* : `KELIN`",
+    "❀ *Age* : `10`",
+    "❀ *Bday* : `18 May`",
+    "❀ *Cards*: `145`",
+    "❀ *Pokémon*: `6`",
+    "❀ *Badges* : `—`",
+    "❀ *Role* : `Owner`",
+  ]) assert.ok(caption.includes(line), `missing ${line}`);
+});
+
+test("staff level 3 profiles display Owner", () => {
+  assert.equal(resolveRole({ staffLevel: 3 }), "Owner");
+});
