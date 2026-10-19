@@ -59,3 +59,16 @@ test("tagged LID recipient is resolved to the registered phone account before gi
   assert.ok(calls.saves.some(({ id }) => id === phone));
   assert.ok(messages.every((message) => !message.text.includes("not registered")));
 });
+
+
+test("give accepts a phone number split by display spaces and country-code formatting", async () => {
+  const messages = [];
+  await give.run({
+    sender: "263779999999@s.whatsapp.net",
+    args: ["+234", "916", "880", "8440", "500"],
+    msg: { key: { remoteJid: "fixture@g.us" }, message: { conversation: ".give" } },
+    sock: { sendMessage: async (_jid, payload) => messages.push(payload) },
+  });
+  assert.ok(calls.registrations.includes("2349168808440@s.whatsapp.net"));
+  assert.ok(messages.every((message) => !message.text.includes("Please mention a user")));
+});

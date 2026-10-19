@@ -88,6 +88,14 @@ test("Discord keys stay namespaced instead of turning into fake WhatsApp IDs", (
   assert.deepEqual(whatsappIdentityVariants(id), [id]);
 });
 
+test("formatted international phone numbers normalize to their canonical WhatsApp JID", () => {
+  assert.equal(normalizeJid("+234 916 880 8440"), "2349168808440@s.whatsapp.net");
+  assert.deepEqual(whatsappIdentityVariants("+234 916 880 8440").slice(0, 2), [
+    "+234 916 880 8440",
+    "2349168808440@s.whatsapp.net",
+  ]);
+});
+
 test("incoming WhatsApp LIDs resolve to their verified phone before economy checks", async () => {
   const resolved = await resolveMessageSender(
     account._id,

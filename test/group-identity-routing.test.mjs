@@ -30,7 +30,7 @@ registerHooks({
   },
 });
 const { loadPlugins, routeMessage } = await import("../lib/pluginManager.mjs");
-const { resolveLidToJid, resolveMessageSender } = await import("../lib/identity.mjs");
+const { resolveLidToJid, resolveMessageSender, waitForIdentityLearning } = await import("../lib/identity.mjs");
 await loadPlugins();
 const meta = { participants: [{ id: lid, phoneNumber: phone, admin: "admin" }, { id: bot, admin: "admin" }] };
 function socket(metadata = meta) {
@@ -70,10 +70,40 @@ test("new id=LID phoneNumber=PN metadata survives a failing native mapping cache
 test("phone-only messages persist reverse mapping even before economy registration", async () => {
   const sock = socket();
   assert.equal(await resolveMessageSender(phone, "", sock, "123@g.us"), phone);
+  await waitForIdentityLearning();
   assert.equal((await globalThis.routingIdentityDb.collection("identity_links").findOne({ _id: lid })).phoneId, phone);
   assert.equal(globalThis.routingIdentityDb.data.users.length, 0);
   assert.equal(globalThis.routingIdentityDb.data.pokemon_owned[0].whatsappNumber, lid,
     "learning a phone mapping must preserve legacy full-LID ownership evidence");
+});
+test("phone-addressed messages do not wait for reverse LID lookup or group metadata", async () => {
+  const slowPhone = "263771234568@s.whatsapp.net";
+  const slowLid = "991234567890124@lid";
+  let releaseMapping;
+  let groupMetadataCalls = 0;
+  const sock = socket();
+  sock.signalRepository.lidMapping.getLIDForPN = () =>
+    new Promise((resolve) => { releaseMapping = resolve; });
+  sock.groupMetadata = async () => {
+    groupMetadataCalls++;
+    return meta;
+  };
+
+  const fastResult = await Promise.race([
+    resolveMessageSender(slowPhone, "", sock, "124@g.us").then((value) => ({ value })),
+    new Promise((resolve) => setTimeout(() => resolve({ timedOut: true }), 100)),
+  ]);
+  assert.deepEqual(fastResult, { value: slowPhone });
+  assert.equal(groupMetadataCalls, 0);
+
+  await new Promise((resolve) => setImmediate(resolve));
+  releaseMapping(slowLid);
+  await waitForIdentityLearning();
+  assert.equal(
+    (await globalThis.routingIdentityDb.collection("identity_links").findOne({ _id: slowLid }))?.phoneId,
+    slowPhone,
+    "the background lookup must still preserve the verified alias",
+  );
 });
 test("simultaneous moderation/admin metadata reads share one live group request", async () => {
   let calls = 0;

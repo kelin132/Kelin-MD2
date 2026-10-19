@@ -22,6 +22,27 @@ function resolveTarget(msg) {
   return null;
 }
 
+function phoneFromArgs(args) {
+  const tokens = (Array.isArray(args) ? args : []).map((arg) => String(arg || ""));
+  const amountIsLastToken = tokens.length > 1 && parseAmount(tokens.at(-1), 0) > 0;
+  const usable = amountIsLastToken ? tokens.slice(0, -1) : tokens;
+
+  for (let start = 0; start < usable.length; start++) {
+    let digits = "";
+    for (let index = start; index < usable.length; index++) {
+      const part = usable[index].replace(/\D/g, "");
+      if (!part || part.length > 15 || digits.length + part.length > 15) break;
+      digits += part;
+      if (digits.length >= 7 && (index === usable.length - 1 || digits.length === 15)) {
+        return `${digits}@s.whatsapp.net`;
+      }
+      // Only join short groups split by formatting spaces; do not absorb words.
+      if (!/^\+?\s*\d[\d\s().-]*$/.test(usable[index])) break;
+    }
+  }
+  return "";
+}
+
 export default {
   name: "give",
   description: "Give money to another player",
@@ -71,11 +92,7 @@ export default {
 
     // Fallback: search for a phone number argument
     if (!targetJid) {
-      const numArg = args.find(a => /^\+?[0-9]{5,}$/.test(a));
-      if (numArg) {
-        const cleanNum = numArg.replace(/[^0-9]/g, "");
-        targetJid = `${cleanNum}@s.whatsapp.net`;
-      }
+      targetJid = phoneFromArgs(args);
     }
 
     if (!targetJid) {
