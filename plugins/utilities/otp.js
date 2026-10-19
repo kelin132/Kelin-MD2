@@ -27,11 +27,10 @@ export default {
     try {
       const pending = await getPendingWebsiteCode(senderJid);
       if (isGroup) {
-        // OTPs are credentials. Allow group invocation, but never expose the
-        // code to everyone in the group.
-        await sock.sendMessage(senderJid, createOtpPayload({ pending, senderJid }));
+        // The requester explicitly invoked .otp in this group. Include a
+        // mention so the code is clearly tied to the requesting member.
         await sock.sendMessage(sourceChat, {
-          text: `🔐 I sent your AIDORU code privately, @${senderJid.split("@")[0]}. Check your chat with the bot.`,
+          ...createOtpPayload({ pending, senderJid, isGroup: true }),
           mentions: [senderJid],
         }, { ...quoted, mentions: [senderJid] });
       } else {
@@ -42,7 +41,7 @@ export default {
       await sock.sendMessage(
         sourceChat,
         { text: isGroup
-          ? "❌ I couldn't send your code privately. Please open a private chat with the bot and send *.otp*."
+          ? "❌ I couldn't retrieve your code. Start verification or password recovery on the AIDORU website, then try *.otp* again."
           : `❌ ${message}` },
         quoted,
       );
