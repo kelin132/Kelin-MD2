@@ -48,6 +48,15 @@ recipients too. Once a verified mapping is available, Pokémon trainer and owned
 records are annotated with that phone alias in place; their original ownership
 keys and Pokémon documents are not moved or deleted.
 
+Shared-account resolution only follows one-to-one active Discord links and
+dedicated identity fields. Conflicting active link rows and generic `owner` or
+`sender` fields are not used to combine profiles; affected accounts should be
+re-linked rather than having an ambiguous user's data guessed.
+LID ownership uses the full `@lid` identifier, not its bare digits, because
+those digits can be another user's legacy phone key. Numeric-only legacy
+records are therefore left untouched unless they can be tied to an explicit
+full identity.
+
 Bot collection readers also use the economy account resolver: `mn_users`
 looks up legacy/full/numeric ownership keys and combines matching card records,
 while Pokémon trainer/party/PC/count readers use the same verified aliases.

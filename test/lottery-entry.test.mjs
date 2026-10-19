@@ -63,7 +63,7 @@ test("linking after a standalone Discord entry still blocks a WhatsApp entry", a
 });
 test("legacy LID tickets resolve through the user's verified phone alias", async () => {
   db.data.users.push({ _id: "54321@lid", phoneNumber: "263771234567", registered: true });
-  db.data.lottery[0].tickets.push({ userId: "54321", count: 1 });
+  db.data.lottery[0].tickets.push({ userId: "54321@lid", count: 1 });
   db.data.lottery[0].totalTickets = 1;
   assert.equal((await buy(discordKey)).reason, "duplicate");
 });

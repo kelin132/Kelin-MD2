@@ -256,8 +256,6 @@ function identityQuery(id) {
       { whatsappJid: { $in: variants } },
       { jid: { $in: variants } },
       { userJid: { $in: variants } },
-      { sender: { $in: variants } },
-      { owner: { $in: variants } },
     ],
   };
 }

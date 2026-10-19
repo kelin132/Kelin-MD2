@@ -5,7 +5,7 @@ import { isDeepStrictEqual } from "node:util";
 import { BSON, ObjectId } from "mongodb";
 
 const phone = "263771234567@s.whatsapp.net";
-const lid = "123456789@lid";
+const lid = "263779999999@lid";
 const other = "263779999999@s.whatsapp.net";
 const clone = (value) => value == null ? value : BSON.deserialize(BSON.serialize({ value })).value;
 const equal = (a, b) => isDeepStrictEqual(a, b);
@@ -97,7 +97,7 @@ beforeEach(() => {
       { _id: other, registered: true, name: "Player B", money: 9876 },
     ],
     mn_users: [
-      { _id: "old-cards", userId: 123456789, cards: [{ cardId: "pikachu", name: "Old copy" }], totalCards: 1 },
+      { _id: "old-cards", userId: lid, cards: [{ cardId: "pikachu", name: "Old copy" }], totalCards: 1 },
       { _id: phone, cards: [{ cardId: "pikachu", name: "Second copy" }], totalCards: 1 },
       { _id: "empty-phone", userId: "263771234567", cards: [], totalCards: 0 },
       { _id: "other-cards", userId: "263779999999", cards: [{ cardId: "mew", name: "Other user copy" }], totalCards: 1 },
@@ -109,9 +109,10 @@ beforeEach(() => {
     ],
     pokemon_owned: [
       { _id: "p1", ownerJid: lid, inParty: true, name: "Pikachu" },
-      { _id: "p2", owner: 123456789, inParty: false, name: "Mew" },
+      { _id: "p2", owner: lid, inParty: false, name: "Mew" },
       { _id: "p3", ownerJid: phone, inParty: false, name: "Eevee" },
       { _id: "p4", ownerJid: other, inParty: true, name: "Other Pokemon" },
+      { _id: "p5", owner: 263779999999, inParty: false, name: "Other user's numeric-owner Pokemon" },
     ],
   };
 });
@@ -121,7 +122,7 @@ test("economy, cards and Pokemon all resolve the same account and isolate other 
   assert.equal((await cardsDb.getUser(phone)).cards.length, 2);
   assert.equal((await cardsDb.getUser(other)).cards.length, 1);
   assert.deepEqual((await pokemonDb.getAllTrainerPokemon(phone)).map((doc) => doc._id), ["p1", "p2", "p3"]);
-  assert.deepEqual((await pokemonDb.getAllTrainerPokemon(other)).map((doc) => doc._id), ["p4"]);
+  assert.deepEqual((await pokemonDb.getAllTrainerPokemon(other)).map((doc) => doc._id), ["p4", "p5"]);
   assert.equal(await pokemonDb.countTrainerPokemon(phone), 3);
   assert.equal((await pokemonDb.getTrainerParty(phone)).length, 1);
   assert.equal((await pokemonDb.getTrainerPC(phone)).length, 2);
@@ -226,4 +227,31 @@ test("a LID command resolves the existing registered economy account and restore
   assert.deepEqual((await pokemonDb.getAllTrainerPokemon(sender)).map((pokemon) => pokemon._id),
     ["p1", "p2", "p3"]);
   assert.ok(documents.pokemon_owned.some((pokemon) => pokemon._id === "p1" && pokemon.ownerJid === lid));
+  assert.equal(documents.mn_users.find((user) => user._id === "other-cards").whatsappNumber, undefined);
+  assert.equal(documents.pokemon_owned.find((pokemon) => pokemon._id === "p5").whatsappNumber, undefined);
+});
+
+test("ambiguous Discord links and unrelated owner fields cannot expose another user's records", async () => {
+  const conflictingDiscord = "discord:999999999999999999";
+  documents.account_links = [
+    { whatsappId: phone, discordId: "123456789012345678", status: "active" },
+    { whatsappId: phone, discordId: "999999999999999999", status: "active" },
+  ];
+  documents.users.push({
+    _id: conflictingDiscord,
+    discordId: "999999999999999999",
+    owner: phone,
+    registered: true,
+    money: 987654,
+  });
+  documents.mn_users.push({
+    _id: "conflicting-discord-cards",
+    userId: conflictingDiscord,
+    cards: [{ cardId: "foreign", name: "Must stay private" }],
+  });
+
+  const profile = await cardsDb.getUser(phone);
+  assert.ok(!profile.cards.some((card) => card.name === "Must stay private"));
+  assert.equal((await economyUser(phone)).money, 4321);
+  assert.ok(!(await accountIdentityValues(phone)).includes(conflictingDiscord));
 });
