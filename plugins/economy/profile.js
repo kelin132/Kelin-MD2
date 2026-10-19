@@ -91,6 +91,15 @@ https://aidoru.zone.id/profile
 ❀ *Role* : \`${role}\``;
 }
 
+export function resolveProfileImageSources({ cardUser, user, profilePicFromSocket }) {
+  const savedAvatar = [cardUser?.profilePictureUrl, cardUser?.profileImage, cardUser?.avatarUrl]
+    .find((value) => typeof value === "string" && /^https?:\/\//i.test(value));
+  return {
+    profilePic: savedAvatar || profilePicFromSocket || null,
+    profileBackground: user?.profileBackground || null,
+  };
+}
+
 export default {
   name: "profile",
   description: "View your economy profile card",
@@ -116,18 +125,29 @@ export default {
 
     // `.p` uses narrow, read-only snapshots and starts all independent reads
     // together. The full profile keeps its richer card/trainer/guild data.
+    const cardUserPromise = isQuickProfile ? getUserProfileSummary(target) : getCardUser(target);
+    const profilePicPromise = isQuickProfile
+      ? getProfilePic(sock, target).catch(() => null)
+      : withTimeout(getProfilePic(sock, target), 2500);
     const [cardUser, user, profilePicFromSocket, pokemonCount, guild, trainer] = await Promise.all([
-      isQuickProfile ? getUserProfileSummary(target) : getCardUser(target),
+      cardUserPromise,
       isQuickProfile ? getQuickProfileUser(target) : getUser(target),
-      isQuickProfile ? Promise.resolve(null) : withTimeout(getProfilePic(sock, target), 2500),
+      isQuickProfile ? Promise.resolve(null) : profilePicPromise,
       countTrainerPokemon(target),
       isQuickProfile ? Promise.resolve(null) : withTimeout(guildSystem.getUserPrimaryGuild(target), 2500),
       isQuickProfile ? Promise.resolve(null) : withTimeout(getTrainer(target), 2500),
     ]);
     if (target === sender && isQuickProfile && !await requireRegistration(sock, msg, sender, user)) return;
-    const websiteAvatar = [cardUser?.profilePictureUrl, cardUser?.profileImage, cardUser?.avatarUrl]
+    const savedAvatar = [cardUser?.profilePictureUrl, cardUser?.profileImage, cardUser?.avatarUrl]
       .find((value) => typeof value === "string" && /^https?:\/\//i.test(value));
-    const profilePic = isQuickProfile ? null : websiteAvatar || profilePicFromSocket;
+    const quickSocketAvatar = isQuickProfile && !savedAvatar
+      ? await withTimeout(profilePicPromise, 1500)
+      : profilePicFromSocket;
+    const { profilePic, profileBackground } = resolveProfileImageSources({
+      cardUser,
+      user,
+      profilePicFromSocket: quickSocketAvatar,
+    });
 
     const tag   = target.split("@")[0].split(":")[0];
     const level = user.level ?? 1;
@@ -234,7 +254,7 @@ export default {
         items:        user.inventory?.length ?? 0,
         transactions: user.history?.length   ?? 0,
         profileImage: profilePic,
-        profileBackground: isQuickProfile ? null : user.profileBackground || null,
+        profileBackground,
         profileFrame: user.profileFrame || null,
         levelRole,
         earnedRoles,

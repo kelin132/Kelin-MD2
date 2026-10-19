@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildQuickProfileCaption } from "../plugins/economy/profile.js";
+import { buildQuickProfileCaption, resolveProfileImageSources } from "../plugins/economy/profile.js";
 import { resolveRole } from "../lib/profileGen.mjs";
 
 test("quick profile caption uses the requested compact layout", () => {
@@ -27,4 +27,24 @@ test("quick profile caption uses the requested compact layout", () => {
 
 test("staff level 3 profiles display Owner", () => {
   assert.equal(resolveRole({ staffLevel: 3 }), "Owner");
+});
+
+test("quick profiles retain the selected avatar and saved background", () => {
+  assert.deepEqual(resolveProfileImageSources({
+    cardUser: { profilePictureUrl: "https://images.example/avatar.jpg" },
+    user: { profileBackground: "https://images.example/background.jpg" },
+    profilePicFromSocket: "https://whatsapp.example/avatar.jpg",
+  }), {
+    profilePic: "https://images.example/avatar.jpg",
+    profileBackground: "https://images.example/background.jpg",
+  });
+
+  assert.deepEqual(resolveProfileImageSources({
+    cardUser: null,
+    user: { profileBackground: "https://images.example/background.jpg" },
+    profilePicFromSocket: "https://whatsapp.example/avatar.jpg",
+  }), {
+    profilePic: "https://whatsapp.example/avatar.jpg",
+    profileBackground: "https://images.example/background.jpg",
+  });
 });
