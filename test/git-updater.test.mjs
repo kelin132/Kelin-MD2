@@ -54,6 +54,19 @@ test("archive installations bootstrap Git and keep complete runtime state across
     assert.equal(second.sameRev, false);
     assert.equal(await fs.readFile(path.join(root, "bot.js"), "utf8"), "version two");
     assert.equal(await fs.readFile(path.join(root, "sessions", "auth", "creds.json"), "utf8"), "fixture session");
+
+    // Separate bot workers share the same checkout, so concurrent updates
+    // must serialize across callers and only one should apply a new revision.
+    await fs.writeFile(path.join(remote, "bot.js"), "version three");
+    git("add", ".");
+    git("commit", "-m", "third");
+    const concurrent = await Promise.all([
+      updateCheckout({ root, remote }),
+      updateCheckout({ root, remote }),
+    ]);
+    assert.equal(concurrent.filter((result) => result.sameRev === false).length, 1);
+    assert.equal(await fs.readFile(path.join(root, "bot.js"), "utf8"), "version three");
+    assert.equal(await fs.readFile(path.join(root, "sessions", "auth", "creds.json"), "utf8"), "fixture session");
     await assert.rejects(updateCheckout({ root, remote, branch: "main; bad" }), /Invalid GITHUB_BRANCH/);
   } finally {
     await fs.rm(temporary, { recursive: true, force: true });
