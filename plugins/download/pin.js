@@ -52,7 +52,7 @@ function imageUrlFrom(item) {
     null;
 }
 
-async function searchPinterestImages(query) {
+async function* searchPinterestImages(query) {
   const attempts = [
     () => searchGet("googleimage", { query: `pinterest ${query}` }, 8_000),
     () => searchGet("pinterest",   { query }, 8_000),
@@ -80,17 +80,15 @@ async function searchPinterestImages(query) {
         urls.push(direct);
       }
 
-      if (urls.length) return urls.slice(0, 4);
+      if (urls.length) yield urls.slice(0, 4);
     } catch { /* try next */ }
   }
-
-  throw new Error("No Pinterest results found.");
 }
 export { searchPinterestImages };
 
 async function downloadImage(url) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8_000);
+  const timer = setTimeout(() => controller.abort(), 6_000);
 
   try {
     const response = await fetch(url, {
@@ -155,25 +153,25 @@ Examples:
         text: `🔍 Searching Pinterest for *"${text}"*...`,
       }, { quoted: msg });
 
-      const imageUrls = await searchPinterestImages(text);
       let sent = 0;
-
-      for (const imageUrl of imageUrls) {
-        if (sent >= 3) break;
-        try {
-          const image = await downloadImage(imageUrl);
-          await sock.sendMessage(jid, {
-            image,
-          }, { quoted: msg });
-          sent++;
-        } catch (error) {
-          console.warn(`[pinterest] skipped image: ${error.message}`);
+      for await (const imageUrls of searchPinterestImages(text)) {
+        let providerSent = 0;
+        for (const imageUrl of imageUrls.slice(0, 2)) {
+          try {
+            const image = await downloadImage(imageUrl);
+            await sock.sendMessage(jid, { image }, { quoted: msg });
+            sent++;
+            providerSent++;
+          } catch (error) {
+            console.warn(`[pinterest] skipped image: ${error.message}`);
+          }
         }
+        if (providerSent) break;
       }
 
       if (!sent) {
         await sock.sendMessage(jid, {
-          text: "❌ Found results but could not load any images.",
+          text: "❌ No usable Pinterest images found.",
         }, { quoted: msg });
       }
 
