@@ -4,12 +4,11 @@
  * .lottery info           — show jackpot + your tickets
  * The round auto-draws three prizes when it reaches fifteen total tickets.
  */
-import { getUser, saveUser, requireRegistration, addHistory } from "./database.js";
+import { getUser, requireRegistration, addHistory } from "./database.js";
 import { getDb } from "../../lib/mongo.mjs";
+import { getLotteryRound, findAccountLotteryTicket, purchaseLotteryTicket } from "../../lib/lotteryEntry.mjs";
 import {
   formatLotteryResults,
-  findLotteryTicket,
-  getWhatsAppParticipantId,
   LOTTERY_MAX_ENTRIES,
   maybeAutoDraw,
   queueLotteryAnnouncement,
@@ -27,13 +26,7 @@ function randomBaseJackpot() {
 }
 
 async function getLottery() {
-  const db  = getDb();
-  let doc   = await db.collection("lottery").findOne({ _id: "current" });
-  if (!doc) {
-    const base = randomBaseJackpot();
-    doc = { _id: "current", tickets: [], totalTickets: 0, jackpot: base, baseJackpot: base, createdAt: new Date() };
-    await db.collection("lottery").insertOne(doc);
-  }
+  const doc = await getLotteryRound(getDb(), randomBaseJackpot());
   const tickets = Array.isArray(doc.tickets) ? doc.tickets : [];
   const totalTickets = Number.isFinite(Number(doc.totalTickets))
     ? Number(doc.totalTickets)
@@ -59,11 +52,6 @@ async function announceLotteryDraw({ sock, jid, msg, result }) {
   await queueLotteryAnnouncement({ db: getDb(), result, sourcePlatform: "whatsapp", whatsappGroupId: groupId });
 }
 
-async function saveLottery(data) {
-  const { _id, ...rest } = data;
-  await getDb().collection("lottery").updateOne({ _id: "current" }, { $set: rest }, { upsert: true });
-}
-
 export default {
   name: "lottery",
   aliases: ["lotto"],
@@ -82,7 +70,7 @@ export default {
     // ── INFO ───────────────────────────────────────────────────────────────────
     if (sub === "info") {
       const lot      = await getLottery();
-      const myCount  = findLotteryTicket(lot.tickets, sender)?.count ?? 0;
+      const myCount  = (await findAccountLotteryTicket(getDb(), lot.tickets, sender))?.count ?? 0;
       const chance   = lot.totalTickets > 0 ? ((myCount / lot.totalTickets) * 100).toFixed(1) : "0.0";
       return reply(
 `╭━━━〔 🎰 𝑳𝑶𝑻𝑻𝑬𝑹𝒀 𝑰𝑵𝑭𝑶 🎟️ 〕━━━╮
@@ -109,7 +97,7 @@ export default {
       if (!Number.isFinite(requestedCount) || requestedCount < 1) return reply("❌ Use `.lottery` to buy one ticket.");
       if (requestedCount > 1) return reply("🎟️ You can only buy one ticket for the global lottery.");
 
-      const lot     = await getLottery();
+      let lot     = await getLottery();
       if (lot.totalTickets >= LOTTERY_MAX_ENTRIES) {
         const automaticDraw = await maybeAutoDraw();
         if (automaticDraw) {
@@ -118,10 +106,7 @@ export default {
         }
       }
 
-      const userId = sender.startsWith("discord:")
-        ? sender
-        : getWhatsAppParticipantId(sender) || sender;
-      const myEntry = findLotteryTicket(lot.tickets, sender);
+      const myEntry = await findAccountLotteryTicket(getDb(), lot.tickets, sender);
       const myCount = myEntry?.count ?? 0;
 
       if (myCount >= MAX_TICKETS) {
@@ -149,23 +134,20 @@ export default {
         );
       }
 
-      user.money -= cost;
-      await saveUser(sender, user);
-      await addHistory(sender, "lottery", -cost, `Bought ${canBuy} lottery ticket(s)`);
-
-      lot.jackpot += cost;
-      if (myEntry) {
-        myEntry.count += canBuy;
-        myEntry.userId = userId;
-        if (jid.endsWith("@g.us")) myEntry.groupId = jid;
-      } else {
-        lot.tickets.push({ userId, name: user.name || "User", count: canBuy, ...(jid.endsWith("@g.us") ? { groupId: jid } : {}) });
+      const purchase = await purchaseLotteryTicket({
+        db: getDb(), lot, sender, price: cost, name: user.name, groupId: jid,
+      });
+      if (!purchase.ok) {
+        return reply(purchase.reason === "duplicate"
+          ? "⚠️ You have already entered the global lottery on WhatsApp or Discord."
+          : purchase.reason === "funds" ? "❌ Not enough cash for a ticket."
+            : "⏳ The lottery is drawing now. Please try again in a moment.");
       }
-      lot.totalTickets += canBuy;
-      await saveLottery(lot);
-
-      const newTotal = (myCount + canBuy);
-      const chance   = ((newTotal / lot.totalTickets) * 100).toFixed(1);
+      await addHistory(purchase.accountId, "lottery", -cost, "Bought one lottery ticket").catch(error => {
+        console.error("[lottery] Could not record purchase history:", error.message);
+      });
+      user.money -= cost;
+      lot = await getLottery();
 
       if (lot.totalTickets >= LOTTERY_MAX_ENTRIES) {
         const automaticDraw = await maybeAutoDraw();

@@ -10,7 +10,8 @@ import { accountIdentityValues, collectionIdentityQuery } from "../../lib/collec
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 export function uid(sender) {
-  return (sender ?? "").split("@")[0].split(":")[0];
+  const raw = String(sender ?? "");
+  return raw.startsWith("discord:") ? raw : raw.split("@")[0].split(":")[0];
 }
 
 export function tag(jid) {
@@ -75,9 +76,9 @@ export async function findOrCreateUser(sender) {
 export async function getUser(sender) {
   const col    = await Col.users();
   const values = await accountIdentityValues(sender);
-  const records = await col.find(collectionIdentityQuery(values,
+  const records = (await col.find(collectionIdentityQuery(values,
     ["_id", "userId", "whatsappNumber", "jid", "owner", "identityAliases"],
-  )).toArray();
+  )).toArray()).filter(record => record.userId !== "discord");
   if (!records.length) return null;
   // An empty recently-created phone record must not hide an older collection.
   records.sort((a, b) => (b.cards?.length || 0) - (a.cards?.length || 0) ||
@@ -89,6 +90,14 @@ function attachCardSave(records) {
   const primary = records[0];
   const sources = new WeakMap();
   const originals = new Map();
+  const pendingSources = new WeakMap();
+  const pendingOriginals = new Map();
+  const pendingCards = records.flatMap(record => {
+    const pending = Array.isArray(record.pendingCards) ? record.pendingCards : [];
+    pendingOriginals.set(record, BSON.deserialize(BSON.serialize({ pending })).pending);
+    for (const card of pending) if (card && typeof card === "object") pendingSources.set(card, record);
+    return pending;
+  });
   const cards = records.flatMap((record) => {
     const owned = Array.isArray(record.cards) ? record.cards : [];
     originals.set(record, BSON.deserialize(BSON.serialize({ cards: owned })).cards);
@@ -97,11 +106,16 @@ function attachCardSave(records) {
     }
     return owned;
   });
-  const user = { ...primary, cards, totalCards: cards.length };
+  const user = { ...primary, cards, pendingCards, totalCards: cards.length };
   user.markModified = () => {};
   user.save = async () => {
-    const { _id, save, markModified, cards: currentCards, totalCards, ...data } = user;
+    const { _id, save, markModified, cards: currentCards, pendingCards: currentPending, totalCards, ...data } = user;
     const grouped = new Map(records.map((record) => [record, []]));
+    const groupedPending = new Map(records.map(record => [record, []]));
+    for (const card of currentPending) {
+      const source = card && typeof card === "object" ? pendingSources.get(card) : null;
+      groupedPending.get(source || primary).push(card);
+    }
     for (const card of currentCards) {
       // New or transferred copies belong to this account's primary record.
       const source = card && typeof card === "object" ? sources.get(card) : null;
@@ -109,20 +123,26 @@ function attachCardSave(records) {
     }
     for (const record of records) {
       const owned = grouped.get(record);
+      const pending = groupedPending.get(record);
       const result = await Col.users().updateOne(
         {
           _id: record._id,
           ...(Array.isArray(record.cards) ? { cards: originals.get(record) } : {}),
+          ...(Array.isArray(record.pendingCards) ? { pendingCards: pendingOriginals.get(record) } : {}),
         },
         { $set: {
           ...(record === primary ? data : {}),
           cards: owned,
+          pendingCards: pending,
           totalCards: owned.length,
         } },
       );
       if (result.matchedCount === 0) throw new Error("Your collection changed. Reload it and retry.");
       originals.set(record, BSON.deserialize(BSON.serialize({ cards: owned })).cards);
       record.cards = owned;
+      pendingOriginals.set(record, BSON.deserialize(BSON.serialize({ pending })).pending);
+      record.pendingCards = pending;
+      for (const card of pending) if (card && typeof card === "object") pendingSources.set(card, record);
       for (const card of owned) {
         if (card && typeof card === "object") sources.set(card, record);
       }

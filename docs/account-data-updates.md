@@ -1,5 +1,33 @@
 # Account data and panel updates
 
+## Discord sharing, short claims and one lottery entry
+
+Update both Kelin-MD2 and AKIRA-DISCORD together. They must use the same
+`kelin_md` database and verified active `account_links` records. Collection
+lookups now also include linked Discord ownership keys, so both bots can read
+the same cards, pending cards and Pokémon without copying users or changing
+original account IDs.
+
+Card claim codes are stable eight-character uppercase alphanumeric values,
+shared across both implementations. Long API IDs are retained internally.
+Old claim IDs/card IDs/indexes remain accepted for existing pending cards.
+
+Lottery entry writes use one atomic conditional append on the shared round,
+matching verified WhatsApp/LID/Discord aliases. Concurrent duplicate attempts
+cannot create a second ticket; rejected charged attempts refund their debit.
+Draws share a lock with entry writes and reset the round identity when finished,
+allowing one new entry after a draw. Ticket prices and prizes are unchanged.
+
+The old generic `mn_users.userId = "discord"` bucket is preserved, but not
+automatically attributed to any player because the former Discord ID parser
+could mix different users there. Only independently verified ownership keys
+are used for shared reads.
+
+Fixture tests exercise actual commands, both purchase directions, concurrency,
+legacy keys, and post-draw re-entry. They do not access production MongoDB.
+If a draw fails after locking, reconcile payouts before clearing the lock;
+blind automatic retries could award a prize twice.
+
 ## Account identity
 
 Existing `users._id` values and unique `websiteId` values are retained. Verified

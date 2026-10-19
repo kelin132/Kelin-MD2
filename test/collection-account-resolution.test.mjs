@@ -190,3 +190,14 @@ test("transfers remove a legacy copy from its source and save it only to the rec
   assert.equal((await cardsDb.getUser(other)).cards.length, 2);
   assert.equal(documents.mn_users.reduce((sum, doc) => sum + doc.cards.length, 0), 3);
 });
+
+test("verified Discord links expose the same cards, pending cards and Pokemon to WhatsApp", async () => {
+  const discord = "discord:123456789012345678";
+  documents.account_links = [{ whatsappId: phone, discordId: "123456789012345678", status: "active" }];
+  documents.mn_users.push({ _id: "discord-cards", userId: discord, cards: [{ cardId: "dc", name: "Discord copy" }], pendingCards: [{ cardId: "pending" }] });
+  documents.pokemon_owned.push({ _id: "p5", ownerJid: discord, inParty: false });
+  assert.deepEqual((await cardsDb.getUser(phone)).cards, (await cardsDb.getUser(discord)).cards);
+  assert.equal((await cardsDb.getUser(phone)).cards.length, 3);
+  assert.equal((await cardsDb.getUser(phone)).pendingCards.length, 1);
+  assert.equal(await pokemonDb.countTrainerPokemon(phone), 4);
+});

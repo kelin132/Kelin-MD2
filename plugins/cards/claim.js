@@ -1,18 +1,8 @@
 import { findOrCreateUser } from "./db.js";
 import { sendCardMedia } from "../../lib/cardApi.mjs";
+import { getCardClaimId as getClaimId, matchesCardClaimId as matchesClaimId } from "../../lib/cardClaimId.mjs";
 
 const activeSpawns = global.activeSpawns || (global.activeSpawns = {});
-
-function getClaimId(card) {
-  return String(card?.claimId ?? card?.index ?? card?.cardId ?? "").trim();
-}
-
-function matchesClaimId(card, input) {
-  const target = String(input || "").trim().toUpperCase();
-  return [card?.claimId, card?.index, card?.cardId].some(
-    (value) => String(value ?? "").trim().toUpperCase() === target,
-  );
-}
 
 function toOwnedCard(card, spawnId) {
   return {
@@ -64,7 +54,7 @@ export default {
 
       // Personal pending claims created by .summon.
       const numericPending = cardIdInput
-        ? user.pendingCards.find((card) => String(card.claimId ?? card.index ?? "").trim().toUpperCase() === cardIdInput)
+        ? user.pendingCards.find((card) => matchesClaimId(card, cardIdInput))
         : null;
       const legacyPending = cardIdInput
         ? user.pendingCards.find((card) => String(card.cardId || "").trim().toUpperCase() === cardIdInput)
@@ -79,9 +69,8 @@ export default {
 
         user.cards.push(...selected.map((card) => toOwnedCard(card, card.spawnId)));
         user.totalCards = (user.totalCards || 0) + selected.length;
-        const selectedIds = new Set(selected.map((card) => card.spawnId || card.cardId));
         user.pendingCards = user.pendingCards.filter(
-          (card) => !selectedIds.has(card.spawnId || card.cardId),
+          (card) => !selected.includes(card),
         );
         await user.save();
 

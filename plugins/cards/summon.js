@@ -1,3 +1,4 @@
+import { getCardClaimId } from "../../lib/cardClaimId.mjs";
 /**
  * KELIN MD — .summon
  * Summon a random card from any tier (or a specific tier).
@@ -206,7 +207,7 @@ export default {
 
       const pendingCard = {
         cardId:     card.cardId,
-        claimId:    card.claimId || card.index || card.cardId,
+        claimId:    getCardClaimId(card),
         name:       card.name,
         tier:       card.tier,
         tierNum:    card.tierNum || card.tier,

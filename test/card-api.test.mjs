@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { getCardClaimId } from "../lib/cardClaimId.mjs";
 import {
   fetchRandomCard,
   buildCardSpawnCaption,
@@ -28,7 +29,8 @@ test("normalises extensionless animated API media and exposes a short claim ID",
 
   assert.equal(card.mediaType, "gif");
   assert.equal(card.media, "https://cards.example/api/image?id=ab1234");
-  assert.equal(card.claimId, "42");
+  assert.equal(card.claimId, getCardClaimId(card));
+  assert.match(card.claimId, /^[A-Z0-9]{8}$/);
   assert.equal(card.cardId, "AB1234");
   assert.equal(card.thumbnail, "https://cards.example/thumb.jpg");
 });
@@ -174,7 +176,7 @@ test("fetches one tiered card and keeps its API ID claimable", async () => {
     const card = await fetchRandomCard("Tier UR");
     assert.equal(requestUrl, "https://cardapi.eulaorg.app/api/random?tier=UR");
     assert.equal(requestCount, 2);
-    assert.equal(card.claimId, "5c7c49");
+    assert.equal(card.claimId, getCardClaimId(card));
     assert.equal(card.cardId, "5C7C49");
     assert.equal(card.price, 16599106);
     assert.equal(card.mediaType, "gif");

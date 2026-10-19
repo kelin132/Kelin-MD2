@@ -35,7 +35,7 @@ registerHooks({
   },
 });
 const { getUser, saveUser, addMoney, isRegistered } = await import("../plugins/economy/database.js");
-const { migrateLidData } = await import("../lib/identity.mjs");
+const { migrateLidData, normalizeJid, whatsappIdentityVariants } = await import("../lib/identity.mjs");
 const { getOrCreateWebsiteId } = await import("../lib/websiteAuth.mjs");
 
 test("legacy account reads and saves keep the original key and unique website ID", async () => {
@@ -71,4 +71,10 @@ test("verified LID mapping retains the website account without copying or deleti
 
 test("website ID commands find the stable legacy account", async () => {
   assert.equal(await getOrCreateWebsiteId("263771234567@s.whatsapp.net"), account.websiteId);
+});
+
+test("Discord keys stay namespaced instead of turning into fake WhatsApp IDs", () => {
+  const id = "discord:123456789012345678";
+  assert.equal(normalizeJid(id), id);
+  assert.deepEqual(whatsappIdentityVariants(id), [id]);
 });
