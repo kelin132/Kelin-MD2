@@ -25,4 +25,7 @@ test("index maintenance lists once per collection and reuses equivalent index ke
   assert.ok(!created.some(({ name, spec }) => name === "users" && spec.userId === 1));
   assert.ok(created.some(({ name, spec }) => name === "users" && spec.whatsappId === 1));
   assert.ok(created.some(({ name, spec }) => name === "pokemon_owned" && spec.ownerJid === 1));
+  assert.ok(created.some(({ name, spec }) => name === "mn_users" && spec.jid === 1));
+  assert.ok(created.some(({ name, spec }) => name === "mn_users" && spec.owner === 1));
+  assert.ok(created.some(({ name, spec }) => name === "mn_users" && spec.whatsappNumber === 1));
 });

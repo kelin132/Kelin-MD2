@@ -16,18 +16,23 @@ const IMAGE_HEADERS = {
   Referer: "https://www.pinterest.com/",
 };
 
-function resultItems(data) {
-  const containers = [
-    data?.results,
-    data?.data,
-    data?.images,
-    data?.result,
-    Array.isArray(data) ? data : null,
-  ];
+function resultItems(data, depth = 0) {
+  if (depth > 5 || data == null) return [];
+  if (Array.isArray(data)) return data.flatMap((item) => resultItems(item, depth + 1));
+  if (typeof data !== "object") return [];
+  if (imageUrlFrom(data)) return [data];
 
-  return containers
-    .flatMap((value) => Array.isArray(value) ? value : value ? [value] : [])
-    .flatMap((item) => Array.isArray(item) ? item : [item]);
+  const containers = [
+    data.results,
+    data.data,
+    data.images,
+    data.result,
+    data.items,
+    data.pins,
+  ].filter((value) => Array.isArray(value) || (value && typeof value === "object"));
+  return containers.length
+    ? containers.flatMap((value) => resultItems(value, depth + 1))
+    : [data];
 }
 
 function imageUrlFrom(item) {
@@ -37,11 +42,17 @@ function imageUrlFrom(item) {
   const nested =
     item.images?.orig?.url ||
     item.images?.original?.url ||
+    item.images?.["736x"]?.url ||
+    item.images?.["474x"]?.url ||
     item.image?.url ||
     item.image?.src ||
-    item.original?.url;
+    item.original?.url ||
+    item.media?.image?.url ||
+    item.imageUrl ||
+    item.image_url ||
+    item.imageUrlOriginal;
 
-  return nested ||
+  const value = nested ||
     item.url ||
     item.image ||
     item.image_url ||
@@ -50,10 +61,37 @@ function imageUrlFrom(item) {
     item.media_url ||
     item.download_url ||
     null;
+  return typeof value === "string" && /^https?:\/\//i.test(value) ? value : null;
+}
+
+export async function searchDavidCyrilPinterest(query, {
+  apiKey = process.env.PINTEREST_API_KEY,
+  fetchImpl = globalThis.fetch,
+} = {}) {
+  if (!apiKey) throw new Error("Pinterest API key is not configured.");
+  if (typeof fetchImpl !== "function") throw new Error("Fetch is unavailable in this runtime.");
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8_000);
+  try {
+    const params = new URLSearchParams({ text: String(query ?? "").trim() });
+    const response = await fetchImpl(
+      `https://apis.davidcyril.name.ng/search/pinterest?${params.toString()}`,
+      {
+        headers: { Accept: "application/json", "X-API-Key": apiKey },
+        signal: controller.signal,
+      },
+    );
+    if (!response.ok) throw new Error(`Pinterest API returned HTTP ${response.status}.`);
+    return await response.json();
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function* searchPinterestImages(query) {
   const attempts = [
+    () => searchDavidCyrilPinterest(query),
     () => searchGet("googleimage", { query: `pinterest ${query}` }, 8_000),
     () => searchGet("pinterest",   { query }, 8_000),
     () => get("/search/pinterest", { query }, 8_000),
@@ -171,7 +209,9 @@ Examples:
 
       if (!sent) {
         await sock.sendMessage(jid, {
-          text: "❌ No usable Pinterest images found.",
+          text: process.env.PINTEREST_API_KEY
+            ? "❌ No usable Pinterest images found."
+            : "❌ No usable Pinterest images found. Add PINTEREST_API_KEY to the bot host environment to enable the new Pinterest API.",
         }, { quoted: msg });
       }
 

@@ -22,6 +22,85 @@ export function fmt(n) {
   return Number(n || 0).toLocaleString();
 }
 
+const CARD_USER_PROJECTION = {
+  userId: 1,
+  jid: 1,
+  owner: 1,
+  ownerJid: 1,
+  identityAliases: 1,
+  whatsappNumber: 1,
+  cards: 1,
+  pendingCards: 1,
+  totalCards: 1,
+  cardLimit: 1,
+  username: 1,
+  money: 1,
+  balance: 1,
+  count: 1,
+  decks: 1,
+  staffLevel: 1,
+  phone: 1,
+  phoneNumber: 1,
+  whatsappId: 1,
+  createdAt: 1,
+};
+
+function cardInstanceKey(card) {
+  if (!card || typeof card !== "object") return null;
+  const spawnId = String(card.spawnId ?? "").trim();
+  const cardId = String(card.cardId ?? "").trim();
+  // Legacy cards often used cardId as their spawnId. That is not a reliable
+  // instance key, so keep those copies rather than risking a real card loss.
+  if (!spawnId || (cardId && spawnId === cardId)) return null;
+  return spawnId;
+}
+
+function collectUniqueCards(records, field, sourceMap, originalMap) {
+  const seen = new Map();
+  const collected = [];
+
+  for (const record of records) {
+    const cards = Array.isArray(record[field]) ? record[field] : [];
+    originalMap.set(record, BSON.deserialize(BSON.serialize({ cards })).cards);
+    for (const card of cards) {
+      const key = cardInstanceKey(card);
+      const existing = key ? seen.get(key) : null;
+      if (existing) {
+        // Keep the instance once in memory, but preserve any useful metadata
+        // that exists only on one of the duplicate identity records.
+        if (card && typeof card === "object") {
+          for (const [name, value] of Object.entries(card)) {
+            if ((existing[name] === undefined || existing[name] === null || existing[name] === "") &&
+                value !== undefined && value !== null && value !== "") {
+              existing[name] = value;
+            }
+          }
+        }
+        continue;
+      }
+
+      if (key) seen.set(key, card);
+      if (card && typeof card === "object") sourceMap.set(card, record);
+      collected.push(card);
+    }
+  }
+
+  return collected;
+}
+
+function countUniqueCards(records) {
+  const seen = new Set();
+  let legacyCount = 0;
+  for (const record of records) {
+    for (const card of Array.isArray(record.cards) ? record.cards : []) {
+      const key = cardInstanceKey(card);
+      if (key) seen.add(key);
+      else legacyCount++;
+    }
+  }
+  return legacyCount + seen.size;
+}
+
 // ── Collections ───────────────────────────────────────────────────────────────
 // getDb() is already a synchronous singleton getter, so collection access does
 // not need an extra promise hop. Existing `await Col.users()` callers remain
@@ -78,7 +157,7 @@ export async function getUser(sender) {
   const values = await accountIdentityValues(sender);
   const records = (await col.find(collectionOwnershipQuery(values,
     ["_id", "userId", "jid", "owner"],
-  )).toArray()).filter(record => record.userId !== "discord");
+  ), { projection: CARD_USER_PROJECTION }).toArray()).filter(record => record.userId !== "discord");
   if (!records.length) return null;
   // An empty recently-created phone record must not hide an older collection.
   records.sort((a, b) => (b.cards?.length || 0) - (a.cards?.length || 0) ||
@@ -95,7 +174,19 @@ export async function getUserProfileSummary(sender) {
   const values = await accountIdentityValues(sender);
   const records = (await col.find(
     collectionOwnershipQuery(values, ["_id", "userId", "jid", "owner"]),
-    { projection: { userId: 1, cards: 1, profilePictureUrl: 1, profileImage: 1, avatarUrl: 1 } },
+    {
+      projection: {
+        userId: 1,
+        jid: 1,
+        owner: 1,
+        whatsappNumber: 1,
+        "cards.cardId": 1,
+        "cards.spawnId": 1,
+        profilePictureUrl: 1,
+        profileImage: 1,
+        avatarUrl: 1,
+      },
+    },
   ).toArray()).filter((record) => record.userId !== "discord");
   if (!records.length) return null;
 
@@ -106,8 +197,7 @@ export async function getUserProfileSummary(sender) {
     profilePictureUrl: primary.profilePictureUrl,
     profileImage: primary.profileImage,
     avatarUrl: primary.avatarUrl,
-    cardsCount: records.reduce((total, record) =>
-      total + (Array.isArray(record.cards) ? record.cards.length : 0), 0),
+    cardsCount: countUniqueCards(records),
   };
 }
 
@@ -117,20 +207,8 @@ function attachCardSave(records) {
   const originals = new Map();
   const pendingSources = new WeakMap();
   const pendingOriginals = new Map();
-  const pendingCards = records.flatMap(record => {
-    const pending = Array.isArray(record.pendingCards) ? record.pendingCards : [];
-    pendingOriginals.set(record, BSON.deserialize(BSON.serialize({ pending })).pending);
-    for (const card of pending) if (card && typeof card === "object") pendingSources.set(card, record);
-    return pending;
-  });
-  const cards = records.flatMap((record) => {
-    const owned = Array.isArray(record.cards) ? record.cards : [];
-    originals.set(record, BSON.deserialize(BSON.serialize({ cards: owned })).cards);
-    for (const card of owned) {
-      if (card && typeof card === "object") sources.set(card, record);
-    }
-    return owned;
-  });
+  const pendingCards = collectUniqueCards(records, "pendingCards", pendingSources, pendingOriginals);
+  const cards = collectUniqueCards(records, "cards", sources, originals);
   const user = { ...primary, cards, pendingCards, totalCards: cards.length };
   user.markModified = () => {};
   user.save = async () => {

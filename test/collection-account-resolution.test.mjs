@@ -26,10 +26,14 @@ function matches(doc, query) {
 
 let documents;
 let creations;
+let findReads;
 function collection(name) {
   const rows = documents[name] ??= [];
   return {
-    find(query) { return { toArray: async () => rows.filter((row) => matches(row, query)).map(clone) }; },
+    find(query) {
+      findReads++;
+      return { toArray: async () => rows.filter((row) => matches(row, query)).map(clone) };
+    },
     async findOne(query) { return clone(rows.find((row) => matches(row, query))); },
     async countDocuments(query) { return rows.filter((row) => matches(row, query)).length; },
     async insertOne(doc) { creations++; rows.push(clone(doc)); },
@@ -86,11 +90,13 @@ const {
   isRegistered: economyIsRegistered,
 } = await import("../plugins/economy/database.js");
 const { resolveMessageSender } = await import("../lib/identity.mjs");
-const { accountIdentityValues } = await import("../lib/collectionIdentity.mjs");
+const { accountIdentityValues, invalidateAccountIdentityValues } = await import("../lib/collectionIdentity.mjs");
 const { default: collectionCommand } = await import("../plugins/cards/col.js");
 
 beforeEach(() => {
   creations = 0;
+  findReads = 0;
+  for (const identity of [phone, lid, other]) invalidateAccountIdentityValues(identity);
   documents = {
     users: [
       { _id: phone, registered: true, name: "Player A", money: 4321 },
@@ -138,6 +144,49 @@ test("collection reads do not create empty replacement accounts or reset cards",
   assert.equal(creations, 0);
   assert.equal((await trainers.createTrainer(phone, "New name"))._id, "old-trainer");
   assert.equal(creations, 0);
+});
+
+test("repeated explicit spawn copies appear once while legacy card copies remain untouched", async () => {
+  const legacyRecord = documents.mn_users.find((doc) => doc._id === "old-cards");
+  const phoneRecord = documents.mn_users.find((doc) => doc._id === phone);
+  legacyRecord.cards.push({
+    cardId: "card-with-spawn",
+    spawnId: "instance-unique-001",
+    name: "Spawned card",
+    image: "https://example.test/card.png",
+  });
+  phoneRecord.cards.push({
+    cardId: "card-with-spawn",
+    spawnId: "instance-unique-001",
+    name: "",
+    series: "Recovered series",
+  });
+
+  const user = await cardsDb.getUser(phone);
+  assert.equal(user.cards.length, 3);
+  assert.equal(user.cards.filter((card) => card.spawnId === "instance-unique-001").length, 1);
+  assert.equal(user.cards.find((card) => card.spawnId === "instance-unique-001").series, "Recovered series");
+  assert.equal((await cardsDb.getUserProfileSummary(phone)).cardsCount, 3);
+  // A read does not rewrite the backing documents.
+  assert.equal(legacyRecord.cards.length + phoneRecord.cards.length, 4);
+
+  await user.save();
+  assert.equal((await cardsDb.getUser(phone)).cards.length, 3);
+  assert.equal(documents.mn_users.reduce((total, record) => total + (record.cards?.length || 0), 0), 4);
+  assert.ok(documents.mn_users.some((record) =>
+    record.cards?.some((card) => card.spawnId === "instance-unique-001" && card.series === "Recovered series")));
+});
+
+test("account identity values reuse a short read and can be invalidated after a link", async () => {
+  const first = await accountIdentityValues(phone);
+  const readsAfterFirst = findReads;
+  const second = await accountIdentityValues(phone);
+  assert.deepEqual(second, first);
+  assert.equal(findReads, readsAfterFirst);
+
+  invalidateAccountIdentityValues(phone);
+  await accountIdentityValues(phone);
+  assert.ok(findReads > readsAfterFirst);
 });
 
 test("card saves retain both copies and write back to the original owner records", async () => {
