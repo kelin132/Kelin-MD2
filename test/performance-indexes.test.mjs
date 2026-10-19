@@ -23,5 +23,6 @@ test("index maintenance lists once per collection and reuses equivalent index ke
   await Promise.all([ensurePerformanceIndexes(db), ensurePerformanceIndexes(db)]);
   assert.ok([...listed.values()].every((count) => count === 1));
   assert.ok(!created.some(({ name, spec }) => name === "users" && spec.userId === 1));
+  assert.ok(created.some(({ name, spec }) => name === "users" && spec.whatsappId === 1));
   assert.ok(created.some(({ name, spec }) => name === "pokemon_owned" && spec.ownerJid === 1));
 });

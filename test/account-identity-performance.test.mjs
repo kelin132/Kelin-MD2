@@ -6,10 +6,12 @@ test("identity resolution batches independent Mongo reads and coalesces concurre
   let active = 0;
   let peak = 0;
   let queries = 0;
+  const userFindOptions = [];
   const db = {
     collection() {
       return {
-        find() {
+        find(query, options) {
+          if (options) userFindOptions.push(options);
           return {
             async toArray() {
               queries++;
@@ -31,6 +33,9 @@ test("identity resolution batches independent Mongo reads and coalesces concurre
   assert.deepEqual(first, simultaneous);
   assert.equal(queries, 3);
   assert.equal(peak, 3);
+  assert.equal(userFindOptions[0].projection.identityAliases, 1);
+  assert.equal(userFindOptions[0].projection.registered, 1);
+  assert.equal(userFindOptions[0].projection.money, undefined);
   assert.equal(first.accountId, "263771234567@s.whatsapp.net");
   await resolveAccountIdentity(db, "263771234567@s.whatsapp.net");
   assert.equal(queries, 6, "a completed lookup is not cached past its request");
