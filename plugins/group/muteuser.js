@@ -10,7 +10,7 @@
  *   .mutelist                — show all currently muted members
  */
 import { groupSettings } from "../../lib/groupSettings.js";
-import { groupRoles } from "../../lib/groupIdentity.mjs";
+import { getGroupMetadata, groupRoles } from "../../lib/groupIdentity.mjs";
 
 function resolveTarget(msg) {
   const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
@@ -77,7 +77,7 @@ export default {
 
     // Don't mute group admins
     try {
-      const meta    = await sock.groupMetadata(jid);
+      const meta    = await getGroupMetadata(sock, jid);
       const roles = await groupRoles(sock, meta, target);
       if (!isUnmute && (!roles.member || roles.isSelf || roles.senderIsAdmin)) {
         return sock.sendMessage(jid, {

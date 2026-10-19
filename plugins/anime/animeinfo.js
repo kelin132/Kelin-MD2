@@ -24,7 +24,7 @@ function trimText(value, maxLength) {
   return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
 }
 
-async function fetchJson(url, options = {}, timeoutMs = 15_000) {
+async function fetchJson(url, options = {}, timeoutMs = 8_000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -74,7 +74,7 @@ async function fromAniList(query) {
 
 async function fromJikan(query) {
   let lastError;
-  for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const endpoint = /^\d+$/.test(query)
         ? `${JIKAN_URL}/anime/${query}/full`
@@ -103,13 +103,18 @@ async function fromJikan(query) {
       };
     } catch (err) {
       lastError = err;
-      await new Promise((resolve) => setTimeout(resolve, 1_000));
+      if (attempt === 0) await new Promise((resolve) => setTimeout(resolve, 400));
     }
   }
   throw lastError || new Error("Jikan request failed");
 }
 
-async function resolveAnime(query) {
+const ANIME_CACHE_TTL_MS = 5 * 60_000;
+const ANIME_CACHE_MAX = 256;
+const animeCache = new Map();
+const animeInflight = new Map();
+
+async function resolveAnimeUncached(query) {
   if (/^\d+$/.test(query)) {
     try {
       const result = await fromJikan(query);
@@ -132,6 +137,34 @@ async function resolveAnime(query) {
     return null;
   }
 }
+
+async function resolveAnime(query) {
+  const normalized = String(query || "").trim().toLowerCase();
+  if (!normalized) return null;
+  const cached = animeCache.get(normalized);
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
+  if (cached) animeCache.delete(normalized);
+  if (animeInflight.has(normalized)) return animeInflight.get(normalized);
+
+  let request;
+  request = resolveAnimeUncached(String(query).trim()).then((value) => {
+    if (value) {
+      animeCache.set(normalized, { value, expiresAt: Date.now() + ANIME_CACHE_TTL_MS });
+      while (animeCache.size > ANIME_CACHE_MAX) animeCache.delete(animeCache.keys().next().value);
+    }
+    return value;
+  }).finally(() => {
+    if (animeInflight.get(normalized) === request) animeInflight.delete(normalized);
+  });
+  animeInflight.set(normalized, request);
+  return request;
+}
+
+export function clearAnimeCache() {
+  animeCache.clear();
+  animeInflight.clear();
+}
+export { resolveAnime };
 
 export default {
   name: "anime",

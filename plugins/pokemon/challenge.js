@@ -10,6 +10,7 @@ import {
 } from "../../lib/pokemon/battleState.mjs";
 import { generateBattleScene } from "../../lib/pokemon/canvas.mjs";
 import { generateChallengeCanvas } from "../../lib/pokemon/challengeCanvas.mjs";
+import { challengeMentionJid, resolveChallengeTarget } from "../../lib/pokemon/challengeTarget.mjs";
 
 function unwrapMessage(message) {
   let current = message || {};
@@ -152,7 +153,9 @@ export default {
         ? msg.quoted?.key?.remoteJid
         : null);
 
-    const targetJid = mentionedJid || quotedSender || null;
+    const rawTargetJid = mentionedJid || quotedSender || null;
+    const targetJid = await resolveChallengeTarget({ jid: rawTargetJid, sock, chatJid: jid });
+    const targetMentionJid = challengeMentionJid(rawTargetJid, targetJid);
 
     if (!targetJid) {
       return sock.sendMessage(jid, {
@@ -201,7 +204,7 @@ export default {
           avatarUrl: challengerAvatarUrl,
         },
         opponent: {
-          name: `@${targetJid.split("@")[0]}`,
+          name: `@${targetMentionJid.split("@")[0]}`,
           avatarUrl: opponentAvatarUrl,
         },
       });
@@ -211,7 +214,7 @@ export default {
 
     const caption =
       `⚔️ *BATTLE CHALLENGE!*\n\n` +
-      `*${challenger.username}* challenges @${targetJid.split("@")[0]} to a Pokémon battle!\n\n` +
+      `*${challenger.username}* challenges @${targetMentionJid.split("@")[0]} to a Pokémon battle!\n\n` +
       `🐉 Their lead: *${lead.displayName}* Lv.${lead.level}\n\n` +
       `Type *.ch accept* to accept within 2 minutes!`;
 
@@ -219,12 +222,12 @@ export default {
       await sock.sendMessage(jid, {
         image: challengeImage,
         caption,
-        mentions: [targetJid],
+        mentions: [targetMentionJid],
       }, { quoted: msg });
     } else {
       await sock.sendMessage(jid, {
         text: caption,
-        mentions: [targetJid],
+        mentions: [targetMentionJid],
       }, { quoted: msg });
     }
   },

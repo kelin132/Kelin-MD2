@@ -45,22 +45,22 @@ function pickVideo(result) {
 async function fetchVideo(videoUrl) {
   const endpoints = [
     async () => {
-      const data = await kordGet("ytdl", videoUrl);
+      const data = await kordGet("ytdl", videoUrl, { timeoutMs: 12_000 });
       const dl = pickKordYouTubeVideo(data) || pickKordMedia(data, "video");
       if (!dl) throw new Error("Kord returned no YouTube video link");
       return { dl, title: pickKordTitle(data) };
     },
     // OmegaTech all-downloader
-    () => omegaDownload("all", { url: videoUrl }),
-    () => get("/download/ytdl",    { url: videoUrl }),
-    () => get("/download/youtube", { url: videoUrl, type: "video" }),
-    () => get("/download/yt",      { url: videoUrl }),
-    () => davidGet("/download/ytdl",    { url: videoUrl }),
-    () => davidGet("/download/youtube", { url: videoUrl, type: "video" }),
-    () => davidGet("/download/yt",      { url: videoUrl }),
+    () => omegaDownload("all", { url: videoUrl }, { timeoutMs: 12_000 }),
+    () => get("/download/ytdl",    { url: videoUrl }, 8_000),
+    () => get("/download/youtube", { url: videoUrl, type: "video" }, 8_000),
+    () => get("/download/yt",      { url: videoUrl }, 8_000),
+    () => davidGet("/download/ytdl",    { url: videoUrl }, 8_000),
+    () => davidGet("/download/youtube", { url: videoUrl, type: "video" }, 8_000),
+    () => davidGet("/download/yt",      { url: videoUrl }, 8_000),
     // Prince Tech fallbacks, tried last so existing providers remain preferred.
-    () => princeMedia(PRINCE_ENDPOINTS.yt, { url: videoUrl }),
-    () => princeMedia(PRINCE_ENDPOINTS.ytVideo, { format: "360p", url: videoUrl }),
+    () => princeMedia(PRINCE_ENDPOINTS.yt, { url: videoUrl }, { timeoutMs: 8_000 }),
+    () => princeMedia(PRINCE_ENDPOINTS.ytVideo, { format: "360p", url: videoUrl }, { timeoutMs: 8_000 }),
   ];
 
   let lastError;
@@ -75,7 +75,7 @@ async function fetchVideo(videoUrl) {
       const result = data?.result || data?.data || data;
       const dl = data?.url || data?.dl || pickVideo(result);
       if (!dl || !/^https?:\/\//i.test(dl)) throw new Error("Provider returned no valid video URL");
-      const file = await downloadMediaBuffer(dl);
+      const file = await downloadMediaBuffer(dl, { timeoutMs: 20_000 });
       if (file.mimetype && !file.mimetype.startsWith("video/") && !/\.(mp4|webm|mov)(?:\?|$)/i.test(dl)) {
         throw new Error("Provider returned non-video media");
       }

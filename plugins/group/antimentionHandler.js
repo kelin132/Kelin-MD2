@@ -7,7 +7,7 @@
  * delete the message and warn; second offence → remove.
  */
 import { groupSettings } from "../../lib/groupSettings.js";
-import { groupRoles } from "../../lib/groupIdentity.mjs";
+import { getGroupMetadata, groupRoles } from "../../lib/groupIdentity.mjs";
 
 // Map<groupJid, Map<senderJid, { warned, warnTimer }>>
 const mentionTracker = new Map();
@@ -27,7 +27,7 @@ export async function antimentionHandler({ sock, msg }) {
 
   // Skip admins
   try {
-    const meta   = await sock.groupMetadata(jid);
+    const meta   = await getGroupMetadata(sock, jid);
     const roles = await groupRoles(sock, meta, sender, msg.key.participantAlt);
     if (!roles.member || roles.isSelf || roles.senderIsAdmin || !roles.botIsAdmin) return;
   } catch { return; }

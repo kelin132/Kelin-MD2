@@ -54,20 +54,19 @@ function imageUrlFrom(item) {
 
 async function searchPinterestImages(query) {
   const attempts = [
-    () => searchGet("googleimage", { query: `pinterest ${query}` }),
-    () => searchGet("pinterest",   { query }),
-    () => get("/search/pinterest", { query }),
-    () => searchGet("images",      { query: `${query} pinterest` }),
-    () => get("/search/images",    { query: `${query} pinterest` }),
-    () => davidGet("/search/pinterest", { query }),
+    () => searchGet("googleimage", { query: `pinterest ${query}` }, 8_000),
+    () => searchGet("pinterest",   { query }, 8_000),
+    () => get("/search/pinterest", { query }, 8_000),
+    () => searchGet("images",      { query: `${query} pinterest` }, 8_000),
+    () => get("/search/images",    { query: `${query} pinterest` }, 8_000),
+    () => davidGet("/search/pinterest", { query }, 8_000),
   ];
-
-  const seen = new Set();
-  const urls = [];
 
   for (const attempt of attempts) {
     try {
       const data = await attempt();
+      const seen = new Set();
+      const urls = [];
       for (const item of resultItems(data)) {
         const url = imageUrlFrom(item);
         if (!url || !/^https?:\/\//i.test(url) || seen.has(url)) continue;
@@ -81,17 +80,17 @@ async function searchPinterestImages(query) {
         urls.push(direct);
       }
 
-      if (urls.length >= 8) break;
+      if (urls.length) return urls.slice(0, 4);
     } catch { /* try next */ }
   }
 
-  if (!urls.length) throw new Error("No Pinterest results found.");
-  return urls.slice(0, 12);
+  throw new Error("No Pinterest results found.");
 }
+export { searchPinterestImages };
 
 async function downloadImage(url) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 15_000);
+  const timer = setTimeout(() => controller.abort(), 8_000);
 
   try {
     const response = await fetch(url, {
@@ -160,7 +159,7 @@ Examples:
       let sent = 0;
 
       for (const imageUrl of imageUrls) {
-        if (sent >= 10) break;
+        if (sent >= 3) break;
         try {
           const image = await downloadImage(imageUrl);
           await sock.sendMessage(jid, {

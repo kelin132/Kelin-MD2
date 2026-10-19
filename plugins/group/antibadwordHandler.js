@@ -3,7 +3,7 @@
  * Called on every message to check for filtered words.
  */
 import { groupSettings } from "../../lib/groupSettings.js";
-import { groupRoles } from "../../lib/groupIdentity.mjs";
+import { getGroupMetadata, groupRoles } from "../../lib/groupIdentity.mjs";
 
 export async function antibadwordHandler({ sock, msg }) {
   const jid = msg.key.remoteJid;
@@ -34,7 +34,7 @@ export async function antibadwordHandler({ sock, msg }) {
 
   // Don't act on admins
   try {
-    const meta    = await sock.groupMetadata(jid);
+    const meta    = await getGroupMetadata(sock, jid);
     const roles = await groupRoles(sock, meta, sender, msg.key.participantAlt);
     if (!roles.member || roles.isSelf || roles.senderIsAdmin || !roles.botIsAdmin) return;
   } catch { return; }

@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import { createMemoryDb } from "./support/memoryMongo.mjs";
-import { groupRoles } from "../lib/groupIdentity.mjs";
+import { getGroupMetadata, groupRoles } from "../lib/groupIdentity.mjs";
 
 const phone = "263771234567@s.whatsapp.net";
 const lid = "991234567890123@lid";
@@ -74,4 +74,16 @@ test("phone-only messages persist reverse mapping even before economy registrati
   assert.equal(globalThis.routingIdentityDb.data.users.length, 0);
   assert.equal(globalThis.routingIdentityDb.data.pokemon_owned[0].whatsappNumber, lid,
     "learning a phone mapping must preserve legacy full-LID ownership evidence");
+});
+test("simultaneous moderation/admin metadata reads share one live group request", async () => {
+  let calls = 0;
+  const sock = socket();
+  sock.groupMetadata = async () => {
+    calls++;
+    await new Promise(resolve => setTimeout(resolve, 5));
+    return meta;
+  };
+  const results = await Promise.all(Array.from({ length: 8 }, () => getGroupMetadata(sock, "123@g.us")));
+  assert.equal(calls, 1);
+  assert.ok(results.every(result => result === meta));
 });

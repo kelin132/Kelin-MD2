@@ -4,7 +4,7 @@
  * Threshold: 5 messages within 5 seconds → warn; second offence → kick.
  */
 import { groupSettings } from "../../lib/groupSettings.js";
-import { groupRoles } from "../../lib/groupIdentity.mjs";
+import { getGroupMetadata, groupRoles } from "../../lib/groupIdentity.mjs";
 
 // Map<groupJid, Map<senderJid, { count, timer, warned }>>
 const spamTracker = new Map();
@@ -27,7 +27,7 @@ export async function antispamHandler({ sock, msg }) {
 
   // Don't act on admins
   try {
-    const meta   = await sock.groupMetadata(jid);
+    const meta   = await getGroupMetadata(sock, jid);
     const roles = await groupRoles(sock, meta, sender, msg.key.participantAlt);
     if (!roles.member || roles.isSelf || roles.senderIsAdmin || !roles.botIsAdmin) return;
   } catch { return; }

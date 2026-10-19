@@ -4,7 +4,7 @@
  */
 import { groupSettings } from "../../lib/groupSettings.js";
 import { getDb } from "../../lib/mongo.mjs";
-import { groupRoles } from "../../lib/groupIdentity.mjs";
+import { getGroupMetadata, groupRoles } from "../../lib/groupIdentity.mjs";
 
 const linkRegex =
   /(?:https?:\/\/|www\.|chat\.whatsapp\.com\/|wa\.me\/|t\.me\/|discord\.gg\/|discord\.com\/invite\/)[^\s]+/i;
@@ -96,7 +96,7 @@ export async function antiLinkHandler({ sock, msg }) {
   let participantJidForKick = sender;
 
   try {
-    const meta = await sock.groupMetadata(jid);
+    const meta = await getGroupMetadata(sock, jid);
     const roles = await groupRoles(sock, meta, rawSender, msg.key.participantAlt);
     if (!roles.member || roles.isSelf || !roles.botIsAdmin) return;
     const senderParticipant = roles.member;
