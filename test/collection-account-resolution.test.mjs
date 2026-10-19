@@ -100,7 +100,7 @@ beforeEach(() => {
       { _id: "old-cards", userId: lid, cards: [{ cardId: "pikachu", name: "Old copy" }], totalCards: 1 },
       { _id: phone, cards: [{ cardId: "pikachu", name: "Second copy" }], totalCards: 1 },
       { _id: "empty-phone", userId: "263771234567", cards: [], totalCards: 0 },
-      { _id: "other-cards", userId: "263779999999", cards: [{ cardId: "mew", name: "Other user copy" }], totalCards: 1 },
+      { _id: "other-cards", userId: "263779999999", whatsappNumber: phone, identityAliases: [lid, phone], cards: [{ cardId: "mew", name: "Other user copy" }], totalCards: 1 },
     ],
     pokemon_trainers: [
       { _id: "old-trainer", jid: lid, username: "Player A", party: ["p1"], pc: ["p2"], coins: 250, inventory: { pokeball: 3 } },
@@ -112,7 +112,7 @@ beforeEach(() => {
       { _id: "p2", owner: lid, inParty: false, name: "Mew" },
       { _id: "p3", ownerJid: phone, inParty: false, name: "Eevee" },
       { _id: "p4", ownerJid: other, inParty: true, name: "Other Pokemon" },
-      { _id: "p5", owner: 263779999999, inParty: false, name: "Other user's numeric-owner Pokemon" },
+      { _id: "p5", owner: 263779999999, whatsappNumber: phone, identityAliases: [lid, phone], inParty: false, name: "Other user's numeric-owner Pokemon" },
     ],
   };
 });
@@ -227,8 +227,9 @@ test("a LID command resolves the existing registered economy account and restore
   assert.deepEqual((await pokemonDb.getAllTrainerPokemon(sender)).map((pokemon) => pokemon._id),
     ["p1", "p2", "p3"]);
   assert.ok(documents.pokemon_owned.some((pokemon) => pokemon._id === "p1" && pokemon.ownerJid === lid));
-  assert.equal(documents.mn_users.find((user) => user._id === "other-cards").whatsappNumber, undefined);
-  assert.equal(documents.pokemon_owned.find((pokemon) => pokemon._id === "p5").whatsappNumber, undefined);
+  assert.equal((await cardsDb.getUser(phone)).cards.some((card) => card.name === "Other user copy"), false);
+  assert.equal(documents.mn_users.find((user) => user._id === "other-cards").whatsappNumber, phone);
+  assert.equal(documents.pokemon_owned.find((pokemon) => pokemon._id === "p5").whatsappNumber, phone);
 });
 
 test("ambiguous Discord links and unrelated owner fields cannot expose another user's records", async () => {

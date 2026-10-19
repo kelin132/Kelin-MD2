@@ -77,7 +77,7 @@ export async function getUser(sender) {
   const col    = await Col.users();
   const values = await accountIdentityValues(sender);
   const records = (await col.find(collectionIdentityQuery(values,
-    ["_id", "userId", "whatsappNumber", "jid", "owner", "identityAliases"],
+    ["_id", "userId", "jid", "owner"],
   )).toArray()).filter(record => record.userId !== "discord");
   if (!records.length) return null;
   // An empty recently-created phone record must not hide an older collection.
