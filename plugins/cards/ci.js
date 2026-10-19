@@ -1,6 +1,6 @@
 import { findOrCreateUser, Col, uid } from "./db.js";
 import { fetchAllCards, getCard, searchCards, sendCardMedia } from "../../lib/cardApi.mjs";
-import { getSeries } from "../../lib/seriesEnrich.mjs";
+import { getSeriesCached, prefetchSeries } from "../../lib/seriesEnrich.mjs";
 
 function normaliseQuery(value) {
   return String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -147,9 +147,12 @@ export default {
       }
       const issue = await getCardIssue(card.cardId, sender, collectionIndex);
 
-      // Enrich series if still unknown (AniList, 4 s timeout)
+      // A cold AniList lookup must not hold a card-info reply for several
+      // seconds. Use cached data now and fill the cache in the background.
       if (!card.series || card.series === "Unknown") {
-        card.series = await getSeries(card.name, { timeout: 4000 });
+        const cachedSeries = getSeriesCached(card.name);
+        if (cachedSeries) card.series = cachedSeries;
+        else prefetchSeries([card.name]);
       }
 
       const collNum  = collectionIndex >= 0 ? collectionIndex + 1 : null;

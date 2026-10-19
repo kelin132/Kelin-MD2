@@ -274,6 +274,24 @@ export async function getUser(id) {
 }
 
 /**
+ * Narrow, read-only profile lookup for `.p`. Avoid transferring long economy
+ * histories and unrelated inventory fields just to draw a compact profile.
+ */
+export async function getQuickProfileUser(id) {
+  const fields = [
+    "registered", "name", "money", "bank", "level", "xp", "bio",
+    "profileBackground", "profileFrame", "age", "birthday", "lastDaily",
+    "streak", "reach", "diamonds", "staffLevel", "isPremium",
+    "registeredAt", "guildName", "guild", "inventory",
+  ];
+  const projection = Object.fromEntries(fields.map((field) => [field, 1]));
+  const user = await findUserByIdentity(id, { projection });
+  if (!user) return { ...DEFAULTS };
+  const { _id, ...profile } = user;
+  return { ...DEFAULTS, ...profile, history: [] };
+}
+
+/**
  * Lightweight AFK read for the message pipeline. Ordinary chat messages only
  * need these two fields; loading/migrating an entire economy profile here made
  * every sender pay for unrelated MongoDB work.

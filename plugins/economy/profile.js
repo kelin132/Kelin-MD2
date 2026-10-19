@@ -1,7 +1,7 @@
-import { getUser, requireRegistration } from "./database.js";
+import { getQuickProfileUser, getUser, requireRegistration } from "./database.js";
 import { generateProfileImage, getProfilePic, resolveRole } from "../../lib/profileGen.mjs";
 import { getLevelRole, getAllEarnedRoles, getLevelRoleLabel } from "../../lib/levelRoles.mjs";
-import { getUser as getCardUser } from "../cards/db.js";
+import { getUser as getCardUser, getUserProfileSummary } from "../cards/db.js";
 import { countTrainerPokemon } from "../../lib/pokemon/pokemonDb.mjs";
 import { guildSystem } from "../../lib/guildSystem.js";
 import { GYMS } from "../../lib/pokemon/gymData.mjs";
@@ -109,25 +109,25 @@ export default {
 
     const target = mentioned || quotedUser || sender;
 
-    if (target === sender && !await requireRegistration(sock, msg, sender)) return;
-
     // `.p` is the fast self-profile shortcut. The generated image does not
-    // use card/Pokémon/trainer details, so avoid those extra database reads.
+    // use guild/badge/trainer details, so avoid those extra database reads.
     const isQuickProfile = cmd === "p" && target === sender;
+    if (target === sender && !isQuickProfile && !await requireRegistration(sock, msg, sender)) return;
 
-    // Keep every independent lookup in one batch so another user's profile
-    // does not wait for the cards query before starting the other reads.
+    // `.p` uses narrow, read-only snapshots and starts all independent reads
+    // together. The full profile keeps its richer card/trainer/guild data.
     const [cardUser, user, profilePicFromSocket, pokemonCount, guild, trainer] = await Promise.all([
-      getCardUser(target),
-      getUser(target),
-      withTimeout(getProfilePic(sock, target), 2500),
+      isQuickProfile ? getUserProfileSummary(target) : getCardUser(target),
+      isQuickProfile ? getQuickProfileUser(target) : getUser(target),
+      isQuickProfile ? Promise.resolve(null) : withTimeout(getProfilePic(sock, target), 2500),
       countTrainerPokemon(target),
-      withTimeout(guildSystem.getUserPrimaryGuild(target), 2500),
+      isQuickProfile ? Promise.resolve(null) : withTimeout(guildSystem.getUserPrimaryGuild(target), 2500),
       isQuickProfile ? Promise.resolve(null) : withTimeout(getTrainer(target), 2500),
     ]);
+    if (target === sender && isQuickProfile && !await requireRegistration(sock, msg, sender, user)) return;
     const websiteAvatar = [cardUser?.profilePictureUrl, cardUser?.profileImage, cardUser?.avatarUrl]
       .find((value) => typeof value === "string" && /^https?:\/\//i.test(value));
-    const profilePic = websiteAvatar || profilePicFromSocket;
+    const profilePic = isQuickProfile ? null : websiteAvatar || profilePicFromSocket;
 
     const tag   = target.split("@")[0].split(":")[0];
     const level = user.level ?? 1;
@@ -135,7 +135,7 @@ export default {
     const registeredName = String(user.name || "User").trim() || "User";
     const cardsOwned = Array.isArray(cardUser?.cards)
       ? cardUser.cards.length
-      : (cardUser?.totalCards ?? 0);
+      : (cardUser?.cardsCount ?? cardUser?.totalCards ?? 0);
     const history = Array.isArray(user.history) ? user.history : [];
     const gameTypes = new Set(["bet", "coinflip", "slots", "roulette", "scratch", "gamble"]);
     const casinoTypes = new Set(["slots", "roulette", "scratch", "gamble"]);
@@ -234,7 +234,7 @@ export default {
         items:        user.inventory?.length ?? 0,
         transactions: user.history?.length   ?? 0,
         profileImage: profilePic,
-        profileBackground: user.profileBackground || null,
+        profileBackground: isQuickProfile ? null : user.profileBackground || null,
         profileFrame: user.profileFrame || null,
         levelRole,
         earnedRoles,

@@ -86,6 +86,31 @@ export async function getUser(sender) {
   return attachCardSave(records);
 }
 
+/**
+ * Lightweight read for `.p`: count owned cards and read the selected avatar
+ * without cloning pending cards or returning the full collection document.
+ */
+export async function getUserProfileSummary(sender) {
+  const col = await Col.users();
+  const values = await accountIdentityValues(sender);
+  const records = (await col.find(
+    collectionOwnershipQuery(values, ["_id", "userId", "jid", "owner"]),
+    { projection: { userId: 1, cards: 1, profilePictureUrl: 1, profileImage: 1, avatarUrl: 1 } },
+  ).toArray()).filter((record) => record.userId !== "discord");
+  if (!records.length) return null;
+
+  records.sort((a, b) => (b.cards?.length || 0) - (a.cards?.length || 0) ||
+    String(a._id).localeCompare(String(b._id)));
+  const primary = records[0];
+  return {
+    profilePictureUrl: primary.profilePictureUrl,
+    profileImage: primary.profileImage,
+    avatarUrl: primary.avatarUrl,
+    cardsCount: records.reduce((total, record) =>
+      total + (Array.isArray(record.cards) ? record.cards.length : 0), 0),
+  };
+}
+
 function attachCardSave(records) {
   const primary = records[0];
   const sources = new WeakMap();
