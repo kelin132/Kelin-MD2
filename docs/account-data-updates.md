@@ -8,7 +8,7 @@ lookups now also include linked Discord ownership keys, so both bots can read
 the same cards, pending cards and Pokémon without copying users or changing
 original account IDs.
 
-Card claim codes are stable eight-character uppercase alphanumeric values,
+Card claim codes are stable five-character uppercase alphanumeric values,
 shared across both implementations. Long API IDs are retained internally.
 Old claim IDs/card IDs/indexes remain accepted for existing pending cards.
 

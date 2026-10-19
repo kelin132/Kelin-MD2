@@ -30,7 +30,7 @@ test("normalises extensionless animated API media and exposes a short claim ID",
   assert.equal(card.mediaType, "gif");
   assert.equal(card.media, "https://cards.example/api/image?id=ab1234");
   assert.equal(card.claimId, getCardClaimId(card));
-  assert.match(card.claimId, /^[A-Z0-9]{8}$/);
+  assert.match(card.claimId, /^[A-Z0-9]{5}$/);
   assert.equal(card.cardId, "AB1234");
   assert.equal(card.thumbnail, "https://cards.example/thumb.jpg");
 });
