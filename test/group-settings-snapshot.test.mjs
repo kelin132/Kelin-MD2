@@ -29,6 +29,8 @@ test("workers can hydrate group settings from a supervisor snapshot without Mong
       welcomeEnabled: true,
     },
   });
+  assert.equal(await initGroupSettings(), true);
+  assert.equal(await initGroupSettings(), true);
 });
 
 test("group setting changes update snapshots and can be broadcast to workers", () => {
