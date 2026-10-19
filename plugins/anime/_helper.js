@@ -47,7 +47,8 @@ const WAIFU_MAP = {
 };
 
 async function fetchWaifu(type) {
-  const ep = WAIFU_MAP[type] ?? "hug";
+  const ep = WAIFU_MAP[type];
+  if (!ep) throw new Error(`waifu.pics does not support "${type}"`);
   const data = await requestJson(`https://api.waifu.pics/sfw/${ep}`,
     { timeoutMs: 10_000, headers: UA });
   const url = data?.url;
@@ -75,7 +76,8 @@ const NEKOS_MAP = {
 };
 
 async function fetchNekos(type) {
-  const ep = NEKOS_MAP[type] ?? "hug";
+  const ep = NEKOS_MAP[type];
+  if (!ep) throw new Error(`nekos.best does not support "${type}"`);
   const data = await requestJson(`https://nekos.best/api/v2/${ep}`,
     { timeoutMs: 10_000, headers: UA });
   const url = data?.results?.[0]?.url;
@@ -101,7 +103,8 @@ const OTAKU_MAP = {
 };
 
 async function fetchOtaku(type) {
-  const reaction = OTAKU_MAP[type] ?? "hug";
+  const reaction = OTAKU_MAP[type];
+  if (!reaction) throw new Error(`otakugifs does not support "${type}"`);
   const data = await requestJson(
     `https://api.otakugifs.xyz/gif?reaction=${reaction}`,
     { timeoutMs: 10_000, headers: UA });
@@ -122,7 +125,8 @@ const GIFTED_MAP = {
 };
 
 async function fetchGifted(type) {
-  const ep  = GIFTED_MAP[type] ?? "hug";
+  const ep = GIFTED_MAP[type];
+  if (!ep) throw new Error(`Gifted does not support "${type}"`);
   const url = `${GIFTED_ANIME_BASE}/${ep}?apikey=${GIFTED_KEY}`;
   const data = await requestJson(url, { timeoutMs: 10_000, headers: UA });
   const mediaUrl = data?.result?.url ?? data?.url ?? data?.data?.url;
@@ -181,6 +185,27 @@ export async function convertGifToMp4(gifBuffer, label = "reaction") {
 
 // ── Public: getAnimeGif ───────────────────────────────────────────────────────
 
+const ANIME_PROVIDER_MAPS = [
+  ["waifu.pics", WAIFU_MAP],
+  ["nekos.best", NEKOS_MAP],
+  ["otakugifs", OTAKU_MAP],
+  ["gifted", GIFTED_MAP],
+];
+
+const ANIME_PROVIDER_FETCHERS = {
+  "waifu.pics": fetchWaifu,
+  "nekos.best": fetchNekos,
+  otakugifs: fetchOtaku,
+  gifted: fetchGifted,
+};
+
+export function getAnimeSourcePlan(type) {
+  const lower = String(type ?? "").trim().toLowerCase();
+  return ANIME_PROVIDER_MAPS
+    .filter(([, map]) => Object.hasOwn(map, lower))
+    .map(([name, map]) => ({ name, endpoint: map[lower] }));
+}
+
 /**
  * Try all four sources in order until one returns valid media.
  * Downloads the buffer and determines if it's a GIF.
@@ -193,12 +218,9 @@ export async function getAnimeGif(type, { allowStatic = false } = {}) {
   const errors = [];
   let staticFallback = null;
 
-  const sources = [
-    ["waifu.pics", () => fetchWaifu(lower)],
-    ["nekos.best", () => fetchNekos(lower)],
-    ["otakugifs",  () => fetchOtaku(lower)],
-    ["gifted",     () => fetchGifted(lower)],
-  ];
+  const sources = getAnimeSourcePlan(lower)
+    .map(({ name }) => [name, () => ANIME_PROVIDER_FETCHERS[name](lower)]);
+  if (!sources.length) throw new Error(`No anime media source supports "${type}"`);
 
   for (const [name, fn] of sources) {
     try {

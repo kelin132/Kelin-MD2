@@ -22,7 +22,11 @@ test("channel relay forwards only new messages from its configured source once",
       assert.equal(code, "community-invite");
       return { id: "destination@g.us" };
     },
-    sendMessage: async (jid, content) => sent.push({ jid, content }),
+    sendMessage: async (jid, content, options) => {
+      const result = { key: { id: `sent-${sent.length + 1}` }, message: content };
+      sent.push({ jid, content, options, result });
+      return result;
+    },
   };
   const logger = () => {};
   assert.equal(await startChannelAnnouncementRelay(sock, {
@@ -47,10 +51,14 @@ test("channel relay forwards only new messages from its configured source once",
   ] });
   await new Promise((resolve) => setImmediate(resolve));
 
-  assert.equal(sent.length, 1);
+  assert.equal(sent.length, 2);
   assert.equal(sent[0].jid, "destination@g.us");
   assert.equal(sent[0].content.forward, announcement);
   assert.equal(sent[0].content.force, true);
+  assert.equal(sent[1].jid, "destination@g.us");
+  assert.equal(sent[1].content.linkPreview, true);
+  assert.match(sent[1].content.text, /https:\/\/whatsapp\.com\/channel\/channel-invite/);
+  assert.equal(sent[1].options.quoted, sent[0].result);
   stopChannelAnnouncementRelay(sock);
 });
 

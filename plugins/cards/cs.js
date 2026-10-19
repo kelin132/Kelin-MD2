@@ -1,9 +1,16 @@
 import { fetchAllCards, TIER_EMOJI } from "../../lib/cardApi.mjs";
+import { getCardClaimId } from "../../lib/cardClaimId.mjs";
 
 export function findCardsBySeries(cards, query) {
   const needle = String(query || "").trim().toLocaleLowerCase();
   if (!needle) return [];
   return cards.filter((card) => String(card.series || "").trim().toLocaleLowerCase().includes(needle));
+}
+
+export function formatSeriesCard(card) {
+  const emoji = TIER_EMOJI[card.tier] || "⭐";
+  const claimId = getCardClaimId(card);
+  return `• ${emoji} *${card.name || "Unknown"}* — ${card.tier || "Unknown"} · Claim ID \`${claimId}\``;
 }
 
 export default {
@@ -33,10 +40,7 @@ export default {
       const totalPages = Math.ceil(cards.length / pageSize);
       page = Math.min(page, totalPages);
       const results = cards.slice((page - 1) * pageSize, page * pageSize);
-      const lines = results.map((card) => {
-        const emoji = TIER_EMOJI[card.tier] || "⭐";
-        return `• ${emoji} *${card.name}* — ${card.tier || "Unknown"} · ID \`${card.cardId}\``;
-      });
+      const lines = results.map(formatSeriesCard);
       return reply(
         `📚 *Cards by series: ${query}*\n` +
         `Showing ${results.length} of ${cards.length} · Page ${page}/${totalPages}\n\n` +
