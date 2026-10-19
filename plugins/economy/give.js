@@ -7,6 +7,7 @@
 import { getUser, saveUser, requireRegistration, isRegistered, addHistory } from "./database.js";
 import { parseAmount } from "./parseAmount.js";
 import { formatWalletTransfer } from "./walletMessage.js";
+import { normalizeJid, resolveAndMigrateIdentity } from "../../lib/identity.mjs";
 
 function resolveTarget(msg) {
   // 1. Direct @mention
@@ -37,7 +38,34 @@ export default {
     const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
 
     // ── Resolve target (mention or reply) ──────────────────────────────────
-    let targetJid = resolveTarget(msg);
+    const rawTargetJid = resolveTarget(msg);
+    const context = msg.message?.extendedTextMessage?.contextInfo
+      || msg.message?.imageMessage?.contextInfo
+      || msg.message?.videoMessage?.contextInfo
+      || {};
+    const alternateTargetJid = context.mentionedJidAlt?.[0]
+      || context.participantAlt
+      || "";
+    let targetJid = rawTargetJid;
+    if (rawTargetJid) {
+      const targetLid = rawTargetJid.endsWith("@lid")
+        ? rawTargetJid
+        : alternateTargetJid.endsWith("@lid")
+          ? alternateTargetJid
+          : "";
+      if (targetLid) {
+        const targetPhone = rawTargetJid.endsWith("@lid")
+          ? alternateTargetJid
+          : rawTargetJid;
+        try {
+          targetJid = await resolveAndMigrateIdentity(targetLid, sock, jid, targetPhone);
+        } catch {
+          targetJid = normalizeJid(targetPhone || rawTargetJid);
+        }
+      } else {
+        targetJid = normalizeJid(rawTargetJid);
+      }
+    }
 
     // Fallback: search for a phone number argument
     if (!targetJid) {

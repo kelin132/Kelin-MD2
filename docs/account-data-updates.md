@@ -42,6 +42,12 @@ bot changes. Existing accounts whose LID-to-phone mapping was never stored
 must interact with the bot after WhatsApp supplies that verified mapping;
 the website deliberately does not guess phone numbers from privacy LIDs.
 
+Group commands now resolve a verified WhatsApp LID/phone alternate before
+economy registration checks. The money-give command resolves tagged LID
+recipients too. Once a verified mapping is available, Pokémon trainer and owned
+records are annotated with that phone alias in place; their original ownership
+keys and Pokémon documents are not moved or deleted.
+
 Bot collection readers also use the economy account resolver: `mn_users`
 looks up legacy/full/numeric ownership keys and combines matching card records,
 while Pokémon trainer/party/PC/count readers use the same verified aliases.

@@ -35,7 +35,12 @@ registerHooks({
   },
 });
 const { getUser, saveUser, addMoney, isRegistered } = await import("../plugins/economy/database.js");
-const { migrateLidData, normalizeJid, whatsappIdentityVariants } = await import("../lib/identity.mjs");
+const {
+  migrateLidData,
+  normalizeJid,
+  resolveMessageSender,
+  whatsappIdentityVariants,
+} = await import("../lib/identity.mjs");
 const { getOrCreateWebsiteId } = await import("../lib/websiteAuth.mjs");
 
 test("legacy account reads and saves keep the original key and unique website ID", async () => {
@@ -61,7 +66,7 @@ test("verified LID mapping retains the website account without copying or deleti
   // Only legacy auxiliary collections are absent in this fixture.
   globalThis.__identityTestDb = {
     collection: (name) => name === "users" || name === "mn_users"
-      ? collection : { findOne: async () => null },
+      ? collection : { findOne: async () => null, updateMany: async () => ({ modifiedCount: 0 }) },
   };
   await migrateLidData(account._id, "263771234567@s.whatsapp.net");
   assert.equal(writes[0].query._id, account._id);
@@ -77,4 +82,14 @@ test("Discord keys stay namespaced instead of turning into fake WhatsApp IDs", (
   const id = "discord:123456789012345678";
   assert.equal(normalizeJid(id), id);
   assert.deepEqual(whatsappIdentityVariants(id), [id]);
+});
+
+test("incoming WhatsApp LIDs resolve to their verified phone before economy checks", async () => {
+  const resolved = await resolveMessageSender(
+    account._id,
+    "",
+    { signalRepository: { lidMapping: { getPNForLID: async () => "263771234567@s.whatsapp.net" } } },
+    "fixture@g.us",
+  );
+  assert.equal(resolved, "263771234567@s.whatsapp.net");
 });

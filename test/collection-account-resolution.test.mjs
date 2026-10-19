@@ -53,7 +53,10 @@ function collection(name) {
       for (const [key, amount] of Object.entries(update.$inc || {})) row[key] = (row[key] || 0) + amount;
       for (const [key, item] of Object.entries(update.$addToSet || {})) {
         row[key] ??= [];
-        if (!row[key].some((value) => equal(value, item))) row[key].push(clone(item));
+        const values = item?.$each || [item];
+        for (const value of values) {
+          if (!row[key].some((existing) => equal(existing, value))) row[key].push(clone(value));
+        }
       }
       for (const [key, item] of Object.entries(update.$pull || {})) {
         row[key] = (row[key] || []).filter((value) => !equal(value, item));
@@ -77,7 +80,11 @@ registerHooks({
 const cardsDb = await import("../plugins/cards/db.js");
 const trainers = await import("../lib/pokemon/players.mjs");
 const pokemonDb = await import("../lib/pokemon/pokemonDb.mjs");
-const { getUser: economyUser } = await import("../plugins/economy/database.js");
+const {
+  getUser: economyUser,
+  isRegistered: economyIsRegistered,
+} = await import("../plugins/economy/database.js");
+const { resolveMessageSender } = await import("../lib/identity.mjs");
 const { accountIdentityValues } = await import("../lib/collectionIdentity.mjs");
 const { default: collectionCommand } = await import("../plugins/cards/col.js");
 
@@ -200,4 +207,23 @@ test("verified Discord links expose the same cards, pending cards and Pokemon to
   assert.equal((await cardsDb.getUser(phone)).cards.length, 3);
   assert.equal((await cardsDb.getUser(phone)).pendingCards.length, 1);
   assert.equal(await pokemonDb.countTrainerPokemon(phone), 4);
+});
+
+test("a LID command resolves the existing registered economy account and restores its legacy Pokemon", async () => {
+  const sender = await resolveMessageSender(
+    lid,
+    phone,
+    { signalRepository: { lidMapping: {} } },
+    "fixture@g.us",
+  );
+  assert.equal(sender, phone);
+  assert.equal(await economyIsRegistered(sender), true);
+  assert.equal((await economyUser(sender)).money, 4321);
+  assert.equal(documents.pokemon_trainers.find((trainer) => trainer._id === "old-trainer").whatsappNumber, phone);
+  const recovered = documents.pokemon_owned.filter((pokemon) => pokemon._id === "p1" || pokemon._id === "p2");
+  assert.ok(recovered.every((pokemon) => pokemon.whatsappNumber === phone));
+  assert.ok(recovered.every((pokemon) => pokemon.identityAliases.includes(lid)));
+  assert.deepEqual((await pokemonDb.getAllTrainerPokemon(sender)).map((pokemon) => pokemon._id),
+    ["p1", "p2", "p3"]);
+  assert.ok(documents.pokemon_owned.some((pokemon) => pokemon._id === "p1" && pokemon.ownerJid === lid));
 });
