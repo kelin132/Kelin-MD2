@@ -75,9 +75,16 @@ if (multiBotMode) {
   }
   log("info", `[bots] Found ${botDefinitions.length} bot(s) in .bots/`);
   let parentDbReady = false;
+  let groupSettingsSnapshot = null;
   try {
-    const { connectDb } = await import("./lib/mongo.mjs");
+    const [{ connectDb }, { initGroupSettings, getGroupSettingsSnapshot }] = await Promise.all([
+      import("./lib/mongo.mjs"),
+      import("./lib/groupSettings.js"),
+    ]);
     await connectDb();
+    if (await initGroupSettings()) {
+      groupSettingsSnapshot = getGroupSettingsSnapshot();
+    }
     // The root process owns shared index maintenance for all worker bots.
     // Workers still connect to Mongo, but avoid repeating every listIndexes scan.
     process.env.SKIP_PERFORMANCE_INDEXES = "true";
@@ -93,7 +100,7 @@ if (multiBotMode) {
       log("warn", `[tax] Scheduler unavailable in multi-bot mode: ${error.message}`);
     }
   }
-  await startBotSupervisor();
+  await startBotSupervisor({ initialGroupSettingsSnapshot: groupSettingsSnapshot });
 } else {
   // Parallel import of modules
   const [{ connectBot }, { loadPlugins }, { connectDb, getDb }, { initGroupSettings }, { startCardSpawner }, { startTaxScheduler }] =
