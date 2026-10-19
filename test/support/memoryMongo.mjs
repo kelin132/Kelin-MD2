@@ -10,6 +10,7 @@ function set(doc, key, value) {
   target[parts.at(-1)] = clone(value);
 }
 function condition(actual, expected) {
+  if (expected instanceof RegExp) return typeof actual === "string" && expected.test(actual);
   if (!expected || typeof expected !== "object" || Array.isArray(expected) || expected instanceof Date || expected instanceof ObjectId) return equal(actual, expected);
   return Object.entries(expected).every(([op, value]) => {
     if (op === "$in") return (Array.isArray(actual) ? actual : [actual]).some(item => value.some(candidate => equal(item, candidate)));
@@ -37,7 +38,8 @@ function apply(doc, update, inserted = false) {
   for (const [key, value] of Object.entries(update.$push || {})) set(doc, key, [...(at(doc, key) || []), value]);
   for (const [key, value] of Object.entries(update.$addToSet || {})) {
     const old = at(doc, key) || [];
-    if (!old.some(item => equal(item, value))) set(doc, key, [...old, value]);
+    for (const item of value?.$each || [value]) if (!old.some(entry => equal(entry, item))) old.push(item);
+    set(doc, key, old);
   }
   for (const [key, value] of Object.entries(update.$pull || {})) set(doc, key, (at(doc, key) || []).filter(item => !condition(item, value)));
   for (const key of Object.keys(update.$unset || {})) delete doc[key];

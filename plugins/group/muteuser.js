@@ -10,6 +10,7 @@
  *   .mutelist                — show all currently muted members
  */
 import { groupSettings } from "../../lib/groupSettings.js";
+import { groupRoles } from "../../lib/groupIdentity.mjs";
 
 function resolveTarget(msg) {
   const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
@@ -77,13 +78,15 @@ export default {
     // Don't mute group admins
     try {
       const meta    = await sock.groupMetadata(jid);
-      const admins  = meta.participants.filter(p => p.admin).map(p => p.id);
-      if (!isUnmute && admins.includes(target)) {
+      const roles = await groupRoles(sock, meta, target);
+      if (!isUnmute && (!roles.member || roles.isSelf || roles.senderIsAdmin)) {
         return sock.sendMessage(jid, {
           text: "❌ You can't mute a group admin.",
         }, { quoted: msg });
       }
-    } catch { /* allow if metadata unavailable */ }
+    } catch {
+      return sock.sendMessage(jid, { text: "❌ Could not verify group membership. Please retry." }, { quoted: msg });
+    }
 
     const targetNum = target.split("@")[0];
 

@@ -4,6 +4,7 @@
  */
 import { groupSettings } from "../../lib/groupSettings.js";
 import { getDb } from "../../lib/mongo.mjs";
+import { groupRoles } from "../../lib/groupIdentity.mjs";
 
 const linkRegex =
   /(?:https?:\/\/|www\.|chat\.whatsapp\.com\/|wa\.me\/|t\.me\/|discord\.gg\/|discord\.com\/invite\/)[^\s]+/i;
@@ -88,7 +89,7 @@ export async function antiLinkHandler({ sock, msg }) {
   const botNorm = normalizeJid(botId);
 
   // Never execute on the bot itself
-  if (senderNum === botNum) return;
+  if (msg.key.fromMe) return;
 
   let botIsAdmin = false;
   let senderIsAdmin = false;
@@ -96,17 +97,9 @@ export async function antiLinkHandler({ sock, msg }) {
 
   try {
     const meta = await sock.groupMetadata(jid);
-    const participants = meta.participants || [];
-
-    // Match sender using exact raw ID + normalized + numeric comparisons
-    const senderParticipant = participants.find((p) => {
-      const pid = p.id || "";
-      return (
-        pid === rawSender ||
-        normalizeJid(pid) === sender ||
-        toNum(pid) === senderNum
-      );
-    });
+    const roles = await groupRoles(sock, meta, rawSender, msg.key.participantAlt);
+    if (!roles.member || roles.isSelf || !roles.botIsAdmin) return;
+    const senderParticipant = roles.member;
 
     if (senderParticipant) {
       participantJidForKick = senderParticipant.id; // exact metadata participant ID
@@ -114,14 +107,7 @@ export async function antiLinkHandler({ sock, msg }) {
     }
 
     // Match bot using exact raw ID + normalized + numeric comparisons
-    const botParticipant = participants.find((p) => {
-      const pid = p.id || "";
-      return (
-        pid === botId ||
-        normalizeJid(pid) === botNorm ||
-        toNum(pid) === botNum
-      );
-    });
+    const botParticipant = roles.bot;
 
     botIsAdmin = !!botParticipant?.admin;
 
@@ -139,6 +125,7 @@ export async function antiLinkHandler({ sock, msg }) {
     });
   } catch (err) {
     console.error("[AntiLink] Metadata fetch failed:", err.message);
+    return;
   }
 
   // Do not penalize group admins

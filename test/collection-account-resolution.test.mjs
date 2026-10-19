@@ -18,6 +18,7 @@ function matches(doc, query) {
       if ("$in" in expected) return expected.$in.some((value) =>
         Array.isArray(actual) ? actual.some((item) => equal(item, value)) : equal(actual, value));
       if ("$ne" in expected) return !equal(actual, expected.$ne);
+      if ("$not" in expected && expected.$not instanceof RegExp) return typeof actual !== "string" || !expected.$not.test(actual);
     }
     return equal(actual, expected);
   });
@@ -41,7 +42,7 @@ function collection(name) {
       return { modifiedCount: 1 };
     },
     async updateOne(query, update, options = {}) {
-      if (name === "economy_migrations") return { upsertedCount: 0, matchedCount: 1 };
+      if (name === "economy_migrations") throw new Error("Reading a player must not initialize a global wallet reset");
       let row = rows.find((row) => matches(row, query));
       if (!row && options.upsert) {
         creations++;
@@ -220,9 +221,9 @@ test("a LID command resolves the existing registered economy account and restore
   assert.equal(sender, phone);
   assert.equal(await economyIsRegistered(sender), true);
   assert.equal((await economyUser(sender)).money, 4321);
-  assert.equal(documents.pokemon_trainers.find((trainer) => trainer._id === "old-trainer").whatsappNumber, phone);
+  assert.equal(documents.pokemon_trainers.find((trainer) => trainer._id === "old-trainer").whatsappNumber, undefined);
   const recovered = documents.pokemon_owned.filter((pokemon) => pokemon._id === "p1" || pokemon._id === "p2");
-  assert.ok(recovered.every((pokemon) => pokemon.whatsappNumber === phone));
+  assert.ok(recovered.every((pokemon) => pokemon.whatsappNumber === undefined));
   assert.ok(recovered.every((pokemon) => pokemon.identityAliases.includes(lid)));
   assert.deepEqual((await pokemonDb.getAllTrainerPokemon(sender)).map((pokemon) => pokemon._id),
     ["p1", "p2", "p3"]);

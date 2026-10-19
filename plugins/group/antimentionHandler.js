@@ -7,6 +7,7 @@
  * delete the message and warn; second offence → remove.
  */
 import { groupSettings } from "../../lib/groupSettings.js";
+import { groupRoles } from "../../lib/groupIdentity.mjs";
 
 // Map<groupJid, Map<senderJid, { warned, warnTimer }>>
 const mentionTracker = new Map();
@@ -22,15 +23,14 @@ export async function antimentionHandler({ sock, msg }) {
   if (!sender) return;
 
   // Never act on the bot's own messages
-  const botNum = (sock.user?.id ?? "").split(":")[0];
-  if (sender.startsWith(botNum)) return;
+  if (msg.key.fromMe) return;
 
   // Skip admins
   try {
     const meta   = await sock.groupMetadata(jid);
-    const admins = meta.participants.filter(p => p.admin).map(p => p.id);
-    if (admins.includes(sender)) return;
-  } catch { /* continue */ }
+    const roles = await groupRoles(sock, meta, sender, msg.key.participantAlt);
+    if (!roles.member || roles.isSelf || roles.senderIsAdmin || !roles.botIsAdmin) return;
+  } catch { return; }
 
   // Count mentions in this message
   const mentionedJids = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid ?? [];

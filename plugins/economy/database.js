@@ -76,7 +76,6 @@ export const DEFAULTS = {
 
 export const REGISTRATION_STARTING_MONEY = STARTING_MONEY;
 
-let economyMigrationPromise;
 let economyCleanupPromise;
 let totalWealthMigrationPromise;
 
@@ -144,42 +143,6 @@ function scheduleLegacyEconomyCleanup(db) {
     economyCleanupPromise = null;
     console.warn("[economy] Legacy field cleanup failed; it will retry:", error?.message || error);
   });
-}
-
-async function ensureRyuEconomyMigration(db) {
-  if (!economyMigrationPromise) {
-    economyMigrationPromise = (async () => {
-      const claim = await db.collection("economy_migrations").updateOne(
-        { _id: "ryu-economy-v1" },
-        { $setOnInsert: { createdAt: new Date(), description: "Reset economy to ryu" } },
-        { upsert: true },
-      );
-      if (claim.upsertedCount === 1) {
-        await db.collection("users").updateMany(
-          { registered: true },
-          {
-            $set: {
-              money: STARTING_MONEY,
-              bank: 0,
-              totalWealth: STARTING_MONEY,
-              bankLimit: BASE_BANK_LIMIT,
-              bankUpgradeLevel: 0,
-              economyVersion: 1,
-            },
-            $unset: { vault: "" },
-          },
-        );
-      }
-    })().catch((error) => {
-      economyMigrationPromise = undefined;
-      throw error;
-    });
-  }
-  await economyMigrationPromise;
-  // These deprecated-field cleanups touch the whole users collection. Run
-  // them once per database in the background instead of blocking a command in
-  // every worker process.
-  scheduleLegacyEconomyCleanup(db);
 }
 
 export async function ensureTotalWealthMigration(db) {
@@ -281,7 +244,7 @@ async function ensurePhoneIdentityFields(db, user, id) {
 
 export async function getUser(id) {
   const db   = await getDb();
-  await ensureRyuEconomyMigration(db);
+  // Wallet reset migrations must never run as a side effect of reading a user.
   const normalizedId = normalizeJid(id);
   const user = await findIdentityUser(db, id);
   if (!user) return { ...DEFAULTS };

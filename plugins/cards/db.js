@@ -5,7 +5,7 @@
 import { getDb } from "../../lib/mongo.mjs";
 import { normalizeJid } from "../../lib/identity.mjs";
 import { BSON } from "mongodb";
-import { accountIdentityValues, collectionIdentityQuery } from "../../lib/collectionIdentity.mjs";
+import { accountIdentityValues, collectionOwnershipQuery } from "../../lib/collectionIdentity.mjs";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -46,7 +46,7 @@ export async function findOrCreateUser(sender) {
   const col    = await Col.users();
   // Normalize the sender to strip device suffixes and handle JID/LID split
   const normalized = normalizeJid(sender);
-  const userId = normalized.split("@")[0];
+  const userId = normalized.endsWith("@lid") || normalized.startsWith("discord:") ? normalized : normalized.split("@")[0];
 
   // One upsert handles both the common read and first-use creation path. This
   // avoids the usual find-then-insert round trip and is safe when two commands
@@ -76,7 +76,7 @@ export async function findOrCreateUser(sender) {
 export async function getUser(sender) {
   const col    = await Col.users();
   const values = await accountIdentityValues(sender);
-  const records = (await col.find(collectionIdentityQuery(values,
+  const records = (await col.find(collectionOwnershipQuery(values,
     ["_id", "userId", "jid", "owner"],
   )).toArray()).filter(record => record.userId !== "discord");
   if (!records.length) return null;

@@ -58,7 +58,9 @@ export default {
           ? alternateTargetJid
           : rawTargetJid;
         try {
-          targetJid = await resolveAndMigrateIdentity(targetLid, sock, jid, targetPhone);
+          // Mention/quoted context is message content, not authenticated sender
+          // metadata. Verify the recipient with Baileys or group metadata.
+          targetJid = await resolveAndMigrateIdentity(targetLid, sock, jid);
         } catch {
           targetJid = normalizeJid(targetPhone || rawTargetJid);
         }

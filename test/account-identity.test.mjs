@@ -9,6 +9,7 @@ const account = {
   money: 1234, bank: 50, inventory: [],
 };
 const collection = {
+  find() { return { toArray: async () => [{ ...account }] }; },
   async findOne(query) {
     if (query._id) return query._id === account._id ? { ...account } : null;
     return { ...account };
@@ -24,7 +25,10 @@ const collection = {
     return [{ name: "users_websiteId_unique", key: { websiteId: 1 }, unique: true, sparse: true }];
   } }; },
 };
-globalThis.__identityTestDb = { collection: () => collection };
+globalThis.__identityTestDb = { collection: name => name === "users" ? collection : {
+  ...collection, find() { return { toArray: async () => [] }; },
+  findOne: async () => null,
+} };
 registerHooks({
   load(url, context, nextLoad) {
     if (url.endsWith("/lib/mongo.mjs")) return {
@@ -66,7 +70,7 @@ test("verified LID mapping retains the website account without copying or deleti
   // Only legacy auxiliary collections are absent in this fixture.
   globalThis.__identityTestDb = {
     collection: (name) => name === "users" || name === "mn_users"
-      ? collection : { findOne: async () => null, updateMany: async () => ({ modifiedCount: 0 }) },
+      ? collection : { find: () => ({ toArray: async () => [] }), findOne: async () => null, updateMany: async () => ({ modifiedCount: 0 }) },
   };
   await migrateLidData(account._id, "263771234567@s.whatsapp.net");
   assert.equal(writes[0].query._id, account._id);
