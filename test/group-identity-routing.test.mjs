@@ -11,21 +11,25 @@ globalThis.routingIdentityDb = createMemoryDb({ users: [],
   pokemon_owned: [{ _id: "legacy", ownerJid: lid.split("@")[0], whatsappNumber: lid }],
 });
 globalThis.adminRuns = [];
+globalThis.economyRuns = [];
+globalThis.registrationRuns = [];
 registerHooks({
   load(url, context, nextLoad) {
     let source;
-    if (url === "node:fs") source = `export const existsSync=()=>true; export const statSync=()=>({isDirectory:()=>true}); export const readdirSync=p=>p.endsWith("/plugins")?["group"]:["fixture.js"];`;
+    if (url === "node:fs") source = `export const existsSync=()=>true; export const statSync=()=>({isDirectory:()=>true}); export const readdirSync=p=>p.endsWith("/plugins")?["group","economy"]:p.endsWith("/plugins/group")?["fixture.js"]:["econ.js","register.js"];`;
     if (url.includes("/plugins/group/fixture.js")) source = `export default {name:"fixture",isAdmin:true,cooldown:0,run:async c=>globalThis.adminRuns.push(c.sender)};`;
+    if (url.includes("/plugins/economy/econ.js")) source = `export default {name:"econfixture",category:"economy",cooldown:0,run:async()=>globalThis.economyRuns.push(true)};`;
+    if (url.includes("/plugins/economy/register.js")) source = `export default {name:"register",category:"economy",cooldown:0,run:async()=>globalThis.registrationRuns.push(true)};`;
     if (url.endsWith("/lib/logger.mjs")) source = "export const log=()=>{};";
     if (url.endsWith("/lib/mongo.mjs")) source = "export const getDb=()=>globalThis.routingIdentityDb; export const ensureDb=async()=>{};";
-    if (url.endsWith("/lib/permissions.mjs")) source = "export const getPermissions=async()=>({isOwner:false,isStaff:false,isMod:false});";
+    if (url.endsWith("/lib/permissions.mjs")) source = "export const getPermissions=async()=>({isOwner:false,isStaff:false,isMod:false,registered:false});";
     if (url.endsWith("/lib/groupSettings.js")) source = "export const groupSettings={get:()=>({})};";
     if (url.endsWith("/lib/websiteAuth.mjs")) source = "export const syncWebsiteProfilePicture=async()=>{};";
     if (url.endsWith("/lib/economyPreview.mjs")) source = "export const buildEconomyLinkPreview=()=>({}); export const getEconomyPreviewConfig=()=>({});";
     return source ? { format: "module", shortCircuit: true, source } : nextLoad(url, context);
   },
   resolve(specifier, context, nextResolve) {
-    if (specifier.includes("/plugins/group/fixture.js")) return { url: `file://${specifier}`, shortCircuit: true };
+    if (specifier.includes("/plugins/group/fixture.js") || specifier.includes("/plugins/economy/econ.js") || specifier.includes("/plugins/economy/register.js")) return { url: `file://${specifier}`, shortCircuit: true };
     return nextResolve(specifier, context);
   },
 });
@@ -39,8 +43,8 @@ function socket(metadata = meta) {
     sendMessage: async (_, message) => sent.push(message), profilePictureUrl: async () => null,
     signalRepository: { lidMapping: { getPNForLID: async () => phone, getLIDForPN: async () => lid } } };
 }
-function message(sender = lid) {
-  return { key: { participant: sender, remoteJid: "123@g.us" }, message: { conversation: ".fixture" } };
+function message(sender = lid, command = ".fixture") {
+  return { key: { participant: sender, remoteJid: "123@g.us" }, message: { conversation: command } };
 }
 test("actual command router authorizes LID admin after resolving its data phone", async () => {
   await routeMessage(socket(), message());
@@ -61,6 +65,17 @@ test("metadata failure denies admin command instead of failing open", async () =
   await routeMessage(sock, message());
   assert.equal(globalThis.adminRuns.length, 1);
   assert.match(sock.sent.at(-1).text, /Could not verify/);
+});
+test("unregistered economy commands link to website registration and mention the resolved user", async () => {
+  const sock = socket();
+  await routeMessage(sock, message(lid, ".econfixture"));
+  assert.equal(globalThis.economyRuns.length, 0);
+  assert.match(sock.sent.at(-1).text, /aidoru\.zone\.id\/login\?mode=create/);
+  assert.deepEqual(sock.sent.at(-1).mentions, [phone]);
+});
+test("register is allowed so users can get or confirm their website link", async () => {
+  await routeMessage(socket(), message(lid, ".register"));
+  assert.equal(globalThis.registrationRuns.length, 1);
 });
 test("new id=LID phoneNumber=PN metadata survives a failing native mapping cache", async () => {
   const sock = socket();

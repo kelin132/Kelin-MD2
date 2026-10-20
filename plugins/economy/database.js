@@ -685,10 +685,18 @@ export async function requireRegistration(sock, msg, sender, user = null) {
   // Commands that already loaded the user's account can reuse that snapshot.
   const ok = user ? user.registered === true : await isRegistered(sender);
   if (!ok) {
+    const inGroup = msg.key.remoteJid?.endsWith("@g.us");
+    const mentions = inGroup && sender ? [sender] : [];
+    const tag = inGroup ? `@${String(sender).split("@")[0].split(":")[0]} ` : "";
     await sock.sendMessage(
       msg.key.remoteJid,
-      { text: "❌ You need to register first!\n\nUse *.register <your_name>* to create your account." },
-      { quoted: msg }
+      {
+        text:
+          `🌐 ${tag}Register on https://aidoru.zone.id/login?mode=create using the same WhatsApp number you use with this bot. ` +
+          "After you verify the website code, send *.register* here to confirm.",
+        ...(mentions.length ? { mentions } : {}),
+      },
+      { quoted: msg, ...(mentions.length ? { mentions } : {}) }
     );
   }
   return ok;

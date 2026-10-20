@@ -1,66 +1,47 @@
-import { isRegistered, registerUser, REGISTRATION_STARTING_MONEY } from "./database.js";
-import { formatRyu } from "./currency.js";
+import { isRegistered } from "./database.js";
+import { invalidatePermissionCache } from "../../lib/permissions.mjs";
+
+const WEBSITE_REGISTRATION_URL = "https://aidoru.zone.id/login?mode=create";
 
 export default {
   name: "register",
-  description: "Register your account to access economy commands",
+  description: "Open website registration or confirm your linked account",
   category: "economy",
-  usage: ".register <your_name>",
+  usage: ".register",
   aliases: ["reg", "signup"],
   cooldown: 5,
 
-  async run({ sock, msg, sender, text }) {
+  async run({ sock, msg, sender }) {
+    const chatId = msg.key.remoteJid;
+    const inGroup = chatId?.endsWith("@g.us");
     const already = await isRegistered(sender);
 
     if (already) {
-      return sock.sendMessage(msg.key.remoteJid, {
-        text: "❌ *You are already registered.*\n\nUse *.profile* to view your account."
-      }, { quoted: msg });
+      invalidatePermissionCache(sender);
+      const mentions = inGroup && sender ? [sender] : [];
+      const tag = inGroup ? `@${sender.split("@")[0].split(":")[0]} ` : "";
+      return sock.sendMessage(
+        chatId,
+        {
+          text: `✅ ${tag}You have now registered yourself to AIDORU. Your bot account is connected; use *.p* to see your profile.`,
+          ...(mentions.length ? { mentions } : {}),
+        },
+        { quoted: msg, ...(mentions.length ? { mentions } : {}) },
+      );
     }
 
-    const name = text?.trim();
-
-    if (!name) {
-      return sock.sendMessage(msg.key.remoteJid, {
-        text: [
-          "❌ *Name required*",
-          "",
-          "*Usage:* .register <your_name>",
-          "*Example:* .register Kelin",
-          "",
-          "• 2–20 characters",
-          "• No special characters"
-        ].join("\n")
-      }, { quoted: msg });
-    }
-
-    if (name.length < 2) {
-      return sock.sendMessage(msg.key.remoteJid, {
-        text: "❌ *Name too short.*\n\nMinimum: *2 characters*."
-      }, { quoted: msg });
-    }
-
-    if (name.length > 20) {
-      return sock.sendMessage(msg.key.remoteJid, {
-        text: "❌ *Name too long.*\n\nMaximum: *20 characters*."
-      }, { quoted: msg });
-    }
-
-    await registerUser(sender, name);
-
-    await sock.sendMessage(msg.key.remoteJid, {
-      text:
-        `🎉 *Welcome to AIDORU, ${name}!*\n\n` +
-        `✅ *Account created successfully.*\n\n` +
-        `💰 *Wallet:* ${formatRyu(REGISTRATION_STARTING_MONEY)}\n` +
-        `🏦 *Bank:* ${formatRyu(0)}\n` +
-        `💎 *Diamonds:* 0\n` +
-        `⭐ *Level:* 1\n\n` +
-        `📋 *Get Started*\n` +
-        `• *.daily* — Claim your reward\n\n` +
-        `🍀 *Good luck!*\n\n` +
-        `🌐 Create your account on the website:\n` +
-        `https://aidoru.zone.id`
-    }, { quoted: msg });
-  }
+    const mentions = inGroup && sender ? [sender] : [];
+    const tag = inGroup ? `@${sender.split("@")[0].split(":")[0]} ` : "";
+    return sock.sendMessage(
+      chatId,
+      {
+        text:
+          `🌐 ${tag}Create your AIDORU account on the website: ${WEBSITE_REGISTRATION_URL}\n\n` +
+          "Sign up with the same WhatsApp number you use with this bot and verify the code. " +
+          "Your existing bot data is kept; after verification, send *.register* here again to confirm.",
+        ...(mentions.length ? { mentions } : {}),
+      },
+      { quoted: msg, ...(mentions.length ? { mentions } : {}) },
+    );
+  },
 };

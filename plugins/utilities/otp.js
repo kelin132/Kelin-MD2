@@ -18,7 +18,7 @@ export default {
     if (!senderJid) {
       if (isGroup) {
         await sock.sendMessage(sourceChat, {
-          text: "I couldn't identify who requested the code. Please open a private chat with the bot and send *.otp*.",
+          text: "I couldn't identify who requested the code. Tag yourself and retry *.otp* here, or request it in a private chat.",
         }, quoted);
       }
       return;
@@ -41,8 +41,8 @@ export default {
       await sock.sendMessage(
         sourceChat,
         { text: isGroup
-          ? "❌ I couldn't retrieve your code. Start verification or password recovery on the AIDORU website, then try *.otp* again."
-          : `❌ ${message}` },
+          ? "â I couldn't retrieve your code. Start verification or password recovery on the AIDORU website, then try *.otp* again."
+          : `â ${message}` },
         quoted,
       );
     }
@@ -57,8 +57,8 @@ export function createOtpPayload({ pending, senderJid, isGroup = false }) {
   return {
     text: [
       pending.kind === "verification"
-        ? "🔐 *AIDORU WEBSITE VERIFICATION CODE*"
-        : "🔐 *AIDORU PASSWORD RESET CODE*",
+        ? "ð *AIDORU WEBSITE VERIFICATION CODE*"
+        : "ð *AIDORU PASSWORD RESET CODE*",
       "",
       `For: ${accountLabel}`,
       `One-time code: *${pending.code}*`,

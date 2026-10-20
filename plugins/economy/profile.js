@@ -135,7 +135,7 @@ export default {
       isQuickProfile ? Promise.resolve(null) : profilePicPromise,
       countTrainerPokemon(target),
       isQuickProfile ? Promise.resolve(null) : withTimeout(guildSystem.getUserPrimaryGuild(target), 2500),
-      isQuickProfile ? Promise.resolve(null) : withTimeout(getTrainer(target), 2500),
+      isQuickProfile ? withTimeout(getTrainer(target), 1500) : withTimeout(getTrainer(target), 2500),
     ]);
     if (target === sender && isQuickProfile && !await requireRegistration(sock, msg, sender, user)) return;
     const savedAvatar = [cardUser?.profilePictureUrl, cardUser?.profileImage, cardUser?.avatarUrl]
@@ -203,9 +203,9 @@ export default {
     const profilePokemon = Number.isFinite(Number(pokemonCount))
       ? Number(pokemonCount).toLocaleString()
       : "N/A";
-    const profileBadges = isQuickProfile
-      ? "—"
-      : Number.isFinite(Number(gymProgress.completed)) ? gymProgress.completed : "N/A";
+    const profileBadges = Number.isFinite(Number(gymProgress.completed))
+      ? gymProgress.completed
+      : "N/A";
     const caption = isQuickProfile
       ? buildQuickProfileCaption({
         name: displayName,

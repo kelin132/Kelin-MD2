@@ -10,7 +10,7 @@ test("quick profile caption uses the requested compact layout", () => {
     birthday: "18 May",
     cards: "145",
     pokemon: "6",
-    badges: "—",
+    badges: "4",
     role: "Owner",
   });
   assert.match(caption, /^\*Edit your profile image here:\*\nhttps:\/\/aidoru\.zone\.id\/profile/);
@@ -20,7 +20,7 @@ test("quick profile caption uses the requested compact layout", () => {
     "❀ *Bday* : `18 May`",
     "❀ *Cards*: `145`",
     "❀ *Pokémon*: `6`",
-    "❀ *Badges* : `—`",
+    "❀ *Badges* : `4`",
     "❀ *Role* : `Owner`",
   ]) assert.ok(caption.includes(line), `missing ${line}`);
 });
