@@ -1,6 +1,41 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
+import { registerHooks } from "node:module";
+
+registerHooks({
+  resolve(specifier, context, nextResolve) {
+    if (specifier === "@whiskeysockets/baileys") {
+      return { url: "mock:baileys-forward", shortCircuit: true };
+    }
+    return nextResolve(specifier, context);
+  },
+  load(url, context, nextLoad) {
+    if (url === "mock:baileys-forward") return {
+      format: "module",
+      shortCircuit: true,
+      source: `
+        export function generateForwardMessageContent(message) {
+          const content = structuredClone(message.message);
+          const key = Object.keys(content)[0];
+          if (key === "conversation") {
+            content.extendedTextMessage = { text: content.conversation };
+            delete content.conversation;
+          }
+          const contentKey = key === "conversation" ? "extendedTextMessage" : key;
+          const messageContent = content[contentKey];
+          messageContent.contextInfo = {
+            forwardingScore: 1,
+            isForwarded: true,
+          };
+          return content;
+        }
+      `,
+    };
+    return nextLoad(url, context);
+  },
+});
+
 import {
   startChannelAnnouncementRelay,
   stopChannelAnnouncementRelay,
@@ -15,17 +50,15 @@ test("channel relay forwards only new messages from its configured source once",
     newsletterMetadata: async (type, code) => {
       assert.equal(type, "invite");
       assert.equal(code, "channel-invite");
-      return { id: "source@newsletter" };
+        return { id: "source@newsletter", name: "Aidoru Updates" };
     },
     newsletterFollow: async (jid) => followed.push(jid),
     groupGetInviteInfo: async (code) => {
       assert.equal(code, "community-invite");
       return { id: "destination@g.us" };
     },
-    sendMessage: async (jid, content, options) => {
-      const result = { key: { id: `sent-${sent.length + 1}` }, message: content };
-      sent.push({ jid, content, options, result });
-      return result;
+    relayMessage: async (jid, content, options) => {
+      sent.push({ jid, content, options });
     },
   };
   const logger = () => {};
@@ -51,14 +84,12 @@ test("channel relay forwards only new messages from its configured source once",
   ] });
   await new Promise((resolve) => setImmediate(resolve));
 
-  assert.equal(sent.length, 2);
+  assert.equal(sent.length, 1);
   assert.equal(sent[0].jid, "destination@g.us");
-  assert.equal(sent[0].content.forward, announcement);
-  assert.equal(sent[0].content.force, true);
-  assert.equal(sent[1].jid, "destination@g.us");
-  assert.equal(sent[1].content.linkPreview, true);
-  assert.match(sent[1].content.text, /https:\/\/whatsapp\.com\/channel\/channel-invite/);
-  assert.equal(sent[1].options.quoted, sent[0].result);
+  assert.equal(sent[0].content.extendedTextMessage.text, "New channel update");
+  assert.equal(sent[0].content.extendedTextMessage.contextInfo.forwardedNewsletterMessageInfo.newsletterJid, "source@newsletter");
+  assert.equal(sent[0].content.extendedTextMessage.contextInfo.forwardedNewsletterMessageInfo.newsletterName, "Aidoru Updates");
+  assert.equal(sent[0].content.extendedTextMessage.contextInfo.isForwarded, true);
   stopChannelAnnouncementRelay(sock);
 });
 
@@ -76,7 +107,7 @@ test("community invite resolves to its announcement group when the bot is alread
         linkedParent: "community@g.us",
       },
     }),
-    sendMessage: async () => {},
+    relayMessage: async () => {},
   };
   assert.equal(await startChannelAnnouncementRelay(sock, { logger: () => {} }), true);
   stopChannelAnnouncementRelay(sock);

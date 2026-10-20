@@ -2,7 +2,7 @@
  * KELIN MD — Economy database (MongoDB-backed)
  * All economy / staff plugins import from here.
  */
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { getDb } from "../../lib/mongo.mjs";
 import {
   normalizeJid,
@@ -382,6 +382,9 @@ export async function saveUser(id, data) {
   const normalizedId = await storedUserId(db, id);
   // Strip _id and _snap — neither should be stored in MongoDB
   const { _id, _snap, ...safeData } = data;
+  // Auction holds are managed with targeted Mongo updates. Never overwrite
+  // them from an economy command's potentially stale whole-user snapshot.
+  delete safeData.auctionHolds;
 
   // ── WALLET_CAP enforcement (adjust in-memory before computing deltas) ──────
   if ((safeData.money ?? 0) > WALLET_CAP) {
@@ -739,6 +742,86 @@ export async function addMoney(id, amount) {
     { _id: normalizedId },
     { $inc: { money: amount, totalWealth: amount } }
   );
+}
+
+/**
+ * Atomically charge a registered user's wallet only when the balance is still
+ * sufficient. Used at auction settlement so stale command snapshots cannot
+ * create money or award an unpaid card.
+ */
+export async function debitWalletIfAvailable(id, amount) {
+  const debit = Math.trunc(Number(amount));
+  if (!Number.isSafeInteger(debit) || debit <= 0) return null;
+
+  const db = await getDb();
+  const normalizedId = await storedUserId(db, id);
+  const startingMoney = DEFAULTS.money;
+  const result = await db.collection("users").findOneAndUpdate(
+    {
+      _id: normalizedId,
+      registered: true,
+      $expr: {
+        $gte: [{ $ifNull: ["$money", startingMoney] }, debit],
+      },
+    },
+    [
+      {
+        $set: {
+          money: {
+            $subtract: [{ $ifNull: ["$money", startingMoney] }, debit],
+          },
+          totalWealth: {
+            $add: [
+              { $subtract: [{ $ifNull: ["$money", startingMoney] }, debit] },
+              { $ifNull: ["$bank", 0] },
+            ],
+          },
+        },
+      },
+    ],
+    { returnDocument: "after", includeResultMetadata: false },
+  );
+  return result ? { money: result.money, bank: result.bank || 0 } : null;
+}
+
+function auctionHoldPath(auctionId) {
+  const key = createHash("sha256").update(String(auctionId)).digest("hex").slice(0, 32);
+  return `auctionHolds.${key}`;
+}
+
+export async function setAuctionHold(id, auctionId, amount, expiresAt) {
+  const holdId = String(auctionId || "").trim();
+  const bid = Math.trunc(Number(amount));
+  const until = Math.trunc(Number(expiresAt));
+  if (!holdId || !Number.isSafeInteger(bid) || bid <= 0 || !Number.isFinite(until)) return false;
+
+  const db = await getDb();
+  const normalizedId = await storedUserId(db, id);
+  const result = await db.collection("users").updateOne(
+    { _id: normalizedId, registered: true },
+    {
+      $set: {
+        [auctionHoldPath(holdId)]: {
+          auctionId: holdId,
+          amount: bid,
+          expiresAt: until,
+        },
+      },
+    },
+  );
+  return result.matchedCount > 0;
+}
+
+export async function clearAuctionHold(id, auctionId) {
+  const holdId = String(auctionId || "").trim();
+  if (!holdId) return false;
+  const db = await getDb();
+  const normalizedId = await storedUserId(db, id);
+  const result = await db.collection("users").updateOne(
+    { _id: normalizedId },
+    { $unset: { [auctionHoldPath(holdId)]: "" } },
+  );
+  return result.matchedCount > 0;
 }
 
 /**

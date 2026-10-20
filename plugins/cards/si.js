@@ -1,7 +1,8 @@
 import { fetchAllCards, getCard, sendCardMedia, TIER_NAME, TIER_EMOJI } from "../../lib/cardApi.mjs";
-import { Col, uid } from "./db.js";
+import { Col } from "./db.js";
 import { getSeries } from "../../lib/seriesEnrich.mjs";
 import { getCachedLeaderboard } from "../../lib/leaderboardCache.mjs";
+import { buildCardOwnersPipeline, collapseCardOwners, isMentionableOwner } from "../../lib/cardOwners.mjs";
 
 function normaliseQuery(value) {
   return String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -139,51 +140,19 @@ async function sendSeriesCard(sock, jid, card, text, { quoted, mentions = [] } =
   return sock.sendMessage(jid, { text: caption, mentions }, { quoted });
 }
 
-function ownerJid(user) {
-  return user.whatsappNumber || `${user.userId}@s.whatsapp.net`;
-}
-
-async function getOwners(cardId) {
+async function getOwners(card) {
+  const cardId = String(card?.cardId || "").trim();
   return getCachedLeaderboard(
-    `cards:owners:${String(cardId).trim().toLowerCase()}`,
+    `cards:owners:${cardId.toLowerCase()}`,
     async () => {
-      const users = await (await Col.users()).aggregate([
-        { $match: { "cards.cardId": cardId } },
-        {
-          $project: {
-            userId: 1,
-            whatsappNumber: 1,
-            username: 1,
-            cards: {
-              $filter: {
-                input: { $ifNull: ["$cards", []] },
-                as: "card",
-                cond: { $eq: ["$$card.cardId", cardId] },
-              },
-            },
-          },
-        },
-        {
-          $project: {
-            userId: 1,
-            whatsappNumber: 1,
-            username: 1,
-            matchingCards: "$cards",
-            count: { $size: "$cards" },
-          },
-        },
-        { $match: { count: { $gt: 0 } } },
-      ]).toArray();
-
-      const ownerMap = new Map();
-      for (const user of users) {
-        const jid = ownerJid(user);
-        const label = user.username || `@${uid(jid)}`;
-        ownerMap.set(jid, { jid, label, count: user.count });
-      }
-      return Array.from(ownerMap.values());
+      const users = await (await Col.users())
+        .aggregate(buildCardOwnersPipeline(card))
+        .toArray();
+      return collapseCardOwners(users);
     },
-    { ttlMs: 30_000 },
+    // Owner lists must converge across both bots; never return an expired
+    // snapshot while a background refresh runs.
+    { ttlMs: 2_000, staleWhileRevalidate: false },
   );
 }
 
@@ -248,8 +217,8 @@ export default {
           card.series = await getSeries(card.name, { timeout: 4000 });
         }
 
-        const owners = await getOwners(card.cardId);
-        const mentions = owners.map((o) => o.jid);
+        const owners = await getOwners(card);
+        const mentions = owners.map((o) => o.jid).filter(isMentionableOwner);
 
         const ownerLines = owners.length
           ? owners.map((owner, i) =>
@@ -270,8 +239,8 @@ export default {
         if (!card.series || card.series === "Unknown") {
           card.series = await getSeries(card.name, { timeout: 4000 });
         }
-        const owners = await getOwners(card.cardId);
-        const mentions = owners.map((o) => o.jid);
+        const owners = await getOwners(card);
+        const mentions = owners.map((o) => o.jid).filter(isMentionableOwner);
 
         const ownerLines = owners.length
           ? owners.map((owner, i) =>
@@ -300,10 +269,9 @@ export default {
 
       for (const t of sortedTiers) {
         const card = byTier.get(t)[0];
-        const owners = await getOwners(card.cardId);
-        const copyCount = owners.reduce((sum, o) => sum + o.count, 0);
-        totalOwners += copyCount;
-        mentions.push(...owners.map((o) => o.jid));
+        const owners = await getOwners(card);
+        totalOwners += owners.length;
+        mentions.push(...owners.map((o) => o.jid).filter(isMentionableOwner));
 
         const ownerPreview = owners.length
           ? owners.slice(0, 5).map((o, i) => `   ${i + 1}. ${o.label}${o.count > 1 ? ` (x${o.count})` : ""}`).join("\n") +

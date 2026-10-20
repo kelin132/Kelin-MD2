@@ -6,84 +6,126 @@
 import { findOrCreateUser } from "./db.js";
 import { TIER_EMOJI } from "../../lib/cardApi.mjs";
 import {
-  hasAuction, setAuction, deleteAuction, getAuction,
+  hasAuction, setAuction, deleteAuction, getAuction, withAuctionLock, withBidderLock,
 } from "../../lib/auctionManager.mjs";
 import {
-  getUser    as getEconomyUser,
-  saveUser   as saveEconomyUser,
   isRegistered,
   addHistory,
+  addMoney,
+  debitWalletIfAvailable,
+  clearAuctionHold,
 } from "../economy/database.js";
 
 const DURATION_MS  = 90_000; // 90 seconds
 const RESELL_BASE  = { Common: 200, Uncommon: 800, Rare: 4000, Epic: 15000, Legendary: 55000 };
 const MIN_START    = 50;
 
-async function closeAuction(groupJid) {
-  const a = getAuction(groupJid);
-  if (!a) return;
-  deleteAuction(groupJid);
+export async function closeAuction(groupJid) {
+  const scheduledAuction = getAuction(groupJid);
+  if (!scheduledAuction) return;
 
-  const { sock, card, sellerJid, currentBid, currentBidder } = a;
-  const cardEmoji = TIER_EMOJI[card.tier] || "⭐";
+  const settle = () => withAuctionLock(groupJid, async () => {
+    // A second close callback may have queued while the first one was settling.
+    if (getAuction(groupJid) !== scheduledAuction) return;
+    deleteAuction(groupJid);
 
-  // ── No bids — return card to seller ────────────────────────────────────
-  if (!currentBidder) {
+    const { sock, card, sellerJid, currentBid, currentBidder } = scheduledAuction;
+    const auctionId = scheduledAuction.auctionId || `whatsapp:${groupJid}`;
+    const cardEmoji = TIER_EMOJI[card.tier] || "⭐";
+
+    // ── No bids — return card to seller ────────────────────────────────────
+    if (!currentBidder) {
+      try {
+        const sellerCards = await findOrCreateUser(sellerJid);
+        sellerCards.cards.push(card);
+        sellerCards.totalCards = (sellerCards.totalCards || 0) + 1;
+        await sellerCards.save();
+      } catch { /* best-effort */ }
+
+      return sock.sendMessage(groupJid, {
+        text: [
+          `🔨 *AUCTION ENDED — NO BIDS*`,
+          ``,
+          `${cardEmoji} *${card.name}* [${card.tier}]`,
+          ``,
+          `Nobody placed a bid. The card has been returned to the seller.`,
+        ].join("\n"),
+      });
+    }
+
+    let debited = false;
+    let cardTransferred = false;
     try {
-      const sellerCards = await findOrCreateUser(sellerJid);
-      sellerCards.cards.push(card);
-      sellerCards.totalCards = (sellerCards.totalCards || 0) + 1;
-      await sellerCards.save();
-    } catch { /* best-effort */ }
+      const payment = await debitWalletIfAvailable(currentBidder, currentBid);
+      if (!payment) {
+        const sellerCards = await findOrCreateUser(sellerJid);
+        sellerCards.cards.push(card);
+        sellerCards.totalCards = (sellerCards.totalCards || 0) + 1;
+        await sellerCards.save();
+        await sock.sendMessage(groupJid, {
+          text: `❌ The highest bidder no longer has $${currentBid.toLocaleString()} available. The card has been returned to the seller; no money was charged.`,
+          mentions: [currentBidder, sellerJid],
+        });
+        return;
+      }
+      debited = true;
 
-    return sock.sendMessage(groupJid, {
-      text: [
-        `🔨 *AUCTION ENDED — NO BIDS*`,
-        ``,
-        `${cardEmoji} *${card.name}* [${card.tier}]`,
-        ``,
-        `Nobody placed a bid. The card has been returned to the seller.`,
-      ].join("\n"),
-    });
-  }
+      const winnerCards = await findOrCreateUser(currentBidder);
+      winnerCards.cards.push({ ...card, obtainedAt: new Date().toISOString() });
+      winnerCards.totalCards = (winnerCards.totalCards || 0) + 1;
+      await winnerCards.save();
+      cardTransferred = true;
 
-  // ── Winner found (Funds were already collected during bidding) ─────────
-  try {
-    // Credit seller
-    const seller = await getEconomyUser(sellerJid);
-    seller.money = (seller.money || 0) + currentBid;
-    await saveEconomyUser(sellerJid, seller);
-    await addHistory(sellerJid, "auction_sold", currentBid, `Sold card at auction: ${card.name}`);
+      await addMoney(sellerJid, currentBid);
+      await addHistory(sellerJid, "auction_sold", currentBid, `Sold card at auction: ${card.name}`);
+      await addHistory(currentBidder, "auction_bought", -currentBid, `Bought card at auction: ${card.name}`);
 
-    // Transfer card to winner
-    const winnerCards = await findOrCreateUser(currentBidder);
-    winnerCards.cards.push({ ...card, obtainedAt: new Date().toISOString() });
-    winnerCards.totalCards = (winnerCards.totalCards || 0) + 1;
-    await winnerCards.save();
+      const winnerNum = currentBidder.split("@")[0].split(":")[0];
+      const sellerNum = sellerJid.split("@")[0].split(":")[0];
 
-    const winnerNum = currentBidder.split("@")[0].split(":")[0];
-    const sellerNum = sellerJid.split("@")[0].split(":")[0];
+      await sock.sendMessage(groupJid, {
+        text: [
+          `🔨 *AUCTION SOLD!*`,
+          ``,
+          `${cardEmoji} *${card.name}* [${card.tier}]`,
+          ``,
+          `🏆 Winner : @${winnerNum}`,
+          `💰 Paid   : $${currentBid.toLocaleString()}`,
+          `📤 Seller : @${sellerNum} received $${currentBid.toLocaleString()}`,
+          ``,
+          `Congratulations! Use *.col* to see your new card.`,
+        ].join("\n"),
+        mentions: [currentBidder, sellerJid],
+      });
+    } catch (err) {
+      console.error("AUCTION CLOSE ERROR:", err);
+      if (debited && !cardTransferred) {
+        try {
+          await addMoney(currentBidder, currentBid);
+          await addHistory(currentBidder, "auction_refund", currentBid, `Refund for failed auction: ${card.name}`);
+        } catch (refundError) {
+          console.error("AUCTION BID REFUND ERROR:", refundError);
+        }
+      }
+      await sock.sendMessage(groupJid, {
+        text: cardTransferred
+          ? "⚠️ The card was delivered, but seller payment did not fully complete. Please contact an admin."
+          : "❌ Auction settlement failed. Please contact an admin.",
+      });
+    } finally {
+      if (currentBidder) {
+        await clearAuctionHold(currentBidder, auctionId).catch((error) => {
+          console.error("[auction] Could not clear settled bidder hold:", error);
+        });
+      }
+    }
+  });
 
-    await sock.sendMessage(groupJid, {
-      text: [
-        `🔨 *AUCTION SOLD!*`,
-        ``,
-        `${cardEmoji} *${card.name}* [${card.tier}]`,
-        ``,
-        `🏆 Winner : @${winnerNum}`,
-        `💰 Paid   : $${currentBid.toLocaleString()}`,
-        `📤 Seller : @${sellerNum} received$${currentBid.toLocaleString()}`,
-        ``,
-        `Congratulations! Use *.col* to see your new card.`,
-      ].join("\n"),
-      mentions: [currentBidder, sellerJid],
-    });
-  } catch (err) {
-    console.error("AUCTION CLOSE ERROR:", err);
-    await sock.sendMessage(groupJid, {
-      text: "❌ Auction settlement failed. Please contact an admin.",
-    });
-  }
+  // Keep transfers queued until the winner is charged and the auction is
+  // removed; this closes the race between the timer and a simultaneous .give.
+  return scheduledAuction.currentBidder
+    ? withBidderLock(scheduledAuction.currentBidder, settle)
+    : settle();
 }
 
 export default {
@@ -152,6 +194,7 @@ export default {
 
     setAuction(groupJid, {
       groupJid,
+      auctionId: `whatsapp:${groupJid}`,
       sellerJid:     sender,
       card,
       startBid,

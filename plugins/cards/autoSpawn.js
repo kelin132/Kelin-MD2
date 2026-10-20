@@ -13,6 +13,7 @@ import { getSeries } from "../../lib/seriesEnrich.mjs";
 import { getEnabledSpawnChats }            from "./db.js";
 import { log }                             from "../../lib/logger.mjs";
 import { reserveCardSpawn, releaseCardSpawn } from "../../lib/cardSpawnState.mjs";
+import { isCardSpawnClaimReserved } from "../../lib/cardSpawnClaim.mjs";
 
 const SPAWN_MIN_MS       = 20 * 60 * 1000; // 20 minutes
 const SPAWN_MAX_MS       = 25 * 60 * 1000; // 25 minutes
@@ -42,14 +43,19 @@ if (!global.__cardApiSpawnerRunning) {
       if (spawns[chatId]?.spawnId !== spawnId) return false;
 
       // Auto-expire
-      setTimeout(() => {
-        if (spawns[chatId]?.spawnId === spawnId) {
-          delete spawns[chatId];
-          sock.sendMessage(chatId, {
-            text: `⏰ *${card.name}* was not claimed in time and vanished...`,
-          }).catch(() => {});
+      const expireSpawn = () => {
+        const active = spawns[chatId];
+        if (active?.spawnId !== spawnId) return;
+        if (isCardSpawnClaimReserved(active)) {
+          setTimeout(expireSpawn, 1000);
+          return;
         }
-      }, EXPIRE_MS);
+        delete spawns[chatId];
+        sock.sendMessage(chatId, {
+          text: `⏰ *${card.name}* was not claimed in time and vanished...`,
+        }).catch(() => {});
+      };
+      setTimeout(expireSpawn, EXPIRE_MS);
       return true;
 
     } catch (err) {

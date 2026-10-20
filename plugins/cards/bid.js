@@ -3,11 +3,17 @@
  * Place a bid on the active group auction.
  */
 import {
-  getAuction, placeBid, timeLeft,
+  getAuction, placeBid, timeLeft, withAuctionLock, withBidderLock,
 } from "../../lib/auctionManager.mjs";
+import {
+  activeAuctionHoldAmount,
+  AUCTION_HOLD_RECOVERY_GRACE_MS,
+} from "../../lib/auctionHolds.mjs";
 import {
   getUser       as getEconomyUser,
   isRegistered,
+  setAuctionHold,
+  clearAuctionHold,
 } from "../economy/database.js";
 
 export default {
@@ -27,6 +33,7 @@ export default {
       return reply("Auctions only run in groups.");
     }
 
+    return withBidderLock(sender, () => withAuctionLock(groupJid, async () => {
     // ── Active auction? ────────────────────────────────────────────────────
     const auction = getAuction(groupJid);
     if (!auction) {
@@ -58,16 +65,20 @@ export default {
     }
 
     // ── Check wallet ───────────────────────────────────────────────────────
+    const auctionId = auction.auctionId || `whatsapp:${groupJid}`;
     const user = await getEconomyUser(sender);
-    if ((user.money || 0) < amount) {
+    const available = Math.max(0, (user.money || 0) - activeAuctionHoldAmount(user, Date.now(), auctionId));
+    if (available < amount) {
       return reply(
         `❌ Not enough money!\n\n` +
-        `💰 Your wallet : $${(user.money || 0).toLocaleString()}\n` +
+        `💰 Available : $${available.toLocaleString()}\n` +
         `🎯 Your bid    : $${amount.toLocaleString()}`
       );
     }
 
     // ── Place bid ──────────────────────────────────────────────────────────
+    const previousBid = auction.currentBid;
+    const previousBidder = auction.currentBidder;
     const result = placeBid(groupJid, sender, amount);
 
     if (!result.ok) {
@@ -87,6 +98,32 @@ export default {
       return reply("Could not place bid. The auction may have just ended.");
     }
 
+    try {
+      const holdUntil = auction.endsAt + AUCTION_HOLD_RECOVERY_GRACE_MS;
+      if (!await setAuctionHold(sender, auctionId, amount, holdUntil)) {
+        throw new Error("Bidder account could not be locked.");
+      }
+      if (previousBidder && previousBidder !== sender) {
+        if (!await clearAuctionHold(previousBidder, auctionId)) {
+          throw new Error("Previous bidder hold could not be released.");
+        }
+      }
+    } catch (error) {
+      auction.currentBid = previousBid;
+      auction.currentBidder = previousBidder;
+      await clearAuctionHold(sender, auctionId).catch(() => {});
+      if (previousBidder) {
+        await setAuctionHold(
+          previousBidder,
+          auctionId,
+          previousBid,
+          auction.endsAt + AUCTION_HOLD_RECOVERY_GRACE_MS,
+        ).catch(() => {});
+      }
+      console.error("[auction] Could not persist bidder hold:", error);
+      return reply("❌ I couldn't secure this bid in the shared wallet. Please try again.");
+    }
+
     // ── Success ────────────────────────────────────────────────────────────
     const secs      = timeLeft(groupJid);
     const bidderNum = sender.split("@")[0].split(":")[0];
@@ -99,11 +136,13 @@ export default {
         ``,
         `🏆 Leader  : @${bidderNum}`,
         `💰 Bid     : $${amount.toLocaleString()}`,
+        `🔒 Transfers pause while your bid leads.`,
         `⏱️ Time left: ${secs}s`,
         ``,
         `Beat it with *.bid <higher amount>*!`,
       ].join("\n"),
       mentions: [sender],
     }, { quoted: msg });
+    }));
   },
 };

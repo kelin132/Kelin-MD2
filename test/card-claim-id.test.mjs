@@ -21,10 +21,10 @@ beforeEach(() => {
   globalThis.claimProfile = profile;
 });
 const card = { name: "A character with a very long original ID", tier: "Rare", tierNum: "3", cardId: "VERY_LONG_EXTERNAL_API_IDENTIFIER", claimId: "VERY_LONG_LEGACY_CLAIM_ID", index: 42 };
-const invoke = async input => {
+const invoke = async (input, sender = "263771234567@s.whatsapp.net") => {
   const replies = [];
   await claim.run({
-    sender: "263771234567@s.whatsapp.net", msg: { key: { remoteJid: "fixture@g.us" } },
+    sender, msg: { key: { remoteJid: "fixture@g.us" } },
     args: [input], sock: { sendMessage: async (_, payload) => { replies.push(payload); } },
   });
   return replies;
@@ -76,6 +76,25 @@ test("chat spawns accept the displayed short code and cannot be claimed twice", 
   globalThis.activeSpawns["fixture@g.us"] = { card, cardId: card.cardId, spawnId: "chat-1" };
   await invoke(getCardClaimId(card));
   await invoke(getCardClaimId(card));
+  assert.equal(profile.cards.length, 1);
+  assert.equal(globalThis.activeSpawns["fixture@g.us"], undefined);
+});
+
+test("the first correct spawn claimant reserves it before the Mongo save yields", async () => {
+  globalThis.activeSpawns["fixture@g.us"] = { card, cardId: card.cardId, spawnId: "race-1" };
+  let finishSave;
+  profile.save = () => new Promise((resolve) => { finishSave = resolve; });
+
+  const firstClaim = invoke(getCardClaimId(card));
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(profile.cards.length, 1);
+
+  const secondReplies = await invoke(getCardClaimId(card), "263779999999@s.whatsapp.net");
+  assert.match(secondReplies[0].text, /first correct claim gets it/i);
+  assert.equal(profile.cards.length, 1);
+
+  finishSave();
+  await firstClaim;
   assert.equal(profile.cards.length, 1);
   assert.equal(globalThis.activeSpawns["fixture@g.us"], undefined);
 });

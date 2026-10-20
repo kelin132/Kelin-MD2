@@ -8,6 +8,8 @@ import { getUser, saveUser, requireRegistration, isRegistered, addHistory } from
 import { parseAmount } from "./parseAmount.js";
 import { formatWalletTransfer } from "./walletMessage.js";
 import { normalizeJid, resolveAndMigrateIdentity } from "../../lib/identity.mjs";
+import { hasActiveBidder, withBidderLock } from "../../lib/auctionManager.mjs";
+import { hasActiveAuctionHolds } from "../../lib/auctionHolds.mjs";
 
 function resolveTarget(msg) {
   // 1. Direct @mention
@@ -120,15 +122,19 @@ export default {
       return reply("❌ Please provide a valid amount.\nExamples: *.give @user 500* or *.give @user 25k*");
     }
 
+    if (!await isRegistered(targetJid)) {
+      return reply("❌ That player is not registered in the economy system.");
+    }
+
+    return withBidderLock(sender, async () => {
     // ── Checks ─────────────────────────────────────────────────────────────
     const giver = await getUser(sender);
+    if (hasActiveBidder(sender) || hasActiveAuctionHolds(giver)) {
+      return reply("❌ You can't transfer money while you hold the highest auction bid. You can transfer again if you're outbid or after the auction ends.");
+    }
 
     if (giver.money < amount) {
       return reply(`❌ You don't have enough cash!\n\n💰 Your balance: $${giver.money.toLocaleString()}`);
-    }
-
-    if (!await isRegistered(targetJid)) {
-      return reply("❌ That player is not registered in the economy system.");
     }
 
     const receiver = await getUser(targetJid);
@@ -153,5 +159,6 @@ export default {
       }),
       mentions: [sender, targetJid],
     }, { quoted: msg });
+    });
   },
 };

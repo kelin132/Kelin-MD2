@@ -1,5 +1,7 @@
 import { findOrCreateUser, fmt, tag } from "./db.js";
 import { getUser, saveUser } from "../economy/database.js";
+import { hasActiveBidder, withBidderLock } from "../../lib/auctionManager.mjs";
+import { hasActiveAuctionHolds } from "../../lib/auctionHolds.mjs";
 
 // In-memory trade requests — keyed by jid+target so each chat is isolated
 const tradeRequests = new Map();
@@ -23,9 +25,13 @@ export default {
         const req = tradeRequests.get(jid + sender);
         if (!req) return reply("❌ You don't have any pending card purchase requests.");
 
+        return withBidderLock(sender, async () => {
         // Economy money lives in the economy DB (money field), NOT the card system balance
         const econBuyer  = await getUser(req.buyer);
         const econSeller = await getUser(req.seller);
+        if (hasActiveBidder(sender) || hasActiveAuctionHolds(econBuyer)) {
+          return reply("❌ You can't transfer money for a card purchase while you hold the highest auction bid. Try again if you're outbid or after the auction ends.");
+        }
 
         const buyerMoney = (econBuyer?.money || 0) + (econBuyer?.bank || 0);
         if (buyerMoney < req.price) {
@@ -81,6 +87,7 @@ export default {
 📥 Buyer: ${tag(req.buyer)}`,
           mentions: [req.seller, req.buyer],
         }, { quoted: msg });
+        });
       }
 
       // ── CREATE REQUEST ───────────────────────────────────────────────────────

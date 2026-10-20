@@ -1,6 +1,7 @@
 import { findOrCreateUser } from "./db.js";
 import { sendCardMedia } from "../../lib/cardApi.mjs";
 import { getCardClaimId as getClaimId, matchesCardClaimId as matchesClaimId } from "../../lib/cardClaimId.mjs";
+import { ownsCardSpawnClaim, releaseCardSpawnClaim, reserveCardSpawnClaim } from "../../lib/cardSpawnClaim.mjs";
 
 const activeSpawns = global.activeSpawns || (global.activeSpawns = {});
 
@@ -45,9 +46,29 @@ export default {
   async run({ sock, msg, args, sender }) {
     const jid = msg.key.remoteJid;
     const reply = (text) => sock.sendMessage(jid, { text }, { quoted: msg });
+    let reservedSpawn = null;
+    let spawnReservation = null;
 
     try {
       const cardIdInput = (args[0] || "").toUpperCase();
+      // Reserve a correctly matched public spawn synchronously, before the
+      // user lookup can yield to MongoDB and let a later claimant overtake it.
+      const initialSpawn = activeSpawns[jid];
+      if (
+        cardIdInput &&
+        initialSpawn?.card &&
+        matchesClaimId(
+          { ...initialSpawn.card, cardId: initialSpawn.card.cardId || initialSpawn.cardId },
+          cardIdInput,
+        )
+      ) {
+        spawnReservation = reserveCardSpawnClaim(initialSpawn, sender);
+        if (!spawnReservation) {
+          return reply("⏳ Another user is already claiming this card. The first correct claim gets it.");
+        }
+        reservedSpawn = initialSpawn;
+      }
+
       const user = await findOrCreateUser(sender);
       user.cards = Array.isArray(user.cards) ? user.cards : [];
       user.pendingCards = Array.isArray(user.pendingCards) ? user.pendingCards : [];
@@ -63,6 +84,9 @@ export default {
         ? Boolean(numericPending || legacyPending)
         : user.pendingCards.length > 0;
       if (hasMatchingPending) {
+        releaseCardSpawnClaim(reservedSpawn, spawnReservation);
+        reservedSpawn = null;
+        spawnReservation = null;
         const selected = cardIdInput
           ? [numericPending || legacyPending].filter(Boolean)
           : user.pendingCards.slice();
@@ -106,11 +130,21 @@ export default {
         delete activeSpawns[jid];
         return reply("❌ This card spawn is no longer available. Wait for the next spawn.");
       }
+      if (
+        spawn !== reservedSpawn ||
+        !ownsCardSpawnClaim(spawn, spawnReservation)
+      ) {
+        return reply("⏳ This card is already being claimed. The first correct claim gets it.");
+      }
 
       user.cards.push(toOwnedCard(card, spawn.spawnId));
       user.totalCards = (user.totalCards || 0) + 1;
       await user.save();
-      delete activeSpawns[jid];
+      if (activeSpawns[jid] === spawn && ownsCardSpawnClaim(spawn, spawnReservation)) {
+        delete activeSpawns[jid];
+      }
+      reservedSpawn = null;
+      spawnReservation = null;
 
       const text = claimText(card, sender);
       if (card.media) {
@@ -120,8 +154,11 @@ export default {
       }
       return sock.sendMessage(jid, { text, mentions: [sender] }, { quoted: msg });
     } catch (err) {
+      releaseCardSpawnClaim(reservedSpawn, spawnReservation);
       console.error("CLAIM ERROR:", err);
       return reply("❌ Claim failed. Please try again.");
+    } finally {
+      releaseCardSpawnClaim(reservedSpawn, spawnReservation);
     }
   },
 };
