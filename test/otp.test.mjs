@@ -42,13 +42,14 @@ test("OTP requested in a group is sent visibly in that group and mentions the re
   assert.deepEqual(sent[0].options.mentions, [sender]);
 });
 
-test("OTP payload keeps the private-chat account label", () => {
-  const payload = createOtpPayload({
-    pending,
-    senderJid: "263771234567@s.whatsapp.net",
+test("private chats never receive an OTP or an OTP response", async () => {
+  const sent = [];
+  await otpCommand.run({
+    sock: { sendMessage: async (...args) => sent.push(args) },
+    msg: { key: { remoteJid: "263771234567@s.whatsapp.net" } },
+    sender: "263771234567@s.whatsapp.net",
   });
-
-  assert.match(payload.text, /For: \*263771234567\*/);
+  assert.equal(sent.length, 0);
 });
 
 test("group OTP payload uses a mention instead of a private account label", () => {
