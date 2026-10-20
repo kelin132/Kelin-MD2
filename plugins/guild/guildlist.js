@@ -38,7 +38,7 @@ export default {
 │
 ${lines}
 │
-├◆ *.joinguild <name>*  — Join a guild
+├◆ *.joinguild <name>*  — Get the website apply link
 ├◆ *.guildmembers       — List member names
 ├◆ *.myguild <name>*    — View details
 └───────────────◆`

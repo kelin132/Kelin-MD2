@@ -34,7 +34,7 @@ export default {
   .guildapprove <code>      — Approve an application (leader only)
   .guilddeny <code>         — Decline an application (leader only)
   .removemember @user       — Remove a member (owner only)
-  .joinguild <name>         — Apply; membership starts after leader approval
+   .joinguild <name>         — Get the website application link
   .guildmembers [name]      — List every member by name
   .leaveguild               — Leave your current guild
 
@@ -48,7 +48,7 @@ export default {
   .guildrank                — Guild leaderboard (top 10)
   .guildcomp G1 | G2        — Compare two guilds head-to-head
 
-💡 Guild work comes from member contributions. Higher levels unlock larger member capacity and a higher guild tax rate. Membership is opt-in: players apply, and guild leaders approve.`
+💡 Guild work comes from member contributions. Higher levels unlock larger member capacity and a higher guild tax rate. Membership is opt-in: apply on the AIDORU website, and the guild leader approves.`
     }, { quoted: msg });
   }
 };

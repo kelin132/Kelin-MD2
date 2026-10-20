@@ -1,5 +1,4 @@
 import { guildSystem } from "../../lib/guildSystem.js";
-import { requireRegistration } from "./database.js";
 
 export default {
   name: "joinguild",
@@ -9,31 +8,24 @@ export default {
   aliases: ["guildjoin", "gjoin"],
   cooldown: 10,
 
-  async run({ sock, msg, sender, text }) {
+  async run({ sock, msg, text }) {
     const chat = msg.key.remoteJid;
-    if (!await requireRegistration(sock, msg, sender)) return;
     const guildName = String(text || "").trim();
     if (!guildName) {
       return sock.sendMessage(chat, {
-        text: "Apply to a guild with *.joinguild <name>*. The leader reviews requests with *.guildapps* and *.guildapprove <code>*.",
+        text: "Open *.guildlist* to browse guilds, then use *.joinguild <name>* to get the website application link. You must sign in on AIDORU and submit the application there.",
       }, { quoted: msg });
     }
 
-    const result = await guildSystem.requestMembership(guildName, sender, "");
-    if (!result.ok) {
-      const messages = {
-        guild_missing: `Guild *${guildName}* was not found. Use *.guildlist* to browse.`,
-        already_member: `You already belong to *${guildName}*.`,
-        already_in_guild: `You are already a member of *${result.guildName}*. Leave it before applying elsewhere.`,
-        member_cap: `*${guildName}* is full at ${result.capacity} members.`,
-      };
-      return sock.sendMessage(chat, { text: `❌ ${messages[result.reason] || "Could not submit the application."}` }, { quoted: msg });
+    const guild = await guildSystem.getGuild(guildName);
+    if (!guild) {
+      return sock.sendMessage(chat, {
+        text: `❌ Guild *${guildName}* was not found. Use *.guildlist* to browse, then try the exact guild name.`,
+      }, { quoted: msg });
     }
 
     return sock.sendMessage(chat, {
-      text: result.alreadyPending
-        ? `⏳ Your application to *${guildName}* is already waiting for review${result.code ? ` (code: ${result.code})` : ""}.`
-        : `✅ Application sent to *${guildName}*. You will only join after its leader approves it.${result.code ? `\n\nApplication code: *${result.code}*` : ""}`,
+      text: `🏰 Apply to *${guild.name}* on AIDORU:\nhttps://aidoru.zone.id/guild?apply=${encodeURIComponent(String(guild._id))}\n\nSign in, open the highlighted guild, and tap *Apply to join*. The guild leader must approve your request; this command does not add you automatically.`,
     }, { quoted: msg });
   },
 };
