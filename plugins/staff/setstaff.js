@@ -19,13 +19,16 @@ export default {
   async run({ sock, msg, args, sender, isOwner, isStaff, staffLevel }) {
     const jid = msg.key.remoteJid;
 
+    // Check for a mentioned LID (Baileys often puts LIDs or JIDs in mentionedJid depending on the version/device)
     const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
-    let targetJid = null;
+    let targetLid = null;
 
     if (mentioned) {
-      targetJid = mentioned;
+      // If the mentioned ID is already a LID, keep it. Otherwise, convert if needed or use directly.
+      targetLid = mentioned.includes("@lid") ? mentioned : mentioned.replace("@s.whatsapp.net", "@lid");
     } else if (args[0]?.match(/^[0-9]+$/)) {
-      targetJid = `${args[0]}@s.whatsapp.net`;
+      // If numbers are provided directly, format as a LID
+      targetLid = `${args[0]}@lid`;
     } else {
       return sock.sendMessage(jid, {
         text:
@@ -55,16 +58,16 @@ export default {
       return sock.sendMessage(jid, { text: "❌ Only the owner can grant Admin rank." }, { quoted: msg });
     }
 
-    if (targetJid === sender) {
+    if (targetLid === sender) {
       return sock.sendMessage(jid, { text: "❌ You can't change your own rank." }, { quoted: msg });
     }
 
-    if (!await isRegistered(targetJid)) {
+    if (!await isRegistered(targetLid)) {
       return sock.sendMessage(jid, { text: "❌ That player is not registered." }, { quoted: msg });
     }
 
-    const target = await getUser(targetJid);
-    await setStaffLevel(targetJid, requestedLevel);
+    const target = await getUser(targetLid);
+    await setStaffLevel(targetLid, requestedLevel);
 
     await sock.sendMessage(jid, {
       text:
@@ -72,7 +75,7 @@ export default {
         `👤 Player : ${target.name}\n` +
         `🏅 Rank   : ${LEVEL_NAMES[requestedLevel]}\n` +
         `🔑 Level  : ${requestedLevel}`,
-      mentions: [targetJid],
+      mentions: [targetLid],
     }, { quoted: msg });
   }
 };
