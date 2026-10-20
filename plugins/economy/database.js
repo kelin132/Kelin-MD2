@@ -942,11 +942,14 @@ export async function repairAllLevels() {
  */
 export async function setStaffLevel(id, level) {
   const db = await getDb();
-  await db.collection("users").updateOne(
-    { _id: id },
+  const user = await findUserByIdentity(id);
+  if (!user || user.registered !== true) return false;
+
+  const result = await db.collection("users").updateOne(
+    { _id: user._id, registered: true },
     { $set: { staffLevel: level } },
-    { upsert: true }
   );
+  return result.matchedCount === 1;
 }
 
 export async function removeStaffLevel(id) {

@@ -130,7 +130,7 @@ export default {
 │ ├─ 🌸 ꕥ *${menuPrefix}reg* › Use economy commands
 │ ├─ 📜 ꕥ *${menuPrefix}rules* › Bot rules
 │ ├─ 🌐 ꕥ *${menuPrefix}support* › Official group
-│ └─ ⚡ ꕥ *${menuPrefix}reqbot* › Add me to your group
+│ └─ ⚡ ꕥ *${menuPrefix}reqbot* › Request a bot for your group on AIDORU
 ╰━━━━━━━━━━━━━━━━━━━━╯
 \n${READMORE}\n`;
 

@@ -38,3 +38,19 @@ test("formats the queued request with its target link and source bot/chat", () =
   assert.match(message, /Kelin Main/);
   assert.match(message, /123456789@g\.us/);
 });
+
+test("formats website-originated requests with the AIDORU account name", () => {
+  const message = formatReqbotRequest({
+    sender: "discord:123456789012345678",
+    requesterName: "AIDORU Player",
+    groupLink: "https://chat.whatsapp.com/InviteCode",
+    sourceChatJid: "AIDORU website /reqbot",
+    sourceBotName: "AIDORU Website",
+    createdAt: new Date("2026-10-20T12:00:00.000Z"),
+  });
+
+  assert.match(message, /Name: AIDORU Player/);
+  assert.match(message, /AIDORU account: discord:123456789012345678/);
+  assert.match(message, /AIDORU Website/);
+  assert.doesNotMatch(message, /Number: \+\s*$/m);
+});

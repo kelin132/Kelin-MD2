@@ -43,7 +43,7 @@ registerHooks({
   },
 });
 const {
-  getUser, saveUser, addMoney, debitWalletIfAvailable, setAuctionHold, clearAuctionHold, isRegistered,
+  getUser, saveUser, addMoney, debitWalletIfAvailable, setAuctionHold, clearAuctionHold, isRegistered, setStaffLevel,
 } = await import("../plugins/economy/database.js");
 const {
   activeAuctionHoldAmount,
@@ -75,6 +75,15 @@ test("direct balance changes resolve the stored identity", async () => {
   writes.length = 0;
   await addMoney("263771234567@s.whatsapp.net", 25);
   assert.equal(writes[0].query._id, account._id);
+});
+
+test("staff rank writes resolve a phone alias to the registered LID account without upsert", async () => {
+  writes.length = 0;
+  assert.equal(await setStaffLevel("263771234567@s.whatsapp.net", 1), true);
+  const staffWrite = writes.find(({ update }) => update.$set?.staffLevel === 1);
+  assert.equal(staffWrite.query._id, account._id);
+  assert.equal(staffWrite.query.registered, true);
+  assert.equal(staffWrite.options?.upsert, undefined);
 });
 
 test("auction debits use an atomic balance condition on the existing phone/LID account", async () => {

@@ -4,9 +4,44 @@
  * Owner can set any level. Staff can only set level 1 (mod).
  * Aliases: setmod, addstaff
  */
-import { setStaffLevel, getUser, isRegistered } from "../economy/database.js";
+import { setStaffLevel } from "../economy/database.js";
+import { findUserByIdentity, whatsappIdentityVariants } from "../../lib/identity.mjs";
+import { invalidatePermissionCache } from "../../lib/permissions.mjs";
 
 const LEVEL_NAMES = { 1: "Mod", 2: "Staff", 3: "Admin" };
+
+function parseTarget(msg, args) {
+  const context = msg.message?.extendedTextMessage?.contextInfo;
+  const mentioned = context?.mentionedJidAlt?.[0] || context?.mentionedJid?.[0];
+  if (mentioned) return String(mentioned);
+
+  const discordMention = args
+    .map((arg) => String(arg).match(/^<@!?(\d+)>$/))
+    .find(Boolean);
+  if (discordMention) return `discord:${discordMention[1]}`;
+
+  const hasLevel = args.length > 1 && /^[1-3]$/.test(String(args.at(-1)));
+  const targetArgs = hasLevel ? args.slice(0, -1) : args;
+  const targetText = targetArgs.join("");
+  if (!targetText || !/^[+\d\s().@-]+$/.test(targetText)) return null;
+  const digits = targetText.replace(/\D/g, "");
+  return digits.length >= 5 ? `${digits}@s.whatsapp.net` : null;
+}
+
+function invalidateIdentityCache(user) {
+  const values = [
+    user._id,
+    user.phoneNumber,
+    user.whatsappNumber,
+    user.jid,
+    user.userId,
+    user.whatsappId,
+    user.userJid,
+  ].filter((value) => value !== undefined && value !== null).flatMap((value) =>
+    whatsappIdentityVariants(String(value)),
+  );
+  for (const value of new Set(values)) invalidatePermissionCache(value);
+}
 
 export default {
   name: "setstaff",
@@ -18,18 +53,15 @@ export default {
 
   async run({ sock, msg, args, sender, isOwner, isStaff, staffLevel }) {
     const jid = msg.key.remoteJid;
+    const targetJid = parseTarget(msg, args);
+    const context = msg.message?.extendedTextMessage?.contextInfo;
+    const hasMention = Boolean(context?.mentionedJid?.length || context?.mentionedJidAlt?.length)
+      || args.some((arg) => /^<@!?\d+>$/.test(String(arg)));
+    const hasLevel = /^[1-3]$/.test(String(args.at(-1)))
+      && (args.length > 1 || hasMention);
+    const requestedLevel = hasLevel ? Number(args.at(-1)) : 1;
 
-    // Check for a mentioned LID (Baileys often puts LIDs or JIDs in mentionedJid depending on the version/device)
-    const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
-    let targetLid = null;
-
-    if (mentioned) {
-      // If the mentioned ID is already a LID, keep it. Otherwise, convert if needed or use directly.
-      targetLid = mentioned.includes("@lid") ? mentioned : mentioned.replace("@s.whatsapp.net", "@lid");
-    } else if (args[0]?.match(/^[0-9]+$/)) {
-      // If numbers are provided directly, format as a LID
-      targetLid = `${args[0]}@lid`;
-    } else {
+    if (!targetJid) {
       return sock.sendMessage(jid, {
         text:
           `❓ *Usage:* \`.setstaff @user [level]\`\n\n` +
@@ -41,33 +73,48 @@ export default {
       }, { quoted: msg });
     }
 
-    // Determine requested level
-    const requestedLevel = parseInt(args[args.length - 1]) || 1;
-
     if (![1, 2, 3].includes(requestedLevel)) {
       return sock.sendMessage(jid, { text: "❌ Level must be 1 (Mod), 2 (Staff), or 3 (Admin)." }, { quoted: msg });
     }
 
-    // Permission: staff can only grant mod (level 1); owner can grant any
-    if (!isOwner && isStaff && requestedLevel >= staffLevel) {
-      return sock.sendMessage(jid, {
-        text: `❌ You can only grant ranks below your own level (${LEVEL_NAMES[staffLevel]}).`
-      }, { quoted: msg });
-    }
     if (!isOwner && requestedLevel >= 3) {
       return sock.sendMessage(jid, { text: "❌ Only the owner can grant Admin rank." }, { quoted: msg });
     }
+    if (!isOwner && Number(staffLevel || 0) < 2) {
+      return sock.sendMessage(jid, {
+        text: "❌ Only Staff or the owner can grant a staff rank."
+      }, { quoted: msg });
+    }
+    if (!isOwner && requestedLevel >= Number(staffLevel || 0)) {
+      return sock.sendMessage(jid, {
+        text: `❌ You can only grant ranks below your own level (${LEVEL_NAMES[staffLevel] || "Staff"}).`
+      }, { quoted: msg });
+    }
 
-    if (targetLid === sender) {
+    const target = await findUserByIdentity(targetJid, {
+      projection: {
+        _id: 1, name: 1, registered: 1, phoneNumber: 1,
+        whatsappNumber: 1, jid: 1, userId: 1, whatsappId: 1, userJid: 1,
+      },
+    });
+    if (!target?.registered) {
+      return sock.sendMessage(jid, { text: "❌ That player is not registered." }, { quoted: msg });
+    }
+    const actor = sender
+      ? await findUserByIdentity(sender, { projection: { _id: 1 } })
+      : null;
+    if (actor && String(target._id) === String(actor._id)) {
       return sock.sendMessage(jid, { text: "❌ You can't change your own rank." }, { quoted: msg });
     }
 
-    if (!await isRegistered(targetLid)) {
-      return sock.sendMessage(jid, { text: "❌ That player is not registered." }, { quoted: msg });
+    const updated = await setStaffLevel(String(target._id), requestedLevel);
+    if (!updated) {
+      return sock.sendMessage(jid, {
+        text: "❌ The staff rank wasn't saved. The user's existing account was left unchanged; please try again."
+      }, { quoted: msg });
     }
-
-    const target = await getUser(targetLid);
-    await setStaffLevel(targetLid, requestedLevel);
+    invalidateIdentityCache(target);
+    invalidatePermissionCache(targetJid);
 
     await sock.sendMessage(jid, {
       text:
@@ -75,7 +122,7 @@ export default {
         `👤 Player : ${target.name}\n` +
         `🏅 Rank   : ${LEVEL_NAMES[requestedLevel]}\n` +
         `🔑 Level  : ${requestedLevel}`,
-      mentions: [targetLid],
+      mentions: [targetJid],
     }, { quoted: msg });
   }
 };

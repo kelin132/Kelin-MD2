@@ -47,7 +47,7 @@ export default {
       }
 
       const target = bots[pos - 1]; // list is 1-indexed for the user
-      await markBotSessionDeleted(target.number || target._id?.replace("bot:", ""));
+      await markBotSessionDeleted(target._id || target.number);
       const name = target.botName || `Bot #${pos}`;
       return sock.sendMessage(jid, {
         text: `✅ *${name}* has been removed from the bot list.`,
@@ -72,7 +72,8 @@ export default {
           const online = isBotOnline(bot, now);
           const name   = bot.botName || "Unnamed Bot";
           const emoji  = online ? "🟢" : "🔴";
-          return `${i + 1}. ${emoji} *${name}*`;
+          const platform = String(bot.platform || "WhatsApp");
+          return `${i + 1}. ${emoji} *${name}* · ${platform}`;
         }).join("\n")
       : "No paired bots registered yet.";
 
