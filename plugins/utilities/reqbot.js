@@ -17,9 +17,9 @@ export default {
     const jid = msg.key.remoteJid;
     return sock.sendMessage(jid, {
       text:
-        `🌸 *Request AIDORU for your group*\n\n` +
-        `Sign in on the website, paste your WhatsApp group invite link, and submit it here:\n${REQUEST_PAGE}\n\n` +
-        `A connected WhatsApp bot that is an admin in the staff-request group will forward it for review.`,
+        `*Request a bot for your group *\n\n` +
+        `Paste your WhatsApp group invite link, and submit it here:\n${REQUEST_PAGE}\n\n` +
+        `Have fun.`,
     }, { quoted: msg });
   }
 };
