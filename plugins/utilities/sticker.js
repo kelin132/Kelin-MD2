@@ -13,7 +13,7 @@ export default {
   category: "utilities",
   usage: ".s (reply to an image or video)",
   aliases: ["s", "stiker", "toSticker"],
-  cooldown: 5,
+  cooldown: 1,
 
   async run({ sock, msg, args }) {
     const jid = msg.key.remoteJid;
