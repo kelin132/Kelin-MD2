@@ -17,7 +17,7 @@ export default {
   name: "setplayer",
   description: "Set a specific economy field on a player",
   category: "staff",
-  usage: ".setstat @user <field> <value>",
+  usage: ".setplayer @user <field> <value>",
   aliases: ["editplayer", "setstat"],
   isStaff: true,
 
@@ -64,7 +64,12 @@ export default {
     const target = await getUser(targetJid);
     const oldVal = target[field] ?? 0;
 
-    await setPlayerFields(targetJid, { [field]: value });
+    const updated = await setPlayerFields(targetJid, { [field]: value });
+    if (!updated) {
+      return sock.sendMessage(jid, {
+        text: "❌ That player's registered account could not be updated. No data was changed.",
+      }, { quoted: msg });
+    }
 
     await sock.sendMessage(jid, {
       text:
