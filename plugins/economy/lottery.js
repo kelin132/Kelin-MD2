@@ -1,8 +1,8 @@
 /**
  * .lottery  — enter the global lottery ($10,000, one ticket per round)
- * .lottery draw           — owner/staff: draw three prizes after 15 entries
+ * .lottery draw           — owner/staff: draw three prizes after 20 entries
  * .lottery info           — show jackpot + your tickets
- * The round auto-draws three prizes when it reaches fifteen total tickets.
+ * The round auto-draws three prizes when it reaches twenty total tickets.
  */
 import { getUser, requireRegistration, addHistory } from "./database.js";
 import { getDb } from "../../lib/mongo.mjs";

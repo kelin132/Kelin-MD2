@@ -1,5 +1,5 @@
 // plugins/economy/ll.js
-// .ll          — show lottery pool status; auto-draws at 15 entries
+// .ll          — show lottery pool status; auto-draws at 20 entries
 // .ll draw     — owner-only: draw the three configured prizes
 
 import { getDb } from "../../lib/mongo.mjs";
