@@ -42,7 +42,7 @@ function buildMainMenu(coins, orbs, gems) {
     "╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮",
     "┃  ⚔️  *ケ リ ン  S H O P*  🏯  ┃",
     "┃   ✨ _Live Economy Shop_ ✨   ┃",
-    "🌐 *AIDORU Pokémon Mart:* https://aidoru.zone.id/mart",
+    "🌐 *AIDORU Shop:* https://aidoru.zone.id/shop",
     "╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯",
     "┃",
     "┃  💼 *お財布 — Your Wallet*",
@@ -88,7 +88,7 @@ function buildCategoryList(categoryKey) {
     "┃",
     DIV,
     "🛒 *.shop buy <number>* to purchase",
-    "🌐 *AIDORU Pokémon Mart:* https://aidoru.zone.id/mart",
+    "🌐 *AIDORU Shop:* https://aidoru.zone.id/shop",
     "🔙 *.shop* to return to menu",
     "╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯",
   ].join("\n");
