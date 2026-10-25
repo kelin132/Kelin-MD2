@@ -13,12 +13,19 @@ const equal = (a, b) => isDeepStrictEqual(a, b);
 function matches(doc, query) {
   return Object.entries(query).every(([field, expected]) => {
     if (field === "$or") return expected.some((clause) => matches(doc, clause));
+    if (field === "$and") return expected.every((clause) => matches(doc, clause));
     const actual = doc[field];
     if (expected && !Array.isArray(expected) && typeof expected === "object" && !(expected instanceof ObjectId)) {
-      if ("$in" in expected) return expected.$in.some((value) =>
-        Array.isArray(actual) ? actual.some((item) => equal(item, value)) : equal(actual, value));
-      if ("$ne" in expected) return !equal(actual, expected.$ne);
-      if ("$not" in expected && expected.$not instanceof RegExp) return typeof actual !== "string" || !expected.$not.test(actual);
+      return Object.entries(expected).every(([operator, value]) => {
+        if (operator === "$in") return value.some((candidate) =>
+          Array.isArray(actual) ? actual.some((item) => equal(item, candidate)) : equal(actual, candidate));
+        if (operator === "$nin") return !value.some((candidate) =>
+          Array.isArray(actual) ? actual.some((item) => equal(item, candidate)) : equal(actual, candidate));
+        if (operator === "$ne") return !equal(actual, value);
+        if (operator === "$exists") return (actual !== undefined) === value;
+        if (operator === "$not" && value instanceof RegExp) return typeof actual !== "string" || !value.test(actual);
+        throw new Error(`Unsupported fixture operator ${operator}`);
+      });
     }
     return equal(actual, expected);
   });

@@ -9,8 +9,9 @@ import { getCardClaimId } from "../../lib/cardClaimId.mjs";
  *   .summon           — random tier summon; claim it later with .claim
  *   .summon <tier>    — specific tier (1-6, S, C, R, SR, SSR, UR, X, or a tier name)
  */
-import { findOrCreateUser } from "./db.js";
-import { getUser, saveUser, requireRegistration, addHistory } from "../economy/database.js";
+import { findOrCreateUser, getUser as getCardUser } from "./db.js";
+import { getUser, debitWalletIfAvailable, addMoney, requireRegistration, addHistory } from "../economy/database.js";
+import { persistChargedSummon } from "../../lib/summonPersistence.mjs";
 import {
   fetchCardByTier,
   sendCardMedia,
@@ -175,20 +176,9 @@ export default {
         );
       }
 
-      // Deduct from economy wallet
-      ecoUser.money -= cost;
-      await saveUser(sender, ecoUser);
-
-      // Log transaction history
-      await addHistory(sender, "summon", -cost, `Summoned ${tierName} card`);
-
       // ── Fetch a card from the resolved tier ─────────────────────────────────
       const card = await fetchCardByTier(tierName);
       if (!card) {
-        // Refund if no cards available
-        ecoUser.money += cost;
-        await saveUser(sender, ecoUser);
-        await addHistory(sender, "summon_refund", cost, `Refund — no ${tierName} cards available`);
         return reply(
 `No cards found for this tier`
         );
@@ -222,8 +212,29 @@ export default {
         summonedAt: new Date(),
       };
 
-      cardUser.pendingCards.push(pendingCard);
-      await cardUser.save();
+      const payment = await persistChargedSummon({
+        debit: () => debitWalletIfAvailable(sender, cost),
+        savePending: async () => {
+          cardUser.pendingCards.push(pendingCard);
+          await cardUser.save();
+        },
+        hasPending: async () => {
+          const latest = await getCardUser(sender);
+          return latest?.pendingCards?.some((entry) => entry?.spawnId === pendingCard.spawnId) === true;
+        },
+        refund: () => addMoney(sender, cost),
+      });
+      if (payment.status === "insufficient") {
+        return reply(`you don't have enough ryu to summon a card!`);
+      }
+      if (payment.status !== "saved") {
+        console.error("[summon] pending-card write failed after debit:", payment.error);
+        return reply(payment.status === "refunded"
+          ? "❌ The card could not be saved. Your coins were refunded."
+          : "⚠️ The summon could not be confirmed. Check .claim before trying again; your wallet was not changed again.");
+      }
+      ecoUser.money = payment.wallet.money;
+      await addHistory(sender, "summon", -cost, `Summoned ${tierName} card`).catch(() => {});
 
       const claimText =
 `╭━━━〔 ${emoji} 𝑺𝑼𝑴𝑴𝑶𝑵 𝑺𝒀𝑺𝑻𝑬𝑴 ✨ 〕━━━╮

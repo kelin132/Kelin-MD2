@@ -14,6 +14,7 @@ function condition(actual, expected) {
   if (!expected || typeof expected !== "object" || Array.isArray(expected) || expected instanceof Date || expected instanceof ObjectId) return equal(actual, expected);
   return Object.entries(expected).every(([op, value]) => {
     if (op === "$in") return (Array.isArray(actual) ? actual : [actual]).some(item => value.some(candidate => equal(item, candidate)));
+    if (op === "$nin") return !(Array.isArray(actual) ? actual : [actual]).some(item => value.some(candidate => equal(item, candidate)));
     if (op === "$ne") return !equal(actual, value);
     if (op === "$gte") return actual >= value;
     if (op === "$gt") return actual > value;
@@ -27,7 +28,9 @@ function condition(actual, expected) {
 }
 function matches(doc, query) {
   return Object.entries(query).every(([key, value]) =>
-    key === "$or" ? value.some(clause => matches(doc, clause)) : condition(at(doc, key), value));
+    key === "$or" ? value.some(clause => matches(doc, clause))
+      : key === "$and" ? value.every(clause => matches(doc, clause))
+      : condition(at(doc, key), value));
 }
 function apply(doc, update, inserted = false) {
   if (Array.isArray(update)) return;
