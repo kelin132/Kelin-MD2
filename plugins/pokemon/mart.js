@@ -2,7 +2,7 @@ import { buildEconomyLinkPreview, getEconomyPreviewConfig } from "../../lib/econ
 
 export default {
   name: "mart",
-  aliases: ["pokemart", "shop", "pokeshop"],
+  aliases: ["pokemart", "pokeshop"],
   description: "Open the Pokémon Mart on AIDORU",
   category: "pokemon",
   usage: ".mart",
@@ -12,19 +12,12 @@ export default {
     if (!jid) return;
 
     const config = getEconomyPreviewConfig("mart");
-    const text = `🏪 *AIDORU POKÉMON MART*
-
- Visit the mart on the website to make your purchases.💠
-
-🔗 ${config.url}`;
+    if (!config) return;
+    const text = "🏪 *AIDORU POKÉMON MART*\n\nBuy online:\n" + config.url;
 
     try {
       const linkPreview = await buildEconomyLinkPreview("mart");
-      return await sock.sendMessage(
-        jid,
-        { text, linkPreview },
-        { quoted: msg },
-      );
+      return await sock.sendMessage(jid, { text, linkPreview }, { quoted: msg });
     } catch (error) {
       console.warn("[mart] website preview failed; sending text fallback:", error?.message || error);
       return sock.sendMessage(jid, { text }, { quoted: msg });
