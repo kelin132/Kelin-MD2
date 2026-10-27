@@ -11,9 +11,9 @@ const settings = {
   description: "Daratech - a multi-purpose WhatsApp bot with 1000+ commands.",
   version: "1.0.0",
   // GitHub repo — used for git auto-update AND as ZIP fallback
-  githubRepo: "https://github.com/kelin132/Kelin-MD2.git",
+  githubRepo: "https://github.com/kelin132/furina.git",
   githubBranch: "main",
-  updateZipUrl: "https://github.com/kelin132/Kelin-MD2/archive/refs/heads/main.zip",
+  updateZipUrl: "https://github.com/kelin132/furina/archive/refs/heads/main.zip",
   // How often (in seconds) the bot checks for updates automatically (default: 39s)
   autoUpdateInterval: 39,
 };
