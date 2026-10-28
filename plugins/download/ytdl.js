@@ -32,6 +32,9 @@ async function ytSearch(input) {
 function pickVideo(result) {
   if (!result) return null;
   return (
+    result.dl ||
+    result.download ||
+    result.dl_url ||
     result.download_url ||
     result.video_url    ||
     result.video        ||
