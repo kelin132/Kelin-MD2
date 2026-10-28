@@ -1,230 +1,47 @@
-/**
- * KELIN MD — .pinterest command
- * Searches Pinterest by keyword and sends a fetched image.
- * No links needed — just type words!
- */
-
-import { get, searchGet, davidGet } from "../../lib/gifted.js";
+/** Download a Pinterest link using only the KnightBot Pinterest endpoint. */
 import { downloadMediaBuffer } from "../../lib/omegaDownload.js";
 import { knightbotGet, pickKnightMedia, pickKnightTitle } from "../../lib/knightbotApi.mjs";
 
-// ─── Image search helpers ─────────────────────────────────────────────────────
-
-const IMAGE_HEADERS = {
-  "User-Agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-    + "(KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-  Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
-  Referer: "https://www.pinterest.com/",
-};
-
-function resultItems(data, depth = 0) {
-  if (depth > 5 || data == null) return [];
-  if (Array.isArray(data)) return data.flatMap((item) => resultItems(item, depth + 1));
-  if (typeof data !== "object") return [];
-  if (imageUrlFrom(data)) return [data];
-
-  const containers = [
-    data.results,
-    data.data,
-    data.images,
-    data.result,
-    data.items,
-    data.pins,
-  ].filter((value) => Array.isArray(value) || (value && typeof value === "object"));
-  return containers.length
-    ? containers.flatMap((value) => resultItems(value, depth + 1))
-    : [data];
-}
-
-function imageUrlFrom(item) {
-  if (typeof item === "string") return item;
-  if (!item || typeof item !== "object") return null;
-
-  const nested =
-    item.images?.orig?.url ||
-    item.images?.original?.url ||
-    item.images?.["736x"]?.url ||
-    item.images?.["474x"]?.url ||
-    item.image?.url ||
-    item.image?.src ||
-    item.original?.url ||
-    item.media?.image?.url ||
-    item.imageUrl ||
-    item.image_url ||
-    item.imageUrlOriginal;
-
-  const value = nested ||
-    item.url ||
-    item.image ||
-    item.image_url ||
-    item.thumbnail ||
-    item.src ||
-    item.media_url ||
-    item.download_url ||
-    null;
-  return typeof value === "string" && /^https?:\/\//i.test(value) ? value : null;
-}
-
-export async function searchDavidCyrilPinterest(query, {
-  apiKey = process.env.PINTEREST_API_KEY,
-  fetchImpl = globalThis.fetch,
-} = {}) {
-  if (!apiKey) throw new Error("Pinterest API key is not configured.");
-  if (typeof fetchImpl !== "function") throw new Error("Fetch is unavailable in this runtime.");
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8_000);
-  try {
-    const params = new URLSearchParams({ text: String(query ?? "").trim() });
-    const response = await fetchImpl(
-      `https://apis.davidcyril.name.ng/search/pinterest?${params.toString()}`,
-      {
-        headers: { Accept: "application/json", "X-API-Key": apiKey },
-        signal: controller.signal,
-      },
-    );
-    if (!response.ok) throw new Error(`Pinterest API returned HTTP ${response.status}.`);
-    return await response.json();
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-async function* searchPinterestImages(query) {
-  const attempts = [
-    () => searchDavidCyrilPinterest(query),
-    () => searchGet("googleimage", { query: `pinterest ${query}` }, 8_000),
-    () => searchGet("pinterest",   { query }, 8_000),
-    () => get("/search/pinterest", { query }, 8_000),
-    () => searchGet("images",      { query: `${query} pinterest` }, 8_000),
-    () => get("/search/images",    { query: `${query} pinterest` }, 8_000),
-    () => davidGet("/search/pinterest", { query }, 8_000),
-  ];
-
-  for (const attempt of attempts) {
-    try {
-      const data = await attempt();
-      const seen = new Set();
-      const urls = [];
-      for (const item of resultItems(data)) {
-        const url = imageUrlFrom(item);
-        if (!url || !/^https?:\/\//i.test(url) || seen.has(url)) continue;
-        seen.add(url);
-        urls.push(url);
-      }
-
-      const direct = imageUrlFrom(data);
-      if (direct && /^https?:\/\//i.test(direct) && !seen.has(direct)) {
-        seen.add(direct);
-        urls.push(direct);
-      }
-
-      if (urls.length) yield urls.slice(0, 4);
-    } catch { /* try next */ }
-  }
-}
-export { searchPinterestImages };
-
-async function downloadImage(url) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 6_000);
-
-  try {
-    const response = await fetch(url, {
-      headers: IMAGE_HEADERS,
-      redirect: "follow",
-      signal: controller.signal,
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-    const contentType = (response.headers.get("content-type") || "").toLowerCase();
-    const declaredSize = Number(response.headers.get("content-length") || 0);
-    if (declaredSize > 15 * 1024 * 1024) throw new Error("image too large");
-
-    const buffer = Buffer.from(await response.arrayBuffer());
-    if (!buffer.length || buffer.length > 15 * 1024 * 1024) {
-      throw new Error("invalid image size");
-    }
-
-    const isImage = contentType.startsWith("image/")
-      || buffer.subarray(0, 8).toString("hex") === "89504e470d0a1a0a" // PNG
-      || buffer.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff])) // JPEG
-      || buffer.subarray(0, 6).toString() === "GIF89a"
-      || buffer.subarray(0, 6).toString() === "GIF87a"
-      || buffer.subarray(0, 4).toString() === "RIFF"; // WebP
-    if (!isImage) throw new Error("not an image");
-
-    return buffer;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-// ─── Command ──────────────────────────────────────────────────────────────────
+const PIN_URL_PATTERN = /https?:\/\/(?:www\.)?(?:pin\.it|pinterest\.com)\/[^\s<>()]*/i;
 
 export default {
   name: "pinterest",
-  description: "Search Pinterest images by keyword",
-  category: "search",
-  usage: ".pinterest <keywords>",
+  description: "Download Pinterest media from a link",
+  category: "download",
+  usage: ".pin <Pinterest link>",
   aliases: ["pin", "pinsearch"],
   cooldown: 8,
 
   async run({ sock, msg, text }) {
     const jid = msg.key.remoteJid;
-
-    const pinUrl = String(text || "").match(/https?:\/\/(?:www\.)?(?:pin\.it|pinterest\.com)\/[^\s<>()]+/i)?.[0]?.replace(/[<>\])},.!?]+$/g, "");
-    if (pinUrl) {
-      try { const data = await knightbotGet("download/pinterest", { url: pinUrl }); const mediaUrl = pickKnightMedia(data, pinUrl); if (!mediaUrl) throw new Error("No Pinterest media link returned"); const file = await downloadMediaBuffer(mediaUrl); const title = pickKnightTitle(data, "Pinterest"); const mime = String(file.mimetype || "").toLowerCase(); if (mime.startsWith("video/") || /\.(mp4|webm)(?:\?|$)/i.test(mediaUrl)) await sock.sendMessage(jid, { video: file.buffer, mimetype: mime.startsWith("video/") ? mime : "video/mp4", caption: `📌 *${title}*` }, { quoted: msg }); else await sock.sendMessage(jid, { image: file.buffer, caption: `📌 *${title}*` }, { quoted: msg }); } catch (error) { await sock.sendMessage(jid, { text: `❌ Pinterest download failed: ${String(error.message || error).slice(0,180)}` }, { quoted: msg }); }
-      return;
-    }
-    if (!text) {      return sock.sendMessage(jid, {
-        text:
-`📌 *Pinterest Image Search*
-
-Usage: *.pinterest <keywords>*
-
-Examples:
-• *.pinterest anime wallpaper*
-• *.pinterest sakura art*
-• *.pinterest demon slayer*`,
+    const pinUrl = String(text || "").match(PIN_URL_PATTERN)?.[0]?.replace(/[<>\])},.!?]+$/g, "");
+    if (!pinUrl) {
+      return sock.sendMessage(jid, {
+        text: "Send a Pinterest link. Example: *.pin https://pin.it/your-link*",
       }, { quoted: msg });
     }
 
     try {
-      await sock.sendMessage(jid, {
-        text: `🔍 Searching Pinterest for *"${text}"*...`,
-      }, { quoted: msg });
+      const data = await knightbotGet("download/pinterest", { url: pinUrl }, 30_000, "knight");
+      const mediaUrl = pickKnightMedia(data, pinUrl);
+      if (!mediaUrl) throw new Error("KnightBot returned no Pinterest media link.");
+      const file = await downloadMediaBuffer(mediaUrl);
+      const title = pickKnightTitle(data, "Pinterest");
+      const mime = String(file.mimetype || "").toLowerCase();
+      const caption = `📌 *${title}*`;
 
-      let sent = 0;
-      for await (const imageUrls of searchPinterestImages(text)) {
-        let providerSent = 0;
-        for (const imageUrl of imageUrls.slice(0, 2)) {
-          try {
-            const image = await downloadImage(imageUrl);
-            await sock.sendMessage(jid, { image }, { quoted: msg });
-            sent++;
-            providerSent++;
-          } catch (error) {
-            console.warn(`[pinterest] skipped image: ${error.message}`);
-          }
-        }
-        if (providerSent) break;
-      }
-
-      if (!sent) {
+      if (mime.startsWith("video/") || /\.(mp4|webm)(?:\?|$)/i.test(mediaUrl)) {
         await sock.sendMessage(jid, {
-          text: process.env.PINTEREST_API_KEY
-            ? "❌ No usable Pinterest images found."
-            : "❌ No usable Pinterest images found. Add PINTEREST_API_KEY to the bot host environment to enable the new Pinterest API.",
+          video: file.buffer,
+          mimetype: mime.startsWith("video/") ? mime : "video/mp4",
+          caption,
         }, { quoted: msg });
+      } else {
+        await sock.sendMessage(jid, { image: file.buffer, caption }, { quoted: msg });
       }
-
-    } catch (err) {
-      await sock.sendMessage(jid, {
-        text: `❌ ${err.message}`,
-      }, { quoted: msg });
+    } catch (error) {
+      const message = String(error?.message || error || "Unknown error").slice(0, 180);
+      await sock.sendMessage(jid, { text: `❌ Pinterest download failed: ${message}` }, { quoted: msg });
     }
   },
 };
