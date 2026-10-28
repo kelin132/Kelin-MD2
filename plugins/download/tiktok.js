@@ -6,6 +6,7 @@
 import { davidGet } from "../../lib/gifted.js";
 import { downloadMediaBuffer } from "../../lib/omegaDownload.js";
 import { kordGet, pickKordMedia, pickKordTitle } from "../../lib/kordApi.mjs";
+import { knightbotGet, pickKnightMedia, pickKnightTitle } from "../../lib/knightbotApi.mjs";
 
 // Deduplicate rapid re-triggers
 const processed = new Set();
@@ -18,6 +19,7 @@ const DAVID_BASE = "https://apis.davidcyril.name.ng";
  */
 async function fetchTikTok(url) {
   const attempts = [
+    async () => { const data = await knightbotGet("download/tiktok", { url }); const dl = pickKnightMedia(data, url); if (!dl) throw new Error("KnightBot returned no TikTok video link"); return { dl, title: pickKnightTitle(data, "TikTok Video") }; },
     async () => {
       const data = await kordGet("tiktok", url);
       const dl = pickKordMedia(data, "video");
@@ -38,7 +40,7 @@ async function fetchTikTok(url) {
       if (!r) continue;
 
       const dl =
-        r.download_url ?? r.video_url ?? r.video ?? r.nowm ??
+        r.dl ?? r.download ?? r.dl_url ?? r.download_url ?? r.video_url ?? r.video ?? r.nowm ??
         r.url          ?? r.mp4       ?? r.play  ?? null;
 
       const title = r.title ?? r.desc ?? r.description ?? "TikTok Video";

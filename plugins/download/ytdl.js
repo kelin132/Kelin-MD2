@@ -7,6 +7,7 @@ import { get, davidGet } from "../../lib/gifted.js";
 import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
 import { princeMedia, PRINCE_ENDPOINTS } from "../../lib/princeTech.mjs";
 import { kordGet, pickKordMedia, pickKordTitle, pickKordYouTubeVideo } from "../../lib/kordApi.mjs";
+import { knightbotGet, pickKnightMedia, pickKnightTitle } from "../../lib/knightbotApi.mjs";
 
 // ── Search YouTube ────────────────────────────────────────────────────────────
 
@@ -44,6 +45,7 @@ function pickVideo(result) {
 
 async function fetchVideo(videoUrl) {
   const endpoints = [
+    async () => { const data = await knightbotGet("download/ytmp4", { format: "480p", url: videoUrl }); const dl = pickKnightMedia(data, videoUrl); if (!dl) throw new Error("KnightBot returned no YouTube video link"); return { dl, title: pickKnightTitle(data) }; },
     async () => {
       const data = await kordGet("ytdl", videoUrl, { timeoutMs: 12_000 });
       const dl = pickKordYouTubeVideo(data) || pickKordMedia(data, "video");

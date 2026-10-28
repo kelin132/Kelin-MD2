@@ -5,6 +5,7 @@
 
 import { downloadMediaBuffer } from '../../lib/omegaDownload.js';
 import { kordGet, pickKordMedia, pickKordTitle } from '../../lib/kordApi.mjs';
+import { knightbotGet, pickKnightMedia, pickKnightTitle } from "../../lib/knightbotApi.mjs";
 
 // ── Dedup ─────────────────────────────────────────────────────────────────────
 const processedMessages = new Set();
@@ -52,12 +53,14 @@ export default {
       await sock.sendMessage(jid, { react: { text: '⏳', key: msg.key } });
       await sock.sendMessage(jid, { text: '⏳ Downloading Instagram media…' }, { quoted: msg });
 
-      const data = await kordGet('insta', url.trim());
-      const mediaUrl = pickKordMedia(data, 'auto');
-      if (!mediaUrl) throw new Error('Kord returned no Instagram media link');
-
+      let data;
+      let mediaUrl;
+      let title;
+      try { data = await knightbotGet("download/instagram", { url: url.trim() }); mediaUrl = pickKnightMedia(data, url.trim()); title = pickKnightTitle(data, "Instagram Post"); } catch { /* fall back to Kord */ }
+      if (!mediaUrl) { data = await kordGet("insta", url.trim()); mediaUrl = pickKordMedia(data, "auto"); title = pickKordTitle(data, "Instagram Post"); }
+      if (!mediaUrl) throw new Error("No Instagram media link returned");
       const file = await downloadMediaBuffer(mediaUrl);
-      const title = pickKordTitle(data, 'Instagram Post').slice(0, 200);
+      title = String(title || "Instagram Post").slice(0, 200);
       const caption = `📥 *${title}*\n✨ *Powered by KELIN MD*`;
       const mimetype = String(file.mimetype || '').toLowerCase();
 

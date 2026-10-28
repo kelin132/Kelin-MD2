@@ -5,6 +5,8 @@
  */
 
 import { get, searchGet, davidGet } from "../../lib/gifted.js";
+import { downloadMediaBuffer } from "../../lib/omegaDownload.js";
+import { knightbotGet, pickKnightMedia, pickKnightTitle } from "../../lib/knightbotApi.mjs";
 
 // ─── Image search helpers ─────────────────────────────────────────────────────
 
@@ -172,8 +174,12 @@ export default {
   async run({ sock, msg, text }) {
     const jid = msg.key.remoteJid;
 
-    if (!text) {
-      return sock.sendMessage(jid, {
+    const pinUrl = String(text || "").match(/https?:\/\/(?:www\.)?(?:pin\.it|pinterest\.com)\/[^\s<>()]+/i)?.[0]?.replace(/[<>\])},.!?]+$/g, "");
+    if (pinUrl) {
+      try { const data = await knightbotGet("download/pinterest", { url: pinUrl }); const mediaUrl = pickKnightMedia(data, pinUrl); if (!mediaUrl) throw new Error("No Pinterest media link returned"); const file = await downloadMediaBuffer(mediaUrl); const title = pickKnightTitle(data, "Pinterest"); const mime = String(file.mimetype || "").toLowerCase(); if (mime.startsWith("video/") || /\.(mp4|webm)(?:\?|$)/i.test(mediaUrl)) await sock.sendMessage(jid, { video: file.buffer, mimetype: mime.startsWith("video/") ? mime : "video/mp4", caption: `📌 *${title}*` }, { quoted: msg }); else await sock.sendMessage(jid, { image: file.buffer, caption: `📌 *${title}*` }, { quoted: msg }); } catch (error) { await sock.sendMessage(jid, { text: `❌ Pinterest download failed: ${String(error.message || error).slice(0,180)}` }, { quoted: msg }); }
+      return;
+    }
+    if (!text) {      return sock.sendMessage(jid, {
         text:
 `📌 *Pinterest Image Search*
 

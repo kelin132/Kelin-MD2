@@ -8,6 +8,7 @@ import { get, davidGet } from "../../lib/gifted.js";
 import { downloadMediaBuffer, omegaDownload } from "../../lib/omegaDownload.js";
 import { princeMedia, PRINCE_ENDPOINTS } from "../../lib/princeTech.mjs";
 import { kordGet, pickKordMedia, pickKordTitle } from "../../lib/kordApi.mjs";
+import { knightbotGet, pickKnightMedia, pickKnightTitle } from "../../lib/knightbotApi.mjs";
 import { requireAudioPayload } from "../../lib/audioPayload.mjs";
 
 // ── YouTube search ────────────────────────────────────────────────────────────
@@ -35,7 +36,7 @@ function pickAudio(result) {
   if (typeof result === "string" && /^https?:\/\//i.test(result)) return result;
   if (!result) return null;
   const keys = [
-    "download_url", "downloadUrl", "audio_url", "audioUrl",
+    "download_url", "downloadUrl", "download", "dl_url", "dl", "audio_url", "audioUrl",
     "audio", "mp3", "media_url", "mediaUrl", "url", "link",
   ];
   for (const key of keys) {
@@ -108,6 +109,7 @@ async function valoreAudio(videoUrl) {
 
 export async function fetchAudio(videoUrl, searchTitle = "") {
   const endpoints = [
+    async () => { const data = await knightbotGet("download", { type: "mp3", url: videoUrl }); const dl = pickKnightMedia(data, videoUrl); if (!dl) throw new Error("KnightBot returned no audio link"); return { dl, title: pickKnightTitle(data, "YouTube Audio") }; },
     async () => {
       const data = await kordGet("yt-song", videoUrl);
       const dl = pickKordMedia(data, "audio");
