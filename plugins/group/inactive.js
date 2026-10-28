@@ -19,7 +19,7 @@ export default {
 
     const days = Math.max(1, Number.parseInt(args?.[0], 10) || DEFAULT_INACTIVE_DAYS);
     const cutoff = Date.now() - days * 86_400_000;
-    const activityLastSeen = groupSettings.get(jid).activityLastSeen || {};
+    const activityLastSeen = await groupSettings.getActivityLastSeen(jid);
     const botJid = normalizeJid(sock.user?.id);
 
     try {

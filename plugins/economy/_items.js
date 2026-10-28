@@ -24,7 +24,7 @@ const BANK_SHOP_ITEMS = Object.fromEntries(
         category: "banking",
         bankTier: tier.level,
         inventory: false,
-        description: `Raises your bank limit to ${tier.limit.toLocaleString()} ryu.`,
+        description: `Raises your bank limit to ${tier.limit.toLocaleString()}.`,
       },
     ]),
 );

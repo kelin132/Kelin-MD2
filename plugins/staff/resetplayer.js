@@ -7,7 +7,7 @@ import { resetPlayer, getUser, isRegistered, addHistory, findUserByName } from "
 
 export default {
   name: "resetplayer",
-  description: "Reset a player's economy stats to 30,000 ryu",
+  description: "Reset a player's economy stats to $30,000",
   category: "staff",
   usage: ".resetplayer @user | <number> | <name>",
   aliases: ["reseteconomy", "wipeeconomy"],
@@ -55,7 +55,7 @@ export default {
         `🔄 *Player Reset*\n\n` +
         `👤 Player  : ${target.name}\n` +
         `🔍 Found by : ${lookedUpBy}\n` +
-        `💰 Money   : 30,000 ryu\n` +
+        `💰 Money   : 30,00$0\n` +
         `🏦 Bank    : 0 ryu\n` +
         `⭐ Level   : 1\n` +
         `🌐 Website : Access revoked and logged out\n\n` +
