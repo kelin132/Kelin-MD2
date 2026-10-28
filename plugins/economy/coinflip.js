@@ -50,7 +50,7 @@ export default {
 `╭─❀「 💰 𝐂𝐎𝐈𝐍 𝐅𝐋𝐈𝐏 」❀─╮
 │ Usage  : *.coinflip <heads|tails> <amount>*
 │ Example: .coinflip h 1b
-│ Maximum: *1m ryu*
+│ Maximum: *$5M*
 │
 │ 🎯 *Win Rate* :: *55%*
 │ 💰 *Win*      :: *×2 your bet*

@@ -21,7 +21,7 @@ export default {
   aliases: ["sellitem"],
   category: "economy",
   cooldown: 6,
-  description: "Sell an inventory item for ryu",
+  description: "Sell an inventory item for money",
   usage: ".sell <item> | .sell <number> | .sell all",
 
   async run({ sock, msg, sender, args }) {

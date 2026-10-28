@@ -172,7 +172,7 @@ export default {
 
       if ((ecoUser.money || 0) < cost) {
         return reply(
-`you don't have enough ryu to summon a card! `
+`you don't have enough money to summon a card! `
         );
       }
 
@@ -225,7 +225,7 @@ export default {
         refund: () => addMoney(sender, cost),
       });
       if (payment.status === "insufficient") {
-        return reply(`you don't have enough ryu to summon a card!`);
+        return reply(`you don't have enough money to summon a card!`);
       }
       if (payment.status !== "saved") {
         console.error("[summon] pending-card write failed after debit:", payment.error);
