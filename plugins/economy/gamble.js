@@ -21,7 +21,7 @@ export default {
   aliases: ["bet2", "gbl"],
   category: "economy",
   cooldown: 6,
-  description: "Gamble your cash using amount-based ryu betting tiers (5 min cooldown)",
+  description: "Gamble your cash using amount-based money tiers (5 min cooldown)",
   usage: ".gamble <amount|all|half>",
   checkJail: true,
 

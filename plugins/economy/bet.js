@@ -40,7 +40,7 @@ function fmt(n) {
 
 export default {
   name: "bet",
-  description: "Gamble your cash using amount-based ryu betting tiers",
+  description: "Gamble your cash using amount-based money tiers",
   category: "economy",
   usage: ".bet <amount | all | half>  ✦ shorthand OK: 10k / 5m / 1b",
   aliases: ["gamble2", "wager"],
