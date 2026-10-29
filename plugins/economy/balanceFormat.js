@@ -35,7 +35,7 @@ export function formatAccountBalance({
   footerLines = [],
 }) {
   const rows = [
-    row("💰", "Wallet", money(wallet)),
+    row("$", "Wallet", money(wallet)),
     row("🏦", "Bank", `${money(bank)} / ${money(bankLimit ?? bankLimitForUser({}))}`),
     row("💎", "Gems", number(gems)),
   ];
