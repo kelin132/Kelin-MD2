@@ -16,6 +16,7 @@ import {
   writeAfkLookup,
 } from "../../lib/afkLookupCache.mjs";
 import { BASE_BANK_LIMIT, STARTING_MONEY } from "./currency.js";
+import { invalidateAccountIdentityCache } from "../../lib/accountIdentity.mjs";
 
 export const DEFAULTS = {
   name:          "User",
@@ -239,6 +240,7 @@ async function ensurePhoneIdentityFields(db, user, id) {
   const needsRepair = Object.entries(fields).some(([key, value]) => user?.[key] !== value);
   if (needsRepair) {
     await db.collection("users").updateOne({ _id: user._id }, { $set: fields });
+    invalidateAccountIdentityCache(db);
   }
 }
 
@@ -433,24 +435,26 @@ export async function saveUser(id, data) {
 
     await db.collection("users").updateOne({ _id: normalizedId }, update, { upsert: true });
 
-    // Clamp any balance that went negative due to concurrent bets both losing.
-    // The aggregation pipeline syntax ($max) is available in MongoDB 4.2+.
-    await db.collection("users").updateOne(
-      {
-        _id: normalizedId,
-        $or: [{ money: { $lt: 0 } }, { bank: { $lt: 0 } }],
-      },
-      [{ $set: {
-        money: { $max: ["$money", 0] },
-        bank:  { $max: ["$bank",  0] },
-        totalWealth: {
-          $add: [
-            { $max: [{ $ifNull: ["$money", 0] }, 0] },
-            { $max: [{ $ifNull: ["$bank", 0] }, 0] },
-          ],
+    if ((incOp.money ?? 0) < 0 || (incOp.bank ?? 0) < 0 || (_snap.money ?? 0) < 0 || (_snap.bank ?? 0) < 0) {
+      // Clamp any balance that went negative due to concurrent bets both losing.
+      // The aggregation pipeline syntax ($max) is available in MongoDB 4.2+.
+      await db.collection("users").updateOne(
+        {
+          _id: normalizedId,
+          $or: [{ money: { $lt: 0 } }, { bank: { $lt: 0 } }],
         },
-      }}]
-    );
+        [{ $set: {
+          money: { $max: ["$money", 0] },
+          bank:  { $max: ["$bank",  0] },
+          totalWealth: {
+            $add: [
+              { $max: [{ $ifNull: ["$money", 0] }, 0] },
+              { $max: [{ $ifNull: ["$bank", 0] }, 0] },
+            ],
+          },
+        }}]
+      );
+    }
   } else {
     // New user (no snapshot) — safe to $set everything since nobody else has this doc yet
     safeData.totalWealth = (safeData.money ?? 0) + (safeData.bank ?? 0);
@@ -672,7 +676,10 @@ export async function registerUser(id, name) {
     { upsert: false },
   );
 
-  if (placeholderUpdate.matchedCount > 0) return;
+  if (placeholderUpdate.matchedCount > 0) {
+    invalidateAccountIdentityCache(db);
+    return;
+  }
 
   // No document existed. $setOnInsert makes this safe if another request
   // registered the same user between the two operations.
@@ -681,6 +688,7 @@ export async function registerUser(id, name) {
     { $setOnInsert: { ...insertDefaults, ...registrationFields } },
     { upsert: true },
   );
+  invalidateAccountIdentityCache(db);
 }
 
 /** Convenience: send a "you need to register" message and return false */
