@@ -42,7 +42,7 @@ export default {
 
     if (!bet || bet < 50) {
       return sock.sendMessage(msg.key.remoteJid, {
-        text: `🎰 *SLOT MACHINE*\n\nUsage: *.slots <bet>*  — e.g. .slots 50k\nMin bet: $50\nMax bet: $300B\n✦ Shorthand: k = thousand | m = million | b = billion\n\nSymbols & multipliers:\n💎 x20 | 7️⃣ x15 | ⭐ x10\n🔔 x8 | 🍇 x6 | 🍋 x5 | 🍒 x4\n2 matching — x1.5 partial win`
+        text: `🎰 *SLOT MACHINE*\n\nUsage: *.slots <bet>*  — e.g. .slots 50k\nMin bet: $50\nMax bet: $5M\n✦ Shorthand: k = thousand | m = million | b = billion\n\nSymbols & multipliers:\n💎 x20 | 7️⃣ x15 | ⭐ x10\n🔔 x8 | 🍇 x6 | 🍋 x5 | 🍒 x4\n2 matching — x1.5 partial win`
       }, { quoted: msg });
     }
 
