@@ -1,17 +1,18 @@
 // plugins/pokemon/battle.js
 // Handles all battle subcommands: fight, run, item, pokeball, switch
 
-import { getBattle, updateBattle, endBattle, isMyTurn } from "../../lib/pokemon/battleState.mjs";
+import { getBattle, updateBattle, endBattle, isMyTurn, claimBattleReward } from "../../lib/pokemon/battleState.mjs";
 import { clearWild, updateWildHp } from "../../lib/pokemon/wildState.mjs";
-import { getTrainer, removeItem } from "../../lib/pokemon/players.mjs";
+import { getTrainer, removeItem, addItem } from "../../lib/pokemon/players.mjs";
 import { addMoney } from "../economy/database.js";
 import { updatePokemon, addPokemonXP, buildPokemon, savePokemon, getTrainerParty, getPokemonXpNeeded, evolvePokemon } from "../../lib/pokemon/pokemonDb.mjs";
 import { addToParty, addToPC, updateTrainer } from "../../lib/pokemon/players.mjs";
 import { calcDamage, tryCatch, xpReward, pvpXpReward, coinReward, getMovesForType, getLearnableMoveAtLevel, getLevelEvolution, TYPE_EMOJIS, TYPE_MOVES, getTypeEffectiveness, effectivenessText } from "../../lib/pokemon/gameLogic.mjs";
-import { generateBattleScene, generateCatchScene, generateBattleResult } from "../../lib/pokemon/canvas.mjs";
+import { generateBattleScene, generateBattleResult } from "../../lib/pokemon/canvas.mjs";
 import { fetchPokemon } from "../../lib/pokemon/api.mjs";
 import { setPendingLearn } from "../../lib/pokemon/moveLearnState.mjs";
 import { MART_ITEMS } from "../../lib/pokemon/martItems.mjs";
+import { readPokemonAnimation } from "../../lib/pokemon/media.mjs";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -42,6 +43,7 @@ async function sendScene(sock, jid, msg, battle, statusText, hitSide, damage, cr
         maxHp: battle.opponentPokemon.maxHp,
         pokedexId: battle.opponentPokemon.pokedexId,
         imageUrl: battle.opponentPokemon.imageUrl,
+        imageLocalPath: battle.opponentPokemon.imageLocalPath,
         shiny: battle.opponentPokemon.shiny,
         trainer: battle.opponentTrainer,
       },
@@ -90,7 +92,7 @@ ${myLine}
 
 🆚
 
-${enemyLine}
+${enemyLine}${enemyPokemon.isFusionBoss ? "\n🛡️ Fusion shield: " + (enemyPokemon.shieldCharges || 0) + "/" + (enemyPokemon.maxShieldCharges || 3) + " charges" : ""}
 
 ━━━━━━━━━━━━━━━━━━━━
 
@@ -173,6 +175,20 @@ async function handleWildDefeat(sock, jid, msg, battle, trainer) {
   const trainerName = trainer?.username || msg.pushName || "Trainer";
   const myPokeName  = myPokemon.displayName || myPokemon.name;
   const pokeId      = myPokemon._id || myPokemon.id;
+
+  if (wildPokemon.isFusionBoss) {
+    if (!claimBattleReward(jid)) return;
+    const bossXp = 30000;
+    const bossGold = 12000000;
+    if (pokeId) await addPokemonXP(pokeId, bossXp);
+    await addMoney(battle.challengerJid, bossGold);
+    await addItem(battle.challengerJid, "ultraball", 12);
+    endBattle(jid);
+    clearWild(jid);
+    return sock.sendMessage(jid, {
+      text: "🏆 " + wildPokemon.displayName + " was defeated! You gained 30,000 XP, $12,000,000, and 12 Ultra Balls.",
+    }, { quoted: msg });
+  }
 
   const xp    = xpReward(wildPokemon);
   const coins = coinReward(wildPokemon.level);
@@ -668,40 +684,67 @@ ${hasBalls ? `🎾 *POKÉBALLS* ${battle.type !== "wild" ? "_(wild battles only)
       }
 
       const wildPokemon = battle.opponentPokemon;
-      const hpRatio     = wildPokemon.hp / wildPokemon.maxHp;
+      if (wildPokemon.isFusionBoss || wildPokemon.noCapture) {
+        return sock.sendMessage(jid, { text: "🛡️ This fused Pokémon is protected and cannot be caught." }, { quoted: msg });
+      }
 
-      // Beast Ball: guaranteed 100% catch on first use — no RNG
+      const hpRatio = wildPokemon.hp / wildPokemon.maxHp;
       let caught;
       if (ball === "beastball") {
         caught = true;
       } else {
-        // Catch rate modifiers per ball type
         const catchMods = {
           masterball: 1000, ultraball: 2.5, greatball: 1.5,
           netball: 3, duskball: 3.5, quickball: 5,
           healball: 1.5, premierball: 1.5, luxuryball: 1,
           pokeball: 1,
         };
-        const mod       = catchMods[ball] || 1;
+        const mod = catchMods[ball] || 1;
         const baseCatch = Math.max(0.05, (1 - hpRatio) * 0.6 + 0.1);
         const catchRate = Math.min(0.95, baseCatch * mod);
         caught = Math.random() < catchRate;
       }
 
-      await removeItem(sender, ball);
+      const removed = await removeItem(sender, ball);
+      if (!removed) {
+        return sock.sendMessage(jid, { text: "❌ You no longer have that Pokéball." }, { quoted: msg });
+      }
       updateBattle(jid, { catchAttempts: (battle.catchAttempts || 0) + 1 });
 
-      const ballEmoji = { pokeball:"🔴", greatball:"🔵", ultraball:"⚫", masterball:"🟣",
-        premierball:"⬜", healball:"🩷", duskball:"🟤", netball:"🔷",
-        luxuryball:"🟡", quickball:"🩵", beastball:"🟢" };
-
-      const bEmoji  = ballEmoji[ball] || "🎾";
+      const ballNames = {
+        pokeball: "Poké Ball", greatball: "Great Ball", ultraball: "Ultra Ball",
+        masterball: "Master Ball", premierball: "Premier Ball", healball: "Heal Ball",
+        duskball: "Dusk Ball", netball: "Net Ball", luxuryball: "Luxury Ball",
+        quickball: "Quick Ball", beastball: "Beast Ball",
+      };
       const pokeName = wildPokemon.displayName || wildPokemon.name;
+      const userName = msg.discordChannelId
+        ? (msg.pushName || String(sender).replace(/^discord:/, "").split("@")[0])
+        : String(sender).split("@")[0];
+      const throwCaption = "@" + userName + " used " + (ballNames[ball] || "Poké Ball") + " on " + pokeName + "!\nWill it be caught or break free?";
+
+      try {
+        const ballAnimation = await readPokemonAnimation("pokeball");
+        const mediaMessage = {
+          video: ballAnimation,
+          mimetype: "video/mp4",
+          fileName: "pokeball.mp4",
+          gifPlayback: true,
+          caption: throwCaption,
+          ...(!msg.discordChannelId ? { mentions: [sender] } : {}),
+        };
+        await sock.sendMessage(jid, mediaMessage, { quoted: msg });
+      } catch {
+        await sock.sendMessage(jid, {
+          text: throwCaption,
+          ...(!msg.discordChannelId ? { mentions: [sender] } : {}),
+        }, { quoted: msg });
+      }
+      await sleep(1400);
 
       if (caught) {
         endBattle(jid);
         clearWild(jid);
-
         const party = await getTrainerParty(sender);
         const inParty = (party || []).length < 6;
         const savedPokemon = await savePokemon({
@@ -710,85 +753,21 @@ ${hasBalls ? `🎾 *POKÉBALLS* ${battle.type !== "wild" ? "_(wild battles only)
           inParty,
           caughtAt: Date.now(),
         });
+        if (inParty) await addToParty(sender, savedPokemon._id.toString());
+        else await addToPC(sender, savedPokemon._id.toString());
 
-        if (inParty) {
-          await addToParty(sender, savedPokemon._id.toString());
-        } else {
-          await addToPC(sender, savedPokemon._id.toString());
-        }
+        const catchXp = Math.max(10, Math.floor(wildPokemon.level * 3));
+        const myPokeId = myPokemon._id || myPokemon.id;
+        if (myPokeId) await addPokemonXP(myPokeId, catchXp).catch(() => null);
+        const catchGold = coinReward(wildPokemon.level);
+        await addMoney(sender, catchGold);
+        return sock.sendMessage(jid, {
+          text: pokeName + " was caught! You gained " + catchXp + " XP and $" + Number(catchGold).toLocaleString() + ".",
+        }, { quoted: msg });
+      }
 
-        // Award XP to the lead Pokémon for the successful catch
-        const catchXp   = Math.max(10, Math.floor(wildPokemon.level * 3));
-        const myPokeId  = myPokemon._id || myPokemon.id;
-        let catchXpRes;
-        if (myPokeId) {
-          catchXpRes = await addPokemonXP(myPokeId, catchXp).catch(() => null);
-        }
-
-        let xpLine = catchXpRes?.leveledUp
-          ? `✨ +${catchXp} XP → *${myPokemon.displayName || myPokemon.name}* leveled up to Lv.${catchXpRes.newLevel}! 🎉`
-          : `✨ +${catchXp} XP for ${myPokemon.displayName || myPokemon.name}`;
-
-        // Auto-evolve on catch XP level-up
-        if (catchXpRes?.leveledUp && myPokeId) {
-          const catchEvoTarget = getLevelEvolution(myPokemon.name, catchXpRes.newLevel);
-          if (catchEvoTarget) {
-            try {
-              const catchEvoData = await fetchPokemon(catchEvoTarget);
-              const catchEvolved = await evolvePokemon(myPokeId, catchEvoData);
-              if (catchEvolved) {
-                const beforeName = myPokemon.displayName || myPokemon.name;
-                const afterName  = catchEvolved.displayName || catchEvolved.name;
-                xpLine += `\n✨ *WHAT?! ${beforeName.toUpperCase()} IS EVOLVING!*\n🌟 *${beforeName}* → *${afterName}*! 🎉`;
-              }
-            } catch {}
-          }
-        }
-
-        try {
-          const buf = await generateCatchScene({
-            pokemon: {
-              name: pokeName,
-              level: wildPokemon.level,
-              hp: wildPokemon.hp,
-              maxHp: wildPokemon.maxHp,
-              imageUrl: wildPokemon.imageUrl,
-              shiny: wildPokemon.shiny,
-            },
-            ballType: ball,
-            caught: true,
-          });
-          await sock.sendMessage(jid, {
-            image: buf,
-            caption: `${bEmoji} *${pokeName} was caught!*\n${inParty ? "🎒 Added to your party!" : "📦 Added to your PC (party full)!"}\n${xpLine}`,
-          }, { quoted: msg });
-        } catch {
-          await sock.sendMessage(jid, {
-            text: `${bEmoji} *${pokeName} was caught!*\n${inParty ? "🎒 Added to your party!" : "📦 Added to your PC (party full)!"}\n${xpLine}`,
-          }, { quoted: msg });
-        }
-      } else {
-        try {
-          const buf = await generateCatchScene({
-            pokemon: {
-              name: pokeName,
-              level: wildPokemon.level,
-              hp: wildPokemon.hp,
-              maxHp: wildPokemon.maxHp,
-              imageUrl: wildPokemon.imageUrl,
-              shiny: wildPokemon.shiny,
-            },
-            ballType: ball,
-            caught: false,
-          });
-          await sock.sendMessage(jid, {
-            image: buf,
-            caption: `${bEmoji} *Oh no! ${pokeName} broke free!*`,
-          }, { quoted: msg });
-        } catch {
-          await sock.sendMessage(jid, { text: `${bEmoji} *Oh no! ${pokeName} broke free!*` }, { quoted: msg });
-        }
-
+      await sock.sendMessage(jid, { text: pokeName + " broke free!" }, { quoted: msg });
+      if (!caught) {
         // Wild counter-attack after failed catch
         const currentBattle = getBattle(jid);
         if (!currentBattle) return;
@@ -1017,18 +996,27 @@ ${formatMoveList(moves)}
       }
 
       const move      = moves[moveIdx];
-      const damage    = calcDamage(myPokemon, enemyPokemon, move);
-      const crit      = Math.random() < 0.0625;
-      const finalDmg  = crit ? Math.floor(damage * 1.5) : damage;
+      const damage = calcDamage(myPokemon, enemyPokemon, move);
+      const crit = Math.random() < 0.0625;
+      let finalDmg = crit ? Math.floor(damage * 1.5) : damage;
+      let shieldAbsorbed = 0;
+      let shieldCharges = Number(enemyPokemon.shieldCharges || 0);
+      if (enemyPokemon.isFusionBoss && shieldCharges > 0) {
+        shieldAbsorbed = Math.floor(finalDmg * 0.55);
+        finalDmg = Math.max(1, finalDmg - shieldAbsorbed);
+        shieldCharges -= 1;
+      }
       const newEnemyHp = Math.max(0, (enemyPokemon.hp ?? enemyPokemon.maxHp) - finalDmg);
 
-      const updatedEnemy = { ...enemyPokemon, hp: newEnemyHp };
+      const updatedEnemy = { ...enemyPokemon, hp: newEnemyHp, ...(enemyPokemon.isFusionBoss ? { shieldCharges } : {}) };
       const newState = {
         ...(isChallenger ? { opponentPokemon: updatedEnemy } : { challengerPokemon: updatedEnemy }),
-        turn:  isChallenger ? "opponent" : "challenger",
+        turn: isChallenger ? "opponent" : "challenger",
         round: battle.round + (isChallenger ? 0 : 1),
       };
-      if (battle.type === "wild") updateWildHp(jid, newEnemyHp);
+      if (battle.type === "wild") {
+        updateWildHp(jid, newEnemyHp, enemyPokemon.isFusionBoss ? { shieldCharges } : undefined);
+      }
 
       const updated    = updateBattle(jid, newState);
 
@@ -1045,6 +1033,9 @@ ${formatMoveList(moves)}
 
       // Step 2 — Damage scene image with dealt-damage caption
       const targetLabel   = battle.type === "wild" ? `Wild ${eName}` : eName;
+      if (shieldAbsorbed > 0) {
+        await sock.sendMessage(jid, { text: "🛡️ The fusion shield absorbed " + shieldAbsorbed + " damage. " + shieldCharges + " shield charges remain." }, { quoted: msg });
+      }
       const damageCaption = newEnemyHp <= 0
         ? `@${senderNum} 's ${myName} dealt a damage of ${finalDmg} to ${targetLabel}\n💀 *${eName} fainted!*`
         : `@${senderNum} 's ${myName} dealt a damage of ${finalDmg} to ${targetLabel}`;

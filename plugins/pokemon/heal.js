@@ -4,6 +4,7 @@
 import { getTrainer } from "../../lib/pokemon/players.mjs";
 import { getTrainerParty, healParty } from "../../lib/pokemon/pokemonDb.mjs";
 import { getBattle } from "../../lib/pokemon/battleState.mjs";
+import { readPokemonAnimation } from "../../lib/pokemon/media.mjs";
 
 export default {
   name: "heal",
@@ -58,18 +59,22 @@ export default {
       return `${icon} ${name} `;
     }).join("\n");
 
-    await sock.sendMessage(jid, {
-      text:
-`╭━━〔 🏥 *POKÉMON CENTER* 〕━━╮
-
-💚 *HEALING COMPLETE!*
-
-${healed}
-
-💚 *ALL POKEMON HAVE BEEN HEALED*
-⏳ Next heal: \`\`150s\`\`
-
-╰━━━━━━━━━━━━━━━━━━╯`,
-    }, { quoted: msg });
+    const hospitalCaption =
+      "╭━━〔 🏥 *POKÉMON CENTER* 〕━━╮\n\n" +
+      "💚 *HEALING COMPLETE!*\n\n" +
+      healed +
+      "\n\n💚 *ALL POKEMON HAVE BEEN HEALED*\n⏳ Next heal: 150s\n\n╰━━━━━━━━━━━━━━━━━━╯";
+    try {
+      const hospitalAnimation = await readPokemonAnimation("pokemon-center");
+      await sock.sendMessage(jid, {
+        video: hospitalAnimation,
+        mimetype: "video/mp4",
+        fileName: "pokemon-center.mp4",
+        gifPlayback: true,
+        caption: hospitalCaption,
+      }, { quoted: msg });
+    } catch {
+      await sock.sendMessage(jid, { text: hospitalCaption }, { quoted: msg });
+    }
   },
 };
